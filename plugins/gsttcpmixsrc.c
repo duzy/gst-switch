@@ -55,20 +55,6 @@ GST_DEBUG_CATEGORY_STATIC (tcpmixsrc_debug);
 
 #define MAX_READ_SIZE           4 * 1024
 
-/*
-static GstStaticPadTemplate sinktemplate =
-  GST_STATIC_PAD_TEMPLATE ("sink",
-      GST_PAD_SINK,
-      GST_PAD_ALWAYS,
-      GST_STATIC_CAPS_ANY);
-*/
-
-static GstStaticPadTemplate srctemplate =
-  GST_STATIC_PAD_TEMPLATE ("src",
-      GST_PAD_SRC,
-      GST_PAD_ALWAYS,
-      GST_STATIC_CAPS_ANY);
-
 enum
 {
   PROP_0,
@@ -77,7 +63,76 @@ enum
   PROP_BOUND_PORT,
 };
 
-G_DEFINE_TYPE (GstTCPMixSrc, gst_tcp_mix_src, GST_TYPE_PUSH_SRC);
+static GstStaticPadTemplate sinktemplate =
+  GST_STATIC_PAD_TEMPLATE ("sink",
+      GST_PAD_SINK,
+      GST_PAD_ALWAYS,
+      GST_STATIC_CAPS_ANY);
+
+static GstStaticPadTemplate srctemplate =
+  GST_STATIC_PAD_TEMPLATE ("src_%u",
+      GST_PAD_SRC,
+      GST_PAD_REQUEST,
+      GST_STATIC_CAPS_ANY);
+
+#define GST_TYPE_TCP_MIX_SRC_PAD \
+  (gst_tcp_mix_src_pad_get_type())
+#define GST_TCP_MIX_SRC_PAD(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_TCP_MIX_SRC_PAD,GstTCPMixSrcPad))
+#define GST_TCP_MIX_SRC_PAD_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_TCP_MIX_SRC_PAD,GstTCPMixSrcPadClass))
+#define GST_IS_TCP_MIX_SRC_PAD(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_TCP_MIX_SRC_PAD))
+#define GST_IS_TCP_MIX_SRC_PAD_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_TCP_MIX_SRC_PAD))
+
+typedef struct _GstTCPMixSrcPad GstTCPMixSrcPad;
+typedef struct _GstTCPMixSrcPadClass GstTCPMixSrcPadClass;
+
+struct _GstTCPMixSrcPad
+{
+  GstPad base;
+};
+
+struct _GstTCPMixSrcPadClass
+{
+  GstPadClass base_class;
+};
+
+GType gst_tcp_mix_src_pad_get_type (void);
+
+G_DEFINE_TYPE (GstTCPMixSrcPad, gst_tcp_mix_src_pad, GST_TYPE_PAD);
+
+static void
+gst_tcp_mix_src_pad_class_init (GstTCPMixSrcPadClass *klass)
+{
+  g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
+}
+
+static void
+gst_tcp_mix_src_pad_init (GstTCPMixSrcPad *pad)
+{
+  g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
+}
+
+static void
+gst_tcp_mix_src_pad_reset (GstTCPMixSrcPad *pad)
+{
+  g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
+}
+
+G_DEFINE_TYPE (GstTCPMixSrc, gst_tcp_mix_src, GST_TYPE_BASE_SRC);
+
+static void 
+gst_tcp_mix_src_stop_waiting (GstTCPMixSrc *src)
+{
+  /* wait for end of accept_thread */
+  g_mutex_lock (&src->wait_mutex);
+  while (src->wait_thread) {
+    g_cond_wait (&src->wait_thread_end, &src->wait_mutex);
+  }
+  g_mutex_unlock (&src->wait_mutex);
+}
 
 static void
 gst_tcp_mix_src_finalize (GObject * gobject)
@@ -93,12 +148,7 @@ gst_tcp_mix_src_finalize (GObject * gobject)
     g_object_unref (src->server_socket);
     src->server_socket = NULL;
 
-    /* wait for end of accept_thread */
-    g_mutex_lock (&src->wait_mutex);
-    while (src->wait_thread) {
-      g_cond_wait (&src->wait_thread_end, &src->wait_mutex);
-    }
-    g_mutex_unlock (&src->wait_mutex);
+    gst_tcp_mix_src_stop_waiting (src);
   }
 
   g_mutex_lock (&src->clients_mutex);
@@ -206,20 +256,6 @@ socket_get_available_bytes_error:
         ("Failed to get available bytes from socket"));
     return GST_FLOW_ERROR;
   }
-
-#if 0
-socket_accept_error:
-  {
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-      GST_DEBUG_OBJECT (src, "Cancelled accepting of client");
-    } else {
-      GST_ELEMENT_ERROR (src, RESOURCE, OPEN_READ, (NULL),
-          ("Failed to accept client: %s", err->message));
-    }
-    g_clear_error (&err);
-    return GST_FLOW_ERROR;
-  }
-#endif
 
 socket_condition_wait_error:
   {
@@ -370,13 +406,18 @@ socket_receive_error:
 }
 
 
+//static GstFlowReturn
+//gst_tcp_mix_src_create (GstBaseSrc * psrc, GstBuffer ** outbuf)
 static GstFlowReturn
-gst_tcp_mix_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
+gst_tcp_mix_src_create (GstBaseSrc * bsrc, guint64 offset,
+    guint size, GstBuffer ** outbuf)
 {
   GstTCPMixSrc *src;
   GSocket *client_socket;
 
-  src = GST_TCP_MIX_SRC (psrc);
+  src = GST_TCP_MIX_SRC (bsrc);
+
+  GST_DEBUG_OBJECT (src, "create");
 
   if (!GST_OBJECT_FLAG_IS_SET (src, GST_TCP_MIX_SRC_OPEN))
     goto wrong_mix_src_state;
@@ -491,12 +532,7 @@ gst_tcp_mix_src_stop (GstBaseSrc * bsrc)
     g_object_unref (src->server_socket);
     src->server_socket = NULL;
 
-    /* wait for end of accept_thread */
-    g_mutex_lock (&src->wait_mutex);
-    while (src->wait_thread) {
-      g_cond_wait (&src->wait_thread_end, &src->wait_mutex);
-    }
-    g_mutex_unlock (&src->wait_mutex);
+    gst_tcp_mix_src_stop_waiting (src);
 
     g_atomic_int_set (&src->bound_port, 0);
     g_object_notify (G_OBJECT (src), "bound-port");
@@ -566,7 +602,7 @@ gst_tcp_mix_src_wait_thread (gpointer data)
       continue;
     }
 
-    g_print ("incoming socket..\n");
+    g_print ("%s:%d: incoming\n", __FILE__, __LINE__);
 
     g_mutex_lock (&src->clients_mutex);
     src->clients = g_list_append (src->clients, socket);
@@ -579,7 +615,7 @@ gst_tcp_mix_src_wait_thread (gpointer data)
     g_source_unref (source);
   }
 
-  g_print ("wait thread end..\n");
+  g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
 
   g_mutex_lock (&src->wait_mutex);
   src->wait_thread = NULL;
@@ -741,8 +777,43 @@ gst_tcp_mix_src_unlock_stop (GstBaseSrc * bsrc)
   return TRUE;
 }
 
-//gst_tcp_mix_src_request_new_pad;
-//gst_tcp_mix_src_release_pad;
+static GstPad *
+gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
+    const gchar * unused, const GstCaps * caps)
+{
+  GstTCPMixSrc * src = GST_TCP_MIX_SRC (element);
+  GstPad * srcpad;
+  gchar * name;
+  //gboolean res;
+
+  g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
+
+  GST_DEBUG_OBJECT (src, "requesting new pad");
+
+  GST_OBJECT_LOCK (src);
+  name = g_strdup_printf ("src_%u", 0);
+  srcpad = GST_PAD_CAST (g_object_new (GST_TYPE_TCP_MIX_SRC_PAD,
+	  "name", name, "direction", templ->direction, "template", templ,
+	  NULL));
+  g_free (name);
+  GST_OBJECT_UNLOCK (src);
+
+  //gst_pad_activate_mode (srcpad, GST_PAD_MODE_PUSH, TRUE);
+
+  gst_element_add_pad (GST_ELEMENT_CAST (src), srcpad);
+
+  return srcpad;
+}
+
+static void
+gst_tcp_mix_src_release_pad (GstElement * element, GstPad * pad)
+{
+  GstTCPMixSrc * src = GST_TCP_MIX_SRC (element);
+
+  (void) src;
+
+  gst_object_unref (pad);
+}
 
 static void
 gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
@@ -750,12 +821,10 @@ gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
   GObjectClass *object_class;
   GstElementClass *element_class;
   GstBaseSrcClass *basesrc_class;
-  GstPushSrcClass *push_src_class;
 
   object_class = (GObjectClass *) klass;
   element_class = (GstElementClass *) klass;
   basesrc_class = (GstBaseSrcClass *) klass;
-  push_src_class = (GstPushSrcClass *) klass;
 
   object_class->set_property = gst_tcp_mix_src_set_property;
   object_class->get_property = gst_tcp_mix_src_get_property;
@@ -775,30 +844,28 @@ gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
           "The port number the socket is currently bound to", 0,
           TCP_HIGHEST_PORT, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
-  //gst_element_class_add_pad_template (element_class,
-  //    gst_static_pad_template_get (&sinktemplate));
+  gst_element_class_add_pad_template (element_class,
+      gst_static_pad_template_get (&sinktemplate));
 
   gst_element_class_add_pad_template (element_class,
       gst_static_pad_template_get (&srctemplate));
 
   gst_element_class_set_static_metadata (element_class,
       "TCP mix server source", "Source/Network",
-      "Receive data as a server over the network via TCP from multiple clients",
-      "Duzy Chan <code@duzy.info>");
+      "Receive data as a server over the network via TCP from "
+      "multiple clients", "Duzy Chan <code@duzy.info>");
 
-  /*
   element_class->request_new_pad =
     GST_DEBUG_FUNCPTR(gst_tcp_mix_src_request_new_pad);
   element_class->release_pad =
     GST_DEBUG_FUNCPTR(gst_tcp_mix_src_release_pad);
-  */
 
   basesrc_class->start = gst_tcp_mix_src_start;
   basesrc_class->stop = gst_tcp_mix_src_stop;
   basesrc_class->unlock = gst_tcp_mix_src_unlock;
   basesrc_class->unlock_stop = gst_tcp_mix_src_unlock_stop;
 
-  push_src_class->create = gst_tcp_mix_src_create;
+  basesrc_class->create = gst_tcp_mix_src_create;
 
   /* debug category for fltering log messages */
   GST_DEBUG_CATEGORY_INIT (tcpmixsrc_debug, "tcpmixsrc", 0,

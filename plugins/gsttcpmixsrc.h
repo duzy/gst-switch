@@ -21,7 +21,7 @@
 #define __GST_TCP_MIX_SRC_H__
 
 #include <gst/gst.h>
-#include <gst/base/gstpushsrc.h>
+#include <gst/base/gstbasesrc.h>
 #include <gio/gio.h>
 
 G_END_DECLS
@@ -46,7 +46,7 @@ typedef enum {
 } GstTCPMixSrcFlags;
 
 struct _GstTCPMixSrc {
-  GstPushSrc base;
+  GstBaseSrc base;
 
   gchar *host;
   int server_port;
@@ -68,7 +68,7 @@ struct _GstTCPMixSrc {
 };
 
 struct _GstTCPMixSrcClass {
-  GstPushSrcClass base_class;
+  GstBaseSrcClass base_class;
 };
 
 GType gst_tcp_mix_src_get_type (void);
