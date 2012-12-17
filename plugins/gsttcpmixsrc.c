@@ -26,9 +26,15 @@
  * <refsect2>
  * <title>Example launch line</title>
  * |[
- * gst-launch -v tcpmixsrc ! switch name=ss ! fakesink
+ * gst-launch -v tcpmixsrc port=3000 ! fdsink fd=2
  * ]|
- * FIXME Describe what the pipeline does.
+ *
+ * And from the client side:
+ * |[
+ * gst-launch -v fdsrc fd=1 !tcpclientsink port=3000
+ * ]|
+ *
+ * You can run as many clients as you want.
  * </refsect2>
  */
 
