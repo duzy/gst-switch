@@ -46,25 +46,17 @@ struct _GstSwitchSrv
   guint timer_id;
 };
 
-GstSwitchSrv *gst_switchsrv_new (void);
-void gst_switchsrv_free (GstSwitchSrv * switchsrv);
-void gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv);
-void gst_switchsrv_create_pipeline_playbin (GstSwitchSrv * switchsrv,
-    const char *uri);
-void gst_switchsrv_start (GstSwitchSrv * switchsrv);
-void gst_switchsrv_stop (GstSwitchSrv * switchsrv);
-
-static gboolean gst_switchsrv_handle_message (GstBus * bus,
-    GstMessage * message, gpointer data);
-static gboolean onesecond_timer (gpointer priv);
-
-
-static gboolean opt_verbose;
+static /*const*/ struct {
+  gboolean verbose;
+  gboolean test;
+} opts;
 
 static GOptionEntry entries[] = {
-  {"verbose", 'v', 0, G_OPTION_ARG_NONE, &opt_verbose, "Prompt more messages",
-      NULL},
-  {NULL}
+  {"verbose", 'v', 0, G_OPTION_ARG_NONE, &opts.verbose,
+       "Prompt more messages", NULL},
+  {"test", 't', 0, G_OPTION_ARG_NONE, &opts.test,
+       "Perform test pipeline", NULL},
+  { NULL }
 };
 
 static void
@@ -84,39 +76,7 @@ parse_args (int *argc, char **argv[])
   g_option_context_free (context);
 }
 
-int
-main (int argc, char *argv[])
-{
-  GstSwitchSrv *switchsrv;
-
-  parse_args (&argc, &argv);
-
-  switchsrv = gst_switchsrv_new ();
-
-  if (argc > 1) {
-    gchar *uri;
-    if (gst_uri_is_valid (argv[1])) {
-      uri = g_strdup (argv[1]);
-    } else {
-      uri = g_filename_to_uri (argv[1], NULL, NULL);
-    }
-    gst_switchsrv_create_pipeline_playbin (switchsrv, uri);
-    g_free (uri);
-  } else {
-    gst_switchsrv_create_pipeline (switchsrv);
-  }
-
-  gst_switchsrv_start (switchsrv);
-
-  switchsrv->main_loop = g_main_loop_new (NULL, TRUE);
-
-  g_main_loop_run (switchsrv->main_loop);
-
-  exit (0);
-}
-
-
-GstSwitchSrv *
+static GstSwitchSrv *
 gst_switchsrv_new (void)
 {
   GstSwitchSrv *switchsrv;
@@ -126,7 +86,7 @@ gst_switchsrv_new (void)
   return switchsrv;
 }
 
-void
+static void
 gst_switchsrv_free (GstSwitchSrv * switchsrv)
 {
   if (switchsrv->source_element) {
@@ -146,39 +106,8 @@ gst_switchsrv_free (GstSwitchSrv * switchsrv)
   g_free (switchsrv);
 }
 
-void
-gst_switchsrv_create_pipeline_playbin (GstSwitchSrv * switchsrv,
-    const char *uri)
-{
-  GstElement *pipeline;
-  GError *error = NULL;
-
-  pipeline = gst_pipeline_new (NULL);
-  gst_bin_add (GST_BIN (pipeline),
-      gst_element_factory_make ("playbin", "source"));
-
-  if (error) {
-    g_print ("pipeline parsing error: %s\n", error->message);
-    gst_object_unref (pipeline);
-    return;
-  }
-
-  switchsrv->pipeline = pipeline;
-
-  gst_pipeline_set_auto_flush_bus (GST_PIPELINE (pipeline), FALSE);
-  switchsrv->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-  gst_bus_add_watch (switchsrv->bus, gst_switchsrv_handle_message, switchsrv);
-
-  switchsrv->source_element =
-      gst_bin_get_by_name (GST_BIN (pipeline), "source");
-  g_print ("source_element is %p\n", switchsrv->source_element);
-
-  g_print ("setting uri to %s\n", uri);
-  g_object_set (switchsrv->source_element, "uri", uri, NULL);
-}
-
-void
-gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
+static GstElement *
+gst_switchsrv_create_test_pipeline (GstSwitchSrv * switchsrv)
 {
   GString *pipe_desc;
   GstElement *pipeline;
@@ -186,14 +115,32 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
 
   pipe_desc = g_string_new ("");
 
-  g_string_append (pipe_desc, "videotestsrc name=source num-buffers=100 ! ");
-  g_string_append (pipe_desc, "timeoverlay ! ");
-  g_string_append (pipe_desc, "xvimagesink name=sink ");
-  g_string_append (pipe_desc,
-      "audiotestsrc samplesperbuffer=1600 num-buffers=100 ! ");
-  g_string_append (pipe_desc, "alsasink ");
+#if 1
 
-  if (opt_verbose)
+  g_string_append (pipe_desc, "videotestsrc name=source num-buffers=100 ");
+  g_string_append (pipe_desc, "! timeoverlay ");
+  g_string_append (pipe_desc, "! xvimagesink name=sink ");
+  g_string_append (pipe_desc, "! audiotestsrc "
+      "samplesperbuffer=1600 num-buffers=100 ");
+  g_string_append (pipe_desc, "! alsasink ");
+
+#else
+
+  g_string_append (pipe_desc, "tcpserversrc name=source port=3000 ");
+  g_string_append (pipe_desc, "tcpserversrc name=sourc1 port=3001 ");
+  g_string_append (pipe_desc, "tcpserversrc name=sourc2 port=3002 ");
+  g_string_append (pipe_desc, "tcpserversrc name=sourc3 port=3003 ");
+  g_string_append (pipe_desc, "funnel name=fun ");
+  g_string_append (pipe_desc, "fdsink name=sink fd=2 ");
+  g_string_append (pipe_desc, "source. ! queue ! fun.sink_0 ");
+  g_string_append (pipe_desc, "sourc1. ! queue ! fun.sink_1 ");
+  g_string_append (pipe_desc, "sourc2. ! queue ! fun.sink_2 ");
+  g_string_append (pipe_desc, "sourc3. ! queue ! fun.sink_3 ");
+  g_string_append (pipe_desc, "fun. ! sink.");
+
+#endif
+
+  if (opts.verbose)
     g_print ("pipeline: %s\n", pipe_desc->str);
 
   pipeline = (GstElement *) gst_parse_launch (pipe_desc->str, &error);
@@ -202,21 +149,52 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
   if (error) {
     g_print ("pipeline parsing error: %s\n", error->message);
     gst_object_unref (pipeline);
-    return;
+    return NULL;
   }
 
-  switchsrv->pipeline = pipeline;
-
-  gst_pipeline_set_auto_flush_bus (GST_PIPELINE (pipeline), FALSE);
-  switchsrv->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-  gst_bus_add_watch (switchsrv->bus, gst_switchsrv_handle_message, switchsrv);
-
-  switchsrv->source_element =
-      gst_bin_get_by_name (GST_BIN (pipeline), "source");
-  switchsrv->sink_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+  return pipeline;
 }
 
-void
+static GstElement *
+gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
+{
+  GString *pipe_desc;
+  GstElement *pipeline;
+  GError *error = NULL;
+
+  pipe_desc = g_string_new ("");
+
+  g_string_append (pipe_desc, "tcpserversrc name=source port=3000 ");
+  g_string_append (pipe_desc, "tcpserversrc name=sourc1 port=3001 ");
+  g_string_append (pipe_desc, "tcpserversrc name=sourc2 port=3002 ");
+  g_string_append (pipe_desc, "tcpserversrc name=sourc3 port=3003 ");
+  g_string_append (pipe_desc, "funnel name=fun ");
+  g_string_append (pipe_desc, "fdsink name=sink fd=2 ");
+  g_string_append (pipe_desc, "bin name=b ");
+  g_string_append (pipe_desc, "source. ! queue ! fun.sink_0 ");
+  g_string_append (pipe_desc, "sourc1. ! queue ! fun.sink_1 ");
+  g_string_append (pipe_desc, "sourc2. ! queue ! fun.sink_2 ");
+  g_string_append (pipe_desc, "sourc3. ! queue ! fun.sink_3 ");
+  g_string_append (pipe_desc, "fun. ! sink.");
+
+  if (opts.verbose)
+    g_print ("pipeline: %s\n", pipe_desc->str);
+
+  pipeline = (GstElement *) gst_parse_launch (pipe_desc->str, &error);
+  g_string_free (pipe_desc, FALSE);
+
+  if (error) {
+    g_print ("pipeline parsing error: %s\n", error->message);
+    gst_object_unref (pipeline);
+    return NULL;
+  }
+
+  return pipeline;
+}
+
+static gboolean onesecond_timer (gpointer priv);
+
+static void
 gst_switchsrv_start (GstSwitchSrv * switchsrv)
 {
   gst_element_set_state (switchsrv->pipeline, GST_STATE_READY);
@@ -224,7 +202,7 @@ gst_switchsrv_start (GstSwitchSrv * switchsrv)
   switchsrv->timer_id = g_timeout_add (1000, onesecond_timer, switchsrv);
 }
 
-void
+static void
 gst_switchsrv_stop (GstSwitchSrv * switchsrv)
 {
   gst_element_set_state (switchsrv->pipeline, GST_STATE_NULL);
@@ -300,7 +278,6 @@ gst_switchsrv_handle_ready_to_null (GstSwitchSrv * switchsrv)
 
 }
 
-
 static gboolean
 gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
 {
@@ -317,8 +294,7 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
 
       gst_message_parse_error (message, &error, &debug);
       gst_switchsrv_handle_error (switchsrv, error, debug);
-    }
-      break;
+    } break;
     case GST_MESSAGE_WARNING:
     {
       GError *error = NULL;
@@ -326,8 +302,7 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
 
       gst_message_parse_warning (message, &error, &debug);
       gst_switchsrv_handle_warning (switchsrv, error, debug);
-    }
-      break;
+    } break;
     case GST_MESSAGE_INFO:
     {
       GError *error = NULL;
@@ -335,24 +310,22 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
 
       gst_message_parse_info (message, &error, &debug);
       gst_switchsrv_handle_info (switchsrv, error, debug);
-    }
-      break;
+    } break;
     case GST_MESSAGE_TAG:
     {
       GstTagList *tag_list;
 
       gst_message_parse_tag (message, &tag_list);
-      if (opt_verbose)
+      if (opts.verbose)
         g_print ("tag\n");
-    }
-      break;
+    } break;
     case GST_MESSAGE_STATE_CHANGED:
     {
       GstState oldstate, newstate, pending;
 
       gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
       if (GST_ELEMENT (message->src) == switchsrv->pipeline) {
-        if (opt_verbose)
+        if (opts.verbose)
           g_print ("state change from %s to %s\n",
               gst_element_state_get_name (oldstate),
               gst_element_state_get_name (newstate));
@@ -376,14 +349,13 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
             gst_switchsrv_handle_ready_to_null (switchsrv);
             break;
           default:
-            if (opt_verbose)
+            if (opts.verbose)
               g_print ("unknown state change from %s to %s\n",
                   gst_element_state_get_name (oldstate),
                   gst_element_state_get_name (newstate));
         }
       }
-    }
-      break;
+    } break;
     case GST_MESSAGE_BUFFERING:
     {
       int percent;
@@ -398,8 +370,7 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
         switchsrv->paused_for_buffering = FALSE;
         gst_element_set_state (switchsrv->pipeline, GST_STATE_PLAYING);
       }
-    }
-      break;
+    } break;
     case GST_MESSAGE_STATE_DIRTY:
     case GST_MESSAGE_CLOCK_PROVIDE:
     case GST_MESSAGE_CLOCK_LOST:
@@ -420,7 +391,7 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
     case GST_MESSAGE_STEP_START:
     case GST_MESSAGE_QOS:
     default:
-      if (opt_verbose) {
+      if (opts.verbose) {
         g_print ("message: %s\n", GST_MESSAGE_TYPE_NAME (message));
       }
       break;
@@ -428,8 +399,6 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
 
   return TRUE;
 }
-
-
 
 static gboolean
 onesecond_timer (gpointer priv)
@@ -441,7 +410,18 @@ onesecond_timer (gpointer priv)
   return TRUE;
 }
 
+static void
+gst_switchsrv_set_pipeline (GstSwitchSrv * switchsrv, GstElement *pipeline)
+{
+  switchsrv->pipeline = pipeline;
 
+  gst_pipeline_set_auto_flush_bus (GST_PIPELINE (pipeline), FALSE);
+  switchsrv->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+  gst_bus_add_watch (switchsrv->bus, gst_switchsrv_handle_message, switchsrv);
+
+  switchsrv->source_element = gst_bin_get_by_name (GST_BIN (pipeline), "source");
+  switchsrv->sink_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+}
 
 /* helper functions */
 
@@ -460,3 +440,28 @@ have_element (const gchar * element_name)
   return FALSE;
 }
 #endif
+
+int
+main (int argc, char *argv[])
+{
+  GstSwitchSrv *switchsrv;
+  GstElement *pipeline;
+
+  parse_args (&argc, &argv);
+
+  switchsrv = gst_switchsrv_new ();
+
+  if (opts.test)
+    pipeline = gst_switchsrv_create_test_pipeline (switchsrv);
+  else
+    pipeline = gst_switchsrv_create_pipeline (switchsrv);
+
+  gst_switchsrv_set_pipeline (switchsrv, pipeline);
+  gst_switchsrv_start (switchsrv);
+
+  switchsrv->main_loop = g_main_loop_new (NULL, TRUE);
+
+  g_main_loop_run (switchsrv->main_loop);
+
+  return 0;
+}
