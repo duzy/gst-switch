@@ -59,12 +59,11 @@ struct _GstTCPMixSrc {
 
   GMutex clients_mutex;
   GMutex incoming_mutex;
-  GMutex wait_mutex;
+  GMutex acceptor_mutex;
 
   GCond has_incoming;
-  GCond wait_thread_end;
 
-  GThread *wait_thread;
+  GThread *acceptor;
 };
 
 struct _GstTCPMixSrcClass {

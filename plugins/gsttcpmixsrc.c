@@ -20,8 +20,9 @@
 /**
  * SECTION:element-gsttcpmixsrc
  *
- * The tcpmixsrc element take streams from network via TCP into one
- * stream.
+ * The tcpmixsrc element is very similar to tcpserversrc, except that
+ * tcpmixsrc will accept more than one TCP client connections, and it will
+ * dynamically create multiple source pads for new connections.
  *
  * <refsect2>
  * <title>Example launch line</title>
@@ -80,54 +81,116 @@ static GstStaticPadTemplate srctemplate =
 #define GST_IS_TCP_MIX_SRC_PAD_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_TCP_MIX_SRC_PAD))
 
-typedef struct _GstTCPMixSrcPad GstTCPMixSrcPad;
 typedef struct _GstTCPMixSrcPadClass GstTCPMixSrcPadClass;
-
-struct _GstTCPMixSrcPad
-{
-  GstPad base;
-};
+typedef struct _GstTCPMixSrcPad GstTCPMixSrcPad;
 
 struct _GstTCPMixSrcPadClass
 {
   GstPadClass base_class;
 };
 
+struct _GstTCPMixSrcPad
+{
+  GstPad base;
+
+  gboolean running;
+
+  GMutex * client_mutex;
+  GSocket * client;
+};
+
 GType gst_tcp_mix_src_pad_get_type (void);
 
 G_DEFINE_TYPE (GstTCPMixSrcPad, gst_tcp_mix_src_pad, GST_TYPE_PAD);
 
+static void gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad);
+
 static void
-gst_tcp_mix_src_pad_class_init (GstTCPMixSrcPadClass *klass)
+gst_tcp_mix_src_pad_reset (GstTCPMixSrcPad *pad)
 {
-  //g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
+  if (pad->client) {
+    g_mutex_lock (&pad->client_mutex);
+    if (pad->client) {
+      g_object_unref (pad->client);
+      pad->client = NULL;
+    }
+    g_mutex_unlock (&pad->client_mutex);
+  }
+}
+
+static void
+gst_tcp_mix_src_pad_finalize (GstTCPMixSrcPad *pad)
+{
+  gst_tcp_mix_src_pad_reset (pad);
+
+  g_mutex_clear (&pad->client_mutex);
+
+  G_OBJECT_CLASS (pad)->finalize (pad);
 }
 
 static void
 gst_tcp_mix_src_pad_init (GstTCPMixSrcPad *pad)
 {
-  //g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
+  pad->running = FALSE;
+  pad->client = NULL;
+  
+  g_mutex_init (&pad->client_mutex);
 }
 
-/*
-static void
-gst_tcp_mix_src_pad_reset (GstTCPMixSrcPad *pad)
+static gboolean
+gst_tcp_mix_src_pad_start (GstTCPMixSrcPad *pad)
 {
-  //g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
+  gboolean res = FALSE;
+
+  if (GST_PAD_TASK (pad) == NULL) {
+    GstTaskFunction func = (GstTaskFunction) gst_tcp_mix_src_loop;
+    res = gst_pad_start_task (pad, func, pad, NULL);
+  }
+
+  return res;
 }
-*/
+
+static gboolean
+gst_tcp_mix_src_pad_pause (GstTCPMixSrcPad *pad, GstTaskFunction func)
+{
+  gboolean res;
+
+  if (GST_PAD_TASK (pad) != NULL) { // FIXME: pad->status == started
+    res = gst_pad_start_pause (pad);
+  }
+
+  return res;
+}
+
+static gboolean
+gst_tcp_mix_src_pad_stop (GstTCPMixSrcPad *pad, GstTaskFunction func)
+{
+  gboolean res;
+
+  if (GST_PAD_TASK (pad) != NULL) { // FIXME: pad->status == started
+    res = gst_pad_start_stop (pad);
+  }
+
+  return res;
+}
+
+static void
+gst_tcp_mix_src_pad_class_init (GstTCPMixSrcPadClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  object_class->finalize = gst_tcp_mix_src_pad_finalize;
+}
 
 G_DEFINE_TYPE (GstTCPMixSrc, gst_tcp_mix_src, GST_TYPE_ELEMENT);
 
 static void 
-gst_tcp_mix_src_stop_waiting (GstTCPMixSrc *src)
+gst_tcp_mix_src_stop_acceptor (GstTCPMixSrc *src)
 {
-  /* wait for end of accept_thread */
-  g_mutex_lock (&src->wait_mutex);
-  while (src->wait_thread) {
-    g_cond_wait (&src->wait_thread_end, &src->wait_mutex);
+  if (src->acceptor) {
+    /* wait for end of accept_thread */
+    g_thread_join (src->acceptor);
+    src->acceptor = NULL; // Duplicated in gst_tcp_mix_src_acceptor_thread
   }
-  g_mutex_unlock (&src->wait_mutex);
 }
 
 static void
@@ -143,8 +206,6 @@ gst_tcp_mix_src_finalize (GObject * gobject)
   if (src->server_socket) {
     g_object_unref (src->server_socket);
     src->server_socket = NULL;
-
-    gst_tcp_mix_src_stop_waiting (src);
   }
 
   g_mutex_lock (&src->clients_mutex);
@@ -155,11 +216,12 @@ gst_tcp_mix_src_finalize (GObject * gobject)
   g_list_free (src->incoming);
   src->incoming = NULL;
 
+  gst_tcp_mix_src_stop_acceptor (src);
+
   g_mutex_clear (&src->clients_mutex);
   g_mutex_clear (&src->incoming_mutex);
-  g_mutex_clear (&src->wait_mutex);
+  g_mutex_clear (&src->acceptor_mutex);
   g_cond_clear (&src->has_incoming);
-  g_cond_clear (&src->wait_thread_end);
 
   g_free (src->host);
   src->host = NULL;
@@ -499,11 +561,9 @@ gst_tcp_mix_src_get_property (GObject * object, guint prop_id,
   }
 }
 
-#if 0
 static gboolean
-gst_tcp_mix_src_stop (GstBaseSrc * bsrc)
+gst_tcp_mix_src_stop (GstTCPMixSrc * src, GstPad * pad)
 {
-  GstTCPMixSrc *src = GST_TCP_MIX_SRC (bsrc);
   GSocket *socket;
   GError *err = NULL;
   GList *client;
@@ -532,7 +592,7 @@ gst_tcp_mix_src_stop (GstBaseSrc * bsrc)
     g_object_unref (src->server_socket);
     src->server_socket = NULL;
 
-    gst_tcp_mix_src_stop_waiting (src);
+    gst_tcp_mix_src_stop_acceptor (src);
 
     g_atomic_int_set (&src->bound_port, 0);
     g_object_notify (G_OBJECT (src), "bound-port");
@@ -542,8 +602,8 @@ gst_tcp_mix_src_stop (GstBaseSrc * bsrc)
 
   return TRUE;
 }
-#endif
 
+#if 0
 static gboolean
 gst_tcp_mix_src_socket_source (GPollableInputStream * stream,
     GIOCondition condition, gpointer data)
@@ -588,14 +648,16 @@ socket_error:
   GST_ERROR_OBJECT (src, "Client socket closed");
   return FALSE;
 }
+#endif
 
 static gpointer
-gst_tcp_mix_src_wait_thread (gpointer data)
+gst_tcp_mix_src_acceptor_thread (GstTCPMixSrc *src)
 {
-  GstTCPMixSrc *src = (GstTCPMixSrc *) data;
   GSocket *socket;
   GSource *source;
+  GstTCPMixSrcPad * pad;
   GError *err;
+  GList *item;
 
   while (src->server_socket && src->cancellable) {
     socket = g_socket_accept (src->server_socket, src->cancellable, &err);
@@ -603,9 +665,45 @@ gst_tcp_mix_src_wait_thread (gpointer data)
       continue;
     }
 
-    //g_print ("%s:%d: incoming\n", __FILE__, __LINE__);
-    GST_DEBUG_OBJECT (src, "incoming socket");
+    pad = NULL;
+    item = NULL;
 
+    GST_OBJECT_LOCK (src);
+    for (item = GST_ELEMENT_PADS (src); item; item = g_list_next (item)) {
+      GstPad * p = GST_PAD (item->data);
+      if (GST_PAD_IS_SRC (p)) {
+	GST_OBJECT_LOCK (p);
+	pad = GST_TCP_MIX_SRC_PAD (p);
+	if (pad->client) {
+	  pad = NULL;
+	} else {
+	  pad->client = socket;
+	}
+	GST_OBJECT_UNLOCK (p);
+	if (pad) break;
+      }
+    }
+    GST_OBJECT_UNLOCK (src);
+
+    if (!pad) {
+      GstPadTemplate *templ = gst_static_pad_template_get (&srctemplate);
+      pad = GST_TCP_MIX_SRC_PAD (gst_element_get_request_pad (src, "src_%u"));
+      GST_OBJECT_LOCK (pad);
+      pad->client = socket;
+      GST_OBJECT_UNLOCK (pad);
+    }
+
+    if (pad) {
+      GST_DEBUG_OBJECT (src, "incoming socket: %s, %p",
+	  GST_PAD_NAME (pad), pad->client);
+
+      if (!GST_PAD_IS_ACTIVE(pad))
+	gst_pad_set_active(pad, TRUE);
+    } else {
+      GST_DEBUG_OBJECT (src, "incoming socket: (no pad)");
+    }
+
+#if 0
     g_mutex_lock (&src->clients_mutex);
     src->clients = g_list_append (src->clients, socket);
     g_mutex_unlock (&src->clients_mutex);
@@ -615,23 +713,44 @@ gst_tcp_mix_src_wait_thread (gpointer data)
         (GSourceFunc) gst_tcp_mix_src_socket_source, src, NULL);
     g_source_attach (source, NULL);
     g_source_unref (source);
+#endif
   }
 
   //g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
 
-  g_mutex_lock (&src->wait_mutex);
-  src->wait_thread = NULL;
-  g_cond_signal (&src->wait_thread_end);
-  g_mutex_unlock (&src->wait_mutex);
+  g_mutex_lock (&src->acceptor_mutex);
+  src->acceptor = NULL;
+  g_mutex_unlock (&src->acceptor_mutex);
   return NULL;
 }
 
-#if 0
-/* set up server */
-static gboolean
-gst_tcp_mix_src_start (GstBaseSrc * bsrc)
+static void
+gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
 {
-  GstTCPMixSrc *src = GST_TCP_MIX_SRC (bsrc);
+  GstTCPMixSrc * src = GST_TCP_MIX_SRC (GST_PAD_PARENT (pad));
+
+  if (!pad->client)
+    goto no_client;
+
+  if (!pad->running) {
+    pad->running = TRUE;
+    g_print ("loop: running %s.%s\n",
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+  }
+
+  return;
+
+  /* Handling Errors */
+ no_client:
+  {
+    //GST_DEBUG_OBJECT (pad, "no client");
+    return;
+  }
+}
+
+static gboolean
+gst_tcp_mix_src_listen (GstTCPMixSrc * src, GstPad * pad)
+{
   GError *err = NULL;
   GInetAddress *addr;
   GSocketAddress *saddr;
@@ -701,9 +820,6 @@ gst_tcp_mix_src_start (GstBaseSrc * bsrc)
   g_atomic_int_set (&src->bound_port, bound_port);
   g_object_notify (G_OBJECT (src), "bound-port");
 
-  src->wait_thread = g_thread_new ("TCPMixSrc",
-      gst_tcp_mix_src_wait_thread, src);
-
   return TRUE;
 
   /* Handling Errors */
@@ -740,7 +856,7 @@ socket_bind_failed:
     }
     g_clear_error (&err);
     g_object_unref (saddr);
-    gst_tcp_mix_src_stop (GST_BASE_SRC (src));
+    gst_tcp_mix_src_stop (src, pad);
     return FALSE;
   }
 
@@ -754,11 +870,44 @@ socket_listen_failed:
               src->server_port, err->message));
     }
     g_clear_error (&err);
-    gst_tcp_mix_src_stop (GST_BASE_SRC (src));
+    gst_tcp_mix_src_stop (src, pad);
     return FALSE;
   }
 }
 
+static gboolean
+gst_tcp_mix_src_start_acceptor (GstTCPMixSrc * src, GstPad * pad)
+{
+  gboolean res = TRUE;
+  if (!src->acceptor) {
+    g_mutex_lock (&src->acceptor_mutex);
+    if (!src->acceptor) {
+      if (!gst_tcp_mix_src_listen (src, pad)) {
+	res = FALSE;
+      } else {
+	src->acceptor = g_thread_new ("tcpmixsrc.acceptor",
+	    (GThreadFunc) gst_tcp_mix_src_acceptor_thread, src);
+      }
+    }
+    g_mutex_unlock (&src->acceptor_mutex);
+  }
+  return res;
+}
+
+/* set up server */
+static gboolean
+gst_tcp_mix_src_start (GstTCPMixSrc * src, GstPad * pad)
+{
+  if (!src->acceptor) {
+    gst_tcp_mix_src_start_acceptor (src, pad);
+  }
+
+  gst_tcp_mix_src_pad_start (pad);
+
+  return TRUE;
+}
+
+#if 0
 /* will be called only between calls to start() and stop() */
 static gboolean
 gst_tcp_mix_src_unlock (GstBaseSrc * bsrc)
@@ -781,6 +930,149 @@ gst_tcp_mix_src_unlock_stop (GstBaseSrc * bsrc)
 }
 #endif
 
+static gboolean
+gst_tcp_mix_src_activate_pull (GstPad *pad, GstObject *parent,
+    gboolean active)
+{
+  GstTCPMixSrc *src = GST_TCP_MIX_SRC (parent);
+
+  g_print ("%s:%d:info: activate-pull: %s\n", __FILE__, __LINE__, GST_PAD_NAME (pad));
+
+  if (active) {
+    GST_DEBUG_OBJECT (src, "Activating in pull mode");
+
+    if (G_UNLIKELY (!gst_tcp_mix_src_start (src, pad)))
+      goto error_start;
+  } else {
+    GST_DEBUG_OBJECT (src, "Deactivating in pull mode");
+
+    if (G_UNLIKELY (!gst_tcp_mix_src_stop (src, pad)))
+      goto error_stop;
+  }
+
+  return TRUE;
+
+  /* Handling Errors */
+ error_start:
+  {
+    GST_ERROR_OBJECT (src, "Failed to start in pull mode");
+    return FALSE;
+  }
+
+ error_stop:
+  {
+    GST_ERROR_OBJECT (src, "Failed to stop in pull mode");
+    return FALSE;
+  }
+}
+
+static gboolean
+gst_tcp_mix_src_activate_push (GstPad *pad, GstObject *parent,
+    gboolean active)
+{
+  GstTCPMixSrc *src = GST_TCP_MIX_SRC (parent);
+
+  if (active) {
+    GST_DEBUG_OBJECT (src, "Activating in push mode");
+
+    if (G_UNLIKELY (!gst_tcp_mix_src_start (src, pad)))
+      goto error_start;
+  } else {
+    GST_DEBUG_OBJECT (src, "Deactivating in push mode");
+
+    if (G_UNLIKELY (!gst_tcp_mix_src_stop (src, pad)))
+      goto error_stop;
+  }
+
+  return TRUE;
+
+  /* Handling Errors */
+ error_start:
+  {
+    GST_ERROR_OBJECT (src, "Failed to start in push mode");
+    return FALSE;
+  }
+
+ error_stop:
+  {
+    GST_ERROR_OBJECT (src, "Failed to stop in push mode");
+    return FALSE;
+  }
+}
+
+static gboolean
+gst_tcp_mix_src_activate_mode (GstPad *pad, GstObject *parent,
+    GstPadMode mode, gboolean active)
+{
+  gboolean res = FALSE;
+
+  switch (mode) {
+  case GST_PAD_MODE_PULL:
+    res = gst_tcp_mix_src_activate_pull (pad, parent, active);
+    break;
+  case GST_PAD_MODE_PUSH:
+    res = gst_tcp_mix_src_activate_push (pad, parent, active);
+    break;
+  default:
+    break;
+  }
+
+  return res;
+}
+
+static gboolean
+gst_tcp_mix_src_query (GstPad *pad, GstObject *parent,
+    GstQuery *query)
+{
+  g_print ("%s:%d:info: query: %s\n", __FILE__, __LINE__, GST_QUERY_TYPE_NAME (query));
+
+  return gst_pad_query_default (pad, parent, query);
+}
+
+static gboolean
+gst_tcp_mix_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
+{
+  g_print ("%s:%d:info: event: %s\n", __FILE__, __LINE__, GST_EVENT_TYPE_NAME (event));
+
+  //return gst_pad_push_event (pad, event);
+  return gst_pad_event_default (pad, parent, event);
+}
+
+static GstFlowReturn
+gst_tcp_mix_src_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
+{
+  g_print ("%s:%d:info: chain: %s\n", __FILE__, __LINE__, "...");
+
+  return gst_pad_push (pad, buffer);
+}
+
+static GstFlowReturn
+gst_tcp_mix_src_get_range (GstTCPMixSrc * src, GstPad * pad, guint64 offset,
+    guint length, GstBuffer ** buf)
+{
+  g_print ("%s:%d:info: getrange: %s, %lld, %d\n", __FILE__, __LINE__,
+      GST_PAD_NAME(pad), offset, length);
+
+  
+
+  return GST_FLOW_OK;
+}
+
+static GstFlowReturn
+gst_tcp_mix_src_getrange (GstPad * pad, GstObject * parent, guint64 offset,
+    guint length, GstBuffer ** buf)
+{
+  GstTCPMixSrc * src = GST_TCP_MIX_SRC (parent);
+  GstFlowReturn res;
+
+  //GST_LIVE_LOCK (src);
+
+  res = gst_tcp_mix_src_get_range (src, pad, offset, length, buf);
+
+  //GST_LIVE_UNLOCK (src);
+  return res;
+}
+
 static GstPad *
 gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
     const gchar * unused, const GstCaps * caps)
@@ -788,14 +1080,16 @@ gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
   GstTCPMixSrc * src = GST_TCP_MIX_SRC (element);
   GstPad * srcpad;
   gchar * name;
-  //gboolean res;
+  gboolean res;
+  int num;
 
   //g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
 
-  GST_DEBUG_OBJECT (src, "requesting new pad");
+  GST_INFO_OBJECT (src, "requesting new pad");
 
   GST_OBJECT_LOCK (src);
-  name = g_strdup_printf ("src_%u", 0);
+  num = g_list_length (GST_ELEMENT_PADS (src));
+  name = g_strdup_printf ("src_%u", num);
   srcpad = GST_PAD_CAST (g_object_new (GST_TYPE_TCP_MIX_SRC_PAD,
 	  "name", name, "direction", templ->direction, "template", templ,
 	  NULL));
@@ -804,8 +1098,26 @@ gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
 
   //gst_pad_activate_mode (srcpad, GST_PAD_MODE_PUSH, TRUE);
 
-  GST_OBJECT_FLAG_SET (srcpad, GST_PAD_FLAG_PROXY_CAPS);
-  gst_element_add_pad (GST_ELEMENT_CAST (src), srcpad);
+  gst_pad_set_activatemode_function (srcpad, gst_tcp_mix_src_activate_mode);
+  gst_pad_set_query_function (srcpad, gst_tcp_mix_src_query);
+  gst_pad_set_event_function (srcpad, gst_tcp_mix_src_event);
+  //gst_pad_set_chain_function (srcpad, gst_tcp_mix_src_chain);
+  gst_pad_set_getrange_function (srcpad, gst_tcp_mix_src_getrange);
+
+  //GST_OBJECT_FLAG_SET (srcpad, GST_PAD_FLAG_PROXY_CAPS);
+
+#if 0
+  if (GST_PAD_IS_FLUSHING (srcpad) && (GST_STATE (src) > GST_STATE_READY ||
+          GST_STATE_NEXT (src) == GST_STATE_PAUSED)) {
+    gst_pad_set_active (srcpad, TRUE);
+  }
+#endif
+
+  res = gst_element_add_pad (GST_ELEMENT_CAST (src), srcpad);
+
+  if (G_UNLIKELY (!res)) {
+    GST_ERROR_OBJECT (src, "Failed to add new pad");
+  }
 
   return srcpad;
 }
@@ -825,11 +1137,9 @@ gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
 {
   GObjectClass *object_class;
   GstElementClass *element_class;
-  //GstBaseSrcClass *basesrc_class;
 
   object_class = (GObjectClass *) klass;
   element_class = (GstElementClass *) klass;
-  //basesrc_class = (GstBaseSrcClass *) klass;
 
   object_class->set_property = gst_tcp_mix_src_set_property;
   object_class->get_property = gst_tcp_mix_src_get_property;
@@ -862,52 +1172,15 @@ gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
   element_class->release_pad =
     GST_DEBUG_FUNCPTR(gst_tcp_mix_src_release_pad);
 
-  /*
-  basesrc_class->start = gst_tcp_mix_src_start;
-  basesrc_class->stop = gst_tcp_mix_src_stop;
-  basesrc_class->unlock = gst_tcp_mix_src_unlock;
-  basesrc_class->unlock_stop = gst_tcp_mix_src_unlock_stop;
-  basesrc_class->create = gst_tcp_mix_src_create;
-  */
-
   /* debug category for fltering log messages */
-  GST_DEBUG_CATEGORY_INIT (tcpmixsrc_debug, "tcpmixsrc", 0,
+  GST_DEBUG_CATEGORY_INIT (tcpmixsrc_debug, "GstTCPMixSrc", 0,
       "Performs face detection on videos and images, providing "
       "detected positions via bus messages");
 }
 
-/*
-static gboolean
-gst_tcp_mix_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
-{
-  GstPad * srcpad = GST_BASE_SRC_PAD (GST_BASE_SRC (parent));
-
-  g_print ("event: %s\n", GST_EVENT_TYPE_NAME (event));
-  
-  return gst_pad_push_event (srcpad, event);
-}
-*/
-
-/*
-static GstFlowReturn
-gst_tcp_mix_src_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
-{
-  GstPad * srcpad = GST_BASE_SRC_PAD (GST_BASE_SRC (parent));
-
-  g_print ("chain: %s\n", "...");
-
-  return gst_pad_push (srcpad, buffer);
-}
-*/
-
 static void
 gst_tcp_mix_src_init (GstTCPMixSrc * src)
 {
-  //GstPad *srcpad = GST_BASE_SRC_PAD (GST_BASE_SRC (src));
-  //gst_pad_set_event_function (srcpad, gst_tcp_mix_src_event);
-  //gst_pad_set_chain_function (srcpad, gst_tcp_mix_src_chain);
-  //(void) srcpad;
-
   src->server_port = TCP_DEFAULT_PORT;
   src->host = g_strdup (TCP_DEFAULT_HOST);
   src->server_socket = NULL;
@@ -917,9 +1190,8 @@ gst_tcp_mix_src_init (GstTCPMixSrc * src)
 
   g_mutex_init (&src->clients_mutex);
   g_mutex_init (&src->incoming_mutex);
-  g_mutex_init (&src->wait_mutex);
+  g_mutex_init (&src->acceptor_mutex);
   g_cond_init (&src->has_incoming);
-  g_cond_init (&src->wait_thread_end);
 
   GST_OBJECT_FLAG_UNSET (src, GST_TCP_MIX_SRC_OPEN);
 }
