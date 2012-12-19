@@ -10,4 +10,6 @@ cd /store/open/gstreamer/stage
     \
     tcpmixsrc name=source port=3000 \
     fdsink name=sink fd=2 \
-    source. ! sink.
+    funnel name=fun \
+    source. ! fun. \
+    fun. ! sink.
