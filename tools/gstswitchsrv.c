@@ -31,6 +31,7 @@
 #include <stdlib.h>
 
 #define GETTEXT_PACKAGE "switchsrv"
+#define LOG_PREFIX "./tools/%s:%d:"
 
 typedef struct _GstSwitchSrv GstSwitchSrv;
 struct _GstSwitchSrv
@@ -49,13 +50,18 @@ struct _GstSwitchSrv
 static /*const*/ struct {
   gboolean verbose;
   gboolean test;
-} opts;
+  gint port;
+} opts = {
+  0, 0, 3000,
+};
 
 static GOptionEntry entries[] = {
-  {"verbose", 'v', 0, G_OPTION_ARG_NONE, &opts.verbose,
+  {"verbose", 'v', 0,	G_OPTION_ARG_NONE, &opts.verbose,
        "Prompt more messages", NULL},
-  {"test", 't', 0, G_OPTION_ARG_NONE, &opts.test,
+  {"test", 't', 0,	G_OPTION_ARG_NONE, &opts.test,
        "Perform test pipeline", NULL},
+  {"port", 'p', 0,	G_OPTION_ARG_INT, &opts.port,
+       "Specify the listen port.", "NUM"},
   { NULL }
 };
 
@@ -164,17 +170,13 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
 
   pipe_desc = g_string_new ("");
 
-  g_string_append (pipe_desc, "tcpserversrc name=source port=3000 ");
-  g_string_append (pipe_desc, "tcpserversrc name=sourc1 port=3001 ");
-  g_string_append (pipe_desc, "tcpserversrc name=sourc2 port=3002 ");
-  g_string_append (pipe_desc, "tcpserversrc name=sourc3 port=3003 ");
+  g_print ("listen-port: %d\n", opts.port);
+
+  g_string_append_printf (pipe_desc, "tcpmixsrc "
+      "name=source port=%d ", opts.port);
   g_string_append (pipe_desc, "funnel name=fun ");
   g_string_append (pipe_desc, "fdsink name=sink fd=2 ");
-  g_string_append (pipe_desc, "bin name=b ");
-  g_string_append (pipe_desc, "source. ! queue ! fun.sink_0 ");
-  g_string_append (pipe_desc, "sourc1. ! queue ! fun.sink_1 ");
-  g_string_append (pipe_desc, "sourc2. ! queue ! fun.sink_2 ");
-  g_string_append (pipe_desc, "sourc3. ! queue ! fun.sink_3 ");
+  g_string_append (pipe_desc, "source. ! fun. ");
   g_string_append (pipe_desc, "fun. ! sink.");
 
   if (opts.verbose)
@@ -463,5 +465,6 @@ main (int argc, char *argv[])
 
   g_main_loop_run (switchsrv->main_loop);
 
+  gst_switchsrv_free (switchsrv);
   return 0;
 }
