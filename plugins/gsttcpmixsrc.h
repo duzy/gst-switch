@@ -21,7 +21,7 @@
 #define __GST_TCP_MIX_SRC_H__
 
 #include <gst/gst.h>
-#include <gst/base/gstbasesrc.h>
+#include <gst/gstelement.h>
 #include <gio/gio.h>
 
 G_END_DECLS
@@ -41,12 +41,12 @@ typedef struct _GstTCPMixSrc GstTCPMixSrc;
 typedef struct _GstTCPMixSrcClass GstTCPMixSrcClass;
 
 typedef enum {
-  GST_TCP_MIX_SRC_OPEN       = (GST_BASE_SRC_FLAG_LAST << 0),
-  GST_TCP_MIX_SRC_FLAG_LAST  = (GST_BASE_SRC_FLAG_LAST << 2)
+  GST_TCP_MIX_SRC_OPEN       = (GST_ELEMENT_FLAG_LAST << 0),
+  GST_TCP_MIX_SRC_FLAG_LAST  = (GST_ELEMENT_FLAG_LAST << 2)
 } GstTCPMixSrcFlags;
 
 struct _GstTCPMixSrc {
-  GstBaseSrc base;
+  GstElement base;
 
   gchar *host;
   int server_port;
@@ -54,21 +54,14 @@ struct _GstTCPMixSrc {
 
   GCancellable *cancellable;
   GSocket *server_socket;
-  GList *clients;
-  GList *incoming;
 
-  GMutex clients_mutex;
-  GMutex incoming_mutex;
-  GMutex wait_mutex;
+  GMutex acceptor_mutex;
 
-  GCond has_incoming;
-  GCond wait_thread_end;
-
-  GThread *wait_thread;
+  GThread *acceptor;
 };
 
 struct _GstTCPMixSrcClass {
-  GstBaseSrcClass base_class;
+  GstElementClass base_class;
 };
 
 GType gst_tcp_mix_src_get_type (void);
