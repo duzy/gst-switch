@@ -328,7 +328,7 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
       gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
       if (GST_ELEMENT (message->src) == switchsrv->pipeline) {
         if (opts.verbose)
-          g_print ("state change from %s to %s\n",
+          g_print ("switch-server: state change from %s to %s\n",
               gst_element_state_get_name (oldstate),
               gst_element_state_get_name (newstate));
         switch (GST_STATE_TRANSITION (oldstate, newstate)) {
@@ -407,7 +407,7 @@ onesecond_timer (gpointer priv)
 {
   //GstSwitchSrv *switchsrv = (GstSwitchSrv *)priv;
 
-  g_print (".\n");
+  //g_print (".\n");
 
   return TRUE;
 }
