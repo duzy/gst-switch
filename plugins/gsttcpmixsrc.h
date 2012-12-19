@@ -54,14 +54,8 @@ struct _GstTCPMixSrc {
 
   GCancellable *cancellable;
   GSocket *server_socket;
-  GList *clients;
-  GList *incoming;
 
-  GMutex clients_mutex;
-  GMutex incoming_mutex;
   GMutex acceptor_mutex;
-
-  GCond has_incoming;
 
   GThread *acceptor;
 };

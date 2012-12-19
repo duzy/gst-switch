@@ -95,6 +95,7 @@ struct _GstTCPMixSrcPad
 
   gboolean running;
 
+  GCancellable *cancellable;
   GMutex * client_mutex;
   GSocket * client;
 };
@@ -108,6 +109,10 @@ static void gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad);
 static void
 gst_tcp_mix_src_pad_reset (GstTCPMixSrcPad *pad)
 {
+  if (pad->cancellable) {
+    g_cancellable_reset (pad->cancellable);
+  }
+  
   if (pad->client) {
     g_mutex_lock (&pad->client_mutex);
     if (pad->client) {
@@ -123,6 +128,11 @@ gst_tcp_mix_src_pad_finalize (GstTCPMixSrcPad *pad)
 {
   gst_tcp_mix_src_pad_reset (pad);
 
+  if (pad->cancellable) {
+    g_object_unref (pad->cancellable);
+    pad->cancellable = NULL;
+  }
+
   g_mutex_clear (&pad->client_mutex);
 
   G_OBJECT_CLASS (pad)->finalize (pad);
@@ -133,6 +143,7 @@ gst_tcp_mix_src_pad_init (GstTCPMixSrcPad *pad)
 {
   pad->running = FALSE;
   pad->client = NULL;
+  pad->cancellable = g_cancellable_new ();
   
   g_mutex_init (&pad->client_mutex);
 }
@@ -156,7 +167,7 @@ gst_tcp_mix_src_pad_pause (GstTCPMixSrcPad *pad, GstTaskFunction func)
   gboolean res;
 
   if (GST_PAD_TASK (pad) != NULL) { // FIXME: pad->status == started
-    res = gst_pad_start_pause (pad);
+    res = gst_pad_pause_task (pad);
   }
 
   return res;
@@ -168,10 +179,138 @@ gst_tcp_mix_src_pad_stop (GstTCPMixSrcPad *pad, GstTaskFunction func)
   gboolean res;
 
   if (GST_PAD_TASK (pad) != NULL) { // FIXME: pad->status == started
-    res = gst_pad_start_stop (pad);
+    res = gst_pad_stop_task (pad);
   }
 
   return res;
+}
+
+static GstFlowReturn
+gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
+{
+  GSocket * client_socket = pad->client;
+  gssize avail, receivedBytes;
+  gsize readBytes;
+  GstMapInfo map;
+  GError *err = NULL;
+
+  /* if we have a client, wait for read */
+  GST_LOG_OBJECT (pad, "asked for a buffer");
+
+  /* read the buffer header */
+  avail = g_socket_get_available_bytes (client_socket);
+  if (avail < 0) {
+    goto socket_get_available_bytes_error;
+  } else if (avail == 0) {
+    GIOCondition condition;
+
+    if (!g_socket_condition_wait (client_socket,
+            G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP, pad->cancellable, &err))
+      goto socket_condition_wait_error;
+
+    condition = g_socket_condition_check (client_socket,
+        G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP);
+
+    if ((condition & G_IO_ERR))
+      goto socket_condition_error;
+    else if ((condition & G_IO_HUP))
+      goto socket_condition_hup;
+
+    avail = g_socket_get_available_bytes (client_socket);
+    if (avail < 0)
+      goto socket_get_available_bytes_error;
+  }
+
+  if (0 < avail) {
+    readBytes = MIN (avail, MAX_READ_SIZE);
+    *outbuf = gst_buffer_new_and_alloc (readBytes);
+    gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
+    receivedBytes = g_socket_receive (client_socket, (gchar *) map.data,
+        readBytes, pad->cancellable, &err);
+  } else {
+    /* Connection closed */
+    receivedBytes = 0;
+    readBytes = 0;
+    *outbuf = NULL;
+  }
+
+  if (receivedBytes == 0)
+    goto socket_connection_closed;
+  else if (receivedBytes < 0)
+    goto socket_receive_error;
+
+  gst_buffer_unmap (*outbuf, &map);
+  gst_buffer_resize (*outbuf, 0, receivedBytes);
+
+  GST_LOG_OBJECT (pad,
+      "Returning buffer from _get of size %" G_GSIZE_FORMAT
+      ", ts %" GST_TIME_FORMAT ", dur %" GST_TIME_FORMAT
+      ", offset %" G_GINT64_FORMAT ", offset_end %" G_GINT64_FORMAT,
+      gst_buffer_get_size (*outbuf),
+      GST_TIME_ARGS (GST_BUFFER_TIMESTAMP (*outbuf)),
+      GST_TIME_ARGS (GST_BUFFER_DURATION (*outbuf)),
+      GST_BUFFER_OFFSET (*outbuf), GST_BUFFER_OFFSET_END (*outbuf));
+
+  g_clear_error (&err);
+
+  return GST_FLOW_OK;
+
+  /* Handling Errors */
+socket_get_available_bytes_error:
+  {
+    GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
+        ("Failed to get available bytes from socket"));
+    return GST_FLOW_ERROR;
+  }
+
+socket_condition_wait_error:
+  {
+    GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
+        ("Select failed: %s", err->message));
+    g_clear_error (&err);
+    return GST_FLOW_ERROR;
+  }
+
+socket_condition_error:
+  {
+    GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL), ("Socket in error state"));
+    *outbuf = NULL;
+    return GST_FLOW_ERROR;
+  }
+
+socket_condition_hup:
+  {
+    GST_DEBUG_OBJECT (pad, "Connection closed");
+    *outbuf = NULL;
+    return GST_FLOW_EOS;
+  }
+
+socket_connection_closed:
+  {
+    GST_DEBUG_OBJECT (pad, "Connection closed");
+    if (*outbuf) {
+      gst_buffer_unmap (*outbuf, &map);
+      gst_buffer_unref (*outbuf);
+    }
+    *outbuf = NULL;
+    return GST_FLOW_EOS;
+  }
+
+socket_receive_error:
+  {
+    gst_buffer_unmap (*outbuf, &map);
+    gst_buffer_unref (*outbuf);
+    *outbuf = NULL;
+
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (pad, "Cancelled reading from socket");
+      return GST_FLOW_FLUSHING;
+    } else {
+      GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
+          ("Failed to read from socket: %s", err->message));
+      return GST_FLOW_ERROR;
+    }
+  }
 }
 
 static void
@@ -208,20 +347,10 @@ gst_tcp_mix_src_finalize (GObject * gobject)
     src->server_socket = NULL;
   }
 
-  g_mutex_lock (&src->clients_mutex);
-  g_list_free_full (src->clients, g_object_unref);
-  src->clients = NULL;
-  g_mutex_unlock (&src->clients_mutex);
-
-  g_list_free (src->incoming);
-  src->incoming = NULL;
-
   gst_tcp_mix_src_stop_acceptor (src);
 
-  g_mutex_clear (&src->clients_mutex);
-  g_mutex_clear (&src->incoming_mutex);
   g_mutex_clear (&src->acceptor_mutex);
-  g_cond_clear (&src->has_incoming);
+  //g_cond_clear (&src->has_incoming);
 
   g_free (src->host);
   src->host = NULL;
@@ -277,13 +406,6 @@ gst_tcp_mix_src_read_client (GstTCPMixSrc * src, GSocket * client_socket,
     receivedBytes = 0;
     readBytes = 0;
     *outbuf = NULL;
-  }
-
-  if (receivedBytes <= 0) {
-    g_mutex_lock (&src->clients_mutex);
-    src->clients = g_list_remove (src->clients, client_socket);
-    g_object_unref (client_socket);
-    g_mutex_unlock (&src->clients_mutex);
   }
 
   if (receivedBytes == 0)
@@ -398,13 +520,6 @@ gst_tcp_mix_src_read_client (GstTCPMixSrc * src, GSocket * client_socket,
     receivedBytes = 0;
     readBytes = 0;
     *outbuf = NULL;
-  }
-
-  if (receivedBytes <= 0) {
-    g_mutex_lock (&src->clients_mutex);
-    src->clients = g_list_remove (src->clients, client_socket);
-    g_object_unref (client_socket);
-    g_mutex_unlock (&src->clients_mutex);
   }
 
   if (receivedBytes == 0)
@@ -566,21 +681,17 @@ gst_tcp_mix_src_stop (GstTCPMixSrc * src, GstPad * pad)
 {
   GSocket *socket;
   GError *err = NULL;
-  GList *client;
+  GList *item;
 
+  GST_OBJECT_LOCK (src);
   GST_DEBUG_OBJECT (src, "closing client sockets");
-  g_mutex_lock (&src->clients_mutex);
-  for (client = src->clients; client; client = g_list_next (client)) {
-    socket = (GSocket *) client->data;
-    if (!g_socket_close (socket, &err)) {
-      GST_ERROR_OBJECT (src, "Failed to close socket: %s", err->message);
-      g_clear_error (&err);
+  for (item = GST_ELEMENT_PADS (src); item; item = g_list_next (item)) {
+    GstPad * p = GST_PAD (item->data);
+    if (GST_PAD_IS_SRC (p)) {
+      gst_tcp_mix_src_pad_reset (GST_TCP_MIX_SRC_PAD (p));
     }
-    g_object_unref (socket);
   }
-  g_list_free (src->clients);
-  src->clients = NULL;
-  g_mutex_unlock (&src->clients_mutex);
+  GST_OBJECT_UNLOCK (src);
 
   if (src->server_socket) {
     GST_DEBUG_OBJECT (src, "closing socket");
@@ -702,18 +813,6 @@ gst_tcp_mix_src_acceptor_thread (GstTCPMixSrc *src)
     } else {
       GST_DEBUG_OBJECT (src, "incoming socket: (no pad)");
     }
-
-#if 0
-    g_mutex_lock (&src->clients_mutex);
-    src->clients = g_list_append (src->clients, socket);
-    g_mutex_unlock (&src->clients_mutex);
-
-    source = g_socket_create_source (socket, G_IO_IN, src->cancellable);
-    g_source_set_callback (source,
-        (GSourceFunc) gst_tcp_mix_src_socket_source, src, NULL);
-    g_source_attach (source, NULL);
-    g_source_unref (source);
-#endif
   }
 
   //g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
@@ -728,6 +827,8 @@ static void
 gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
 {
   GstTCPMixSrc * src = GST_TCP_MIX_SRC (GST_PAD_PARENT (pad));
+  GstBuffer *buffer = NULL;
+  GstFlowReturn ret;
 
   if (!pad->client)
     goto no_client;
@@ -738,12 +839,55 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
 	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
   }
 
+  ret = gst_tcp_mix_src_pad_read_client (pad, &buffer);
+  if (ret != GST_FLOW_OK) {
+    GST_INFO_OBJECT (src, "pausing after reading client: %s",
+        gst_flow_get_name (ret));
+    goto pause;
+  }
+
+  ret = gst_pad_push (pad, buffer);
+  if (ret != GST_FLOW_OK) {
+    GST_INFO_OBJECT (src, "pausing after gst_pad_push() = %s",
+        gst_flow_get_name (ret));
+    goto pause;
+  }
+
   return;
 
   /* Handling Errors */
  no_client:
   {
     //GST_DEBUG_OBJECT (pad, "no client");
+    return;
+  }
+
+ pause:
+  {
+    const gchar *reason = gst_flow_get_name (ret);
+    GstEvent *event;
+
+    GST_DEBUG_OBJECT (src, "pausing task, reason %s", reason);
+
+    gst_pad_pause_task (pad);
+
+    if (ret == GST_FLOW_EOS) {
+      event = gst_event_new_eos ();
+      gst_pad_push_event (pad, event);
+    } else if (ret == GST_FLOW_NOT_LINKED || ret <= GST_FLOW_EOS) {
+      event = gst_event_new_eos ();
+      //gst_event_set_seqnum (event, src->priv->seqnum);
+      /* for fatal errors we post an error message, post the error
+       * first so the app knows about the error first.
+       * Also don't do this for FLUSHING because it happens
+       * due to flushing and posting an error message because of
+       * that is the wrong thing to do, e.g. when we're doing
+       * a flushing seek. */
+      GST_ELEMENT_ERROR (src, STREAM, FAILED,
+          ("Internal data flow error."),
+          ("streaming task paused, reason %s (%d)", reason, ret));
+      gst_pad_push_event (pad, event);
+    }
     return;
   }
 }
@@ -1184,14 +1328,10 @@ gst_tcp_mix_src_init (GstTCPMixSrc * src)
   src->server_port = TCP_DEFAULT_PORT;
   src->host = g_strdup (TCP_DEFAULT_HOST);
   src->server_socket = NULL;
-  src->clients = NULL;
-  src->incoming = NULL;
   src->cancellable = g_cancellable_new ();
 
-  g_mutex_init (&src->clients_mutex);
-  g_mutex_init (&src->incoming_mutex);
   g_mutex_init (&src->acceptor_mutex);
-  g_cond_init (&src->has_incoming);
+  //g_cond_init (&src->has_incoming);
 
   GST_OBJECT_FLAG_UNSET (src, GST_TCP_MIX_SRC_OPEN);
 }
