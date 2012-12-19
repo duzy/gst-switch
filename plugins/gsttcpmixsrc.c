@@ -98,7 +98,7 @@ struct _GstTCPMixSrcPad
   gboolean running;
 
   GCancellable *cancellable;
-  GMutex * client_mutex;
+  GMutex client_mutex;
   GSocket * client;
 };
 
@@ -137,7 +137,7 @@ gst_tcp_mix_src_pad_finalize (GstTCPMixSrcPad *pad)
 
   g_mutex_clear (&pad->client_mutex);
 
-  G_OBJECT_CLASS (pad)->finalize (pad);
+  G_OBJECT_CLASS (pad)->finalize (G_OBJECT (pad));
 }
 
 static void
@@ -157,19 +157,20 @@ gst_tcp_mix_src_pad_start (GstTCPMixSrcPad *pad)
 
   if (GST_PAD_TASK (pad) == NULL) {
     GstTaskFunction func = (GstTaskFunction) gst_tcp_mix_src_loop;
-    res = gst_pad_start_task (pad, func, pad, NULL);
+    res = gst_pad_start_task (GST_PAD (pad), func, GST_PAD (pad), NULL);
   }
 
   return res;
 }
 
+#if 0
 static gboolean
 gst_tcp_mix_src_pad_pause (GstTCPMixSrcPad *pad, GstTaskFunction func)
 {
   gboolean res;
 
   if (GST_PAD_TASK (pad) != NULL) { // FIXME: pad->status == started
-    res = gst_pad_pause_task (pad);
+    res = gst_pad_pause_task (GST_PAD (pad));
   }
 
   return res;
@@ -181,11 +182,12 @@ gst_tcp_mix_src_pad_stop (GstTCPMixSrcPad *pad, GstTaskFunction func)
   gboolean res;
 
   if (GST_PAD_TASK (pad) != NULL) { // FIXME: pad->status == started
-    res = gst_pad_stop_task (pad);
+    res = gst_pad_stop_task (GST_PAD (pad));
   }
 
   return res;
 }
+#endif
 
 static GstFlowReturn
 gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
@@ -333,7 +335,7 @@ static void
 gst_tcp_mix_src_pad_class_init (GstTCPMixSrcPadClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
-  object_class->finalize = gst_tcp_mix_src_pad_finalize;
+  object_class->finalize = (GObjectFinalizeFunc) gst_tcp_mix_src_pad_finalize;
 }
 
 G_DEFINE_TYPE (GstTCPMixSrc, gst_tcp_mix_src, GST_TYPE_ELEMENT);
@@ -694,14 +696,13 @@ gst_tcp_mix_src_get_property (GObject * object, guint prop_id,
 }
 
 static gboolean
-gst_tcp_mix_src_stop (GstTCPMixSrc * src, GstPad * pad)
+gst_tcp_mix_src_stop (GstTCPMixSrc * src, GstTCPMixSrcPad * pad)
 {
-  GSocket *socket;
   GError *err = NULL;
   GList *item;
 
   GST_OBJECT_LOCK (src);
-  GST_DEBUG_OBJECT (src, "closing client sockets");
+  GST_DEBUG_OBJECT (src, "Closing client sockets");
   for (item = GST_ELEMENT_PADS (src); item; item = g_list_next (item)) {
     GstPad * p = GST_PAD (item->data);
     if (GST_PAD_IS_SRC (p)) {
@@ -711,7 +712,7 @@ gst_tcp_mix_src_stop (GstTCPMixSrc * src, GstPad * pad)
   GST_OBJECT_UNLOCK (src);
 
   if (src->server_socket) {
-    GST_DEBUG_OBJECT (src, "closing server socket");
+    GST_DEBUG_OBJECT (src, "Closing server socket");
 
     if (!g_socket_close (src->server_socket, &err)) {
       GST_ERROR_OBJECT (src, "Failed to close socket: %s", err->message);
@@ -787,7 +788,9 @@ gst_tcp_mix_src_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
   GList *item;
   gboolean linked = FALSE;
 
-  if (gst_pad_is_linked(pad)) {
+  if (gst_pad_is_linked(GST_PAD (pad))) {
+    GST_WARNING_OBJECT (src, "Pad %s.%s already linked",
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
     return;
   }
 
@@ -814,7 +817,7 @@ gst_tcp_mix_src_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
 	    GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
 	    GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
 
-	linkRet = gst_pad_link (pad, pp);
+	linkRet = gst_pad_link (GST_PAD (pad), GST_PAD (pp));
 	if (GST_PAD_LINK_FAILED (linkRet)) {
 	  GST_ERROR_OBJECT (src, "can't link");
 	} else {
@@ -858,22 +861,22 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
   GST_OBJECT_UNLOCK (src);
 
   if (!pad) {
-    GstPadTemplate *templ = gst_static_pad_template_get (&srctemplate);
-    pad = GST_TCP_MIX_SRC_PAD (gst_element_get_request_pad (src,
-	    srctemplate.name_template /* "src_%u" */));
+    //GstPadTemplate *templ = gst_static_pad_template_get (&srctemplate);
+    pad = GST_TCP_MIX_SRC_PAD (gst_element_get_request_pad (
+	    GST_ELEMENT (src), srctemplate.name_template /* "src_%u" */));
     GST_OBJECT_LOCK (pad);
     pad->client = socket;
     GST_OBJECT_UNLOCK (pad);
   }
 
   if (pad) {
-    GST_DEBUG_OBJECT (src, "Client added to %s.%s",
+    GST_DEBUG_OBJECT (src, "New client bound to %s.%s",
 	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad), pad->client);
 
     gst_tcp_mix_src_link_pad (src, pad);
 
-    if (!gst_pad_is_active(pad))
-      gst_pad_set_active(pad, TRUE);
+    if (!gst_pad_is_active(GST_PAD (pad)))
+      gst_pad_set_active(GST_PAD (pad), TRUE);
 
     //g_print (LOG_PREFIX"%s:%d: \n", __FILE__, __LINE__);
   } else {
@@ -927,11 +930,11 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
   }
 
   ret = gst_tcp_mix_src_pad_read_client (pad, &buffer);
-  if (GST_PAD_LINK_FAILED (ret))
+  if (ret != GST_FLOW_OK)
     goto pause;
 
-  ret = gst_pad_push (pad, buffer);
-  if (GST_PAD_LINK_FAILED (ret))
+  ret = gst_pad_push (GST_PAD (pad), buffer);
+  if (ret != GST_FLOW_OK)
     goto pause;
 
   return;
@@ -948,13 +951,13 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
     const gchar *reason = gst_flow_get_name (ret);
     GstEvent *event;
 
-    GST_DEBUG_OBJECT (src, "pausing task, reason: %s", reason);
+    GST_DEBUG_OBJECT (pad, "Pausing task (reason: %s)", reason);
 
-    gst_pad_pause_task (pad);
+    gst_pad_pause_task (GST_PAD (pad));
 
     if (ret == GST_FLOW_EOS) {
       event = gst_event_new_eos ();
-      gst_pad_push_event (pad, event);
+      gst_pad_push_event (GST_PAD (pad), event);
     } else if (ret == GST_FLOW_NOT_LINKED || ret <= GST_FLOW_EOS) {
       event = gst_event_new_eos ();
       //gst_event_set_seqnum (event, src->priv->seqnum);
@@ -967,14 +970,14 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
       GST_ELEMENT_ERROR (src, STREAM, FAILED,
           ("Internal data flow error."),
           ("streaming task paused, reason %s (%d)", reason, ret));
-      gst_pad_push_event (pad, event);
+      gst_pad_push_event (GST_PAD (pad), event);
     }
     return;
   }
 }
 
 static gboolean
-gst_tcp_mix_src_listen (GstTCPMixSrc * src, GstPad * pad)
+gst_tcp_mix_src_listen (GstTCPMixSrc * src, GstTCPMixSrcPad * pad)
 {
   GError *err = NULL;
   GInetAddress *addr;
@@ -1096,7 +1099,7 @@ socket_listen_failed:
 }
 
 static gboolean
-gst_tcp_mix_src_start_acceptor (GstTCPMixSrc * src, GstPad * pad)
+gst_tcp_mix_src_start_acceptor (GstTCPMixSrc * src, GstTCPMixSrcPad * pad)
 {
   gboolean res = TRUE;
   if (!src->acceptor) {
@@ -1116,7 +1119,7 @@ gst_tcp_mix_src_start_acceptor (GstTCPMixSrc * src, GstPad * pad)
 
 /* set up server */
 static gboolean
-gst_tcp_mix_src_start (GstTCPMixSrc * src, GstPad * pad)
+gst_tcp_mix_src_start (GstTCPMixSrc * src, GstTCPMixSrcPad * pad)
 {
   if (!src->acceptor) {
     gst_tcp_mix_src_start_acceptor (src, pad);
@@ -1151,7 +1154,7 @@ gst_tcp_mix_src_unlock_stop (GstBaseSrc * bsrc)
 #endif
 
 static gboolean
-gst_tcp_mix_src_activate_pull (GstPad *pad, GstObject *parent,
+gst_tcp_mix_src_activate_pull (GstTCPMixSrcPad *pad, GstObject *parent,
     gboolean active)
 {
   GstTCPMixSrc *src = GST_TCP_MIX_SRC (parent);
@@ -1187,7 +1190,7 @@ gst_tcp_mix_src_activate_pull (GstPad *pad, GstObject *parent,
 }
 
 static gboolean
-gst_tcp_mix_src_activate_push (GstPad *pad, GstObject *parent,
+gst_tcp_mix_src_activate_push (GstTCPMixSrcPad *pad, GstObject *parent,
     gboolean active)
 {
   GstTCPMixSrc *src = GST_TCP_MIX_SRC (parent);
@@ -1221,7 +1224,7 @@ gst_tcp_mix_src_activate_push (GstPad *pad, GstObject *parent,
 }
 
 static gboolean
-gst_tcp_mix_src_activate_mode (GstPad *pad, GstObject *parent,
+gst_tcp_mix_src_activate_mode (GstTCPMixSrcPad *pad, GstObject *parent,
     GstPadMode mode, gboolean active)
 {
   gboolean res = FALSE;
@@ -1258,6 +1261,7 @@ gst_tcp_mix_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
   return gst_pad_event_default (pad, parent, event);
 }
 
+#if 0
 static GstFlowReturn
 gst_tcp_mix_src_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
 {
@@ -1265,12 +1269,13 @@ gst_tcp_mix_src_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
 
   return gst_pad_push (pad, buffer);
 }
+#endif
 
 static GstFlowReturn
 gst_tcp_mix_src_get_range (GstTCPMixSrc * src, GstPad * pad, guint64 offset,
     guint length, GstBuffer ** buf)
 {
-  g_print ("%s:%d:info: getrange: %s, %lld, %d\n", __FILE__, __LINE__,
+  g_print ("%s:%d:info: getrange: %s, %ld, %d\n", __FILE__, __LINE__,
       GST_PAD_NAME(pad), offset, length);
 
   
@@ -1322,7 +1327,8 @@ gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
 
   //gst_pad_activate_mode (srcpad, GST_PAD_MODE_PUSH, TRUE);
 
-  gst_pad_set_activatemode_function (srcpad, gst_tcp_mix_src_activate_mode);
+  gst_pad_set_activatemode_function (srcpad,
+      (GstPadActivateModeFunction) gst_tcp_mix_src_activate_mode);
   gst_pad_set_query_function (srcpad, gst_tcp_mix_src_query);
   gst_pad_set_event_function (srcpad, gst_tcp_mix_src_event);
   //gst_pad_set_chain_function (srcpad, gst_tcp_mix_src_chain);
