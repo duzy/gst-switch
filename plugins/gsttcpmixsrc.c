@@ -781,7 +781,7 @@ socket_error:
 #endif
 
 static void
-gst_tcp_mix_src_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
+gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
 {
   GstTCPMixSrcPad *p;
   GstPad *pp;
@@ -873,7 +873,7 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
     GST_DEBUG_OBJECT (src, "New client bound to %s.%s",
 	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad), pad->client);
 
-    gst_tcp_mix_src_link_pad (src, pad);
+    gst_tcp_mix_src_request_link_pad (src, pad);
 
     if (!gst_pad_is_active(GST_PAD (pad)))
       gst_pad_set_active(GST_PAD (pad), TRUE);
@@ -951,8 +951,6 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
     const gchar *reason = gst_flow_get_name (ret);
     GstEvent *event;
 
-    GST_DEBUG_OBJECT (pad, "Pausing task (reason: %s)", reason);
-
     gst_pad_pause_task (GST_PAD (pad));
 
     if (ret == GST_FLOW_EOS) {
@@ -972,6 +970,12 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
           ("streaming task paused, reason %s (%d)", reason, ret));
       gst_pad_push_event (GST_PAD (pad), event);
     }
+
+    // FIXME: should unlink here? Once got EOS, the pad will be no longer
+    // available.
+
+    GST_DEBUG_OBJECT (pad, "Paused %s.%s (%s)",
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad), reason);
     return;
   }
 }
