@@ -115,5 +115,5 @@ tools/Makefile
 AC_OUTPUT
 
 echo "
-  Type \"make\" to build it.
+  Now just type \"make\" to build.
 "

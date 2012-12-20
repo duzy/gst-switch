@@ -86,7 +86,7 @@ handle_bus_message (GstBus * bus, GstMessage * message, gpointer data)
   return TRUE;
 
  dump:
-  g_print ("%s: %s: %s\n", stuff->name,
+  g_print ("%s: %s:\t%s\n", stuff->name,
       GST_OBJECT_NAME (message->src), GST_MESSAGE_TYPE_NAME (message));
   return TRUE;
 }
@@ -126,7 +126,6 @@ test_burn_thread (gpointer data)
 {
   GString *desc = g_string_new ("");
 
-  //g_string_append (desc, "videotestsrc ! xvimagesink");
   g_string_append_printf (desc, "tcpmixsrc port=%d ! gdpdepay ! xvimagesink",
       test_port);
 

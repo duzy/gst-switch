@@ -1407,7 +1407,7 @@ gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
     GST_DEBUG_FUNCPTR(gst_tcp_mix_src_release_pad);
 
   /* debug category for fltering log messages */
-  GST_DEBUG_CATEGORY_INIT (tcpmixsrc_debug, "GstTCPMixSrc", 0,
+  GST_DEBUG_CATEGORY_INIT (tcpmixsrc_debug, "tcpmixsrc", 0,
       "Performs face detection on videos and images, providing "
       "detected positions via bus messages");
 }

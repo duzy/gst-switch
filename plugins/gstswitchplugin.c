@@ -47,12 +47,21 @@
 
 #include <gst/gst.h>
 #include "gsttcpmixsrc.h"
+#include "gstswitch.h"
 
 static gboolean
 plugin_init (GstPlugin * plugin)
 {
-  return gst_element_register (plugin, "tcpmixsrc", GST_RANK_NONE,
-      GST_TYPE_TCP_MIX_SRC);
+  if (!gst_element_register (plugin, "tcpmixsrc", GST_RANK_NONE,
+	  GST_TYPE_TCP_MIX_SRC)) {
+    return FALSE;
+  }
+
+  if (!gst_element_register (plugin, "switch", GST_RANK_NONE,
+	  GST_TYPE_SWITCH)) {
+    return FALSE;
+  }
+  return TRUE;
 }
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR, GST_VERSION_MINOR,

@@ -24,7 +24,7 @@
 #include <gst/gstelement.h>
 #include <gio/gio.h>
 
-G_END_DECLS
+G_BEGIN_DECLS
 
 #define GST_TYPE_TCP_MIX_SRC \
   (gst_tcp_mix_src_get_type())
@@ -66,6 +66,6 @@ struct _GstTCPMixSrcClass {
 
 GType gst_tcp_mix_src_get_type (void);
 
-G_BEGIN_DECLS
+G_END_DECLS
 
 #endif /* __GST_TCP_MIX_SRC_H__ */
