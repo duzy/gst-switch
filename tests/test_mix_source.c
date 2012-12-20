@@ -29,12 +29,14 @@
 
 #include <gst/gst.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 static gint test_port = 3030;
 
 typedef struct _Stuff Stuff;
 struct _Stuff
 {
+  const gchar *name;
   GMainLoop *mainloop;
   GstElement *bin;
 };
@@ -43,6 +45,7 @@ static gboolean
 handle_bus_message (GstBus * bus, GstMessage * message, gpointer data)
 {
   Stuff *stuff = (Stuff *) data;
+
   switch (GST_MESSAGE_TYPE (message)) {
   case GST_MESSAGE_STATE_CHANGED:
   {
@@ -51,71 +54,112 @@ handle_bus_message (GstBus * bus, GstMessage * message, gpointer data)
     if (GST_ELEMENT (message->src) == stuff->bin) {
       switch (GST_STATE_TRANSITION (oldstate, newstate)) {
       case GST_STATE_CHANGE_NULL_TO_READY:
+	break;
+      case GST_STATE_CHANGE_READY_TO_NULL:
+	g_print ("%s: quit\n", stuff->name);
 	g_main_loop_quit (stuff->mainloop);
 	break;
       default:
-	break;
+	goto dump;
       }
+    } else {
+      goto dump;      
     }
   } break;
+  case GST_MESSAGE_ERROR:
+  {
+    GError *err = NULL;
+    gchar *dbg_info = NULL;
+
+    gst_message_parse_error (message, &err, &dbg_info);
+    g_printerr ("%s: %s: error: %s\n",
+	stuff->name, GST_OBJECT_NAME (message->src), err->message);
+    g_printerr ("%s: %s\n",
+	stuff->name, (dbg_info) ? dbg_info : "(unknown)");
+    g_error_free (err);
+    g_free (dbg_info);
+  } break;
   default:
-    break;
+    goto dump;
   }
 
   return TRUE;
+
+ dump:
+  g_print ("%s: %s: %s\n", stuff->name,
+      GST_OBJECT_NAME (message->src), GST_MESSAGE_TYPE_NAME (message));
+  return TRUE;
+}
+
+static void
+test_run_pipeline (const gchar *name, GString *desc)
+{
+  Stuff stuff;
+  GstBus *bus;
+  GError *error = NULL;
+
+  stuff.name = name;
+  stuff.bin = (GstElement *) gst_parse_launch (desc->str, &error);
+
+  if (error) {
+    g_print ("error: %s\n", error->message);
+    g_test_fail ();
+    return;
+  }
+
+  stuff.mainloop = g_main_loop_new (NULL, TRUE);
+
+  gst_pipeline_set_auto_flush_bus (GST_PIPELINE (stuff.bin), FALSE);
+  bus = gst_pipeline_get_bus (GST_PIPELINE (stuff.bin));
+
+  gst_bus_add_watch (bus, handle_bus_message, &stuff);
+
+  //source = gst_bin_get_by_name (GST_BIN (stuff.bin), "source");
+  //sink = gst_bin_get_by_name (GST_BIN (stuff.bin), "sink");
+
+  gst_element_set_state (stuff.bin, GST_STATE_READY);
+  g_main_loop_run (stuff.mainloop);
 }
 
 static gpointer
 test_burn_thread (gpointer data)
 {
-  GString *desc;
-  GstElement *bin;
-  GMainLoop *mainloop;
-  GstBus *bus;
-  GError *error = NULL;
-
-  desc = g_string_new ("");
+  GString *desc = g_string_new ("");
 
   //g_string_append (desc, "videotestsrc ! xvimagesink");
-  g_string_append_printf (desc, "tcpmixsrc port=%d ! xvimagesink", test_port);
+  g_string_append_printf (desc, "tcpmixsrc port=%d ! gdpdepay ! xvimagesink",
+      test_port);
 
-  bin = (GstElement *) gst_parse_launch (desc->str, &error);
+  g_print ("burning..\n");
+
+  test_run_pipeline ("burn", desc);
   g_string_free (desc, FALSE);
-
-  if (error) {
-    g_test_fail ();
-    return NULL;
-  }
-
-  mainloop = g_main_loop_new (NULL, TRUE);
-
-  gst_pipeline_set_auto_flush_bus (GST_PIPELINE (bin), FALSE);
-  bus = gst_pipeline_get_bus (GST_PIPELINE (bin));
-
-  Stuff stuff = { mainloop, bin };
-  gst_bus_add_watch (bus, handle_bus_message, &stuff);
-
-  //source = gst_bin_get_by_name (GST_BIN (bin), "source");
-  //sink = gst_bin_get_by_name (GST_BIN (bin), "sink");
-
-  gst_element_set_state (bin, GST_STATE_READY);
-  g_main_loop_run (mainloop);
   return NULL;
 }
 
 static gpointer
 test_feed_thread (gpointer data)
 {
-  // TODO: test code
+  GString *desc = g_string_new ("");
+
+  g_string_append_printf (desc, "videotestsrc ! gdppay ! tcpclientsink port=%d",
+      test_port);
+
+  g_print ("feeding..\n");
+
+  test_run_pipeline ("feed", desc);
+  g_string_free (desc, FALSE);
   return NULL;
 }
 
 int main(int argc, char**argv)
 {
+  GThread *t1, *t2;
+
   gst_init (&argc, &argv);
 
-  GThread *t1 = g_thread_new ("burn", test_burn_thread, NULL);
-  GThread *t2 = g_thread_new ("feed", test_feed_thread, NULL);
+  t1 = g_thread_new ("burn", test_burn_thread, NULL); usleep (500000);
+  t2 = g_thread_new ("feed", test_feed_thread, NULL);
   g_thread_join (t1);
   g_thread_join (t2);
   g_thread_unref (t1);

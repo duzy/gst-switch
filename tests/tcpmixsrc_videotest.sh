@@ -5,7 +5,7 @@ cd /store/open/gstreamer/stage
     --gst-debug-no-color \
     --gst-debug="GstTCPMixSrc:5" \
     \
-    tcpserversrc name=source port=3000 \
+    tcpmixsrc name=source port=3000 \
     xvimagesink name=sink \
     gdpdepay name=conv \
     funnel name=fun \
