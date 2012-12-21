@@ -127,6 +127,7 @@ test_burn_thread (gpointer data)
   GString *desc = g_string_new ("");
 
 #if 1
+  //g_string_append (desc, "videotestsrc ! videoconvert ! videoscale ! xvimagesink");
   g_string_append_printf (desc, "tcpmixsrc port=%d ! gdpdepay ! xvimagesink",
       test_port);
 #else
