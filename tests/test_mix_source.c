@@ -126,12 +126,13 @@ test_burn_thread (gpointer data)
 {
   GString *desc = g_string_new ("");
 
-  /*
+#if 1
   g_string_append_printf (desc, "tcpmixsrc port=%d ! gdpdepay ! xvimagesink",
       test_port);
-  */
+#else
   g_string_append_printf (desc, "tcpmixsrc port=%d ! funnel ! fdsink fd=2",
       test_port);
+#endif
 
   g_print ("burning..\n");
 
@@ -145,12 +146,13 @@ test_feed_thread (gpointer data)
 {
   GString *desc = g_string_new ("");
 
-  /*
+#if 1
   g_string_append_printf (desc, "videotestsrc ! gdppay ! tcpclientsink port=%d",
       test_port);
-  */
+#else
   g_string_append_printf (desc, "filesrc location=/dev/zero ! tcpclientsink port=%d",
       test_port);
+#endif
 
   g_print ("feeding..\n");
 
@@ -161,6 +163,7 @@ test_feed_thread (gpointer data)
 
 int main(int argc, char**argv)
 {
+#if 0
   GThread *t1, *t2;
 
   gst_init (&argc, &argv);
@@ -171,5 +174,18 @@ int main(int argc, char**argv)
   g_thread_join (t2);
   g_thread_unref (t1);
   g_thread_unref (t2);
+
+#else
+
+  if (fork ()) {
+    gst_init (&argc, &argv);
+    test_burn_thread (NULL);
+  } else {
+    usleep (500000);
+    gst_init (&argc, &argv);
+    test_feed_thread (NULL);
+  }
+
+#endif
   return 0;
 }
