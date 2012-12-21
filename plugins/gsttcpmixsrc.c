@@ -819,12 +819,12 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
       GST_OBJECT_LOCK (p);
       if ((pp = GST_PAD_PEER (p))) {
 	GstPadLinkReturn linkRet;
-	gchar *name = g_strdup (GST_PAD_NAME (pp));
 	GstElement * ele = GST_ELEMENT (GST_PAD_PARENT (pp));
+
+	// FIXME: pad name calculation
+	pp = gst_element_get_request_pad (ele, "sink_%u");
 	
-	pp = gst_element_get_request_pad (ele, name);
-	
-	GST_DEBUG_OBJECT (src, "Link %s.%s:%s.%s",
+	GST_DEBUG_OBJECT (src, "Link %s.%s-%s.%s",
 	    GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
 	    GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
 
@@ -834,8 +834,6 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
 	} else {
 	  linked = TRUE;
 	}
-
-	g_free (name);
       }
       GST_OBJECT_UNLOCK (p);
 
@@ -1333,15 +1331,13 @@ gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
 
   //g_print ("%s:%d: %s\n", __FILE__, __LINE__, __FUNCTION__);
 
-  GST_INFO_OBJECT (src, "Requesting new pad (caps: %s)", gst_caps_to_string(caps));
+  GST_INFO_OBJECT (src, "Requesting new pad %s.%s (caps: %s)",
+      GST_ELEMENT_NAME (src), GST_PAD_TEMPLATE_NAME_TEMPLATE (templ),
+      gst_caps_to_string(caps));
 
   GST_OBJECT_LOCK (src);
-#if 0
-  name = g_strdup ("src_%u")
-#else
   num = g_list_length (GST_ELEMENT_PADS (src));
   name = g_strdup_printf ("src_%u", num);
-#endif
   srcpad = GST_PAD_CAST (g_object_new (GST_TYPE_TCP_MIX_SRC_PAD,
 	  "name", name, "direction", templ->direction, "template", templ,
 	  NULL));
