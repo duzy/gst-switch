@@ -26,6 +26,9 @@
 GST_DEBUG_CATEGORY_STATIC (gst_switch_debug);
 #define GST_CAT_DEFAULT gst_switch_debug
 
+#define GST_SWITCH_LOCK(obj) (g_mutex_lock (&(obj)->lock))
+#define GST_SWITCH_UNLOCK(obj) (g_mutex_unlock (&(obj)->lock))
+
 #define CASE_ELEMENT_NAME "funnel"
 
 static GstStaticPadTemplate gst_switch_sink_factory =
@@ -55,17 +58,43 @@ enum
 G_DEFINE_TYPE (GstSwitch, gst_switch, GST_TYPE_BIN);
 
 static void 
-gst_switch_init (GstSwitch *swit)
+gst_switch_set_cases (GstSwitch *swit, gchar *str)
 {
-  swit->default_case = gst_element_factory_make (CASE_ELEMENT_NAME,
+
+  GstElement * default_case;
+
+  GST_SWITCH_LOCK (swit);
+
+  default_case = gst_element_factory_make (CASE_ELEMENT_NAME,
       "default");
 
   //GST_OBJECT_FLAG_SET (swit->default_case, GST_ELEMENT_FLAG_SOURCE);
   //GST_OBJECT_FLAG_SET (swit->default_case, GST_ELEMENT_FLAG_SINK);
 
-  if (!gst_bin_add (GST_BIN (swit), swit->default_case)) {
+  if (!gst_bin_add (GST_BIN (swit), default_case)) {
     GST_ERROR_OBJECT (swit, "Failed to add default case");
   }
+
+  /*
+    name = g_strdup_printf ("case_%u", num);
+    swcase = gst_element_factory_make (CASE_ELEMENT_NAME, name);
+    g_free (name);
+
+    GST_OBJECT_FLAG_SET (swcase, GST_ELEMENT_FLAG_SOURCE);
+    GST_OBJECT_FLAG_SET (swcase, GST_ELEMENT_FLAG_SINK);
+
+    if (!gst_bin_add (GST_BIN (swit), swcase))
+      goto error_bin_add;
+  */
+  GST_SWITCH_UNLOCK (swit);
+}
+
+static void 
+gst_switch_init (GstSwitch *swit)
+{
+  g_mutex_init (&swit->lock);
+
+  gst_switch_set_cases (swit, NULL);
 }
 
 static void
@@ -118,37 +147,32 @@ gst_switch_request_new_pad (GstElement *element,
   GList *item;
   gint num;
 
+  GST_SWITCH_LOCK (swit);
+
   switch (GST_PAD_TEMPLATE_DIRECTION (templ)) {
   case GST_PAD_SINK:
   {
-    /*
-    name = g_strdup_printf ("case_%u", num);
-    swcase = gst_element_factory_make (CASE_ELEMENT_NAME, name);
-    g_free (name);
+    item = GST_BIN_CHILDREN (GST_BIN (swit));
 
-    GST_OBJECT_FLAG_SET (swcase, GST_ELEMENT_FLAG_SOURCE);
-    GST_OBJECT_FLAG_SET (swcase, GST_ELEMENT_FLAG_SINK);
+    if (item) {
+      swcase = GST_ELEMENT (item->data);
+      item = GST_ELEMENT_PADS (swcase);
+      for (num = 0; item; item = g_list_next (item))
+	if (GST_PAD_IS_SINK (GST_PAD (item->data))) ++num;
+      name = g_strdup_printf ("sink_%u", num);
+      realpad = gst_element_request_pad (swcase, templ, name, caps);
+      g_free (name);
+    }
 
-    if (!gst_bin_add (GST_BIN (swit), swcase))
-      goto error_bin_add;
-    */
-
-    swcase = swit->default_case;
-
-    item = GST_ELEMENT_PADS (swcase);
-    for (num = 0; item; item = g_list_next (item))
-      if (GST_PAD_IS_SINK (GST_PAD (item->data))) ++num;
-    name = g_strdup_printf ("sink_%u", num);
-    realpad = gst_element_request_pad (swcase, templ, name, caps);
-    g_free (name);
-
-    item = GST_ELEMENT_PADS (swit);
-    for (num = 0; item; item = g_list_next (item))
-      if (GST_PAD_IS_SINK (GST_PAD (item->data))) ++num;
-    name = g_strdup_printf ("sink_%u", num);
-    ghostpad = gst_ghost_pad_new (name, realpad);
-    gst_object_unref (realpad);
-    g_free (name);
+    if (realpad) {
+      item = GST_ELEMENT_PADS (swit);
+      for (num = 0; item; item = g_list_next (item))
+	if (GST_PAD_IS_SINK (GST_PAD (item->data))) ++num;
+      name = g_strdup_printf ("sink_%u", num);
+      ghostpad = gst_ghost_pad_new (name, realpad);
+      gst_object_unref (realpad);
+      g_free (name);
+    }
   } break;
   case GST_PAD_SRC:
   {
@@ -166,22 +190,36 @@ gst_switch_request_new_pad (GstElement *element,
       ++num;
     }
 
-    name = g_strdup_printf ("src_%u", num);
-    ghostpad = gst_ghost_pad_new (name, realpad);
-    gst_object_unref (GST_OBJECT (realpad));
-    g_free (name);
+    if (realpad) {
+      name = g_strdup_printf ("src_%u", num);
+      ghostpad = gst_ghost_pad_new (name, realpad);
+      gst_object_unref (GST_OBJECT (realpad));
+      g_free (name);
+    }
   } break;
   default:
-    goto error_direction;
+    GST_ERROR_OBJECT (swit, "unknown pad direction %s",
+	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
+    break;
   }
 
-  if (!realpad)
-    goto error_no_pad;
+  if (!ghostpad) {
+    GST_ERROR_OBJECT (swit, "no pad %s on %s",
+	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ), GST_ELEMENT_NAME (swcase));
+  } else if (gst_element_add_pad (swit, ghostpad)) {
+    GST_OBJECT_FLAG_SET (realpad, GST_SWITCH_PAD_FLAG_REQUESTED);
+    /*
+    GST_OBJECT_FLAG_SET (ghostpad, GST_PAD_FLAG_PROXY_CAPS);
+    GST_OBJECT_FLAG_SET (ghostpad, GST_PAD_FLAG_PROXY_ALLOCATION);
+    */
+  } else {
+    GST_ERROR_OBJECT (swit, "failed to add pad");
+  }
 
-  if (!gst_element_add_pad (swit, ghostpad))
-    goto error_add_pad;
+  GST_SWITCH_UNLOCK (swit);
 
-  {
+#if 0
+  if (ghostpad) {
     gchar * dir = "?";
     switch (GST_PAD_DIRECTION (ghostpad)) {
     case GST_PAD_SRC:  dir = "SRC";  break;
@@ -193,48 +231,19 @@ gst_switch_request_new_pad (GstElement *element,
 	GST_ELEMENT_NAME (swit), GST_PAD_NAME (ghostpad),
 	GST_ELEMENT_NAME (swcase), GST_PAD_NAME (realpad));
   }
+#endif
 
-
-  GST_OBJECT_FLAG_SET (realpad, GST_SWITCH_PAD_FLAG_REQUESTED);
   return ghostpad;
-
-  /* Handling Errors */
- error_bin_add:
-  {
-    GST_ERROR_OBJECT (swit, "failed adding child %s",
-	GST_ELEMENT_NAME (swcase));
-    g_object_unref (swcase);
-    return NULL;
-  }
-
- error_direction:
-  {
-    GST_ERROR_OBJECT (swit, "unknown pad direction %s",
-	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
-    return NULL;
-  }
-
- error_no_pad:
-  {
-    GST_ERROR_OBJECT (swit, "no pad %s on %s",
-	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ), GST_ELEMENT_NAME (swcase));
-    return NULL;
-  }
-
- error_add_pad:
-  {
-    GST_ERROR_OBJECT (swit, "failed to add pad");
-    gst_object_unref (ghostpad);
-    return NULL;
-  }
 }
 
 static void
 gst_switch_release_pad (GstElement * element, GstPad * pad)
 {
   GstSwitch * swit = GST_SWITCH (element);
+  GST_SWITCH_LOCK (swit);
   gst_pad_set_active (pad, FALSE);
   gst_element_remove_pad (element, pad);
+  GST_SWITCH_UNLOCK (swit);
 }
 
 static void
