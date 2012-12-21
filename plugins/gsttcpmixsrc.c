@@ -83,6 +83,13 @@ static GstStaticPadTemplate srctemplate =
 #define GST_IS_TCP_MIX_SRC_PAD_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_TCP_MIX_SRC_PAD))
 
+#define GST_TCP_MIX_SRC_PAD_CLIENT_LOCK(obj) \
+  (g_mutex_lock (&(obj)->client_lock))
+#define GST_TCP_MIX_SRC_PAD_CLIENT_UNLOCK(obj) \
+  (g_mutex_unlock (&(obj)->client_lock))
+#define GST_TCP_MIX_SRC_PAD_CLIENT_NOTIFY(obj) \
+  (g_cond_signal (&(obj)->has_client))
+
 typedef struct _GstTCPMixSrcPadClass GstTCPMixSrcPadClass;
 typedef struct _GstTCPMixSrcPad GstTCPMixSrcPad;
 
@@ -98,7 +105,9 @@ struct _GstTCPMixSrcPad
   gboolean running;
 
   GCancellable *cancellable;
-  GMutex client_mutex;
+
+  GMutex client_lock;
+  GCond has_client;
   GSocket * client;
 };
 
@@ -116,12 +125,12 @@ gst_tcp_mix_src_pad_reset (GstTCPMixSrcPad *pad)
   }
   
   if (pad->client) {
-    g_mutex_lock (&pad->client_mutex);
+    GST_TCP_MIX_SRC_PAD_CLIENT_LOCK (pad);
     if (pad->client) {
       g_object_unref (pad->client);
       pad->client = NULL;
     }
-    g_mutex_unlock (&pad->client_mutex);
+    GST_TCP_MIX_SRC_PAD_CLIENT_UNLOCK (pad);
   }
 }
 
@@ -135,7 +144,8 @@ gst_tcp_mix_src_pad_finalize (GstTCPMixSrcPad *pad)
     pad->cancellable = NULL;
   }
 
-  g_mutex_clear (&pad->client_mutex);
+  g_mutex_clear (&pad->client_lock);
+  g_cond_clear (&pad->has_client);
 
   G_OBJECT_CLASS (pad)->finalize (G_OBJECT (pad));
 }
@@ -147,7 +157,8 @@ gst_tcp_mix_src_pad_init (GstTCPMixSrcPad *pad)
   pad->client = NULL;
   pad->cancellable = g_cancellable_new ();
   
-  g_mutex_init (&pad->client_mutex);
+  g_mutex_init (&pad->client_lock);
+  g_cond_init (&pad->has_client);
 }
 
 static gboolean
@@ -852,7 +863,10 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
       if (pad->client) {
 	pad = NULL;
       } else {
+	GST_TCP_MIX_SRC_PAD_CLIENT_LOCK (pad);
 	pad->client = socket;
+	GST_TCP_MIX_SRC_PAD_CLIENT_NOTIFY (pad);
+	GST_TCP_MIX_SRC_PAD_CLIENT_UNLOCK (pad);
       }
       GST_OBJECT_UNLOCK (p);
       if (pad) break;
@@ -865,7 +879,10 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
     pad = GST_TCP_MIX_SRC_PAD (gst_element_get_request_pad (
 	    GST_ELEMENT (src), srctemplate.name_template /* "src_%u" */));
     GST_OBJECT_LOCK (pad);
+    GST_TCP_MIX_SRC_PAD_CLIENT_LOCK (pad);
     pad->client = socket;
+    GST_TCP_MIX_SRC_PAD_CLIENT_NOTIFY (pad);
+    GST_TCP_MIX_SRC_PAD_CLIENT_UNLOCK (pad);
     GST_OBJECT_UNLOCK (pad);
   }
 
@@ -920,8 +937,11 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
   GstBuffer *buffer = NULL;
   GstFlowReturn ret;
 
-  if (!pad->client)
-    goto no_client;
+  GST_TCP_MIX_SRC_PAD_CLIENT_LOCK (pad);
+  while (!pad->client) {
+    g_cond_wait (&pad->has_client, &pad->client_lock);
+  }
+  GST_TCP_MIX_SRC_PAD_CLIENT_UNLOCK (pad);
 
   if (!pad->running) {
     pad->running = TRUE;
@@ -940,12 +960,6 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
   return;
 
   /* Handling Errors */
- no_client:
-  {
-    g_thread_yield ();
-    return;
-  }
-
  pause:
   {
     const gchar *reason = gst_flow_get_name (ret);
@@ -1199,13 +1213,18 @@ gst_tcp_mix_src_activate_push (GstTCPMixSrcPad *pad, GstObject *parent,
 {
   GstTCPMixSrc *src = GST_TCP_MIX_SRC (parent);
 
+  if (!src)
+    return TRUE;
+    
   if (active) {
-    GST_DEBUG_OBJECT (src, "Activating in push mode");
+    GST_DEBUG_OBJECT (src, "Activating %s in push mode",
+	GST_ELEMENT_NAME (src));
 
     if (G_UNLIKELY (!gst_tcp_mix_src_start (src, pad)))
       goto error_start;
   } else {
-    GST_DEBUG_OBJECT (src, "Deactivating in push mode");
+    GST_DEBUG_OBJECT (src, "Deactivating %s in push mode",
+	GST_ELEMENT_NAME (src));
 
     if (G_UNLIKELY (!gst_tcp_mix_src_stop (src, pad)))
       goto error_stop;
@@ -1329,7 +1348,10 @@ gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
   g_free (name);
   GST_OBJECT_UNLOCK (src);
 
-  //gst_pad_activate_mode (srcpad, GST_PAD_MODE_PUSH, TRUE);
+
+  // see: gst_tcp_mix_src_activate_push
+  gst_pad_set_active (srcpad, TRUE);
+  gst_pad_activate_mode (srcpad, GST_PAD_MODE_PUSH, TRUE);
 
   gst_pad_set_activatemode_function (srcpad,
       (GstPadActivateModeFunction) gst_tcp_mix_src_activate_mode);
@@ -1340,14 +1362,9 @@ gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
 
   //GST_OBJECT_FLAG_SET (srcpad, GST_PAD_FLAG_PROXY_CAPS);
 
-#if 0
-  if (GST_PAD_IS_FLUSHING (srcpad) && (GST_STATE (src) > GST_STATE_READY ||
-          GST_STATE_NEXT (src) == GST_STATE_PAUSED)) {
-    gst_pad_set_active (srcpad, TRUE);
-  }
-#endif
-
   res = gst_element_add_pad (GST_ELEMENT_CAST (src), srcpad);
+
+  gst_tcp_mix_src_start (src, GST_TCP_MIX_SRC_PAD (srcpad));
 
   if (G_UNLIKELY (!res)) {
     GST_ERROR_OBJECT (src, "Failed to add new pad");
