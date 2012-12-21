@@ -800,8 +800,10 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
   gboolean linked = FALSE;
 
   if (gst_pad_is_linked(GST_PAD (pad))) {
-    GST_WARNING_OBJECT (src, "Pad %s.%s already linked",
-	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+    pp = GST_PAD_PEER (pad);
+    GST_WARNING_OBJECT (src, "Pad %s.%s already linked to %s.%s",
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
+	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
     return;
   }
 

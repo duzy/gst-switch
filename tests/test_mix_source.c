@@ -126,7 +126,11 @@ test_burn_thread (gpointer data)
 {
   GString *desc = g_string_new ("");
 
+  /*
   g_string_append_printf (desc, "tcpmixsrc port=%d ! gdpdepay ! xvimagesink",
+      test_port);
+  */
+  g_string_append_printf (desc, "tcpmixsrc port=%d ! funnel ! fdsink fd=2",
       test_port);
 
   g_print ("burning..\n");
@@ -141,7 +145,11 @@ test_feed_thread (gpointer data)
 {
   GString *desc = g_string_new ("");
 
+  /*
   g_string_append_printf (desc, "videotestsrc ! gdppay ! tcpclientsink port=%d",
+      test_port);
+  */
+  g_string_append_printf (desc, "filesrc location=/dev/zero ! tcpclientsink port=%d",
       test_port);
 
   g_print ("feeding..\n");
