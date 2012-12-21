@@ -63,6 +63,13 @@ gst_switch_set_cases (GstSwitch *swit, gchar *str)
 
   GstElement * default_case;
 
+  g_free (swit->cases_string);
+  swit->cases_string = NULL;
+
+  if (str) {
+    swit->cases_string = g_strdup (str);
+  }
+
   GST_SWITCH_LOCK (swit);
 
   default_case = gst_element_factory_make (CASE_ELEMENT_NAME,
@@ -92,6 +99,8 @@ gst_switch_set_cases (GstSwitch *swit, gchar *str)
 static void 
 gst_switch_init (GstSwitch *swit)
 {
+  swit->cases_string = NULL;
+
   g_mutex_init (&swit->lock);
 
   gst_switch_set_cases (swit, NULL);
@@ -105,6 +114,9 @@ gst_switch_set_property (GstSwitch *swit, guint prop_id,
   case PROP_CASES:
     g_print ("%s:%d: set_property: cases=%s\n", __FILE__, __LINE__,
 	g_value_get_string (value));
+
+    g_free (swit->cases_string);
+    swit->cases_string = g_strdup (g_value_get_string (value));
     break;
 
   default:
@@ -119,8 +131,9 @@ gst_switch_get_property (GstSwitch *swit, guint prop_id,
 {
   switch (prop_id) {
   case PROP_CASES:
+    g_value_set_string (value, swit->cases_string);
     g_print ("%s:%d: get_property: cases=%s\n", __FILE__, __LINE__,
-	g_value_get_string (value));
+	swit->cases_string);
     break;
 
   default:
@@ -132,6 +145,13 @@ gst_switch_get_property (GstSwitch *swit, guint prop_id,
 static void
 gst_switch_finalize (GstSwitch *swit)
 {
+  if (swit->cases_string) {
+    g_free (swit->cases_string);
+    swit->cases_string = NULL;
+  }
+
+  g_mutex_clear (&swit->lock);
+
   G_OBJECT_CLASS (swit)->finalize (G_OBJECT (swit));
 }
 
@@ -218,7 +238,7 @@ gst_switch_request_new_pad (GstElement *element,
 
   GST_SWITCH_UNLOCK (swit);
 
-#if 0
+#if 1
   if (ghostpad) {
     gchar * dir = "?";
     switch (GST_PAD_DIRECTION (ghostpad)) {

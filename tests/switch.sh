@@ -19,8 +19,12 @@ echo "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4" > /tmp/src4
     filesrc name=source4 location=/tmp/src4 \
     switch name=switch cases="[[1,2]]" \
     fdsink name=sink fd=2 \
+    funnel name="fun" \
     source1. ! switch. \
     source2. ! switch. \
     source3. ! switch. \
     source4. ! switch. \
-    switch. ! funnel name="fun" ! sink.
+    switch. ! fun. \
+    fun. ! sink.
+
+#    switch. ! funnel name="fun" ! sink.

@@ -46,6 +46,7 @@ typedef enum {
 struct _GstSwitch {
   GstBin base;
   GMutex lock;
+  gchar *cases_string;
 };
 
 struct _GstSwitchClass {
