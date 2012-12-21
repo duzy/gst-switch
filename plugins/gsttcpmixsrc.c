@@ -943,7 +943,7 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
 
   if (!pad->running) {
     pad->running = TRUE;
-    g_print ("loop: running %s.%s\n",
+    GST_LOG_OBJECT (src, "Looping %s.%s\n",
 	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
   }
 

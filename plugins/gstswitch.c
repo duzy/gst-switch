@@ -224,9 +224,15 @@ gst_switch_request_new_pad (GstElement *element,
   }
 
   if (!ghostpad) {
+    GST_SWITCH_UNLOCK (swit);
     GST_ERROR_OBJECT (swit, "no pad %s on %s",
 	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ), GST_ELEMENT_NAME (swcase));
-  } else if (gst_element_add_pad (swit, ghostpad)) {
+    return NULL;
+  }
+
+  gst_pad_set_active (ghostpad, TRUE);
+
+  if (gst_element_add_pad (swit, ghostpad)) {
     GST_OBJECT_FLAG_SET (realpad, GST_SWITCH_PAD_FLAG_REQUESTED);
     /*
     GST_OBJECT_FLAG_SET (ghostpad, GST_PAD_FLAG_PROXY_CAPS);
@@ -238,7 +244,6 @@ gst_switch_request_new_pad (GstElement *element,
 
   GST_SWITCH_UNLOCK (swit);
 
-#if 1
   if (ghostpad) {
     gchar * dir = "?";
     switch (GST_PAD_DIRECTION (ghostpad)) {
@@ -246,12 +251,10 @@ gst_switch_request_new_pad (GstElement *element,
     case GST_PAD_SINK: dir = "SINK"; break;
     default: break;
     }
-    g_print ("%s:%d: request_new_pad: %s: %s.%s (%s.%s)\n",
-	__FILE__, __LINE__, dir,
+    GST_LOG_OBJECT (swit, "new %s pad: %s.%s (%s.%s)\n", dir,
 	GST_ELEMENT_NAME (swit), GST_PAD_NAME (ghostpad),
 	GST_ELEMENT_NAME (swcase), GST_PAD_NAME (realpad));
   }
-#endif
 
   return ghostpad;
 }
