@@ -21,7 +21,7 @@
 #define __GST_SWITCH_H__
 
 #include <gst/gst.h>
-#include <gst/gstelement.h>
+#include <gst/gstbin.h>
 
 G_BEGIN_DECLS
 
@@ -40,18 +40,15 @@ typedef struct _GstSwitch GstSwitch;
 typedef struct _GstSwitchClass GstSwitchClass;
 
 typedef enum {
-  GST_SWITCH_FLAG_LAST  = (GST_ELEMENT_FLAG_LAST << 10)
+  GST_SWITCH_FLAG_LAST = (GST_BIN_FLAG_LAST << 2)
 } GstSwitchFlags;
 
 struct _GstSwitch {
-  GstElement base;
-
-  GstElement *default_case;
-  GArray *cases;
+  GstBin base;
 };
 
 struct _GstSwitchClass {
-  GstElementClass base_class;
+  GstBinClass base_class;
 };
 
 GType gst_switch_get_type (void);
