@@ -45,6 +45,7 @@ typedef enum {
 
 struct _GstSwitch {
   GstBin base;
+  GstElement *default_case;
 };
 
 struct _GstSwitchClass {
