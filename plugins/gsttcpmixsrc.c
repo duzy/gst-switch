@@ -64,6 +64,21 @@ enum
   PROP_HOST,
   PROP_PORT,
   PROP_BOUND_PORT,
+  PROP_MODE,
+  PROP_FILL,
+};
+
+enum
+{
+  MODE_DEFAULT, /* stop on EOS */
+  MODE_LOOP, /* wait for other connections on EOS */
+};
+
+enum
+{
+  FILL_NONE, /* just block until next client */
+  FILL_ZERO, /* keep alive, fill the stream with zeros  */
+  FILL_RAND, /* keep alive, fill the stream with random data */
 };
 
 static GstStaticPadTemplate srctemplate =
@@ -135,6 +150,16 @@ gst_tcp_mix_src_pad_reset (GstTCPMixSrcPad *pad)
 }
 
 static void
+gst_tcp_mix_src_pad_wait_for_client (GstTCPMixSrcPad *pad)
+{
+  GST_TCP_MIX_SRC_PAD_CLIENT_LOCK (pad);
+  while (!pad->client) {
+    g_cond_wait (&pad->has_client, &pad->client_lock);
+  }
+  GST_TCP_MIX_SRC_PAD_CLIENT_UNLOCK (pad);
+}
+
+static void
 gst_tcp_mix_src_pad_finalize (GstTCPMixSrcPad *pad)
 {
   gst_tcp_mix_src_pad_reset (pad);
@@ -203,6 +228,7 @@ gst_tcp_mix_src_pad_stop (GstTCPMixSrcPad *pad, GstTaskFunction func)
 static GstFlowReturn
 gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
 {
+  GstTCPMixSrc *src = GST_TCP_MIX_SRC (GST_PAD_PARENT (pad));
   gssize avail, receivedBytes;
   gsize readBytes;
   GstMapInfo map;
@@ -216,6 +242,8 @@ gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
   }
 
   /* read the buffer header */
+
+ read_available_bytes:
   avail = g_socket_get_available_bytes (pad->client);
   if (avail < 0) {
     goto socket_get_available_bytes_error;
@@ -260,6 +288,7 @@ gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
   gst_buffer_unmap (*outbuf, &map);
   gst_buffer_resize (*outbuf, 0, receivedBytes);
 
+#if 0
   GST_LOG_OBJECT (pad,
       "Returning buffer from _get of size %" G_GSIZE_FORMAT
       ", ts %" GST_TIME_FORMAT ", dur %" GST_TIME_FORMAT
@@ -268,6 +297,7 @@ gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
       GST_TIME_ARGS (GST_BUFFER_TIMESTAMP (*outbuf)),
       GST_TIME_ARGS (GST_BUFFER_DURATION (*outbuf)),
       GST_BUFFER_OFFSET (*outbuf), GST_BUFFER_OFFSET_END (*outbuf));
+#endif
 
   g_clear_error (&err);
 
@@ -278,6 +308,8 @@ gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
   {
     GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
         ("No client socket (%s)", GST_PAD_NAME (pad)));
+
+    if (src->mode == MODE_LOOP) goto loop_mode_read;
     return GST_FLOW_ERROR;
   }
 
@@ -285,6 +317,10 @@ socket_get_available_bytes_error:
   {
     GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
         ("Failed to get available bytes from socket"));
+
+    gst_tcp_mix_src_pad_reset (pad);
+
+    if (src->mode == MODE_LOOP) goto loop_mode_read;
     return GST_FLOW_ERROR;
   }
 
@@ -293,6 +329,10 @@ socket_condition_wait_error:
     GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
         ("Select failed: %s", err->message));
     g_clear_error (&err);
+
+    gst_tcp_mix_src_pad_reset (pad);
+
+    if (src->mode == MODE_LOOP) goto loop_mode_read;
     return GST_FLOW_ERROR;
   }
 
@@ -300,6 +340,10 @@ socket_condition_error:
   {
     GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL), ("Socket in error state"));
     *outbuf = NULL;
+
+    gst_tcp_mix_src_pad_reset (pad);
+
+    if (src->mode == MODE_LOOP) goto loop_mode_read;
     return GST_FLOW_ERROR;
   }
 
@@ -309,6 +353,8 @@ socket_condition_hup:
     *outbuf = NULL;
 
     gst_tcp_mix_src_pad_reset (pad);
+
+    if (src->mode == MODE_LOOP) goto loop_mode_read;
     return GST_FLOW_EOS;
   }
 
@@ -322,6 +368,8 @@ socket_connection_closed:
     *outbuf = NULL;
 
     gst_tcp_mix_src_pad_reset (pad);
+
+    if (src->mode == MODE_LOOP) goto loop_mode_read;
     return GST_FLOW_EOS;
   }
 
@@ -333,12 +381,44 @@ socket_receive_error:
 
     if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
       GST_DEBUG_OBJECT (pad, "Cancelled reading from socket");
+
+      if (src->mode == MODE_LOOP) goto loop_mode_read;
       return GST_FLOW_FLUSHING;
     } else {
       GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
           ("Failed to read from socket: %s", err->message));
+
+      if (src->mode == MODE_LOOP) goto loop_mode_read;
       return GST_FLOW_ERROR;
     }
+  }
+
+ loop_mode_read:
+  {
+    GST_DEBUG_OBJECT (src, "Looping %s.%s",
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+
+    if (src->fill == FILL_NONE) {
+      gst_tcp_mix_src_pad_wait_for_client (pad);
+      goto read_available_bytes;
+    }
+
+    enum { buffer_size = 1024 };
+    *outbuf = gst_buffer_new_and_alloc (buffer_size);
+
+    switch (src->fill) {
+    case FILL_ZERO:
+      break;
+    case FILL_RAND:
+    {
+      guchar * p;
+      gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
+      for (p = map.data; p < map.data+buffer_size; p += 4) {
+	*((int*) p) = rand();
+      }
+    } break;
+    }
+    return GST_FLOW_OK;
   }
 }
 
@@ -388,299 +468,43 @@ gst_tcp_mix_src_finalize (GObject * gobject)
   G_OBJECT_CLASS (gst_tcp_mix_src_parent_class)->finalize (gobject);
 }
 
-#if 0
-static GstFlowReturn
-gst_tcp_mix_src_read_client (GstTCPMixSrc * src, GSocket * client_socket,
-    GstBuffer ** outbuf)
-{
-  gssize availableBytes, receivedBytes;
-  gsize readBytes;
-  GstMapInfo map;
-  GError *err = NULL;
-
-  /* if we have a client, wait for read */
-  GST_LOG_OBJECT (src, "asked for a buffer");
-
-  /* read the buffer header */
-  availableBytes = g_socket_get_available_bytes (client_socket);
-  if (availableBytes < 0) {
-    goto socket_get_available_bytes_error;
-  } else if (availableBytes == 0) {
-    GIOCondition condition;
-
-    if (!g_socket_condition_wait (client_socket,
-            G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP, src->cancellable, &err))
-      goto socket_condition_wait_error;
-
-    condition = g_socket_condition_check (client_socket,
-        G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP);
-
-    if ((condition & G_IO_ERR))
-      goto socket_condition_error;
-    else if ((condition & G_IO_HUP))
-      goto socket_condition_hup;
-
-    availableBytes = g_socket_get_available_bytes (client_socket);
-    if (availableBytes < 0)
-      goto socket_get_available_bytes_error;
-  }
-
-  if (0 < availableBytes) {
-    readBytes = MIN (availableBytes, MAX_READ_SIZE);
-    *outbuf = gst_buffer_new_and_alloc (readBytes);
-    gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
-    receivedBytes = g_socket_receive (client_socket, (gchar *) map.data,
-        readBytes, src->cancellable, &err);
-  } else {
-    /* Connection closed */
-    receivedBytes = 0;
-    readBytes = 0;
-    *outbuf = NULL;
-  }
-
-  if (receivedBytes == 0)
-    goto socket_connection_closed;
-  else if (receivedBytes < 0)
-    goto socket_receive_error;
-
-  gst_buffer_unmap (*outbuf, &map);
-  gst_buffer_resize (*outbuf, 0, receivedBytes);
-
-  GST_LOG_OBJECT (src,
-      "Returning buffer from _get of size %" G_GSIZE_FORMAT
-      ", ts %" GST_TIME_FORMAT ", dur %" GST_TIME_FORMAT
-      ", offset %" G_GINT64_FORMAT ", offset_end %" G_GINT64_FORMAT,
-      gst_buffer_get_size (*outbuf),
-      GST_TIME_ARGS (GST_BUFFER_TIMESTAMP (*outbuf)),
-      GST_TIME_ARGS (GST_BUFFER_DURATION (*outbuf)),
-      GST_BUFFER_OFFSET (*outbuf), GST_BUFFER_OFFSET_END (*outbuf));
-
-  g_clear_error (&err);
-
-  return GST_FLOW_OK;
-
-  /* Handling Errors */
-socket_get_available_bytes_error:
-  {
-    GST_ELEMENT_ERROR (src, RESOURCE, READ, (NULL),
-        ("Failed to get available bytes from socket"));
-    return GST_FLOW_ERROR;
-  }
-
-socket_condition_wait_error:
-  {
-    GST_ELEMENT_ERROR (src, RESOURCE, READ, (NULL),
-        ("Select failed: %s", err->message));
-    g_clear_error (&err);
-    return GST_FLOW_ERROR;
-  }
-
-socket_condition_error:
-  {
-    GST_ELEMENT_ERROR (src, RESOURCE, READ, (NULL), ("Socket in error state"));
-    *outbuf = NULL;
-    return GST_FLOW_ERROR;
-  }
-
-socket_condition_hup:
-  {
-    GST_DEBUG_OBJECT (src, "Connection closed");
-    *outbuf = NULL;
-    return GST_FLOW_EOS;
-  }
-
-socket_connection_closed:
-  {
-    GST_DEBUG_OBJECT (src, "Connection closed");
-    if (*outbuf) {
-      gst_buffer_unmap (*outbuf, &map);
-      gst_buffer_unref (*outbuf);
-    }
-    *outbuf = NULL;
-    return GST_FLOW_EOS;
-  }
-
-socket_receive_error:
-  {
-    gst_buffer_unmap (*outbuf, &map);
-    gst_buffer_unref (*outbuf);
-    *outbuf = NULL;
-
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-      GST_DEBUG_OBJECT (src, "Cancelled reading from socket");
-      return GST_FLOW_FLUSHING;
-    } else {
-      GST_ELEMENT_ERROR (src, RESOURCE, READ, (NULL),
-          ("Failed to read from socket: %s", err->message));
-      return GST_FLOW_ERROR;
-    }
-  }
-}
-#endif
-
-#if 0
-static GstFlowReturn
-gst_tcp_mix_src_read_client (GstTCPMixSrc * src, GSocket * client_socket,
-    GstBuffer ** outbuf)
-{
-  gssize availableBytes, receivedBytes;
-  gsize readBytes;
-  GstMapInfo map;
-  GError *err = NULL;
-
-  /* if we have a client, wait for read */
-  GST_LOG_OBJECT (src, "asked for a buffer");
-
-  /* read the buffer header */
-  availableBytes = g_socket_get_available_bytes (client_socket);
-  if (availableBytes < 0) {
-    goto socket_get_available_bytes_error;
-  } else if (availableBytes == 0) {
-    return GST_FLOW_EOS;
-  }
-
-  if (0 < availableBytes) {
-    readBytes = MIN (availableBytes, MAX_READ_SIZE);
-    *outbuf = gst_buffer_new_and_alloc (readBytes);
-    gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
-    receivedBytes = g_socket_receive (client_socket, (gchar *) map.data,
-        readBytes, src->cancellable, &err);
-  } else {
-    /* Connection closed */
-    receivedBytes = 0;
-    readBytes = 0;
-    *outbuf = NULL;
-  }
-
-  if (receivedBytes == 0)
-    goto socket_connection_closed;
-  else if (receivedBytes < 0)
-    goto socket_receive_error;
-
-  gst_buffer_unmap (*outbuf, &map);
-  gst_buffer_resize (*outbuf, 0, receivedBytes);
-
-  GST_LOG_OBJECT (src,
-      "Returning buffer from _get of size %" G_GSIZE_FORMAT
-      ", ts %" GST_TIME_FORMAT ", dur %" GST_TIME_FORMAT
-      ", offset %" G_GINT64_FORMAT ", offset_end %" G_GINT64_FORMAT,
-      gst_buffer_get_size (*outbuf),
-      GST_TIME_ARGS (GST_BUFFER_TIMESTAMP (*outbuf)),
-      GST_TIME_ARGS (GST_BUFFER_DURATION (*outbuf)),
-      GST_BUFFER_OFFSET (*outbuf), GST_BUFFER_OFFSET_END (*outbuf));
-
-  g_clear_error (&err);
-
-  return GST_FLOW_OK;
-
-  /* Handling Errors */
-socket_get_available_bytes_error:
-  {
-    GST_ELEMENT_ERROR (src, RESOURCE, READ, (NULL),
-        ("Failed to get available bytes from socket"));
-    return GST_FLOW_ERROR;
-  }
-
-socket_connection_closed:
-  {
-    GST_DEBUG_OBJECT (src, "Connection closed");
-    if (*outbuf) {
-      gst_buffer_unmap (*outbuf, &map);
-      gst_buffer_unref (*outbuf);
-    }
-    *outbuf = NULL;
-    return GST_FLOW_EOS;
-  }
-
-socket_receive_error:
-  {
-    gst_buffer_unmap (*outbuf, &map);
-    gst_buffer_unref (*outbuf);
-    *outbuf = NULL;
-
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-      GST_DEBUG_OBJECT (src, "Cancelled reading from socket");
-      return GST_FLOW_FLUSHING;
-    } else {
-      GST_ELEMENT_ERROR (src, RESOURCE, READ, (NULL),
-          ("Failed to read from socket: %s", err->message));
-      return GST_FLOW_ERROR;
-    }
-  }
-}
-#endif
-
-#if 0
-//static GstFlowReturn
-//gst_tcp_mix_src_create (GstBaseSrc * psrc, GstBuffer ** outbuf)
-static GstFlowReturn
-gst_tcp_mix_src_create (GstBaseSrc * bsrc, guint64 offset,
-    guint size, GstBuffer ** outbuf)
-{
-  GstTCPMixSrc *src;
-  GSocket *client_socket;
-
-  src = GST_TCP_MIX_SRC (bsrc);
-
-  GST_DEBUG_OBJECT (src, "create");
-
-  if (!GST_OBJECT_FLAG_IS_SET (src, GST_TCP_MIX_SRC_OPEN))
-    goto wrong_mix_src_state;
-
-read_incoming:
-
-  g_mutex_lock (&src->incoming_mutex);
-
-  while (!src->incoming)
-    g_cond_wait (&src->has_incoming, &src->incoming_mutex);
-
-  client_socket = (GSocket *) src->incoming->data;
-  src->incoming = g_list_next (src->incoming);
-
-  g_mutex_unlock (&src->incoming_mutex);
-
-  //g_print ("read: %p, %p (%d)\n", client_socket, src->incoming,
-  //    g_list_length (src->incoming));
-
-  if (client_socket)
-    gst_tcp_mix_src_read_client (src, client_socket, outbuf);
-
-  if (src->incoming)
-    goto read_incoming;
-
-  return *outbuf ? GST_FLOW_OK : GST_FLOW_FLUSHING;
-
-  /* Handling Errors */
-wrong_mix_src_state:
-  {
-    GST_DEBUG_OBJECT (src, "connection to closed, cannot read data");
-    return GST_FLOW_FLUSHING;
-  }
-}
-#endif
-
 static void
 gst_tcp_mix_src_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
-  GstTCPMixSrc *tcpmixsrc = GST_TCP_MIX_SRC (object);
+  GstTCPMixSrc *src = GST_TCP_MIX_SRC (object);
 
   switch (prop_id) {
-    case PROP_HOST:
-      if (!g_value_get_string (value)) {
-        g_warning ("host property cannot be NULL");
-        break;
-      }
-      g_free (tcpmixsrc->host);
-      tcpmixsrc->host = g_strdup (g_value_get_string (value));
+  case PROP_HOST:
+    if (!g_value_get_string (value)) {
+      g_warning ("host property cannot be NULL");
       break;
-    case PROP_PORT:
-      tcpmixsrc->server_port = g_value_get_int (value);
-      break;
-
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
+    }
+    g_free (src->host);
+    src->host = g_strdup (g_value_get_string (value));
+    break;
+  case PROP_PORT:
+    src->server_port = g_value_get_int (value);
+    break;
+  case PROP_MODE:
+    if (g_ascii_strcasecmp (g_value_get_string (value), "default")==0) {
+      src->mode = MODE_DEFAULT;
+    } else if (g_ascii_strcasecmp (g_value_get_string (value), "loop")==0) {
+      src->mode = MODE_LOOP;
+    }
+    break;
+  case PROP_FILL:
+    if (g_ascii_strcasecmp (g_value_get_string (value), "none")==0) {
+      src->fill = FILL_NONE;
+    } else if (g_ascii_strcasecmp (g_value_get_string (value), "zero")==0) {
+      src->fill = FILL_ZERO;
+    } else if (g_ascii_strcasecmp (g_value_get_string (value), "rand")==0) {
+      src->fill = FILL_RAND;
+    }
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    break;
   }
 }
 
@@ -688,21 +512,34 @@ static void
 gst_tcp_mix_src_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec)
 {
-  GstTCPMixSrc *tcpmixsrc = GST_TCP_MIX_SRC (object);
+  GstTCPMixSrc *src = GST_TCP_MIX_SRC (object);
 
   switch (prop_id) {
-    case PROP_HOST:
-      g_value_set_string (value, tcpmixsrc->host);
-      break;
-    case PROP_PORT:
-      g_value_set_int (value, tcpmixsrc->server_port);
-      break;
-    case PROP_BOUND_PORT:
-      g_value_set_int (value, g_atomic_int_get (&tcpmixsrc->bound_port));
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
+  case PROP_HOST:
+    g_value_set_string (value, src->host);
+    break;
+  case PROP_PORT:
+    g_value_set_int (value, src->server_port);
+    break;
+  case PROP_BOUND_PORT:
+    g_value_set_int (value, g_atomic_int_get (&src->bound_port));
+    break;
+  case PROP_MODE:
+    switch (src->mode) {
+    case MODE_DEFAULT: g_value_set_string (value, "default"); break;
+    case MODE_LOOP: g_value_set_string (value, "loop"); break;
+    }
+    break;
+  case PROP_FILL:
+    switch (src->fill) {
+    case FILL_NONE: g_value_set_string (value, "none"); break;
+    case FILL_ZERO: g_value_set_string (value, "zero"); break;
+    case FILL_RAND: g_value_set_string (value, "rand"); break;
+    }
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    break;
   }
 }
 
@@ -743,53 +580,6 @@ gst_tcp_mix_src_stop (GstTCPMixSrc * src, GstTCPMixSrcPad * pad)
 
   return TRUE;
 }
-
-#if 0
-static gboolean
-gst_tcp_mix_src_socket_source (GPollableInputStream * stream,
-    GIOCondition condition, gpointer data)
-{
-  GSocket *socket = (GSocket *) stream;
-  GstTCPMixSrc *src = (GstTCPMixSrc *) data;
-  gssize availableBytes = g_socket_get_available_bytes (socket);
-  GList *found = NULL;
-  gboolean needSignal = FALSE;
-
-  g_mutex_lock (&src->clients_mutex);
-  found = g_list_find (src->clients, socket);
-  g_mutex_unlock (&src->clients_mutex);
-
-  //g_print ("source: %p, %p, %"G_GSSIZE_FORMAT"\n", socket, found, availableBytes);
-
-  if (availableBytes == 0 && found == NULL)
-    goto socket_eof;
-  if (availableBytes < 0)
-    goto socket_error;
-
-  /*
-  g_print ("source: %p, %p (%d), %" G_GSSIZE_FORMAT "byte(s)\n", socket,
-      src->incoming, g_list_length (src->incoming), availableBytes);
-  */
-
-  g_mutex_lock (&src->incoming_mutex);
-  found = g_list_find (src->incoming, socket);
-  needSignal = (src->incoming == NULL);
-  if (found == NULL)
-    src->incoming = g_list_append (src->incoming, socket);
-  if (needSignal)
-    g_cond_signal (&src->has_incoming);
-  g_mutex_unlock (&src->incoming_mutex);
-
-  return TRUE;
-
-socket_eof:
-  return FALSE;
-
-socket_error:
-  GST_ERROR_OBJECT (src, "Client socket closed");
-  return FALSE;
-}
-#endif
 
 static void
 gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
@@ -937,11 +727,7 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
   GstBuffer *buffer = NULL;
   GstFlowReturn ret;
 
-  GST_TCP_MIX_SRC_PAD_CLIENT_LOCK (pad);
-  while (!pad->client) {
-    g_cond_wait (&pad->has_client, &pad->client_lock);
-  }
-  GST_TCP_MIX_SRC_PAD_CLIENT_UNLOCK (pad);
+  gst_tcp_mix_src_pad_wait_for_client (pad);
 
   if (!pad->running) {
     pad->running = TRUE;
@@ -1284,16 +1070,6 @@ gst_tcp_mix_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
   return gst_pad_event_default (pad, parent, event);
 }
 
-#if 0
-static GstFlowReturn
-gst_tcp_mix_src_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
-{
-  g_print ("%s:%d:info: chain: %s\n", __FILE__, __LINE__, "...");
-
-  return gst_pad_push (pad, buffer);
-}
-#endif
-
 static GstFlowReturn
 gst_tcp_mix_src_get_range (GstTCPMixSrc * src, GstPad * pad, guint64 offset,
     guint length, GstBuffer ** buf)
@@ -1355,7 +1131,6 @@ gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
       (GstPadActivateModeFunction) gst_tcp_mix_src_activate_mode);
   gst_pad_set_query_function (srcpad, gst_tcp_mix_src_query);
   gst_pad_set_event_function (srcpad, gst_tcp_mix_src_event);
-  //gst_pad_set_chain_function (srcpad, gst_tcp_mix_src_chain);
   gst_pad_set_getrange_function (srcpad, gst_tcp_mix_src_getrange);
 
   //GST_OBJECT_FLAG_SET (srcpad, GST_PAD_FLAG_PROXY_CAPS);
@@ -1407,6 +1182,15 @@ gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
       g_param_spec_int ("bound-port", "BoundPort",
           "The port number the socket is currently bound to", 0,
           TCP_HIGHEST_PORT, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_MODE,
+      g_param_spec_string ("mode", "Mode", "The working mode",
+          "default", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_FILL,
+      g_param_spec_string ("fill", "Fill Mode",
+	  "The fill mode for disconnected stream",
+          "none", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gst_element_class_add_pad_template (element_class,
       gst_static_pad_template_get (&srctemplate));

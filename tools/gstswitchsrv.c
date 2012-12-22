@@ -137,21 +137,8 @@ gst_switchsrv_test_switch_pipeline (GstSwitchSrv * switchsrv)
 
 #else
 
-  /*
-  g_string_append (pipe_desc, "tcpserversrc name=source port=3000 ");
-  g_string_append (pipe_desc, "tcpserversrc name=sourc1 port=3001 ");
-  g_string_append (pipe_desc, "tcpserversrc name=sourc2 port=3002 ");
-  g_string_append (pipe_desc, "tcpserversrc name=sourc3 port=3003 ");
-  g_string_append (pipe_desc, "funnel name=fun ");
-  g_string_append (pipe_desc, "fdsink name=sink fd=2 ");
-  g_string_append (pipe_desc, "source. ! queue ! fun.sink_0 ");
-  g_string_append (pipe_desc, "sourc1. ! queue ! fun.sink_1 ");
-  g_string_append (pipe_desc, "sourc2. ! queue ! fun.sink_2 ");
-  g_string_append (pipe_desc, "sourc3. ! queue ! fun.sink_3 ");
-  g_string_append (pipe_desc, "fun. ! sink.");
-  */
-  g_string_append_printf (pipe_desc, "tcpmixsrc name=source "
-      "port=%d ", opts.port);
+  g_string_append_printf (pipe_desc, "tcpmixsrc name=source mode=loop "
+      "fill=none port=%d ", opts.port);
   g_string_append_printf (pipe_desc, "switch name=switch ");
   g_string_append_printf (pipe_desc, "filesink name=sink "
       "location=%s ", opts.test_switch);
@@ -188,7 +175,7 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
 
   pipe_desc = g_string_new ("");
 
-  g_string_append_printf (pipe_desc, "tcpmixsrc name=source "
+  g_string_append_printf (pipe_desc, "tcpmixsrc name=source mode=loop "
       "port=%d ", opts.port);
   g_string_append_printf (pipe_desc, "switch name=switch ");
   g_string_append_printf (pipe_desc, "fdsink name=sink fd=2 ");

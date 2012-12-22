@@ -50,7 +50,9 @@ struct _GstTCPMixSrc {
 
   gchar *host;
   int server_port;
-  int bound_port;          /* currently bound-to port, or 0 */ /* ATOMIC */
+  int bound_port;       /* currently bound-to port, or 0 */ /* ATOMIC */
+  int mode;		/* stream working mode for disconnection */
+  int fill;		/* fill type for disconnected stream */
 
   GCancellable *cancellable;
   GSocket *server_socket;
