@@ -43,6 +43,7 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
 #include "gsttcpmixsrc.h"
 
 GST_DEBUG_CATEGORY_STATIC (tcpmixsrc_debug);
@@ -117,8 +118,6 @@ struct _GstTCPMixSrcPad
 {
   GstPad base;
 
-  gboolean running;
-
   GCancellable *cancellable;
 
   GMutex client_lock;
@@ -178,7 +177,6 @@ gst_tcp_mix_src_pad_finalize (GstTCPMixSrcPad *pad)
 static void
 gst_tcp_mix_src_pad_init (GstTCPMixSrcPad *pad)
 {
-  pad->running = FALSE;
   pad->client = NULL;
   pad->cancellable = g_cancellable_new ();
   
@@ -226,7 +224,7 @@ gst_tcp_mix_src_pad_stop (GstTCPMixSrcPad *pad, GstTaskFunction func)
 #endif
 
 static GstFlowReturn
-gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
+gst_tcp_mix_src_pad_read (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
 {
   GstTCPMixSrc *src = GST_TCP_MIX_SRC (GST_PAD_PARENT (pad));
   gssize avail, receivedBytes;
@@ -309,7 +307,7 @@ gst_tcp_mix_src_pad_read_client (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
     GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
         ("No client socket (%s)", GST_PAD_NAME (pad)));
 
-    if (src->mode == MODE_LOOP) goto loop_mode_read;
+    if (src->mode == MODE_LOOP) goto loop_read;
     return GST_FLOW_ERROR;
   }
 
@@ -320,7 +318,7 @@ socket_get_available_bytes_error:
 
     gst_tcp_mix_src_pad_reset (pad);
 
-    if (src->mode == MODE_LOOP) goto loop_mode_read;
+    if (src->mode == MODE_LOOP) goto loop_read;
     return GST_FLOW_ERROR;
   }
 
@@ -332,7 +330,7 @@ socket_condition_wait_error:
 
     gst_tcp_mix_src_pad_reset (pad);
 
-    if (src->mode == MODE_LOOP) goto loop_mode_read;
+    if (src->mode == MODE_LOOP) goto loop_read;
     return GST_FLOW_ERROR;
   }
 
@@ -343,7 +341,7 @@ socket_condition_error:
 
     gst_tcp_mix_src_pad_reset (pad);
 
-    if (src->mode == MODE_LOOP) goto loop_mode_read;
+    if (src->mode == MODE_LOOP) goto loop_read;
     return GST_FLOW_ERROR;
   }
 
@@ -354,7 +352,7 @@ socket_condition_hup:
 
     gst_tcp_mix_src_pad_reset (pad);
 
-    if (src->mode == MODE_LOOP) goto loop_mode_read;
+    if (src->mode == MODE_LOOP) goto loop_read;
     return GST_FLOW_EOS;
   }
 
@@ -369,7 +367,7 @@ socket_connection_closed:
 
     gst_tcp_mix_src_pad_reset (pad);
 
-    if (src->mode == MODE_LOOP) goto loop_mode_read;
+    if (src->mode == MODE_LOOP) goto loop_read;
     return GST_FLOW_EOS;
   }
 
@@ -382,21 +380,29 @@ socket_receive_error:
     if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
       GST_DEBUG_OBJECT (pad, "Cancelled reading from socket");
 
-      if (src->mode == MODE_LOOP) goto loop_mode_read;
+      if (src->mode == MODE_LOOP) goto loop_read;
       return GST_FLOW_FLUSHING;
     } else {
       GST_ELEMENT_ERROR (pad, RESOURCE, READ, (NULL),
           ("Failed to read from socket: %s", err->message));
 
-      if (src->mode == MODE_LOOP) goto loop_mode_read;
+      if (src->mode == MODE_LOOP) goto loop_read;
       return GST_FLOW_ERROR;
     }
   }
 
- loop_mode_read:
+ loop_read:
   {
-    GST_DEBUG_OBJECT (src, "Looping %s.%s",
-	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+#if 0
+    GstEvent *event = gst_event_new_flush_start ();
+
+    if (!gst_pad_push_event (pad, event)) {
+      GST_ERROR_OBJECT (src, "Failed to flush data on %s.%s",
+	  GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+    }
+#endif
+
+    GST_DEBUG_OBJECT (pad, "Looping");
 
     if (src->fill == FILL_NONE) {
       gst_tcp_mix_src_pad_wait_for_client (pad);
@@ -460,7 +466,6 @@ gst_tcp_mix_src_finalize (GObject * gobject)
   gst_tcp_mix_src_stop_acceptor (src);
 
   g_mutex_clear (&src->acceptor_mutex);
-  //g_cond_clear (&src->has_incoming);
 
   g_free (src->host);
   src->host = NULL;
@@ -590,10 +595,12 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
   gboolean linked = FALSE;
 
   if (gst_pad_is_linked(GST_PAD (pad))) {
+#if 0
     pp = GST_PAD_PEER (pad);
     GST_WARNING_OBJECT (src, "Pad %s.%s already linked to %s.%s",
 	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
 	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+#endif
     return;
   }
 
@@ -677,8 +684,7 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
   }
 
   if (pad) {
-    GST_DEBUG_OBJECT (src, "New client bound to %s.%s",
-	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad), pad->client);
+    GST_DEBUG_OBJECT (pad, "New client");
 
     gst_tcp_mix_src_request_link_pad (src, pad);
 
@@ -729,25 +735,26 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
 
   gst_tcp_mix_src_pad_wait_for_client (pad);
 
-  if (!pad->running) {
-    pad->running = TRUE;
-    GST_LOG_OBJECT (src, "Looping %s.%s\n",
-	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
-  }
-
-  ret = gst_tcp_mix_src_pad_read_client (pad, &buffer);
+  ret = gst_tcp_mix_src_pad_read (pad, &buffer);
   if (ret != GST_FLOW_OK)
     goto pause;
 
   ret = gst_pad_push (GST_PAD (pad), buffer);
-  if (ret != GST_FLOW_OK)
+  if (ret != GST_FLOW_OK) {
+    GST_ERROR_OBJECT (pad, "FIXME: invalid data flow. "
+	"Should not break the stream");
     goto pause;
+  }
 
   return;
 
   /* Handling Errors */
  pause:
   {
+    if (src->mode == MODE_LOOP) {
+      return;
+    }
+
     const gchar *reason = gst_flow_get_name (ret);
     GstEvent *event;
 
@@ -1220,7 +1227,6 @@ gst_tcp_mix_src_init (GstTCPMixSrc * src)
   src->cancellable = g_cancellable_new ();
 
   g_mutex_init (&src->acceptor_mutex);
-  //g_cond_init (&src->has_incoming);
 
   GST_OBJECT_FLAG_UNSET (src, GST_TCP_MIX_SRC_OPEN);
 }

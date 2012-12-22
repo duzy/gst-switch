@@ -126,28 +126,19 @@ gst_switchsrv_test_switch_pipeline (GstSwitchSrv * switchsrv)
 
   pipe_desc = g_string_new ("");
 
-#if 0
-
-  g_string_append (pipe_desc, "videotestsrc name=source num-buffers=100 ");
-  g_string_append (pipe_desc, "! timeoverlay ");
-  g_string_append (pipe_desc, "! xvimagesink name=sink ");
-  g_string_append (pipe_desc, "! audiotestsrc "
-      "samplesperbuffer=1600 num-buffers=100 ");
-  g_string_append (pipe_desc, "! alsasink ");
-
-#else
-
   g_string_append_printf (pipe_desc, "tcpmixsrc name=source mode=loop "
       "fill=none port=%d ", opts.port);
   g_string_append_printf (pipe_desc, "switch name=switch ");
+#if 1
   g_string_append_printf (pipe_desc, "filesink name=sink "
       "location=%s ", opts.test_switch);
+#else
+  g_string_append_printf (pipe_desc, "fdsink name=sink fd=2 ");
+#endif
   g_string_append_printf (pipe_desc, "funnel name=sum ");
   g_string_append_printf (pipe_desc, "source. ! switch. ");
   g_string_append_printf (pipe_desc, "switch. ! sum. ");
   g_string_append_printf (pipe_desc, "sum. ! sink.");
-
-#endif
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", pipe_desc->str);
@@ -176,13 +167,15 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
   pipe_desc = g_string_new ("");
 
   g_string_append_printf (pipe_desc, "tcpmixsrc name=source mode=loop "
-      "port=%d ", opts.port);
+      "fill=zero port=%d ", opts.port);
   g_string_append_printf (pipe_desc, "switch name=switch ");
-  g_string_append_printf (pipe_desc, "fdsink name=sink fd=2 ");
+  g_string_append_printf (pipe_desc, "xvimagesink name=sink ");
+  g_string_append_printf (pipe_desc, "gdpdepay name=conv ");
   g_string_append_printf (pipe_desc, "funnel name=sum ");
   g_string_append_printf (pipe_desc, "source. ! switch. ");
   g_string_append_printf (pipe_desc, "switch. ! sum. ");
-  g_string_append_printf (pipe_desc, "sum. ! sink.");
+  g_string_append_printf (pipe_desc, "sum. ! conv. ");
+  g_string_append_printf (pipe_desc, "conv. ! sink. ");
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", pipe_desc->str);
