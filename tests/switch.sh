@@ -1,13 +1,12 @@
 #!/bin/bash
-cd /store/open/gstreamer/stage
+. ./tests/test.sh
 
 echo "1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1" > /tmp/src1
 echo "2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2" > /tmp/src2
 echo "3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3" > /tmp/src3
 echo "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4" > /tmp/src4
 
-#gdb --args \
-./bin/gst-launch-1.0 -v \
+launch -v \
     --gst-debug-no-color \
     --gst-debug="switch:5" \
     --gst-debug="funnel:4" \

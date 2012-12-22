@@ -1,7 +1,7 @@
 #!/bin/bash
-cd /store/open/gstreamer/stage
+. ./tests/test.sh
 
-./bin/gst-launch-1.0 -v \
+launch -v \
     --gst-debug-no-color \
     --gst-debug="tcpmixsrc:5" \
     --gst-debug="switch:5" \

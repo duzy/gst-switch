@@ -31,7 +31,12 @@
 #include <stdlib.h>
 
 #define GETTEXT_PACKAGE "switchsrv"
-#define LOG_PREFIX "./tools/%s:%d:"
+#define INFO_PREFIX "./tools/%s:%d:info:"
+#define WARN_PREFIX "./tools/%s:%d:warn:"
+#define ERROR_PREFIX "./tools/%s:%d:error:"
+#define INFO(S, ...) g_print (INFO_PREFIX" "S, __FILE__, __LINE__, __VA_ARGS__)
+#define WARN(S, ...) g_print (WARN_PREFIX" "S, __FILE__, __LINE__, __VA_ARGS__)
+#define ERROR(S, ...) g_print (ERROR_PREFIX" "S, __FILE__, __LINE__, __VA_ARGS__)
 
 typedef struct _GstSwitchSrv GstSwitchSrv;
 struct _GstSwitchSrv
@@ -49,18 +54,18 @@ struct _GstSwitchSrv
 
 static /*const*/ struct {
   gboolean verbose;
-  gboolean test;
+  gchar * test_switch;
   gint port;
 } opts = {
-  0, 0, 3000,
+  0, NULL, 3000,
 };
 
 static GOptionEntry entries[] = {
-  {"verbose", 'v', 0,	G_OPTION_ARG_NONE, &opts.verbose,
+  {"verbose", 'v', 0,		G_OPTION_ARG_NONE, &opts.verbose,
        "Prompt more messages", NULL},
-  {"test", 't', 0,	G_OPTION_ARG_NONE, &opts.test,
-       "Perform test pipeline", NULL},
-  {"port", 'p', 0,	G_OPTION_ARG_INT, &opts.port,
+  {"test-switch", 't', 0,	G_OPTION_ARG_STRING, &opts.test_switch,
+       "Perform switch test", "OUTPUT"},
+  {"port", 'p', 0,		G_OPTION_ARG_INT, &opts.port,
        "Specify the listen port.", "NUM"},
   { NULL }
 };
@@ -113,7 +118,7 @@ gst_switchsrv_free (GstSwitchSrv * switchsrv)
 }
 
 static GstElement *
-gst_switchsrv_create_test_pipeline (GstSwitchSrv * switchsrv)
+gst_switchsrv_test_switch_pipeline (GstSwitchSrv * switchsrv)
 {
   GString *pipe_desc;
   GstElement *pipeline;
@@ -121,7 +126,7 @@ gst_switchsrv_create_test_pipeline (GstSwitchSrv * switchsrv)
 
   pipe_desc = g_string_new ("");
 
-#if 1
+#if 0
 
   g_string_append (pipe_desc, "videotestsrc name=source num-buffers=100 ");
   g_string_append (pipe_desc, "! timeoverlay ");
@@ -132,6 +137,7 @@ gst_switchsrv_create_test_pipeline (GstSwitchSrv * switchsrv)
 
 #else
 
+  /*
   g_string_append (pipe_desc, "tcpserversrc name=source port=3000 ");
   g_string_append (pipe_desc, "tcpserversrc name=sourc1 port=3001 ");
   g_string_append (pipe_desc, "tcpserversrc name=sourc2 port=3002 ");
@@ -143,6 +149,16 @@ gst_switchsrv_create_test_pipeline (GstSwitchSrv * switchsrv)
   g_string_append (pipe_desc, "sourc2. ! queue ! fun.sink_2 ");
   g_string_append (pipe_desc, "sourc3. ! queue ! fun.sink_3 ");
   g_string_append (pipe_desc, "fun. ! sink.");
+  */
+  g_string_append_printf (pipe_desc, "tcpmixsrc name=source "
+      "port=%d ", opts.port);
+  g_string_append_printf (pipe_desc, "switch name=switch ");
+  g_string_append_printf (pipe_desc, "filesink name=sink "
+      "location=%s ", opts.test_switch);
+  g_string_append_printf (pipe_desc, "funnel name=sum ");
+  g_string_append_printf (pipe_desc, "source. ! switch. ");
+  g_string_append_printf (pipe_desc, "switch. ! sum. ");
+  g_string_append_printf (pipe_desc, "sum. ! sink.");
 
 #endif
 
@@ -168,16 +184,18 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
   GstElement *pipeline;
   GError *error = NULL;
 
+  INFO ("Listenning on port %d\n", opts.port);
+
   pipe_desc = g_string_new ("");
 
-  g_print ("listen-port: %d\n", opts.port);
-
-  g_string_append_printf (pipe_desc, "tcpmixsrc "
-      "name=source port=%d ", opts.port);
-  g_string_append (pipe_desc, "funnel name=fun ");
-  g_string_append (pipe_desc, "fdsink name=sink fd=2 ");
-  g_string_append (pipe_desc, "source. ! fun. ");
-  g_string_append (pipe_desc, "fun. ! sink.");
+  g_string_append_printf (pipe_desc, "tcpmixsrc name=source "
+      "port=%d ", opts.port);
+  g_string_append_printf (pipe_desc, "switch name=switch ");
+  g_string_append_printf (pipe_desc, "fdsink name=sink fd=2 ");
+  g_string_append_printf (pipe_desc, "funnel name=sum ");
+  g_string_append_printf (pipe_desc, "source. ! switch. ");
+  g_string_append_printf (pipe_desc, "switch. ! sum. ");
+  g_string_append_printf (pipe_desc, "sum. ! sink.");
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", pipe_desc->str);
@@ -186,7 +204,7 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
   g_string_free (pipe_desc, FALSE);
 
   if (error) {
-    g_print ("pipeline parsing error: %s\n", error->message);
+    ERROR ("pipeline parsing error: %s\n", error->message);
     gst_object_unref (pipeline);
     return NULL;
   }
@@ -222,7 +240,7 @@ static void
 gst_switchsrv_handle_error (GstSwitchSrv * switchsrv, GError * error,
     const char *debug)
 {
-  g_print ("error: %s\n", error->message);
+  ERROR ("%s\n", error->message);
   gst_switchsrv_stop (switchsrv);
 }
 
@@ -230,21 +248,20 @@ static void
 gst_switchsrv_handle_warning (GstSwitchSrv * switchsrv, GError * error,
     const char *debug)
 {
-  g_print ("warning: %s\n", error->message);
+  WARN ("%s\n", error->message);
 }
 
 static void
 gst_switchsrv_handle_info (GstSwitchSrv * switchsrv, GError * error,
     const char *debug)
 {
-  g_print ("info: %s\n", error->message);
+  INFO ("%s\n", error->message);
 }
 
 static void
 gst_switchsrv_handle_null_to_ready (GstSwitchSrv * switchsrv)
 {
   gst_element_set_state (switchsrv->pipeline, GST_STATE_PAUSED);
-
 }
 
 static void
@@ -453,8 +470,8 @@ main (int argc, char *argv[])
 
   switchsrv = gst_switchsrv_new ();
 
-  if (opts.test)
-    pipeline = gst_switchsrv_create_test_pipeline (switchsrv);
+  if (opts.test_switch)
+    pipeline = gst_switchsrv_test_switch_pipeline (switchsrv);
   else
     pipeline = gst_switchsrv_create_pipeline (switchsrv);
 
