@@ -48,6 +48,7 @@
 #include <gst/gst.h>
 #include "gsttcpmixsrc.h"
 #include "gstswitch.h"
+#include "gstconvbin.h"
 
 static gboolean
 plugin_init (GstPlugin * plugin)
@@ -57,10 +58,16 @@ plugin_init (GstPlugin * plugin)
     return FALSE;
   }
 
+  if (!gst_element_register (plugin, "convbin", GST_RANK_NONE,
+	  GST_TYPE_CONV_BIN)) {
+    return FALSE;
+  }
+
   if (!gst_element_register (plugin, "switch", GST_RANK_NONE,
 	  GST_TYPE_SWITCH)) {
     return FALSE;
   }
+
   return TRUE;
 }
 
