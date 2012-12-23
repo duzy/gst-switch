@@ -170,7 +170,8 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
       "fill=zero port=%d ", opts.port);
   g_string_append_printf (pipe_desc, "switch name=switch ");
   g_string_append_printf (pipe_desc, "xvimagesink name=sink ");
-  g_string_append_printf (pipe_desc, "gdpdepay name=conv "); // gdpdepay
+  g_string_append_printf (pipe_desc, "convbin name=conv "
+      "converter=gdpdepay "); // gdpdepay
   g_string_append_printf (pipe_desc, "funnel name=sum ");
   g_string_append_printf (pipe_desc, "source. ! conv. ");
   g_string_append_printf (pipe_desc, "conv. ! switch. ");
