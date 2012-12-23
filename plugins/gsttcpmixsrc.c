@@ -123,6 +123,10 @@ struct _GstTCPMixSrcPad
   GMutex client_lock;
   GCond has_client;
   GSocket * client;
+
+  gboolean running;
+
+  GstElement * fillsrc;
 };
 
 GType gst_tcp_mix_src_pad_get_type (void);
@@ -177,8 +181,10 @@ gst_tcp_mix_src_pad_finalize (GstTCPMixSrcPad *pad)
 static void
 gst_tcp_mix_src_pad_init (GstTCPMixSrcPad *pad)
 {
+  pad->running = FALSE;
   pad->client = NULL;
   pad->cancellable = g_cancellable_new ();
+  pad->fillsrc = NULL;
   
   g_mutex_init (&pad->client_lock);
   g_cond_init (&pad->has_client);
@@ -236,7 +242,10 @@ gst_tcp_mix_src_pad_read (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
   GST_LOG_OBJECT (pad, "asked for a buffer");
 
   if (!pad->client) {
-    goto no_client;
+    if (src->mode == MODE_LOOP)
+      goto loop_read;
+    else
+      goto no_client;
   }
 
   /* read the buffer header */
@@ -402,7 +411,9 @@ socket_receive_error:
     }
 #endif
 
+#if 0
     GST_DEBUG_OBJECT (pad, "Looping");
+#endif
 
     if (src->fill == FILL_NONE) {
       gst_tcp_mix_src_pad_wait_for_client (pad);
@@ -733,7 +744,10 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
   GstBuffer *buffer = NULL;
   GstFlowReturn ret;
 
-  gst_tcp_mix_src_pad_wait_for_client (pad);
+  if (!pad->running) {
+    gst_tcp_mix_src_pad_wait_for_client (pad);
+    pad->running = TRUE;
+  }
 
   ret = gst_tcp_mix_src_pad_read (pad, &buffer);
   if (ret != GST_FLOW_OK)
@@ -741,8 +755,8 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
 
   ret = gst_pad_push (GST_PAD (pad), buffer);
   if (ret != GST_FLOW_OK) {
-    GST_ERROR_OBJECT (pad, "FIXME: invalid data flow. "
-	"Should not break the stream");
+    GST_ERROR_OBJECT (pad, "FIXME: Invalid data flow, "
+	"should not interupt the stream");
     goto pause;
   }
 
@@ -1071,9 +1085,10 @@ gst_tcp_mix_src_query (GstPad *pad, GstObject *parent,
 static gboolean
 gst_tcp_mix_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
 {
+#if 0
   g_print (LOG_PREFIX"%s:%d:info: event: %s\n", __FILE__, __LINE__, GST_EVENT_TYPE_NAME (event));
+#endif
 
-  //return gst_pad_push_event (pad, event);
   return gst_pad_event_default (pad, parent, event);
 }
 

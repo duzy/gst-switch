@@ -129,14 +129,13 @@ gst_switchsrv_test_switch_pipeline (GstSwitchSrv * switchsrv)
   g_string_append_printf (pipe_desc, "tcpmixsrc name=source mode=loop "
       "fill=none port=%d ", opts.port);
   g_string_append_printf (pipe_desc, "switch name=switch ");
-#if 1
   g_string_append_printf (pipe_desc, "filesink name=sink "
       "location=%s ", opts.test_switch);
-#else
-  g_string_append_printf (pipe_desc, "fdsink name=sink fd=2 ");
-#endif
+  g_string_append_printf (pipe_desc, "convbin name=conv "
+      "converter=identity ");
   g_string_append_printf (pipe_desc, "funnel name=sum ");
-  g_string_append_printf (pipe_desc, "source. ! switch. ");
+  g_string_append_printf (pipe_desc, "source. ! conv. ");
+  g_string_append_printf (pipe_desc, "conv. ! switch. ");
   g_string_append_printf (pipe_desc, "switch. ! sum. ");
   g_string_append_printf (pipe_desc, "sum. ! sink.");
 
@@ -171,7 +170,7 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
   g_string_append_printf (pipe_desc, "switch name=switch ");
   g_string_append_printf (pipe_desc, "xvimagesink name=sink ");
   g_string_append_printf (pipe_desc, "convbin name=conv "
-      "converter=gdpdepay "); // gdpdepay
+      "converter=gdpdepay ");
   g_string_append_printf (pipe_desc, "funnel name=sum ");
   g_string_append_printf (pipe_desc, "source. ! conv. ");
   g_string_append_printf (pipe_desc, "conv. ! switch. ");
@@ -392,7 +391,7 @@ gst_switchsrv_handle_message (GstBus * bus, GstMessage * message, gpointer data)
     case GST_MESSAGE_QOS:
     default:
       if (opts.verbose) {
-        g_print ("message: %s\n", GST_MESSAGE_TYPE_NAME (message));
+        //g_print ("message: %s\n", GST_MESSAGE_TYPE_NAME (message));
       }
       break;
   }
