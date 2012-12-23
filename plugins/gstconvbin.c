@@ -110,6 +110,61 @@ gst_conv_bin_init (GstConvBin *conv)
   conv->converter = NULL;
 }
 
+static void
+gst_conv_bin_add_paired_src_pad (GstConvBin * conv, GstPad * basepad)
+{
+  GstElement * baseconv = GST_ELEMENT (GST_PAD_PARENT (basepad));
+  GstElement * linked_element = NULL;
+  GstPad * basesrcpad = gst_element_get_static_pad (baseconv, "src");
+  GstPad * srcpad = NULL;
+  GList * item = NULL;
+  gchar * name = NULL;
+  gint num;
+
+  if (gst_pad_is_linked (basepad) || 
+      GST_OBJECT_FLAG_IS_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED)) {
+    return;
+  }
+
+  item = GST_ELEMENT_PADS (conv);
+  for (num = 0; item; item = g_list_next (item)) {
+    if (GST_PAD_IS_SRC (GST_PAD (item->data))) {
+      GstPad * pp = GST_PAD_PEER (GST_PAD (item->data));
+
+      if (!linked_element && pp)
+	linked_element = GST_ELEMENT (GST_PAD_PARENT (pp));
+
+      ++num;
+    }
+  }
+
+  name = g_strdup_printf ("src_%u", num);
+  srcpad = gst_ghost_pad_new (name, basesrcpad);
+  gst_object_unref (basesrcpad);
+  g_free (name);
+
+  gst_pad_set_active (srcpad, TRUE);
+
+  if (gst_element_add_pad (GST_ELEMENT (conv), srcpad)) {
+    GST_OBJECT_FLAG_SET (basesrcpad, GST_CONV_BIN_PAD_FLAG_GHOSTED);
+  }
+
+  if (linked_element) {
+    // FIXME: dynamyc name for "sink_%u"
+    GstPadLinkReturn linkRet;
+    GstPad * pp = gst_element_get_request_pad (linked_element, "sink_%u");
+
+    GST_DEBUG_OBJECT (srcpad, "Link %s.%s",
+	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+
+    linkRet = gst_pad_link (GST_PAD (srcpad), GST_PAD (pp));
+    if (GST_PAD_LINK_FAILED (linkRet)) {
+      GST_ERROR_OBJECT (srcpad, "Cannot link %s.%s",
+	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+    }
+  }
+}
+
 static GstPad *
 gst_conv_bin_request_new_pad (GstElement *element,
     GstPadTemplate * templ, const gchar * unused, const GstCaps * caps)
@@ -172,6 +227,7 @@ gst_conv_bin_request_new_pad (GstElement *element,
     case GST_PAD_SINK:
       //basepad = gst_element_request_pad (baseconv, templ, "sink_0", caps);
       basepad = gst_element_get_static_pad (baseconv, "sink");
+      gst_conv_bin_add_paired_src_pad (conv, basepad);
       break;
     case GST_PAD_SRC:
       //basepad = gst_element_request_pad (baseconv, templ, "src_0", caps);
