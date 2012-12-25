@@ -25,9 +25,9 @@
 
 #ifndef __LOG_UTILS_H__
 #define INFO_PREFIX LOG_PREFIX"/%s:%d:info:"
-#define WARN_PREFIX LOG_PREFIX"/%s:%d:warn:"
+#define WARN_PREFIX LOG_PREFIX"/%s:%d:warning:"
 #define ERROR_PREFIX LOG_PREFIX"/%s:%d:error:"
-#define INFO(S, ...) g_print (INFO_PREFIX" "S, __FILE__, __LINE__, ## __VA_ARGS__)
-#define WARN(S, ...) g_print (WARN_PREFIX" "S, __FILE__, __LINE__, ## __VA_ARGS__)
-#define ERROR(S, ...) g_print (ERROR_PREFIX" "S, __FILE__, __LINE__, ## __VA_ARGS__)
+#define INFO(S, ...) g_print (INFO_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
+#define WARN(S, ...) g_print (WARN_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
+#define ERROR(S, ...) g_print (ERROR_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
 #endif//__LOG_UTILS_H__

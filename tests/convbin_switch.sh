@@ -17,10 +17,12 @@ launch -v \
     filesrc name=source4 location=/tmp/src4 \
     convbin name=conv converter=identity autolink=switch \
     switch name=switch \
-    fdsink name=sink fd=2 \
+    fdsink name=sink1 fd=2 \
+    fdsink name=sink2 fd=2 \
     source1. ! conv. \
     source2. ! conv. \
     source3. ! conv. \
     source4. ! conv. \
     conv. ! switch. \
-    switch. ! sink. \
+    switch. ! sink1. \
+    switch. ! sink2. \

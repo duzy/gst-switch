@@ -60,7 +60,7 @@ static GstStaticPadTemplate gst_conv_bin_src_factory =
 enum
 {
   PROP_0,
-  PROP_AUTOLINK,
+  PROP_AUTOSINK,
   PROP_CONVERTER,
 };
 
@@ -71,9 +71,9 @@ gst_conv_bin_set_property (GstConvBin *conv, guint prop_id,
     const GValue *value, GParamSpec * spec)
 {
   switch (prop_id) {
-  case PROP_AUTOLINK:
-    g_free (conv->autolink);
-    conv->autolink = g_strdup (g_value_get_string (value));
+  case PROP_AUTOSINK:
+    g_free (conv->autosink);
+    conv->autosink = g_strdup (g_value_get_string (value));
     break;
   case PROP_CONVERTER:
     g_free (conv->converter);
@@ -90,8 +90,8 @@ gst_conv_bin_get_property (GstConvBin *conv, guint prop_id,
     GValue *value, GParamSpec * spec)
 {
   switch (prop_id) {
-  case PROP_AUTOLINK:
-    g_value_set_string (value, conv->autolink);
+  case PROP_AUTOSINK:
+    g_value_set_string (value, conv->autosink);
     break;
   case PROP_CONVERTER:
     g_value_set_string (value, conv->converter);
@@ -106,7 +106,7 @@ static void
 gst_conv_bin_init (GstConvBin *conv)
 {
   conv->converter = NULL;
-  conv->autolink = NULL;
+  conv->autosink = NULL;
 
   g_mutex_init (&conv->lock);
 }
@@ -115,52 +115,45 @@ static void
 gst_conv_bin_finalize (GstConvBin *conv)
 {
   g_free (conv->converter);
-  g_free (conv->autolink);
+  g_free (conv->autosink);
 
   g_mutex_clear (&conv->lock);
 
   G_OBJECT_CLASS (conv)->finalize (G_OBJECT (conv));
 }
 
-static void gst_conv_bin_autolink (GstConvBin * conv)
+static void gst_conv_bin_autosink (GstConvBin * conv)
 {
   GstElement * target = NULL, * baseconv;
+  GstBin * parent;
   GstPad * basepad, * srcpad, * pp;
   GList * item;
   gchar * name;
   gint num;
 
-  if (!conv->autolink)
+  if (!conv->autosink)
+    goto done;
+
+  parent = GST_BIN (GST_ELEMENT_PARENT (conv));
+  target = gst_bin_get_by_name (parent, conv->autosink);
+
+  if (!target)
     goto done;
 
   for (item = GST_ELEMENT_PADS (conv), num = 0;
        item; item = g_list_next (item)) {
     if (GST_PAD_IS_SRC (GST_PAD (item->data))) {
-      pp = GST_PAD_PEER (GST_PAD (item->data));
-
-      if (!target && pp) {
-	GstElement * ppp = GST_ELEMENT (GST_PAD_PARENT (pp));
-	if (strcmp (GST_ELEMENT_NAME (ppp), conv->autolink) == 0) {
-	  target =  ppp;
-	}
-      }
-
       ++num;
     }
   }
-
-  if (!target)
-    goto done;
-
-  //INFO ("autolink: %s\n", GST_ELEMENT_NAME (target));
 
   for (item = GST_BIN_CHILDREN (GST_BIN (conv));
        item; item = g_list_next (item)) {
     baseconv = GST_ELEMENT (item->data);
     basepad = gst_element_get_static_pad (baseconv, "src");
 
-    if (basepad && gst_pad_is_linked (basepad) ||
-	GST_OBJECT_FLAG_IS_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED))
+    if (basepad && (gst_pad_is_linked (basepad) ||
+	    GST_OBJECT_FLAG_IS_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED)))
       continue;
 
     name = g_strdup_printf ("src_%u", num);
@@ -168,23 +161,23 @@ static void gst_conv_bin_autolink (GstConvBin * conv)
     gst_object_unref (basepad);
     g_free (name);
 
-    INFO ("requesting sink on %s\n", GST_ELEMENT_NAME (target));
+    INFO ("requesting %s.sink_%%u", GST_ELEMENT_NAME (target));
     pp = gst_element_get_request_pad (target, "sink_%u");
     if (!pp) {
-      GST_ERROR_OBJECT (target, "get request pad %s.sink_%%u\n",
+      GST_ERROR_OBJECT (target, "get request pad %s.sink_%%u",
 	  GST_ELEMENT_NAME (target));
       continue;
     }
 
-    GST_DEBUG_OBJECT (srcpad, "Autolink %s.%s",
+    GST_DEBUG_OBJECT (conv, "Autosink %s.%s",
 	GST_ELEMENT_NAME (target), GST_PAD_NAME (pp));
 
-    INFO ("autolink %s.%s -> %s.%s\n",
+    INFO ("autosink %s.%s -> %s.%s",
 	GST_ELEMENT_NAME (conv), GST_PAD_NAME (srcpad),
 	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
   
     if (GST_PAD_LINK_FAILED (gst_pad_link (srcpad, pp))) {
-      GST_ERROR_OBJECT (srcpad, "Failed autolink %s.%s",
+      GST_ERROR_OBJECT (srcpad, "Failed autosink %s.%s",
 	  GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
     }
 
@@ -214,21 +207,11 @@ gst_conv_bin_request_new_pad (GstElement *element,
   if (conv->converter == NULL)
     goto error_no_converter_name;
 
-  /*
-  INFO ("requesting: %s.%s\n",
+  INFO ("requesting: %s.%s",
       GST_ELEMENT_NAME (conv),
       GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
-  */
 
   GST_CONV_BIN_LOCK (conv);
-
-  /*
-  INFO ("requesting: %s.%s -> %s.%s\n",
-    GST_ELEMENT_NAME (conv),
-    GST_PAD_TEMPLATE_NAME_TEMPLATE (templ),
-    baseconv ? GST_ELEMENT_NAME (baseconv) : "?",
-    basepad ? GST_PAD_NAME (basepad) : "?");
-  */
 
   for (item = GST_BIN_CHILDREN (GST_BIN (conv)), num = 0;
        item; item = g_list_next (item)) ++num;
@@ -280,14 +263,16 @@ gst_conv_bin_request_new_pad (GstElement *element,
     GST_DEBUG_OBJECT (pad, "Requested %s.%s",
 	GST_ELEMENT_NAME (baseconv), GST_PAD_NAME (basepad));
 
-    INFO ("requested %s.%s on %s.%s\n",
+    /*
+    INFO ("requested %s.%s on %s.%s",
 	GST_ELEMENT_NAME (conv), GST_PAD_NAME (pad),
 	GST_ELEMENT_NAME (baseconv), GST_PAD_NAME (basepad));
+    */
   } else {
     gst_object_unref (pad);
   }
 
-  //gst_conv_bin_autolink (conv);
+  gst_conv_bin_autosink (conv);
   GST_CONV_BIN_UNLOCK (conv);
   return pad;
 
@@ -295,14 +280,6 @@ gst_conv_bin_request_new_pad (GstElement *element,
  error_no_converter_name:
   {
     GST_ERROR_OBJECT (conv, "No underlayer converter name");
-    return NULL;
-  }
-
- error_direction:
-  {
-    GST_CONV_BIN_UNLOCK (conv);
-    GST_ERROR_OBJECT (conv, "Unknown direction of %s",
-	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
     return NULL;
   }
 
@@ -362,9 +339,9 @@ gst_conv_bin_class_init (GstConvBinClass *klass)
   object_class->get_property = (GObjectGetPropertyFunc) gst_conv_bin_get_property;
   object_class->finalize = (GObjectFinalizeFunc) gst_conv_bin_finalize;
 
-  g_object_class_install_property (object_class, PROP_AUTOLINK,
-      g_param_spec_string ("autolink", "Autolink",
-	  "Specify the element name for autolink", "",
+  g_object_class_install_property (object_class, PROP_AUTOSINK,
+      g_param_spec_string ("autosink", "Autosink",
+	  "Specify the element name for autosink", "",
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_CONVERTER,

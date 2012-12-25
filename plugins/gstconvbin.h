@@ -49,7 +49,7 @@ struct _GstConvBin {
 
   GMutex lock;
   gchar * converter;
-  gchar * autolink;
+  gchar * autosink;
 };
 
 struct _GstConvBinClass {
