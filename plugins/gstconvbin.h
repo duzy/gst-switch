@@ -47,7 +47,9 @@ typedef enum {
 struct _GstConvBin {
   GstBin base;
 
+  GMutex lock;
   gchar * converter;
+  gchar * autolink;
 };
 
 struct _GstConvBinClass {

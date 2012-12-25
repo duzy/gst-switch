@@ -16,10 +16,10 @@ launch -v \
     filesrc name=source4 location=/tmp/src4 \
     convbin name=conv converter=identity \
     fdsink name=sink fd=2 \
-    funnel name="fun" \
+    funnel name="sum" \
     source1. ! conv. \
     source2. ! conv. \
     source3. ! conv. \
     source4. ! conv. \
-    conv. ! fun. \
-    fun. ! sink.
+    conv. ! sum. \
+    sum. ! sink.

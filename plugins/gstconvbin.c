@@ -37,9 +37,13 @@
 #endif
 
 #include "gstconvbin.h"
+#include "../logutils.h"
 
 GST_DEBUG_CATEGORY_STATIC (gst_conv_bin_debug);
 #define GST_CAT_DEFAULT gst_conv_bin_debug
+
+#define GST_CONV_BIN_LOCK(obj) (g_mutex_lock (&(obj)->lock))
+#define GST_CONV_BIN_UNLOCK(obj) (g_mutex_unlock (&(obj)->lock))
 
 static GstStaticPadTemplate gst_conv_bin_sink_factory =
   GST_STATIC_PAD_TEMPLATE ("sink_%u",
@@ -56,6 +60,7 @@ static GstStaticPadTemplate gst_conv_bin_src_factory =
 enum
 {
   PROP_0,
+  PROP_AUTOLINK,
   PROP_CONVERTER,
 };
 
@@ -66,14 +71,14 @@ gst_conv_bin_set_property (GstConvBin *conv, guint prop_id,
     const GValue *value, GParamSpec * spec)
 {
   switch (prop_id) {
+  case PROP_AUTOLINK:
+    g_free (conv->autolink);
+    conv->autolink = g_strdup (g_value_get_string (value));
+    break;
   case PROP_CONVERTER:
-    g_print ("%s:%d: set_property: converter=%s\n", __FILE__, __LINE__,
-	g_value_get_string (value));
-
     g_free (conv->converter);
     conv->converter = g_strdup (g_value_get_string (value));
     break;
-
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (conv), prop_id, spec);
     break;
@@ -85,12 +90,12 @@ gst_conv_bin_get_property (GstConvBin *conv, guint prop_id,
     GValue *value, GParamSpec * spec)
 {
   switch (prop_id) {
+  case PROP_AUTOLINK:
+    g_value_set_string (value, conv->autolink);
+    break;
   case PROP_CONVERTER:
     g_value_set_string (value, conv->converter);
-    g_print ("%s:%d: get_property: converter=%s\n", __FILE__, __LINE__,
-	g_value_get_string (value));
     break;
-
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (conv), prop_id, spec);
     break;
@@ -98,71 +103,100 @@ gst_conv_bin_get_property (GstConvBin *conv, guint prop_id,
 }
 
 static void
-gst_conv_bin_finalize (GstConvBin *conv)
-{
-  g_free (conv->converter);
-  G_OBJECT_CLASS (conv)->finalize (G_OBJECT (conv));
-}
-
-static void
 gst_conv_bin_init (GstConvBin *conv)
 {
   conv->converter = NULL;
+  conv->autolink = NULL;
+
+  g_mutex_init (&conv->lock);
 }
 
 static void
-gst_conv_bin_add_paired_src_pad (GstConvBin * conv, GstPad * basepad)
+gst_conv_bin_finalize (GstConvBin *conv)
 {
-  GstElement * baseconv = GST_ELEMENT (GST_PAD_PARENT (basepad));
-  GstElement * linked_element = NULL;
-  GstPad * basesrcpad = gst_element_get_static_pad (baseconv, "src");
-  GstPad * srcpad = NULL;
-  GList * item = NULL;
-  gchar * name = NULL;
+  g_free (conv->converter);
+  g_free (conv->autolink);
+
+  g_mutex_clear (&conv->lock);
+
+  G_OBJECT_CLASS (conv)->finalize (G_OBJECT (conv));
+}
+
+static void gst_conv_bin_autolink (GstConvBin * conv)
+{
+  GstElement * target = NULL, * baseconv;
+  GstPad * basepad, * srcpad, * pp;
+  GList * item;
+  gchar * name;
   gint num;
 
-  if (gst_pad_is_linked (basepad) || 
-      GST_OBJECT_FLAG_IS_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED)) {
-    return;
-  }
+  if (!conv->autolink)
+    goto done;
 
-  item = GST_ELEMENT_PADS (conv);
-  for (num = 0; item; item = g_list_next (item)) {
+  for (item = GST_ELEMENT_PADS (conv), num = 0;
+       item; item = g_list_next (item)) {
     if (GST_PAD_IS_SRC (GST_PAD (item->data))) {
-      GstPad * pp = GST_PAD_PEER (GST_PAD (item->data));
+      pp = GST_PAD_PEER (GST_PAD (item->data));
 
-      if (!linked_element && pp)
-	linked_element = GST_ELEMENT (GST_PAD_PARENT (pp));
+      if (!target && pp) {
+	GstElement * ppp = GST_ELEMENT (GST_PAD_PARENT (pp));
+	if (strcmp (GST_ELEMENT_NAME (ppp), conv->autolink) == 0) {
+	  target =  ppp;
+	}
+      }
 
       ++num;
     }
   }
 
-  name = g_strdup_printf ("src_%u", num);
-  srcpad = gst_ghost_pad_new (name, basesrcpad);
-  gst_object_unref (basesrcpad);
-  g_free (name);
+  if (!target)
+    goto done;
 
-  gst_pad_set_active (srcpad, TRUE);
+  //INFO ("autolink: %s\n", GST_ELEMENT_NAME (target));
 
-  if (gst_element_add_pad (GST_ELEMENT (conv), srcpad)) {
-    GST_OBJECT_FLAG_SET (basesrcpad, GST_CONV_BIN_PAD_FLAG_GHOSTED);
-  }
+  for (item = GST_BIN_CHILDREN (GST_BIN (conv));
+       item; item = g_list_next (item)) {
+    baseconv = GST_ELEMENT (item->data);
+    basepad = gst_element_get_static_pad (baseconv, "src");
 
-  if (linked_element) {
-    // FIXME: dynamyc name for "sink_%u"
-    GstPadLinkReturn linkRet;
-    GstPad * pp = gst_element_get_request_pad (linked_element, "sink_%u");
+    if (basepad && gst_pad_is_linked (basepad) ||
+	GST_OBJECT_FLAG_IS_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED))
+      continue;
 
-    GST_DEBUG_OBJECT (srcpad, "Link %s.%s",
+    name = g_strdup_printf ("src_%u", num);
+    srcpad = gst_ghost_pad_new (name, basepad);
+    gst_object_unref (basepad);
+    g_free (name);
+
+    INFO ("requesting sink on %s\n", GST_ELEMENT_NAME (target));
+    pp = gst_element_get_request_pad (target, "sink_%u");
+    if (!pp) {
+      GST_ERROR_OBJECT (target, "get request pad %s.sink_%%u\n",
+	  GST_ELEMENT_NAME (target));
+      continue;
+    }
+
+    GST_DEBUG_OBJECT (srcpad, "Autolink %s.%s",
+	GST_ELEMENT_NAME (target), GST_PAD_NAME (pp));
+
+    INFO ("autolink %s.%s -> %s.%s\n",
+	GST_ELEMENT_NAME (conv), GST_PAD_NAME (srcpad),
 	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+  
+    if (GST_PAD_LINK_FAILED (gst_pad_link (srcpad, pp))) {
+      GST_ERROR_OBJECT (srcpad, "Failed autolink %s.%s",
+	  GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+    }
 
-    linkRet = gst_pad_link (GST_PAD (srcpad), GST_PAD (pp));
-    if (GST_PAD_LINK_FAILED (linkRet)) {
-      GST_ERROR_OBJECT (srcpad, "Cannot link %s.%s",
-	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+    gst_pad_set_active (srcpad, TRUE);
+
+    if (gst_element_add_pad (GST_ELEMENT (conv), srcpad)) {
+      GST_OBJECT_FLAG_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED);
     }
   }
+  
+ done:
+  return;
 }
 
 static GstPad *
@@ -180,133 +214,119 @@ gst_conv_bin_request_new_pad (GstElement *element,
   if (conv->converter == NULL)
     goto error_no_converter_name;
 
-  switch (dir) {
-  case GST_PAD_SINK: name = "sink"; break;
-  case GST_PAD_SRC:  name = "src";  break;
-  default:
-    GST_ERROR_OBJECT (conv, "unknown pad direction %s",
-	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
-    break;
-  }
-  for (item = GST_BIN_CHILDREN (GST_BIN (conv)); item; item = g_list_next (item)) {
-    baseconv = GST_ELEMENT (item->data);
-    basepad = gst_element_get_static_pad (baseconv, name);
-
-    if (!gst_pad_is_linked (basepad) &&
-	!GST_OBJECT_FLAG_IS_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED))
-      break;
-
-    gst_object_unref (GST_OBJECT (basepad));
-    baseconv = NULL;
-    basepad = NULL;
-  }
-
   /*
-  g_print ("%s:%d: %s\n", __FILE__, __LINE__,
+  INFO ("requesting: %s.%s\n",
+      GST_ELEMENT_NAME (conv),
       GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
   */
 
-  if (!basepad) {
-    item = GST_BIN_CHILDREN (GST_BIN (conv));
-    for (num = 0; item; item = g_list_next (item)) ++num;
-    name = g_strdup_printf ("conv_%u", num);
-    baseconv = gst_element_factory_make (conv->converter, name);
-    g_free (name);
-    name = NULL;
-
-    if (!baseconv)
-      goto error_no_converter;
-    if (!gst_bin_add (GST_BIN (conv), baseconv))
-      goto error_bin_add;
-
-    /*
-    GST_DEBUG_OBJECT (conv, "New converter: %s", GST_ELEMENT_NAME (baseconv));
-    */
-
-    switch (dir) {
-    case GST_PAD_SINK:
-      //basepad = gst_element_request_pad (baseconv, templ, "sink_0", caps);
-      basepad = gst_element_get_static_pad (baseconv, "sink");
-      gst_conv_bin_add_paired_src_pad (conv, basepad);
-      break;
-    case GST_PAD_SRC:
-      //basepad = gst_element_request_pad (baseconv, templ, "src_0", caps);
-      basepad = gst_element_get_static_pad (baseconv, "src");
-      break;
-    default:
-      basepad = NULL;
-      break;
-    }
-  }
+  GST_CONV_BIN_LOCK (conv);
 
   /*
-  g_print ("%s:%d: %s -> %s\n", __FILE__, __LINE__,
-      GST_PAD_TEMPLATE_NAME_TEMPLATE (templ),
-      GST_PAD_NAME (basepad));
+  INFO ("requesting: %s.%s -> %s.%s\n",
+    GST_ELEMENT_NAME (conv),
+    GST_PAD_TEMPLATE_NAME_TEMPLATE (templ),
+    baseconv ? GST_ELEMENT_NAME (baseconv) : "?",
+    basepad ? GST_PAD_NAME (basepad) : "?");
   */
 
-  if (basepad) {
-    item = GST_ELEMENT_PADS (conv);
-    for (num = 0; item; item = g_list_next (item))
-      if (GST_PAD_DIRECTION (GST_PAD (item->data)) == dir)
-	++num;
+  for (item = GST_BIN_CHILDREN (GST_BIN (conv)), num = 0;
+       item; item = g_list_next (item)) ++num;
+  name = g_strdup_printf ("conv_%u", num);
+  baseconv = gst_element_factory_make (conv->converter, name);
+  g_free (name);
+  name = NULL;
 
-    switch (dir) {
-    case GST_PAD_SINK:
-      name = g_strdup_printf ("sink_%u", num);
-      break;
-    case GST_PAD_SRC:
-      name = g_strdup_printf ("src_%u", num);
-      break;
-    default:
-      name = NULL;
-      break;
-    }
+  if (!baseconv)
+    goto error_no_converter;
 
-    pad = gst_ghost_pad_new (name, basepad);
-    gst_object_unref (basepad);
-    g_free (name);
+  if (!gst_bin_add (GST_BIN (conv), baseconv))
+    goto error_bin_add;
 
-    gst_pad_set_active (pad, TRUE);
+  switch (dir) {
+  case GST_PAD_SINK:
+    basepad = gst_element_get_static_pad (baseconv, "sink");
+    break;
+  case GST_PAD_SRC:
+    basepad = gst_element_get_static_pad (baseconv, "src");
+    break;
+  default:
+    basepad = NULL;
+    break;
+  }
 
-    if (gst_element_add_pad (GST_ELEMENT (conv), pad)) {
-      GST_OBJECT_FLAG_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED);
-    }
+  if (!basepad)
+    goto error_no_basepad;
+
+  for (item = GST_ELEMENT_PADS (conv), num = 0;
+       item; item = g_list_next (item)) {
+    if (GST_PAD_DIRECTION (GST_PAD (item->data)) == dir)
+      ++num;
+  }
+
+  if (dir == GST_PAD_SINK) {
+    name = g_strdup_printf ("sink_%u", num);
   } else {
-    GST_ERROR_OBJECT (conv, "No basepad for %s",
-	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
+    name = g_strdup_printf ("src_%u", num);
   }
+  pad = gst_ghost_pad_new (name, basepad);
+  gst_object_unref (basepad);
+  g_free (name);
 
-  /*
-  g_print ("%s:%d: %s -> %s -> %s\n", __FILE__, __LINE__,
-      GST_PAD_TEMPLATE_NAME_TEMPLATE (templ),
-      GST_PAD_NAME (basepad), GST_PAD_NAME (pad));
-  */
+  gst_pad_set_active (pad, TRUE);
+  if (gst_element_add_pad (GST_ELEMENT (conv), pad)) {
+    GST_OBJECT_FLAG_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED);
 
-  if (pad) {
     GST_DEBUG_OBJECT (pad, "Requested %s.%s",
 	GST_ELEMENT_NAME (baseconv), GST_PAD_NAME (basepad));
+
+    INFO ("requested %s.%s on %s.%s\n",
+	GST_ELEMENT_NAME (conv), GST_PAD_NAME (pad),
+	GST_ELEMENT_NAME (baseconv), GST_PAD_NAME (basepad));
+  } else {
+    gst_object_unref (pad);
   }
 
+  //gst_conv_bin_autolink (conv);
+  GST_CONV_BIN_UNLOCK (conv);
   return pad;
 
   /* Handing Errors */
  error_no_converter_name:
   {
-    GST_ERROR_OBJECT (conv, "no underlayer converter name");
+    GST_ERROR_OBJECT (conv, "No underlayer converter name");
+    return NULL;
+  }
+
+ error_direction:
+  {
+    GST_CONV_BIN_UNLOCK (conv);
+    GST_ERROR_OBJECT (conv, "Unknown direction of %s",
+	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
     return NULL;
   }
 
  error_no_converter:
   {
-    GST_ERROR_OBJECT (conv, "not converter by name %s", conv->converter);
+    GST_CONV_BIN_UNLOCK (conv);
+    GST_ERROR_OBJECT (conv, "No converter '%s'", conv->converter);
     return NULL;
   }
 
  error_bin_add:
   {
     gst_object_unref (baseconv);
+    GST_CONV_BIN_UNLOCK (conv);
     GST_ERROR_OBJECT (conv, "failed to add converter");
+    return NULL;
+  }
+
+ error_no_basepad:
+  {
+    gst_object_unref (baseconv);
+    GST_CONV_BIN_UNLOCK (conv);
+    GST_ERROR_OBJECT (conv, "No basepad for %s",
+	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
     return NULL;
   }
 }
@@ -314,10 +334,23 @@ gst_conv_bin_request_new_pad (GstElement *element,
 static void
 gst_conv_bin_release_pad (GstElement * element, GstPad * pad)
 {
-  //GstConvBin * conv = GST_CONV_BIN (element);
+  GstConvBin * conv = GST_CONV_BIN (element);
+  GST_CONV_BIN_LOCK (conv);
   gst_pad_set_active (pad, FALSE);
   gst_element_remove_pad (element, pad);
+  GST_CONV_BIN_UNLOCK (conv);
 }
+
+/*
+static void
+gst_conv_bin_state_changed (GstElement *element, GstState oldstate,
+    GstState newstate, GstState pending)
+{
+  GstConvBin * conv = GST_CONV_BIN (element);
+  GST_DEBUG_OBJECT (conv, "State changed: %d -> %d (%d)",
+      oldstate, newstate, pending);
+}
+*/
 
 static void
 gst_conv_bin_class_init (GstConvBinClass *klass)
@@ -328,6 +361,11 @@ gst_conv_bin_class_init (GstConvBinClass *klass)
   object_class->set_property = (GObjectSetPropertyFunc) gst_conv_bin_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_conv_bin_get_property;
   object_class->finalize = (GObjectFinalizeFunc) gst_conv_bin_finalize;
+
+  g_object_class_install_property (object_class, PROP_AUTOLINK,
+      g_param_spec_string ("autolink", "Autolink",
+	  "Specify the element name for autolink", "",
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_CONVERTER,
       g_param_spec_string ("converter", "Base Converter",
@@ -347,6 +385,7 @@ gst_conv_bin_class_init (GstConvBinClass *klass)
 
   element_class->request_new_pad = gst_conv_bin_request_new_pad;
   element_class->release_pad = gst_conv_bin_release_pad;
+  //element_class->state_changed = gst_conv_bin_state_changed;
 
   GST_DEBUG_CATEGORY_INIT (gst_conv_bin_debug, "convbin", 0, "ConvertBin");
 }

@@ -29,14 +29,9 @@
 
 #include <gst/gst.h>
 #include <stdlib.h>
+#include "../logutils.h"
 
 #define GETTEXT_PACKAGE "switchsrv"
-#define INFO_PREFIX "./tools/%s:%d:info:"
-#define WARN_PREFIX "./tools/%s:%d:warn:"
-#define ERROR_PREFIX "./tools/%s:%d:error:"
-#define INFO(S, ...) g_print (INFO_PREFIX" "S, __FILE__, __LINE__, __VA_ARGS__)
-#define WARN(S, ...) g_print (WARN_PREFIX" "S, __FILE__, __LINE__, __VA_ARGS__)
-#define ERROR(S, ...) g_print (ERROR_PREFIX" "S, __FILE__, __LINE__, __VA_ARGS__)
 
 typedef struct _GstSwitchSrv GstSwitchSrv;
 struct _GstSwitchSrv
@@ -157,31 +152,36 @@ gst_switchsrv_test_switch_pipeline (GstSwitchSrv * switchsrv)
 static GstElement *
 gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
 {
-  GString *pipe_desc;
+  GString *desc;
   GstElement *pipeline;
   GError *error = NULL;
 
   INFO ("Listenning on port %d\n", opts.port);
 
-  pipe_desc = g_string_new ("");
+  desc = g_string_new ("");
 
-  g_string_append_printf (pipe_desc, "tcpmixsrc name=source mode=loop "
-      "fill=zero port=%d ", opts.port);
-  g_string_append_printf (pipe_desc, "switch name=switch ");
-  g_string_append_printf (pipe_desc, "xvimagesink name=sink ");
-  g_string_append_printf (pipe_desc, "convbin name=conv "
+  g_string_append_printf (desc, "tcpmixsrc name=source mode=loop "
+      "fill=none port=%d ", opts.port);
+  g_string_append_printf (desc, "switch name=switch ");
+  g_string_append_printf (desc, "convbin name=conv "
       "converter=gdpdepay ");
-  g_string_append_printf (pipe_desc, "funnel name=sum ");
-  g_string_append_printf (pipe_desc, "source. ! conv. ");
-  g_string_append_printf (pipe_desc, "conv. ! switch. ");
-  g_string_append_printf (pipe_desc, "switch. ! sum. ");
-  g_string_append_printf (pipe_desc, "sum. ! sink. ");
+  g_string_append_printf (desc, "xvimagesink name=sink1 ");
+  g_string_append_printf (desc, "xvimagesink name=sink2 ");
+  g_string_append_printf (desc, "source. ! conv. ");
+#if 0
+  g_string_append_printf (desc, "conv. ! sink1. ");
+  g_string_append_printf (desc, "conv. ! sink2. ");
+#else
+  g_string_append_printf (desc, "conv. ! switch. ");
+  g_string_append_printf (desc, "switch. ! sink1. ");
+  g_string_append_printf (desc, "switch. ! sink2. ");
+#endif
 
   if (opts.verbose)
-    g_print ("pipeline: %s\n", pipe_desc->str);
+    g_print ("pipeline: %s\n", desc->str);
 
-  pipeline = (GstElement *) gst_parse_launch (pipe_desc->str, &error);
-  g_string_free (pipe_desc, FALSE);
+  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
+  g_string_free (desc, FALSE);
 
   if (error) {
     ERROR ("pipeline parsing error: %s\n", error->message);

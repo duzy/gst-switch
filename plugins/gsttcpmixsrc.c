@@ -45,6 +45,7 @@
 
 #include <stdlib.h>
 #include "gsttcpmixsrc.h"
+#include "../logutils.h"
 
 GST_DEBUG_CATEGORY_STATIC (tcpmixsrc_debug);
 #define GST_CAT_DEFAULT tcpmixsrc_debug
@@ -56,8 +57,6 @@ GST_DEBUG_CATEGORY_STATIC (tcpmixsrc_debug);
 #define TCP_DEFAULT_LISTEN_HOST NULL    /* listen on all interfaces */
 
 #define MAX_READ_SIZE           4 * 1024
-
-#define LOG_PREFIX "./plugins/"
 
 enum
 {

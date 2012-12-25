@@ -49,6 +49,7 @@
 #include "gsttcpmixsrc.h"
 #include "gstswitch.h"
 #include "gstconvbin.h"
+#include "../logutils.h"
 
 static gboolean
 plugin_init (GstPlugin * plugin)
