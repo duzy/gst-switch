@@ -42,6 +42,8 @@ struct _GstSwitchSrv
 
   GstElement *source_element;
   GstElement *sink_element;
+  GstElement *switch_element;
+  GstElement *conv_element;
 
   gboolean paused_for_buffering;
   guint timer_id;
@@ -103,6 +105,14 @@ gst_switchsrv_free (GstSwitchSrv * switchsrv)
     gst_object_unref (switchsrv->sink_element);
     switchsrv->sink_element = NULL;
   }
+  if (switchsrv->switch_element) {
+    gst_object_unref (switchsrv->switch_element);
+    switchsrv->switch_element = NULL;
+  }
+  if (switchsrv->conv_element) {
+    gst_object_unref (switchsrv->conv_element);
+    switchsrv->conv_element = NULL;
+  }
 
   if (switchsrv->pipeline) {
     gst_element_set_state (switchsrv->pipeline, GST_STATE_NULL);
@@ -156,7 +166,7 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
   GstElement *pipeline;
   GError *error = NULL;
 
-  INFO ("Listenning on port %d\n", opts.port);
+  INFO ("Listenning on port %d", opts.port);
 
   desc = g_string_new ("");
 
@@ -164,15 +174,14 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
       "fill=none port=%d ", opts.port);
   g_string_append_printf (desc, "switch name=switch ");
   g_string_append_printf (desc, "convbin name=conv "
-      "converter=gdpdepay ");
+      "converter=gdpdepay autosink=switch ");
   g_string_append_printf (desc, "xvimagesink name=sink1 ");
-  g_string_append_printf (desc, "xvimagesink name=sink2 ");
+  //g_string_append_printf (desc, "xvimagesink name=sink2 ");
   g_string_append_printf (desc, "source. ! conv. ");
 #if 0
   g_string_append_printf (desc, "conv. ! sink1. ");
   g_string_append_printf (desc, "conv. ! sink2. ");
 #else
-  g_string_append_printf (desc, "conv. ! switch. ");
   g_string_append_printf (desc, "switch. ! sink1. ");
   g_string_append_printf (desc, "switch. ! sink2. ");
 #endif
@@ -184,7 +193,7 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
   g_string_free (desc, FALSE);
 
   if (error) {
-    ERROR ("pipeline parsing error: %s\n", error->message);
+    ERROR ("pipeline parsing error: %s", error->message);
     gst_object_unref (pipeline);
     return NULL;
   }
@@ -220,7 +229,7 @@ static void
 gst_switchsrv_handle_error (GstSwitchSrv * switchsrv, GError * error,
     const char *debug)
 {
-  ERROR ("%s\n", error->message);
+  ERROR ("%s", error->message);
   gst_switchsrv_stop (switchsrv);
 }
 
@@ -228,14 +237,14 @@ static void
 gst_switchsrv_handle_warning (GstSwitchSrv * switchsrv, GError * error,
     const char *debug)
 {
-  WARN ("%s\n", error->message);
+  WARN ("%s", error->message);
 }
 
 static void
 gst_switchsrv_handle_info (GstSwitchSrv * switchsrv, GError * error,
     const char *debug)
 {
-  INFO ("%s\n", error->message);
+  INFO ("%s", error->message);
 }
 
 static void
@@ -410,6 +419,30 @@ onesecond_timer (gpointer priv)
 }
 
 static void
+on_source_pad_added (GstElement * element, GstPad * pad,
+    GstSwitchSrv * switchsrv)
+{
+  INFO ("source-pad-added: %s.%s", GST_ELEMENT_NAME (element),
+      GST_PAD_NAME (pad));
+}
+
+static void
+on_convert_pad_added (GstElement * element, GstPad * pad,
+    GstSwitchSrv * switchsrv)
+{
+  INFO ("convert-pad-added: %s.%s", GST_ELEMENT_NAME (element),
+      GST_PAD_NAME (pad));
+}
+
+static void
+on_source_new_client (GstElement * element, GstPad * pad,
+    GstSwitchSrv * switchsrv)
+{
+  INFO ("new client on %s.%s", GST_ELEMENT_NAME (element),
+      GST_PAD_NAME (pad));
+}
+
+static void
 gst_switchsrv_set_pipeline (GstSwitchSrv * switchsrv, GstElement *pipeline)
 {
   switchsrv->pipeline = pipeline;
@@ -420,6 +453,31 @@ gst_switchsrv_set_pipeline (GstSwitchSrv * switchsrv, GstElement *pipeline)
 
   switchsrv->source_element = gst_bin_get_by_name (GST_BIN (pipeline), "source");
   switchsrv->sink_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
+  switchsrv->switch_element = gst_bin_get_by_name (GST_BIN (pipeline), "switch");
+  switchsrv->conv_element = gst_bin_get_by_name (GST_BIN (pipeline), "conv");
+
+  if (switchsrv->source_element) {
+    g_signal_connect (switchsrv->source_element, "pad-added",
+	G_CALLBACK (on_source_pad_added), switchsrv);
+
+    g_signal_connect (switchsrv->source_element, "new-client",
+	G_CALLBACK (on_source_new_client), switchsrv);
+  }
+
+  if (switchsrv->conv_element) {
+    g_signal_connect (switchsrv->conv_element, "pad-added",
+	G_CALLBACK (on_convert_pad_added), switchsrv);
+  }
+
+  {
+    GstElement * swit = switchsrv->switch_element;
+    GList * item = GST_ELEMENT_PADS (swit);
+    GstPad * pad;
+    for (; item; item = g_list_next (item)) {
+      pad = GST_PAD (item->data);
+      INFO ("switch-pad: %s", GST_PAD_NAME (pad));
+    }
+  }
 }
 
 /* helper functions */

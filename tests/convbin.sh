@@ -21,8 +21,8 @@ launch -v \
     source2. ! conv. \
     source3. ! conv. \
     source4. ! conv. \
-    conv. ! sum. \
-    conv. ! sum. \
-    conv. ! sum. \
-    conv. ! sum. \
+    conv. ! sum.sink_0 \
+    conv. ! sum.sink_1 \
+    conv. ! sum.sink_2 \
+    conv. ! sum.sink_3 \
     sum. ! sink.

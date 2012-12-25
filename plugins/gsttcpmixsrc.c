@@ -81,6 +81,14 @@ enum
   FILL_RAND, /* keep alive, fill the stream with random data */
 };
 
+enum
+{
+  SIGNAL_NEW_CLIENT,
+  LAST_SIGNAL
+};
+
+static guint gst_tcpmixsrc_signals[LAST_SIGNAL] = { 0 };
+
 static GstStaticPadTemplate srctemplate =
   GST_STATIC_PAD_TEMPLATE ("src_%u",
       GST_PAD_SRC,
@@ -701,6 +709,9 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
     if (!gst_pad_is_active(GST_PAD (pad)))
       gst_pad_set_active(GST_PAD (pad), TRUE);
 
+    g_signal_emit (src, gst_tcpmixsrc_signals[SIGNAL_NEW_CLIENT],
+	0, pad);
+
     //g_print (LOG_PREFIX"%s:%d: \n", __FILE__, __LINE__);
   } else {
     GST_WARNING_OBJECT (src, "No pad for new client, closing..");
@@ -1156,6 +1167,7 @@ gst_tcp_mix_src_request_new_pad (GstElement * element, GstPadTemplate * templ,
 
   //GST_OBJECT_FLAG_SET (srcpad, GST_PAD_FLAG_PROXY_CAPS);
 
+  //INFO ("add-pad: %s.%s", GST_ELEMENT_NAME (src), GST_PAD_NAME (srcpad));
   res = gst_element_add_pad (GST_ELEMENT_CAST (src), srcpad);
 
   gst_tcp_mix_src_start (src, GST_TCP_MIX_SRC_PAD (srcpad));
@@ -1189,6 +1201,12 @@ gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
   object_class->set_property = gst_tcp_mix_src_set_property;
   object_class->get_property = gst_tcp_mix_src_get_property;
   object_class->finalize = gst_tcp_mix_src_finalize;
+
+  gst_tcpmixsrc_signals[SIGNAL_NEW_CLIENT] =
+    g_signal_new ("new-client", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstTCPMixSrcClass, new_client),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 1,
+	GST_TYPE_PAD);
 
   g_object_class_install_property (object_class, PROP_HOST,
       g_param_spec_string ("host", "Host", "The hostname to listen as",

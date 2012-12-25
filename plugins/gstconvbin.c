@@ -214,30 +214,51 @@ gst_conv_bin_request_new_pad (GstElement *element,
   GST_CONV_BIN_LOCK (conv);
 
   for (item = GST_BIN_CHILDREN (GST_BIN (conv)), num = 0;
-       item; item = g_list_next (item)) ++num;
-  name = g_strdup_printf ("conv_%u", num);
-  baseconv = gst_element_factory_make (conv->converter, name);
-  g_free (name);
-  name = NULL;
+       item; item = g_list_next (item)) {
+    ++num;
 
+    if (!basepad) {
+      GstPad * p = NULL;
+      gchar * s = NULL;
+      switch (dir) {
+      case GST_PAD_SINK: s = "sink"; break;
+      case GST_PAD_SRC:  s = "src";  break;
+      default: break;
+      }
+      p = gst_element_get_static_pad (GST_ELEMENT (item->data), s);
+      if (!GST_PAD_IS_LINKED (p))
+	basepad = p;
+    }
+  }
+
+  if (!baseconv) {
+    name = g_strdup_printf ("conv_%u", num);
+    baseconv = gst_element_factory_make (conv->converter, name);
+    g_free (name);
+    name = NULL;
+
+    if (!baseconv)
+      goto error_no_converter;
+
+    if (!gst_bin_add (GST_BIN (conv), baseconv))
+      goto error_bin_add;
+  }
   if (!baseconv)
     goto error_no_converter;
 
-  if (!gst_bin_add (GST_BIN (conv), baseconv))
-    goto error_bin_add;
-
-  switch (dir) {
-  case GST_PAD_SINK:
-    basepad = gst_element_get_static_pad (baseconv, "sink");
-    break;
-  case GST_PAD_SRC:
-    basepad = gst_element_get_static_pad (baseconv, "src");
-    break;
-  default:
-    basepad = NULL;
-    break;
+  if (!basepad) {
+    switch (dir) {
+    case GST_PAD_SINK:
+      basepad = gst_element_get_static_pad (baseconv, "sink");
+      break;
+    case GST_PAD_SRC:
+      basepad = gst_element_get_static_pad (baseconv, "src");
+      break;
+    default:
+      basepad = NULL;
+      break;
+    }
   }
-
   if (!basepad)
     goto error_no_basepad;
 

@@ -16,8 +16,10 @@ launch -v \
     filesrc name=source4 location=/tmp/src4 \
     switch name=switch \
     fdsink name=sink1 fd=2 \
+    fdsink name=sink2 fd=2 \
     source1. ! switch. \
     source2. ! switch. \
     source3. ! switch. \
     source4. ! switch. \
     switch. ! sink1. \
+    switch. ! sink2. \

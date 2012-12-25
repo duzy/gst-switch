@@ -15,7 +15,7 @@ launch -v \
     filesrc name=source2 location=/tmp/src2 \
     filesrc name=source3 location=/tmp/src3 \
     filesrc name=source4 location=/tmp/src4 \
-    convbin name=conv converter=identity autolink=switch \
+    convbin name=conv converter=identity autosink=switch \
     switch name=switch \
     fdsink name=sink1 fd=2 \
     fdsink name=sink2 fd=2 \
@@ -23,6 +23,5 @@ launch -v \
     source2. ! conv. \
     source3. ! conv. \
     source4. ! conv. \
-    conv. ! switch. \
     switch. ! sink1. \
     switch. ! sink2. \

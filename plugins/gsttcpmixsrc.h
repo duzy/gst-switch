@@ -64,6 +64,8 @@ struct _GstTCPMixSrc {
 
 struct _GstTCPMixSrcClass {
   GstElementClass base_class;
+
+  void (*new_client) (GstElement *element, GstPad *pad);
 };
 
 GType gst_tcp_mix_src_get_type (void);
