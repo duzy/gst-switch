@@ -8,7 +8,7 @@ echo "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4" > /tmp/src4
 
 launch -v \
     --gst-debug-no-color \
-    --gst-debug="switch:5" \
+    --gst-debug="switch:4" \
     \
     filesrc name=source1 location=/tmp/src1 \
     filesrc name=source2 location=/tmp/src2 \

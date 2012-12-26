@@ -7,7 +7,7 @@ launch -v \
     --gst-debug="switch:5" \
     \
     tcpmixsrc name=source port=3000 \
-    switch name=switch cases="[[1,2]]" \
+    switch name=switch \
     fdsink name=sink fd=2 \
     funnel name=fun \
     source. ! switch. \

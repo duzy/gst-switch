@@ -44,6 +44,8 @@ struct _GstSwitchSrv
   GstElement *sink_element;
   GstElement *switch_element;
   GstElement *conv_element;
+  GstElement *sink1_element;
+  GstElement *sink2_element;
 
   gboolean paused_for_buffering;
   guint timer_id;
@@ -125,30 +127,45 @@ gst_switchsrv_free (GstSwitchSrv * switchsrv)
 static GstElement *
 gst_switchsrv_test_switch_pipeline (GstSwitchSrv * switchsrv)
 {
-  GString *pipe_desc;
+  GString *desc;
   GstElement *pipeline;
   GError *error = NULL;
 
-  pipe_desc = g_string_new ("");
+  desc = g_string_new ("");
 
-  g_string_append_printf (pipe_desc, "tcpmixsrc name=source mode=loop "
+#if 0
+  g_string_append_printf (desc, "tcpmixsrc name=source mode=loop "
       "fill=none port=%d ", opts.port);
-  g_string_append_printf (pipe_desc, "switch name=switch ");
-  g_string_append_printf (pipe_desc, "filesink name=sink "
+  g_string_append_printf (desc, "switch name=switch ");
+  g_string_append_printf (desc, "filesink name=sink "
       "location=%s ", opts.test_switch);
-  g_string_append_printf (pipe_desc, "convbin name=conv "
+  g_string_append_printf (desc, "convbin name=conv "
       "converter=identity ");
-  g_string_append_printf (pipe_desc, "funnel name=sum ");
-  g_string_append_printf (pipe_desc, "source. ! conv. ");
-  g_string_append_printf (pipe_desc, "conv. ! switch. ");
-  g_string_append_printf (pipe_desc, "switch. ! sum. ");
-  g_string_append_printf (pipe_desc, "sum. ! sink.");
+  g_string_append_printf (desc, "funnel name=sum ");
+  g_string_append_printf (desc, "source. ! conv. ");
+  g_string_append_printf (desc, "conv. ! switch. ");
+  g_string_append_printf (desc, "switch. ! sum. ");
+  g_string_append_printf (desc, "sum. ! sink.");
+#else
+  g_string_append_printf (desc, "multiqueue name=switch ");
+  g_string_append_printf (desc, "funnel name=compose ");
+  g_string_append_printf (desc, "funnel name=preview ");
+  g_string_append_printf (desc, "tcpserversink name=sink1 port=3001 ");
+  g_string_append_printf (desc, "tcpserversink name=sink2 port=3002 ");
+  g_string_append_printf (desc, "switch.src_0 ! compose. ");
+  g_string_append_printf (desc, "switch.src_1 ! compose. ");
+  g_string_append_printf (desc, "switch.src_2 ! preview. ");
+  g_string_append_printf (desc, "switch.src_3 ! preview. ");
+  g_string_append_printf (desc, "switch.src_4 ! preview. ");
+  g_string_append_printf (desc, "compose. ! sink1. ");
+  g_string_append_printf (desc, "preview. ! sink2. ");
+#endif
 
   if (opts.verbose)
-    g_print ("pipeline: %s\n", pipe_desc->str);
+    g_print ("pipeline: %s\n", desc->str);
 
-  pipeline = (GstElement *) gst_parse_launch (pipe_desc->str, &error);
-  g_string_free (pipe_desc, FALSE);
+  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
+  g_string_free (desc, FALSE);
 
   if (error) {
     g_print ("pipeline parsing error: %s\n", error->message);
@@ -171,20 +188,57 @@ gst_switchsrv_create_pipeline (GstSwitchSrv * switchsrv)
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "tcpmixsrc name=source mode=loop "
-      "fill=none port=%d ", opts.port);
+      "fill=none autosink=switch port=%d ", opts.port);
+  g_string_append_printf (desc, "source. ! switch. ");
+  /*
   g_string_append_printf (desc, "switch name=switch ");
   g_string_append_printf (desc, "convbin name=conv "
       "converter=gdpdepay autosink=switch ");
-  g_string_append_printf (desc, "xvimagesink name=sink1 ");
-  //g_string_append_printf (desc, "xvimagesink name=sink2 ");
   g_string_append_printf (desc, "source. ! conv. ");
-#if 0
-  g_string_append_printf (desc, "conv. ! sink1. ");
-  g_string_append_printf (desc, "conv. ! sink2. ");
-#else
   g_string_append_printf (desc, "switch. ! sink1. ");
   g_string_append_printf (desc, "switch. ! sink2. ");
-#endif
+  */
+  /*
+  g_string_append_printf (desc, "source. ! switch. ");
+  g_string_append_printf (desc, "switch. ! sink1. ");
+  g_string_append_printf (desc, "switch. ! sink2. ");
+  */
+  /*
+  g_string_append_printf (desc, "funnel name=switch ");
+  g_string_append_printf (desc, "funnel name=compose ");
+  g_string_append_printf (desc, "funnel name=preview ");
+  g_string_append_printf (desc, "tee name=branch ");
+  g_string_append_printf (desc, "tcpserversink name=sink1 port=3001 ");
+  g_string_append_printf (desc, "tcpserversink name=sink2 port=3002 ");
+  g_string_append_printf (desc, "switch. ! branch. ");
+  g_string_append_printf (desc, "branch.src_0 ! compose. ");
+  g_string_append_printf (desc, "branch.src_1 ! compose. ");
+  g_string_append_printf (desc, "branch.src_2 ! preview. ");
+  g_string_append_printf (desc, "branch.src_3 ! preview. ");
+  g_string_append_printf (desc, "compose. ! queue ! sink1. ");
+  g_string_append_printf (desc, "preview. ! queue ! sink2. ");
+  */
+  g_string_append_printf (desc, "multiqueue name=switch ");
+  g_string_append_printf (desc, "gdpdepay name=compose_a ");
+  g_string_append_printf (desc, "gdpdepay name=compose_b ");
+  g_string_append_printf (desc, "videomixer name=compose "
+      "sink_0::alpha=0.6 sink_1::alpha=0.5 ");
+  g_string_append_printf (desc, "funnel name=preview ");
+  //g_string_append_printf (desc, "tcpserversink name=sink1 port=3001 ");
+  //g_string_append_printf (desc, "xvimagesink name=sink1 ");
+  g_string_append_printf (desc, "tcpserversink name=sink2 port=3002 ");
+  //g_string_append_printf (desc, "compose_a. ! compose.sink_0 ");
+  //g_string_append_printf (desc, "compose_b. ! compose.sink_1 ");
+  g_string_append_printf (desc, "compose_a. ! xvimagesink ");
+  g_string_append_printf (desc, "compose_b. ! xvimagesink ");
+  g_string_append_printf (desc, "switch.src_0 ! compose_a. ");
+  g_string_append_printf (desc, "switch.src_1 ! compose_b. ");
+  g_string_append_printf (desc, "switch.src_2 ! preview. ");
+  g_string_append_printf (desc, "switch.src_3 ! preview. ");
+  g_string_append_printf (desc, "switch.src_4 ! preview. ");
+  //g_string_append_printf (desc, "compose. ! queue ! gdppay ! sink1. ");
+  //g_string_append_printf (desc, "compose. ! sink1. ");
+  g_string_append_printf (desc, "preview. ! sink2. ");
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -427,6 +481,14 @@ on_source_pad_added (GstElement * element, GstPad * pad,
 }
 
 static void
+on_switch_pad_added (GstElement * element, GstPad * pad,
+    GstSwitchSrv * switchsrv)
+{
+  INFO ("source-pad-added: %s.%s", GST_ELEMENT_NAME (element),
+      GST_PAD_NAME (pad));
+}
+
+static void
 on_convert_pad_added (GstElement * element, GstPad * pad,
     GstSwitchSrv * switchsrv)
 {
@@ -443,6 +505,22 @@ on_source_new_client (GstElement * element, GstPad * pad,
 }
 
 static void
+on_sink1_pad_added (GstElement * element, GstPad * pad,
+    GstSwitchSrv * switchsrv)
+{
+  INFO ("new pad %s.%s", GST_ELEMENT_NAME (element),
+      GST_PAD_NAME (pad));
+}
+
+static void
+on_sink2_pad_added (GstElement * element, GstPad * pad,
+    GstSwitchSrv * switchsrv)
+{
+  INFO ("new pad %s.%s", GST_ELEMENT_NAME (element),
+      GST_PAD_NAME (pad));
+}
+
+static void
 gst_switchsrv_set_pipeline (GstSwitchSrv * switchsrv, GstElement *pipeline)
 {
   switchsrv->pipeline = pipeline;
@@ -455,6 +533,8 @@ gst_switchsrv_set_pipeline (GstSwitchSrv * switchsrv, GstElement *pipeline)
   switchsrv->sink_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
   switchsrv->switch_element = gst_bin_get_by_name (GST_BIN (pipeline), "switch");
   switchsrv->conv_element = gst_bin_get_by_name (GST_BIN (pipeline), "conv");
+  switchsrv->sink1_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink1");
+  switchsrv->sink2_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink2");
 
   if (switchsrv->source_element) {
     g_signal_connect (switchsrv->source_element, "pad-added",
@@ -469,7 +549,7 @@ gst_switchsrv_set_pipeline (GstSwitchSrv * switchsrv, GstElement *pipeline)
 	G_CALLBACK (on_convert_pad_added), switchsrv);
   }
 
-  {
+  if (switchsrv->switch_element) {
     GstElement * swit = switchsrv->switch_element;
     GList * item = GST_ELEMENT_PADS (swit);
     GstPad * pad;
@@ -477,6 +557,19 @@ gst_switchsrv_set_pipeline (GstSwitchSrv * switchsrv, GstElement *pipeline)
       pad = GST_PAD (item->data);
       INFO ("switch-pad: %s", GST_PAD_NAME (pad));
     }
+
+    g_signal_connect (switchsrv->switch_element, "pad-added",
+	G_CALLBACK (on_switch_pad_added), switchsrv);
+  }
+
+  if (switchsrv->sink1_element) {
+    g_signal_connect (switchsrv->sink1_element, "pad-added",
+	G_CALLBACK (on_sink1_pad_added), switchsrv);
+  }
+
+  if (switchsrv->sink2_element) {
+    g_signal_connect (switchsrv->sink2_element, "pad-added",
+	G_CALLBACK (on_sink2_pad_added), switchsrv);
   }
 }
 

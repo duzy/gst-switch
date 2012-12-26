@@ -160,8 +160,10 @@ gst_switch_request_new_pad (GstElement * element,
 
   GST_SWITCH_LOCK (swit);
 
+  /*
   INFO ("requesting: %s.%s",
       GST_ELEMENT_NAME (swit), GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
+  */
 
   switch (dir) {
   case GST_PAD_SRC:
@@ -177,8 +179,6 @@ gst_switch_request_new_pad (GstElement * element,
       swcase = GST_ELEMENT (item->data);
     } else {
       swcase = gst_switch_request_new_case (swit, templ, caps);
-      INFO ("new case %s for %s.%s", GST_ELEMENT_NAME (swcase),
-	  GST_ELEMENT_NAME (swit), GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
     }
     for (item = GST_ELEMENT_PADS (swcase), num = 0;
 	 item; item = g_list_next (item)) {
@@ -196,24 +196,13 @@ gst_switch_request_new_pad (GstElement * element,
     break;
   }
 
-  INFO ("requesting %s pad", dirname);
+  //INFO ("requesting %s pad", dirname);
 
   if (!swcase)
     goto error_no_case;
 
   if (!basepad)
     goto error_no_basepad;
-
-  /*
-  INFO ("basepad %s linked: %d", GST_PAD_NAME (basepad),
-      GST_PAD_IS_LINKED (basepad));
-  if (GST_PAD_IS_LINKED (basepad)) {
-    GstPad *pp = GST_PAD_PEER (basepad);
-    WARN ("%s.%s linked to %s.%s",
-	GST_ELEMENT_NAME (GST_PAD_PARENT (basepad)), GST_PAD_NAME (basepad),
-	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
-  }
-  */
 
   if (gst_pad_is_linked (basepad))
     goto error_basepad_already_linked;
@@ -273,48 +262,6 @@ gst_switch_request_new_pad (GstElement * element,
 	GST_ELEMENT_NAME (ppp), GST_PAD_NAME (pp));
     return NULL;
   }
-}
-
-static GstPad *
-gst_switch_request_new_src_pad (GstSwitch * swit, GstPadTemplate * templ,
-    const GstCaps * caps)
-{
-  INFO ("requesting src pad");
-  return NULL;
-}
-
-static GstPad *
-gst_switch_request_new_sink_pad (GstSwitch * swit, GstPadTemplate * templ,
-    const GstCaps * caps)
-{
-  INFO ("requesting sink pad");
-  return NULL;
-}
-
-static GstPad *
-gst_switch_request_new_pad_ (GstElement * element,
-    GstPadTemplate * templ, const gchar * unused, const GstCaps * caps)
-{
-  GstSwitch * swit = GST_SWITCH (element);
-  GstPad * pad;
-
-  GST_SWITCH_LOCK (swit);
-
-  switch (GST_PAD_TEMPLATE_DIRECTION (templ)) {
-  case GST_PAD_SRC:
-    pad = gst_switch_request_new_src_pad (swit, templ, caps);
-    break;
-  case GST_PAD_SINK:
-    pad = gst_switch_request_new_sink_pad (swit, templ, caps);
-    break;
-  default:
-    pad = NULL;
-    break;
-  }
-
-  GST_SWITCH_UNLOCK (swit);
-
-  return pad;
 }
 
 static void

@@ -66,6 +66,7 @@ enum
   PROP_BOUND_PORT,
   PROP_MODE,
   PROP_FILL,
+  PROP_AUTOSINK,
 };
 
 enum
@@ -498,6 +499,10 @@ gst_tcp_mix_src_set_property (GObject * object, guint prop_id,
   GstTCPMixSrc *src = GST_TCP_MIX_SRC (object);
 
   switch (prop_id) {
+  case PROP_AUTOSINK:
+    g_free (src->autosink);
+    src->autosink = g_strdup (g_value_get_string (value));
+    break;
   case PROP_HOST:
     if (!g_value_get_string (value)) {
       g_warning ("host property cannot be NULL");
@@ -538,6 +543,9 @@ gst_tcp_mix_src_get_property (GObject * object, guint prop_id,
   GstTCPMixSrc *src = GST_TCP_MIX_SRC (object);
 
   switch (prop_id) {
+  case PROP_AUTOSINK:
+    g_value_set_string (value, src->autosink);
+    break;
   case PROP_HOST:
     g_value_set_string (value, src->host);
     break;
@@ -611,6 +619,9 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
   GstPad *pp;
   GList *item;
   gboolean linked = FALSE;
+  GstBin * parent;
+  GstElement * target;
+  GstPadLinkReturn linkRet;
 
   if (gst_pad_is_linked(GST_PAD (pad))) {
 #if 0
@@ -630,12 +641,35 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
    */
   /* GST_OBJECT_LOCK (src); */
 
+  if (!src->autosink)
+    goto find_sink;
+
+  parent = GST_BIN (GST_ELEMENT_PARENT (src));
+  target = gst_bin_get_by_name (parent, src->autosink);
+
+  if (!target)
+    goto find_sink;
+
+  pp = gst_element_get_request_pad (target, "sink_%u");
+	
+  GST_DEBUG_OBJECT (src, "Link %s.%s-%s.%s",
+      GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
+      GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+  
+  linkRet = gst_pad_link (GST_PAD (pad), GST_PAD (pp));
+  if (GST_PAD_LINK_FAILED (linkRet)) {
+    GST_ERROR_OBJECT (src, "can't link");
+  }
+
+  return;
+
+ find_sink:
+#if 0
   for (item = GST_ELEMENT_PADS (src); item; item = g_list_next (item)) {
     p = GST_TCP_MIX_SRC_PAD (item->data);
     if (GST_PAD_IS_SRC (p)) {
       GST_OBJECT_LOCK (p);
       if ((pp = GST_PAD_PEER (p))) {
-	GstPadLinkReturn linkRet;
 	GstElement * ele = GST_ELEMENT (GST_PAD_PARENT (pp));
 
 	// FIXME: pad name calculation
@@ -657,8 +691,10 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
       if (linked) break;
     }
   }
+#endif
 
   /* GST_OBJECT_UNLOCK (src); */
+  return;
 }
 
 static void
@@ -1228,6 +1264,11 @@ gst_tcp_mix_src_class_init (GstTCPMixSrcClass * klass)
 
   g_object_class_install_property (object_class, PROP_FILL,
       g_param_spec_string ("fill", "Fill Mode",
+	  "The fill mode for disconnected stream",
+          "none", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_AUTOSINK,
+      g_param_spec_string ("autosink", "Autosink",
 	  "The fill mode for disconnected stream",
           "none", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 

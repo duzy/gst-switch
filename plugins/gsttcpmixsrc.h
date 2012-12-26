@@ -60,6 +60,7 @@ struct _GstTCPMixSrc {
   GMutex acceptor_mutex;
 
   GThread *acceptor;
+  gchar * autosink;
 };
 
 struct _GstTCPMixSrcClass {
