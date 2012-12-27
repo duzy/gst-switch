@@ -1,6 +1,6 @@
 bin_PROGRAMS = gst-switch-srv gst-switch-ui
 
-gst_switch_srv_SOURCES = gstswitchsrv.c
+gst_switch_srv_SOURCES = gstswitchsrv.c gstswitcher.c gstcompositor.c
 gst_switch_srv_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) \
   $(GST_PLUGINS_BASE_CFLAGS) -DLOG_PREFIX="\"./tools\""
 gst_switch_srv_LDFLAGS = $(GST_LIBS) $(GST_BASE_LIBS) $(GST_PLUGINS_BASE_LIBS) $(GSTPB_BASE_LIBS)
