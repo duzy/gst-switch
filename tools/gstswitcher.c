@@ -130,8 +130,12 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "tcpmixsrc name=source mode=loop "
-      "fill=none autosink=switch port=%d ", opts.port);
-  g_string_append_printf (desc, "source. ! switch. ");
+      "fill=none autosink=convert port=%d ", opts.port);
+  g_string_append_printf (desc, "source. ! convert. ");
+
+  g_string_append_printf (desc, "convbin name=convert "
+      "converter=gdpdepay autosink=switch ");
+
   /*
   g_string_append_printf (desc, "switch name=switch ");
   g_string_append_printf (desc, "convbin name=conv "
@@ -161,32 +165,39 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
   g_string_append_printf (desc, "preview. ! queue ! sink2. ");
   */
   g_string_append_printf (desc, "multiqueue name=switch ");
-  g_string_append_printf (desc, "gdpdepay name=compose_a ");
-  g_string_append_printf (desc, "gdpdepay name=compose_b ");
-  g_string_append_printf (desc, "compose_a. ! compose.sink_0 ");
-  g_string_append_printf (desc, "compose_b. ! compose.sink_1 ");
+  //g_string_append_printf (desc, "switch name=switch ");
+  g_string_append_printf (desc, "switch. ! compose_a. ");
+  //g_string_append_printf (desc, "switch. ! compose_b. ");
+  /*
   g_string_append_printf (desc, "switch.src_0 ! compose_a. ");
   g_string_append_printf (desc, "switch.src_1 ! compose_b. ");
   g_string_append_printf (desc, "switch.src_2 ! preview. ");
   g_string_append_printf (desc, "switch.src_3 ! preview. ");
   g_string_append_printf (desc, "switch.src_4 ! preview. ");
   g_string_append_printf (desc, "switch.src_5 ! preview. ");
-  g_string_append_printf (desc, "compose. ! compose_sink. ");
-  g_string_append_printf (desc, "preview. ! preview_sink. ");
+  */
 
-  g_string_append_printf (desc, "videomixer name=compose "
-      "sink_0::alpha=0.6 sink_1::alpha=0.5 ");
+  // input-selector
+  //g_string_append_printf (desc, "identity name=compose_a ");
+  //g_string_append_printf (desc, "identity name=compose_b ");
+  //g_string_append_printf (desc, "compose_a. ! sink1. ");
+  //g_string_append_printf (desc, "compose_b. ! sink3. ");
+
+  g_string_append_printf (desc, "identity name=compose_a ");
+  g_string_append_printf (desc, "identity name=compose_b ");
+  g_string_append_printf (desc, "compose_a. ! queue ! gdppay ! tcpserversink port=3001 ");
+  //g_string_append_printf (desc, "compose_b. ! queue ! gdppay ! tcpserversink port=3002 ");
+  
+  //g_string_append_printf (desc, "videotestsrc pattern=snow "
+  //    "! gdppay ! compose_a. ");
+
+  /*
   g_string_append_printf (desc, "funnel name=preview ");
-
-  g_string_append_printf (desc, "identity name=compose_sink ");
-  g_string_append_printf (desc, "compose_sink. ! sink1. ");
+  g_string_append_printf (desc, "preview. ! preview_sink. ");
 
   g_string_append_printf (desc, "identity name=preview_sink ");
   g_string_append_printf (desc, "preview_sink. ! sink2. ");
-
-  //g_string_append_printf (desc, "tcpserversink name=sink1 port=3001 ");
-  g_string_append_printf (desc, "tcpserversink name=sink2 port=3002 ");
-  g_string_append_printf (desc, "xvimagesink name=sink1 ");
+  */
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", desc->str);

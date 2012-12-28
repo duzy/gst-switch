@@ -790,6 +790,10 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
   GstBuffer *buffer = NULL;
   GstFlowReturn ret;
 
+  /*
+  INFO ("%p, %s", g_thread_self (), GST_PAD_NAME (pad));
+  */
+
   if (!pad->running) {
     gst_tcp_mix_src_pad_wait_for_client (pad);
     pad->running = TRUE;
@@ -801,8 +805,10 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
 
   ret = gst_pad_push (GST_PAD (pad), buffer);
   if (ret != GST_FLOW_OK) {
+    /*
     GST_ERROR_OBJECT (pad, "FIXME: Invalid data flow, "
 	"should not interupt the stream");
+    */
     goto pause;
   }
 
