@@ -67,58 +67,6 @@ gst_switcher_fini (GstSwitcher * switcher)
 }
 
 static GstElement *
-gst_switcher_test_pipeline (GstSwitcher * switcher)
-{
-  GString *desc;
-  GstElement *pipeline;
-  GError *error = NULL;
-
-  desc = g_string_new ("");
-
-#if 0
-  g_string_append_printf (desc, "tcpmixsrc name=source mode=loop "
-      "fill=none port=%d ", opts.port);
-  g_string_append_printf (desc, "switch name=switch ");
-  g_string_append_printf (desc, "filesink name=sink "
-      "location=%s ", opts.test_switch);
-  g_string_append_printf (desc, "convbin name=conv "
-      "converter=identity ");
-  g_string_append_printf (desc, "funnel name=sum ");
-  g_string_append_printf (desc, "source. ! conv. ");
-  g_string_append_printf (desc, "conv. ! switch. ");
-  g_string_append_printf (desc, "switch. ! sum. ");
-  g_string_append_printf (desc, "sum. ! sink.");
-#else
-  g_string_append_printf (desc, "multiqueue name=switch ");
-  g_string_append_printf (desc, "funnel name=compose ");
-  g_string_append_printf (desc, "funnel name=preview ");
-  g_string_append_printf (desc, "tcpserversink name=sink1 port=3001 ");
-  g_string_append_printf (desc, "tcpserversink name=sink2 port=3002 ");
-  g_string_append_printf (desc, "switch.src_0 ! compose. ");
-  g_string_append_printf (desc, "switch.src_1 ! compose. ");
-  g_string_append_printf (desc, "switch.src_2 ! preview. ");
-  g_string_append_printf (desc, "switch.src_3 ! preview. ");
-  g_string_append_printf (desc, "switch.src_4 ! preview. ");
-  g_string_append_printf (desc, "compose. ! sink1. ");
-  g_string_append_printf (desc, "preview. ! sink2. ");
-#endif
-
-  if (opts.verbose)
-    g_print ("pipeline: %s\n", desc->str);
-
-  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
-  g_string_free (desc, FALSE);
-
-  if (error) {
-    g_print ("pipeline parsing error: %s\n", error->message);
-    gst_object_unref (pipeline);
-    return NULL;
-  }
-
-  return pipeline;
-}
-
-static GstElement *
 gst_switcher_create_pipeline (GstSwitcher * switcher)
 {
   GString *desc;
@@ -136,68 +84,14 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
   g_string_append_printf (desc, "convbin name=convert "
       "converter=gdpdepay autosink=switch ");
 
-  /*
   g_string_append_printf (desc, "switch name=switch ");
-  g_string_append_printf (desc, "convbin name=conv "
-      "converter=gdpdepay autosink=switch ");
-  g_string_append_printf (desc, "source. ! conv. ");
-  g_string_append_printf (desc, "switch. ! sink1. ");
-  g_string_append_printf (desc, "switch. ! sink2. ");
-  */
-  /*
-  g_string_append_printf (desc, "source. ! switch. ");
-  g_string_append_printf (desc, "switch. ! sink1. ");
-  g_string_append_printf (desc, "switch. ! sink2. ");
-  */
-  /*
-  g_string_append_printf (desc, "funnel name=switch ");
-  g_string_append_printf (desc, "funnel name=compose ");
-  g_string_append_printf (desc, "funnel name=preview ");
-  g_string_append_printf (desc, "tee name=branch ");
-  g_string_append_printf (desc, "tcpserversink name=sink1 port=3001 ");
-  g_string_append_printf (desc, "tcpserversink name=sink2 port=3002 ");
-  g_string_append_printf (desc, "switch. ! branch. ");
-  g_string_append_printf (desc, "branch.src_0 ! compose. ");
-  g_string_append_printf (desc, "branch.src_1 ! compose. ");
-  g_string_append_printf (desc, "branch.src_2 ! preview. ");
-  g_string_append_printf (desc, "branch.src_3 ! preview. ");
-  g_string_append_printf (desc, "compose. ! queue ! sink1. ");
-  g_string_append_printf (desc, "preview. ! queue ! sink2. ");
-  */
-  g_string_append_printf (desc, "multiqueue name=switch ");
-  //g_string_append_printf (desc, "switch name=switch ");
-  g_string_append_printf (desc, "switch. ! compose_a. ");
-  //g_string_append_printf (desc, "switch. ! compose_b. ");
-  /*
   g_string_append_printf (desc, "switch.src_0 ! compose_a. ");
   g_string_append_printf (desc, "switch.src_1 ! compose_b. ");
-  g_string_append_printf (desc, "switch.src_2 ! preview. ");
-  g_string_append_printf (desc, "switch.src_3 ! preview. ");
-  g_string_append_printf (desc, "switch.src_4 ! preview. ");
-  g_string_append_printf (desc, "switch.src_5 ! preview. ");
-  */
-
-  // input-selector
-  //g_string_append_printf (desc, "identity name=compose_a ");
-  //g_string_append_printf (desc, "identity name=compose_b ");
-  //g_string_append_printf (desc, "compose_a. ! sink1. ");
-  //g_string_append_printf (desc, "compose_b. ! sink3. ");
 
   g_string_append_printf (desc, "identity name=compose_a ");
   g_string_append_printf (desc, "identity name=compose_b ");
-  g_string_append_printf (desc, "compose_a. ! queue ! gdppay ! tcpserversink port=3001 ");
-  //g_string_append_printf (desc, "compose_b. ! queue ! gdppay ! tcpserversink port=3002 ");
-  
-  //g_string_append_printf (desc, "videotestsrc pattern=snow "
-  //    "! gdppay ! compose_a. ");
-
-  /*
-  g_string_append_printf (desc, "funnel name=preview ");
-  g_string_append_printf (desc, "preview. ! preview_sink. ");
-
-  g_string_append_printf (desc, "identity name=preview_sink ");
-  g_string_append_printf (desc, "preview_sink. ! sink2. ");
-  */
+  g_string_append_printf (desc, "compose_a. ! gdppay ! tcpserversink port=3001 ");
+  g_string_append_printf (desc, "compose_b. ! gdppay ! tcpserversink port=3002 ");
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -261,68 +155,62 @@ gst_switcher_handle_info (GstSwitcher * switcher, GError * error,
 }
 
 static void
-gst_switcher_handle_null_to_ready (GstSwitcher * switcher,
-    GstElement * pipeline)
+gst_switcher_handle_null_to_ready (GstSwitcher * switcher)
 {
-  gst_element_set_state (pipeline, GST_STATE_PAUSED);
+  gst_element_set_state (switcher->pipeline, GST_STATE_PAUSED);
 }
 
 static void
-gst_switcher_handle_ready_to_paused (GstSwitcher * switcher,
-    GstElement * pipeline)
+gst_switcher_handle_ready_to_paused (GstSwitcher * switcher)
 {
   if (!switcher->paused_for_buffering) {
-    gst_element_set_state (pipeline, GST_STATE_PLAYING);
+    gst_element_set_state (switcher->pipeline, GST_STATE_PLAYING);
   }
 }
 
 static void
-gst_switcher_handle_paused_to_playing (GstSwitcher * switcher,
-    GstElement * pipeline)
+gst_switcher_handle_paused_to_playing (GstSwitcher * switcher)
 {
 }
 
 static void
-gst_switcher_handle_playing_to_paused (GstSwitcher * switcher,
-    GstElement * pipeline)
+gst_switcher_handle_playing_to_paused (GstSwitcher * switcher)
 {
 }
 
 static void
-gst_switcher_handle_paused_to_ready (GstSwitcher * switcher,
-    GstElement * pipeline)
+gst_switcher_handle_paused_to_ready (GstSwitcher * switcher)
 {
 }
 
 static void
-gst_switcher_handle_ready_to_null (GstSwitcher * switcher,
-    GstElement * pipeline)
+gst_switcher_handle_ready_to_null (GstSwitcher * switcher)
 {
   //g_main_loop_quit (switcher->main_loop);
 }
 
 static gboolean
 gst_switcher_handle_pipeline_state_changed (GstSwitcher * switcher,
-    GstElement * pipeline, GstStateChange statechange)
+    GstStateChange statechange)
 {
   switch (statechange) {
   case GST_STATE_CHANGE_NULL_TO_READY:
-    gst_switcher_handle_null_to_ready (switcher, pipeline);
+    gst_switcher_handle_null_to_ready (switcher);
     break;
   case GST_STATE_CHANGE_READY_TO_PAUSED:
-    gst_switcher_handle_ready_to_paused (switcher, pipeline);
+    gst_switcher_handle_ready_to_paused (switcher);
     break;
   case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
-    gst_switcher_handle_paused_to_playing (switcher, pipeline);
+    gst_switcher_handle_paused_to_playing (switcher);
     break;
   case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
-    gst_switcher_handle_playing_to_paused (switcher, pipeline);
+    gst_switcher_handle_playing_to_paused (switcher);
     break;
   case GST_STATE_CHANGE_PAUSED_TO_READY:
-    gst_switcher_handle_paused_to_ready (switcher, pipeline);
+    gst_switcher_handle_paused_to_ready (switcher);
     break;
   case GST_STATE_CHANGE_READY_TO_NULL:
-    gst_switcher_handle_ready_to_null (switcher, pipeline);
+    gst_switcher_handle_ready_to_null (switcher);
     break;
   default:
     return FALSE;
@@ -383,7 +271,6 @@ gst_switcher_handle_message (GstBus * bus, GstMessage * message, gpointer data)
               gst_element_state_get_name (newstate));
 
 	ret = gst_switcher_handle_pipeline_state_changed (switcher,
-	    GST_ELEMENT (message->src),
 	    GST_STATE_TRANSITION (oldstate, newstate));
 
 	if (!ret && opts.verbose)
@@ -458,7 +345,7 @@ static void
 on_switch_pad_added (GstElement * element, GstPad * pad,
     GstSwitcher * switcher)
 {
-  INFO ("source-pad-added: %s.%s", GST_ELEMENT_NAME (element),
+  INFO ("switch-pad-added: %s.%s", GST_ELEMENT_NAME (element),
       GST_PAD_NAME (pad));
 }
 
@@ -549,13 +436,7 @@ gst_switcher_set_pipeline (GstSwitcher * switcher, GstElement *pipeline)
 
 gpointer gst_switcher_run (GstSwitcher *switcher)
 {
-  GstElement *pipeline;
-
-  if (opts.test_switch)
-    pipeline = gst_switcher_test_pipeline (switcher);
-  else
-    pipeline = gst_switcher_create_pipeline (switcher);
-
+  GstElement *pipeline = gst_switcher_create_pipeline (switcher);
   gst_switcher_set_pipeline (switcher, pipeline);
   gst_switcher_start (switcher);
 

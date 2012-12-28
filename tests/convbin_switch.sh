@@ -11,17 +11,14 @@ launch -v \
     --gst-debug="switch:0" \
     --gst-debug="convbin:0" \
     \
-    filesrc name=source1 location=/tmp/src1 \
-    filesrc name=source2 location=/tmp/src2 \
-    filesrc name=source3 location=/tmp/src3 \
-    filesrc name=source4 location=/tmp/src4 \
     convbin name=conv converter=identity autosink=switch \
-    switch name=switch \
-    fdsink name=sink1 fd=2 \
-    fdsink name=sink2 fd=2 \
-    source1. ! conv. \
-    source2. ! conv. \
-    source3. ! conv. \
-    source4. ! conv. \
-    switch. ! sink1. \
-    switch. ! sink2. \
+    filesrc location=/tmp/src1 ! conv. \
+    filesrc location=/tmp/src2 ! conv. \
+    filesrc location=/tmp/src3 ! conv. \
+    filesrc location=/tmp/src4 ! conv. \
+    switch name=switch ! funnel ! fdsink fd=2
+
+#    fdsink name=sink1 fd=2 \
+#    fdsink name=sink2 fd=2 \
+#    switch. ! sink1. \
+#    switch. ! sink2. \

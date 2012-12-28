@@ -19,7 +19,5 @@ launch -v \
     fdsink name=sink2 fd=2 \
     source1. ! switch. \
     source2. ! switch. \
-    source3. ! switch. \
-    source4. ! switch. \
-    switch. ! sink1. \
-    switch. ! sink2. \
+    switch.src_0 ! sink1. \
+    switch.src_1 ! sink2. \

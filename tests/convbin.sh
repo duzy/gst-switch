@@ -10,19 +10,9 @@ launch -v \
     --gst-debug-no-color \
     --gst-debug="convbin:5" \
     \
-    filesrc name=source1 location=/tmp/src1 \
-    filesrc name=source2 location=/tmp/src2 \
-    filesrc name=source3 location=/tmp/src3 \
-    filesrc name=source4 location=/tmp/src4 \
-    convbin name=conv converter=identity \
-    fdsink name=sink fd=2 \
-    funnel name="sum" \
-    source1. ! conv. \
-    source2. ! conv. \
-    source3. ! conv. \
-    source4. ! conv. \
-    conv. ! sum.sink_0 \
-    conv. ! sum.sink_1 \
-    conv. ! sum.sink_2 \
-    conv. ! sum.sink_3 \
-    sum. ! sink.
+    convbin name=conv converter=identity autosink=sum \
+    filesrc location=/tmp/src1 ! conv. \
+    filesrc location=/tmp/src2 ! conv. \
+    filesrc location=/tmp/src3 ! conv. \
+    filesrc location=/tmp/src4 ! conv. \
+    funnel name="sum" ! fdsink name=sink fd=2 \
