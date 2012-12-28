@@ -17,7 +17,12 @@ launch -v \
     switch name=switch \
     fdsink name=sink1 fd=2 \
     fdsink name=sink2 fd=2 \
+    funnel name=fun ! fdsink fd=2 \
     source1. ! switch. \
     source2. ! switch. \
-    switch.src_0 ! sink1. \
+    source3. ! switch. \
+    source4. ! switch. \
+    switch.src_3 ! fun. \
+    switch.src_2 ! fun. \
     switch.src_1 ! sink2. \
+    switch.src_0 ! sink1. \
