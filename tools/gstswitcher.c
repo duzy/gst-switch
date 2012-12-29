@@ -31,16 +31,15 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
-GstSwitcher *
-gst_switcher_new (GstSwitchServer *server)
+G_DEFINE_TYPE (GstSwitcher, gst_switcher, G_TYPE_OBJECT);
+
+static void
+gst_switcher_init (GstSwitcher * switcher)
 {
-  GstSwitcher *switcher = g_new0 (GstSwitcher, 1);
-  switcher->server = server;
-  return switcher;
 }
 
-void
-gst_switcher_free (GstSwitcher * switcher)
+static void
+gst_switcher_finialize (GstSwitcher * switcher)
 {
   if (switcher->source_element) {
     gst_object_unref (switcher->source_element);
@@ -64,8 +63,13 @@ gst_switcher_free (GstSwitcher * switcher)
     gst_object_unref (switcher->pipeline);
     switcher->pipeline = NULL;
   }
+}
 
-  g_free (switcher);
+static void
+gst_switcher_class_init (GstSwitcherClass * klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  object_class->finalize = (GObjectFinalizeFunc) gst_switcher_finialize;
 }
 
 static void

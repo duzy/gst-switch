@@ -70,15 +70,15 @@ gst_switchsrv_parse_args (int *argc, char **argv[])
 static void
 gst_switchsrv_init (GstSwitchServer *srv)
 {
-  srv->switcher = gst_switcher_new (srv);
-  srv->compositor = gst_compositor_new (srv);
+  srv->switcher = g_object_new (GST_SWITCHER_TYPE, NULL);
+  srv->compositor = g_object_new (GST_COMPOSITOR_TYPE, NULL);
 }
 
 static void
 gst_switchsrv_finalize (GstSwitchServer *srv)
 {
-  gst_switcher_free (srv->switcher);
-  gst_compositor_free (srv->compositor);
+  g_object_unref (srv->switcher);
+  g_object_unref (srv->compositor);
   srv->switcher = NULL;
   srv->compositor = NULL;
 }

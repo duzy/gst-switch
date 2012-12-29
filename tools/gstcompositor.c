@@ -31,16 +31,15 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
-GstCompositor *
-gst_compositor_new (GstSwitchServer *server)
+G_DEFINE_TYPE (GstCompositor, gst_compositor, G_TYPE_OBJECT);
+
+static void
+gst_compositor_init (GstCompositor * compositor)
 {
-  GstCompositor * compositor = g_new0 (GstCompositor, 1);
-  compositor->server = server;
-  return compositor;
 }
 
-void
-gst_compositor_free (GstCompositor * compositor)
+static void
+gst_compositor_finalize (GstCompositor * compositor)
 {
   if (compositor->source_element) {
     gst_object_unref (compositor->source_element);
@@ -55,7 +54,13 @@ gst_compositor_free (GstCompositor * compositor)
     gst_object_unref (compositor->pipeline);
     compositor->pipeline = NULL;
   }
-  g_free (compositor);
+}
+
+static void
+gst_compositor_class_init (GstCompositorClass * klass)
+{
+  GObjectClass * object_class = G_OBJECT_CLASS (klass);
+  object_class->finalize = (GObjectFinalizeFunc) gst_compositor_finalize;
 }
 
 static void

@@ -28,11 +28,15 @@
 #include <gst/gst.h>
 #include "../logutils.h"
 
+#define GST_COMPOSITOR_TYPE (gst_compositor_get_type ())
+
 typedef struct _GstCompositor GstCompositor;
+typedef struct _GstCompositorClass GstCompositorClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
 struct _GstCompositor
 {
+  GObject base;
   GstSwitchServer *server;
 
   GstElement *pipeline;
@@ -46,8 +50,13 @@ struct _GstCompositor
   guint timer_id;
 };
 
-GstCompositor *gst_compositor_new (GstSwitchServer *server);
-void gst_compositor_free (GstCompositor * compositor);
+struct _GstCompositorClass
+{
+  GObjectClass base_class;
+};
+
+GType gst_compositor_get_type (void);
+
 void gst_compositor_prepare (GstCompositor * compositor);
 void gst_compositor_start (GstCompositor * compositor);
 void gst_compositor_stop (GstCompositor * compositor);

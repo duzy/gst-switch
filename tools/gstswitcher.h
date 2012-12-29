@@ -28,11 +28,15 @@
 #include <gst/gst.h>
 #include "../logutils.h"
 
+#define GST_SWITCHER_TYPE (gst_switcher_get_type ())
+
 typedef struct _GstSwitcher GstSwitcher;
+typedef struct _GstSwitcherClass GstSwitcherClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
 struct _GstSwitcher
 {
+  GObject base;
   GstSwitchServer *server;
 
   GstElement *pipeline;
@@ -50,8 +54,13 @@ struct _GstSwitcher
   guint timer_id;
 };
 
-GstSwitcher *gst_switcher_new (GstSwitchServer *server);
-void gst_switcher_free (GstSwitcher *switcher);
+struct _GstSwitcherClass
+{
+  GObjectClass base_class;
+};
+
+GType gst_switcher_get_type (void);
+
 void gst_switcher_prepare (GstSwitcher * switcher);
 void gst_switcher_start (GstSwitcher * switcher);
 void gst_switcher_stop (GstSwitcher * switcher);
