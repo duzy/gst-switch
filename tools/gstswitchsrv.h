@@ -75,10 +75,16 @@ struct _GstCompositor
 gpointer gst_switcher_run (GstSwitcher *switchsrv);
 void gst_switcher_init (GstSwitcher *switcher, GstCompositor * compositor);
 void gst_switcher_fini (GstSwitcher *switcher);
+GstElement * gst_switcher_create_pipeline (GstSwitcher * switcher);
+void gst_switcher_set_pipeline (GstSwitcher * switcher, GstElement *pipeline);
+void gst_switcher_start (GstSwitcher * switcher);
 
+gpointer gst_compositor_run (GstCompositor *compositor);
 void gst_compositor_init (GstCompositor * compositor, GstSwitcher *switcher);
 void gst_compositor_fini (GstCompositor * compositor);
-gpointer gst_compositor_run (GstCompositor *compositor);
+GstElement * gst_compositor_create_pipeline (GstCompositor * compositor);
+void gst_compositor_set_pipeline (GstCompositor * compositor, GstElement *pipeline);
+void gst_compositor_start (GstCompositor * compositor);
 
 extern GstSwitchSrvOpts opts;
 

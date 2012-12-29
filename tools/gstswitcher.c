@@ -67,7 +67,7 @@ gst_switcher_fini (GstSwitcher * switcher)
   g_free (switcher);
 }
 
-static GstElement *
+GstElement *
 gst_switcher_create_pipeline (GstSwitcher * switcher)
 {
   GString *desc;
@@ -108,7 +108,7 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
 
 static gboolean onesecond_timer (gpointer priv);
 
-static void
+void
 gst_switcher_start (GstSwitcher * switcher)
 {
   gst_element_set_state (switcher->pipeline, GST_STATE_READY);
@@ -379,7 +379,7 @@ on_sink2_pad_added (GstElement * element, GstPad * pad,
       GST_PAD_NAME (pad));
 }
 
-static void
+void
 gst_switcher_set_pipeline (GstSwitcher * switcher, GstElement *pipeline)
 {
   switcher->pipeline = pipeline;

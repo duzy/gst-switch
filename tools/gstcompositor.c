@@ -57,7 +57,7 @@ gst_compositor_fini (GstCompositor * compositor)
   g_free (compositor);
 }
 
-static GstElement *
+GstElement *
 gst_compositor_create_pipeline (GstCompositor * compositor)
 {
   GString *desc;
@@ -120,7 +120,7 @@ gst_compositor_create_pipeline (GstCompositor * compositor)
 
 static gboolean onesecond_timer (gpointer priv);
 
-static void
+void
 gst_compositor_start (GstCompositor * compositor)
 {
   gst_element_set_state (compositor->pipeline, GST_STATE_READY);
@@ -339,7 +339,7 @@ on_source_pad_added (GstElement * element, GstPad * pad,
       GST_PAD_NAME (pad));
 }
 
-static void
+void
 gst_compositor_set_pipeline (GstCompositor * compositor, GstElement *pipeline)
 {
   compositor->pipeline = pipeline;

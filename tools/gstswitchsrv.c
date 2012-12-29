@@ -64,6 +64,28 @@ gst_switchsrv_parse_args (int *argc, char **argv[])
   g_option_context_free (context);
 }
 
+static void
+run(GstSwitcher *switcher, GstCompositor *compositor)
+{
+  GMainLoop *main_loop;
+  GstElement *pipeline;
+
+  pipeline = gst_switcher_create_pipeline (&switcher);
+  gst_switcher_set_pipeline (&switcher, pipeline);
+  gst_switcher_start (&switcher);
+
+  pipeline = gst_compositor_create_pipeline (compositor);
+  gst_compositor_set_pipeline (compositor, pipeline);
+  gst_compositor_start (compositor);
+
+  main_loop = g_main_loop_new (NULL, TRUE);
+
+  switcher->main_loop = main_loop;
+  compositor->main_loop = main_loop;
+
+  g_main_loop_run (main_loop);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -77,6 +99,7 @@ main (int argc, char *argv[])
   gst_switcher_init (&switcher, &compositor);
   gst_compositor_init (&compositor, &switcher);
 
+#if 0
   switch_thread = g_thread_new ("switcher",
       (GThreadFunc) gst_switcher_run, &switcher);
 
@@ -85,6 +108,11 @@ main (int argc, char *argv[])
 
   g_thread_join (switch_thread);
   g_thread_join (compositor_thread);
+#else
+
+  run (&switcher, &compositor);
+  
+#endif
 
   gst_switcher_fini (&switcher);
   gst_compositor_fini (&compositor);
