@@ -82,8 +82,7 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
       "fill=none autosink=convert port=%d ", opts.port);
   g_string_append_printf (desc, "convbin name=convert "
       "converter=gdpdepay autosink=switch ");
-  //g_string_append_printf (desc, "switch name=switch ");
-  g_string_append_printf (desc, "multiqueue name=switch ");
+  g_string_append_printf (desc, "switch name=switch ");
   g_string_append_printf (desc, "identity name=compose_a ");
   g_string_append_printf (desc, "identity name=compose_b ");
   g_string_append_printf (desc, "source. ! convert. ");

@@ -130,7 +130,7 @@ gst_switch_request_new_case (GstSwitch * swit, GstPadTemplate * templ,
   if (!gst_bin_add (GST_BIN (swit), swcase))
     goto error_bin_add_case;
 
-  INFO ("new case %s for %s.%s (%d cases)", GST_ELEMENT_NAME (swcase),
+  INFO ("new %s for %s.%s (%d cases)", GST_ELEMENT_NAME (swcase),
       GST_ELEMENT_NAME (swit), GST_PAD_TEMPLATE_NAME_TEMPLATE (templ),
       GST_BIN_NUMCHILDREN (GST_BIN (swit)));
 
@@ -270,9 +270,7 @@ gst_switch_request_new_sink_pad (GstSwitch * swit,
 
   if (name) {
     pad = GST_GHOST_PAD (gst_ghost_pad_new (name, basepad));
-  }
-
-  if (!pad) {
+  } else {
     name = g_strdup_printf ("sink_%u", GST_ELEMENT (swit)->numsinkpads);
     pad = GST_GHOST_PAD (gst_ghost_pad_new (name, basepad));
     g_free ((gchar *) name);
@@ -342,7 +340,7 @@ gst_switch_request_new_pad (GstElement * element,
 
       GST_OBJECT_FLAG_SET (basepad, GST_SWITCH_PAD_FLAG_GHOSTED);
 
-      GST_DEBUG_OBJECT (swit, "New pad %s.%s on %s.%s",
+      GST_DEBUG_OBJECT (swit, "New %s:%s on %s:%s",
 	  GST_ELEMENT_NAME (swit), GST_PAD_NAME (pad),
 	  GST_ELEMENT_NAME (swcase), GST_PAD_NAME (basepad));
 

@@ -624,7 +624,7 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
   GstPadLinkReturn linkRet;
 
   if (gst_pad_is_linked(GST_PAD (pad))) {
-#if 0
+#if 1
     pp = GST_PAD_PEER (pad);
     GST_WARNING_OBJECT (src, "Pad %s.%s already linked to %s.%s",
 	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
@@ -635,6 +635,8 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
 
   GST_LOG_OBJECT (src, "Linking pad '%s.%s'",
       GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+
+  INFO ("link");
 
   /**
    *  Don't do GST_OBJECT_LOCK() here, it causes DEADLOCK.
@@ -647,6 +649,8 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
   parent = GST_BIN (GST_ELEMENT_PARENT (src));
   target = gst_bin_get_by_name (parent, src->autosink);
 
+  INFO ("link");
+
   if (!target)
     goto find_sink;
 
@@ -655,6 +659,8 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
   GST_DEBUG_OBJECT (src, "Link %s.%s-%s.%s",
       GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
       GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+
+  INFO ("link");
   
   linkRet = gst_pad_link (GST_PAD (pad), GST_PAD (pp));
   if (GST_PAD_LINK_FAILED (linkRet)) {
@@ -664,7 +670,7 @@ gst_tcp_mix_src_request_link_pad (GstTCPMixSrc *src, GstTCPMixSrcPad *pad)
   return;
 
  find_sink:
-#if 0
+#if 1
   for (item = GST_ELEMENT_PADS (src); item; item = g_list_next (item)) {
     p = GST_TCP_MIX_SRC_PAD (item->data);
     if (GST_PAD_IS_SRC (p)) {
@@ -726,9 +732,8 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
   GST_OBJECT_UNLOCK (src);
 
   if (!pad) {
-    //GstPadTemplate *templ = gst_static_pad_template_get (&srctemplate);
     pad = GST_TCP_MIX_SRC_PAD (gst_element_get_request_pad (
-	    GST_ELEMENT (src), srctemplate.name_template /* "src_%u" */));
+	    GST_ELEMENT (src), srctemplate.name_template));
     GST_OBJECT_LOCK (pad);
     GST_TCP_MIX_SRC_PAD_CLIENT_LOCK (pad);
     pad->client = socket;
@@ -738,17 +743,21 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
   }
 
   if (pad) {
-    GST_DEBUG_OBJECT (pad, "New client");
+    GST_DEBUG_OBJECT (pad, "New client on %s.%s (%d srcpads)",
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
+	GST_ELEMENT (src)->numsrcpads);
 
     gst_tcp_mix_src_request_link_pad (src, pad);
+
+    if (!gst_pad_is_linked (pad)) {
+      GST_ERROR_OBJECT (src, "Pad %s.%s is not linked",
+	  GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+    }
 
     if (!gst_pad_is_active(GST_PAD (pad)))
       gst_pad_set_active(GST_PAD (pad), TRUE);
 
-    g_signal_emit (src, gst_tcpmixsrc_signals[SIGNAL_NEW_CLIENT],
-	0, pad);
-
-    //g_print (LOG_PREFIX"%s:%d: \n", __FILE__, __LINE__);
+    g_signal_emit (src, gst_tcpmixsrc_signals[SIGNAL_NEW_CLIENT], 0, pad);
   } else {
     GST_WARNING_OBJECT (src, "No pad for new client, closing..");
 
@@ -801,54 +810,68 @@ gst_tcp_mix_src_loop (GstTCPMixSrcPad * pad)
 
   ret = gst_tcp_mix_src_pad_read (pad, &buffer);
   if (ret != GST_FLOW_OK)
-    goto pause;
+    goto error_read_pad;
 
   ret = gst_pad_push (GST_PAD (pad), buffer);
-  if (ret != GST_FLOW_OK) {
-    /*
-    GST_ERROR_OBJECT (pad, "FIXME: Invalid data flow, "
-	"should not interupt the stream");
-    */
-    goto pause;
-  }
+  if (ret != GST_FLOW_OK)
+    goto error_push_buffer;
 
   return;
 
   /* Handling Errors */
+ error_read_pad:
+  {
+    GST_ERROR_OBJECT (src, "Can't read from %s:%s",
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+    goto pause;
+  }
+
+ error_push_buffer:
+  {
+    GST_ERROR_OBJECT (src, "Can't push buffer to %s:%s",
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
+    goto pause;
+  }
+
  pause:
   {
-    if (src->mode == MODE_LOOP) {
-      return;
-    }
+    if (src->mode == MODE_LOOP)
+      goto loop;
 
-    const gchar *reason = gst_flow_get_name (ret);
     GstEvent *event;
-
-    gst_pad_pause_task (GST_PAD (pad));
 
     if (ret == GST_FLOW_EOS) {
       event = gst_event_new_eos ();
       gst_pad_push_event (GST_PAD (pad), event);
     } else if (ret == GST_FLOW_NOT_LINKED || ret <= GST_FLOW_EOS) {
       event = gst_event_new_eos ();
-      //gst_event_set_seqnum (event, src->priv->seqnum);
-      /* for fatal errors we post an error message, post the error
-       * first so the app knows about the error first.
-       * Also don't do this for FLUSHING because it happens
-       * due to flushing and posting an error message because of
-       * that is the wrong thing to do, e.g. when we're doing
-       * a flushing seek. */
+
       GST_ELEMENT_ERROR (src, STREAM, FAILED,
-          ("Internal data flow error."),
-          ("streaming task paused, reason %s (%d)", reason, ret));
+	  ("Internal data flow error."),
+	  ("streaming task paused (%s (%d))",
+	      gst_flow_get_name (ret), ret));
+
       gst_pad_push_event (GST_PAD (pad), event);
     }
 
-    // FIXME: should unlink here? Once got EOS, the pad will be no longer
-    // available.
-
+    /*
     GST_DEBUG_OBJECT (pad, "Paused %s.%s (%s)",
-	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad), reason);
+	GST_ELEMENT_NAME (src), GST_PAD_NAME (pad),
+	gst_flow_get_name (ret));
+    */
+
+    gst_pad_pause_task (GST_PAD (pad));
+    return;
+  }
+
+ loop:
+  {
+    if (ret == GST_FLOW_NOT_LINKED || ret <= GST_FLOW_EOS) {
+      GST_ELEMENT_ERROR (src, STREAM, FAILED,
+	  ("Internal data flow error."),
+	  ("streaming task paused (%s (%d))",
+	      gst_flow_get_name (ret), ret));
+    }
     return;
   }
 }

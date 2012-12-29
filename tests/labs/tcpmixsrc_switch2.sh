@@ -9,5 +9,7 @@ launch -v \
     tcpmixsrc name=source port=3000 autosink=switch mode=loop \
     switch name=switch \
     source. ! switch. \
-    funnel name=fun ! fdsink fd=2 \
-    switch.src_0 ! fun.
+    switch.src_0 ! fdsink fd=2 \
+    switch.src_1 ! fdsink fd=2 \
+    switch.src_2 ! fdsink fd=2 \
+    switch.src_3 ! fdsink fd=2 \
