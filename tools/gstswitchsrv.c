@@ -33,7 +33,9 @@
 
 #define GETTEXT_PACKAGE "switchsrv"
 
-GstSwitchSrvOpts opts = {
+G_DEFINE_TYPE (GstSwitchServer, gst_switchsrv, G_TYPE_OBJECT);
+
+GstSwitchServerOpts opts = {
   0, NULL, 3000,
 };
 
@@ -62,6 +64,30 @@ gst_switchsrv_parse_args (int *argc, char **argv[])
   }
 
   g_option_context_free (context);
+}
+
+
+static void
+gst_switchsrv_init (GstSwitchServer *srv)
+{
+  srv->switcher = gst_switcher_new (srv);
+  srv->compositor = gst_compositor_new (srv);
+}
+
+static void
+gst_switchsrv_finalize (GstSwitchServer *srv)
+{
+  gst_switcher_free (srv->switcher);
+  gst_compositor_free (srv->compositor);
+  srv->switcher = NULL;
+  srv->compositor = NULL;
+}
+
+static void
+gst_switchsrv_class_init (GstSwitchServerClass *klass)
+{
+  GObjectClass * object_class = G_OBJECT_CLASS (klass);
+  object_class->finalize = (GObjectFinalizeFunc) gst_switchsrv_finalize;
 }
 
 static gpointer
@@ -94,32 +120,17 @@ gst_switchsrv_run(GstSwitchServer * srv)
   g_thread_join (acceptor);
 }
 
-static GstSwitchServer *
-gst_switchsrv_new (int *argc, char **argv[])
-{
-  GstSwitchServer *srv;
-
-  gst_switchsrv_parse_args (argc, argv);
-
-  srv = g_new0 (GstSwitchServer, 1);
-  srv->switcher = gst_switcher_new (srv);
-  srv->compositor = gst_compositor_new (srv);
-  return srv;
-}
-
-static void
-gst_switchsrv_free (GstSwitchServer * srv)
-{
-  gst_switcher_free (srv->switcher);
-  gst_compositor_free (srv->compositor);
-  g_free (srv);
-}
-
 int
 main (int argc, char *argv[])
 {
-  GstSwitchServer *srv = gst_switchsrv_new (&argc, &argv);
+  GstSwitchServer *srv;
+
+  gst_switchsrv_parse_args (&argc, &argv);
+
+  srv = GST_SWITCH_SERVER (g_object_new (GST_SWITCH_SERVER_TYPE, NULL));
+
   gst_switchsrv_run (srv);
-  gst_switchsrv_free (srv);
+
+  g_object_unref (G_OBJECT (srv));
   return 0;
 }

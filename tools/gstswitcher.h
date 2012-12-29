@@ -23,43 +23,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_SWITCH_SRV_H__by_Duzy_Chan__
-#define __GST_SWITCH_SRV_H__by_Duzy_Chan__ 1
-#include "gstswitcher.h"
-#include "gstcompositor.h"
+#ifndef __GST_SWITCHER_H__by_Duzy_Chan__
+#define __GST_SWITCHER_H__by_Duzy_Chan__ 1
+#include <gst/gst.h>
 #include "../logutils.h"
 
-#define GST_SWITCH_SERVER_TYPE (gst_switchsrv_get_type())
-#define GST_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_SWITCH_SERVER_TYPE, GstSwitchServer))
-#define GST_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_SWITCH_SERVER_TYPE, GstSwitchServerClass))
-#define GST_IS_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_SWITCH_SERVER_TYPE))
-#define GST_IS_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_SWITCH_SERVER_TYPE))
-
+typedef struct _GstSwitcher GstSwitcher;
 typedef struct _GstSwitchServer GstSwitchServer;
-typedef struct _GstSwitchServerClass GstSwitchServerClass;
-typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
-struct _GstSwitchServerOpts
+struct _GstSwitcher
 {
-  gboolean verbose;
-  gchar * test_switch;
-  gint port;
+  GstSwitchServer *server;
+
+  GstElement *pipeline;
+  GstBus *bus;
+  GMainLoop *main_loop;
+
+  GstElement *source_element;
+  GstElement *sink_element;
+  GstElement *switch_element;
+  GstElement *conv_element;
+  GstElement *sink1_element;
+  GstElement *sink2_element;
+
+  gboolean paused_for_buffering;
+  guint timer_id;
 };
 
-struct _GstSwitchServer
-{
-  GObject base;
-  GstSwitcher *switcher;
-  GstCompositor *compositor;
-};
+GstSwitcher *gst_switcher_new (GstSwitchServer *server);
+void gst_switcher_free (GstSwitcher *switcher);
+void gst_switcher_prepare (GstSwitcher * switcher);
+void gst_switcher_start (GstSwitcher * switcher);
+void gst_switcher_stop (GstSwitcher * switcher);
 
-struct _GstSwitchServerClass
-{
-  GObjectClass base_class;
-};
-
-GType gst_switchsrv_get_type (void);
-
-extern GstSwitchServerOpts opts;
-
-#endif//__GST_SWITCH_SRV_H__by_Duzy_Chan__
+#endif//__GST_SWITCHER_H__by_Duzy_Chan__

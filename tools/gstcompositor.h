@@ -23,43 +23,33 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_SWITCH_SRV_H__by_Duzy_Chan__
-#define __GST_SWITCH_SRV_H__by_Duzy_Chan__ 1
-#include "gstswitcher.h"
-#include "gstcompositor.h"
+#ifndef __GST_COMPOSITOR_H__by_Duzy_Chan__
+#define __GST_COMPOSITOR_H__by_Duzy_Chan__ 1
+#include <gst/gst.h>
 #include "../logutils.h"
 
-#define GST_SWITCH_SERVER_TYPE (gst_switchsrv_get_type())
-#define GST_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_SWITCH_SERVER_TYPE, GstSwitchServer))
-#define GST_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_SWITCH_SERVER_TYPE, GstSwitchServerClass))
-#define GST_IS_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_SWITCH_SERVER_TYPE))
-#define GST_IS_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_SWITCH_SERVER_TYPE))
-
+typedef struct _GstCompositor GstCompositor;
 typedef struct _GstSwitchServer GstSwitchServer;
-typedef struct _GstSwitchServerClass GstSwitchServerClass;
-typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
-struct _GstSwitchServerOpts
+struct _GstCompositor
 {
-  gboolean verbose;
-  gchar * test_switch;
-  gint port;
+  GstSwitchServer *server;
+
+  GstElement *pipeline;
+  GstBus *bus;
+  GMainLoop *main_loop;
+
+  GstElement *source_element;
+  GstElement *sink_element;
+
+  gboolean paused_for_buffering;
+  guint timer_id;
 };
 
-struct _GstSwitchServer
-{
-  GObject base;
-  GstSwitcher *switcher;
-  GstCompositor *compositor;
-};
+GstCompositor *gst_compositor_new (GstSwitchServer *server);
+void gst_compositor_free (GstCompositor * compositor);
+void gst_compositor_prepare (GstCompositor * compositor);
+void gst_compositor_start (GstCompositor * compositor);
+void gst_compositor_stop (GstCompositor * compositor);
 
-struct _GstSwitchServerClass
-{
-  GObjectClass base_class;
-};
-
-GType gst_switchsrv_get_type (void);
-
-extern GstSwitchServerOpts opts;
-
-#endif//__GST_SWITCH_SRV_H__by_Duzy_Chan__
+#endif//__GST_COMPOSITOR_H__by_Duzy_Chan__
