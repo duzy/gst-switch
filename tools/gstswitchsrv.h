@@ -76,8 +76,8 @@ gpointer gst_switcher_run (GstSwitcher *switchsrv);
 void gst_switcher_init (GstSwitcher *switcher, GstCompositor * compositor);
 void gst_switcher_fini (GstSwitcher *switcher);
 
-GstCompositor * gst_compositor_new (void);
-void gst_compositor_free (GstCompositor * compositor);
+void gst_compositor_init (GstCompositor * compositor, GstSwitcher *switcher);
+void gst_compositor_fini (GstCompositor * compositor);
 gpointer gst_compositor_run (GstCompositor *compositor);
 
 extern GstSwitchSrvOpts opts;
