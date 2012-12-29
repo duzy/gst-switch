@@ -31,15 +31,16 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
-void
-gst_switcher_init (GstSwitcher *switcher, GstCompositor * compositor)
+GstSwitcher *
+gst_switcher_new (GstSwitchServer *server)
 {
-  memset (switcher, 0, sizeof (GstSwitcher));
-  switcher->compositor = compositor;
+  GstSwitcher *switcher = g_new0 (GstSwitcher, 1);
+  switcher->server = server;
+  return switcher;
 }
 
 void
-gst_switcher_fini (GstSwitcher * switcher)
+gst_switcher_free (GstSwitcher * switcher)
 {
   if (switcher->source_element) {
     gst_object_unref (switcher->source_element);
@@ -67,7 +68,7 @@ gst_switcher_fini (GstSwitcher * switcher)
   g_free (switcher);
 }
 
-GstElement *
+static void
 gst_switcher_create_pipeline (GstSwitcher * switcher)
 {
   GString *desc;
@@ -100,10 +101,10 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
   if (error) {
     ERROR ("pipeline parsing error: %s", error->message);
     gst_object_unref (pipeline);
-    return NULL;
+    return;
   }
 
-  return pipeline;
+  switcher->pipeline = pipeline;
 }
 
 static gboolean onesecond_timer (gpointer priv);
@@ -116,7 +117,7 @@ gst_switcher_start (GstSwitcher * switcher)
   switcher->timer_id = g_timeout_add (1000, onesecond_timer, switcher);
 }
 
-static void
+void
 gst_switcher_stop (GstSwitcher * switcher)
 {
   gst_element_set_state (switcher->pipeline, GST_STATE_NULL);
@@ -379,10 +380,11 @@ on_sink2_pad_added (GstElement * element, GstPad * pad,
       GST_PAD_NAME (pad));
 }
 
-void
-gst_switcher_set_pipeline (GstSwitcher * switcher, GstElement *pipeline)
+void gst_switcher_prepare (GstSwitcher *switcher)
 {
-  switcher->pipeline = pipeline;
+  GstPipeline *pipeline;
+  gst_switcher_create_pipeline (switcher);
+  pipeline = GST_PIPELINE (switcher->pipeline);
 
   gst_pipeline_set_auto_flush_bus (GST_PIPELINE (pipeline), FALSE);
   switcher->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -430,18 +432,6 @@ gst_switcher_set_pipeline (GstSwitcher * switcher, GstElement *pipeline)
     g_signal_connect (switcher->sink2_element, "pad-added",
 	G_CALLBACK (on_sink2_pad_added), switcher);
   }
-}
-
-gpointer gst_switcher_run (GstSwitcher *switcher)
-{
-  GstElement *pipeline = gst_switcher_create_pipeline (switcher);
-  gst_switcher_set_pipeline (switcher, pipeline);
-  gst_switcher_start (switcher);
-
-  switcher->main_loop = g_main_loop_new (NULL, TRUE);
-
-  g_main_loop_run (switcher->main_loop);
-  return NULL;
 }
 
 #if 0

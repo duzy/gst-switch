@@ -30,9 +30,11 @@
 
 typedef struct _GstCompositor GstCompositor;
 typedef struct _GstSwitcher GstSwitcher;
+typedef struct _GstSwitchServer GstSwitchServer;
 typedef struct _GstSwitchSrvOpts GstSwitchSrvOpts;
 
-struct _GstSwitchSrvOpts {
+struct _GstSwitchSrvOpts
+{
   gboolean verbose;
   gchar * test_switch;
   gint port;
@@ -40,7 +42,7 @@ struct _GstSwitchSrvOpts {
 
 struct _GstSwitcher
 {
-  GstCompositor * compositor;
+  GstSwitchServer *server;
 
   GstElement *pipeline;
   GstBus *bus;
@@ -59,7 +61,7 @@ struct _GstSwitcher
 
 struct _GstCompositor
 {
-  GstSwitcher *switcher;
+  GstSwitchServer *server;
 
   GstElement *pipeline;
   GstBus *bus;
@@ -72,19 +74,23 @@ struct _GstCompositor
   guint timer_id;
 };
 
-gpointer gst_switcher_run (GstSwitcher *switchsrv);
-void gst_switcher_init (GstSwitcher *switcher, GstCompositor * compositor);
-void gst_switcher_fini (GstSwitcher *switcher);
-GstElement * gst_switcher_create_pipeline (GstSwitcher * switcher);
-void gst_switcher_set_pipeline (GstSwitcher * switcher, GstElement *pipeline);
-void gst_switcher_start (GstSwitcher * switcher);
+struct _GstSwitchServer
+{
+  GstSwitcher *switcher;
+  GstCompositor *compositor;
+};
 
-gpointer gst_compositor_run (GstCompositor *compositor);
-void gst_compositor_init (GstCompositor * compositor, GstSwitcher *switcher);
-void gst_compositor_fini (GstCompositor * compositor);
-GstElement * gst_compositor_create_pipeline (GstCompositor * compositor);
-void gst_compositor_set_pipeline (GstCompositor * compositor, GstElement *pipeline);
+GstSwitcher *gst_switcher_new (GstSwitchServer *server);
+void gst_switcher_free (GstSwitcher *switcher);
+void gst_switcher_prepare (GstSwitcher * switcher);
+void gst_switcher_start (GstSwitcher * switcher);
+void gst_switcher_stop (GstSwitcher * switcher);
+
+GstCompositor *gst_compositor_new (GstSwitchServer *server);
+void gst_compositor_free (GstCompositor * compositor);
+void gst_compositor_prepare (GstCompositor * compositor);
 void gst_compositor_start (GstCompositor * compositor);
+void gst_compositor_stop (GstCompositor * compositor);
 
 extern GstSwitchSrvOpts opts;
 

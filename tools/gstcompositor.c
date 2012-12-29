@@ -31,15 +31,16 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
-void
-gst_compositor_init (GstCompositor * compositor, GstSwitcher *switcher)
+GstCompositor *
+gst_compositor_new (GstSwitchServer *server)
 {
-  memset (compositor, 0, sizeof (GstCompositor));
-  compositor->switcher = switcher;
+  GstCompositor * compositor = g_new0 (GstCompositor, 1);
+  compositor->server = server;
+  return compositor;
 }
 
 void
-gst_compositor_fini (GstCompositor * compositor)
+gst_compositor_free (GstCompositor * compositor)
 {
   if (compositor->source_element) {
     gst_object_unref (compositor->source_element);
@@ -57,7 +58,7 @@ gst_compositor_fini (GstCompositor * compositor)
   g_free (compositor);
 }
 
-GstElement *
+static void
 gst_compositor_create_pipeline (GstCompositor * compositor)
 {
   GString *desc;
@@ -112,10 +113,10 @@ gst_compositor_create_pipeline (GstCompositor * compositor)
   if (error) {
     ERROR ("pipeline parsing error: %s", error->message);
     gst_object_unref (pipeline);
-    return NULL;
+    return;
   }
 
-  return pipeline;
+  compositor->pipeline = pipeline;
 }
 
 static gboolean onesecond_timer (gpointer priv);
@@ -128,7 +129,7 @@ gst_compositor_start (GstCompositor * compositor)
   compositor->timer_id = g_timeout_add (1000, onesecond_timer, compositor);
 }
 
-static void
+void
 gst_compositor_stop (GstCompositor * compositor)
 {
   gst_element_set_state (compositor->pipeline, GST_STATE_NULL);
@@ -339,10 +340,11 @@ on_source_pad_added (GstElement * element, GstPad * pad,
       GST_PAD_NAME (pad));
 }
 
-void
-gst_compositor_set_pipeline (GstCompositor * compositor, GstElement *pipeline)
+void gst_compositor_prepare (GstCompositor *compositor)
 {
-  compositor->pipeline = pipeline;
+  GstPipeline *pipeline;
+  gst_compositor_create_pipeline (compositor);
+  pipeline = GST_PIPELINE (compositor->pipeline);
 
   gst_pipeline_set_auto_flush_bus (GST_PIPELINE (pipeline), FALSE);
   compositor->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -355,17 +357,4 @@ gst_compositor_set_pipeline (GstCompositor * compositor, GstElement *pipeline)
     g_signal_connect (compositor->source_element, "pad-added",
 	G_CALLBACK (on_source_pad_added), compositor);
   }
-}
-
-gpointer gst_compositor_run (GstCompositor *compositor)
-{
-  GstElement *pipeline = gst_compositor_create_pipeline (compositor);
-
-  gst_compositor_set_pipeline (compositor, pipeline);
-  gst_compositor_start (compositor);
-
-  compositor->main_loop = g_main_loop_new (NULL, TRUE);
-
-  g_main_loop_run (compositor->main_loop);
-  return NULL;
 }

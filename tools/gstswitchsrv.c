@@ -64,57 +64,62 @@ gst_switchsrv_parse_args (int *argc, char **argv[])
   g_option_context_free (context);
 }
 
+static gpointer
+gst_switchsrv_acceptor_worker (GstSwitchServer *srv)
+{
+  return NULL;
+}
+
 static void
-run(GstSwitcher *switcher, GstCompositor *compositor)
+gst_switchsrv_run(GstSwitchServer * srv)
 {
   GMainLoop *main_loop;
-  GstElement *pipeline;
+  GThread *acceptor;
 
-  pipeline = gst_switcher_create_pipeline (&switcher);
-  gst_switcher_set_pipeline (&switcher, pipeline);
-  gst_switcher_start (&switcher);
+  gst_switcher_prepare (srv->switcher);
+  gst_switcher_start (srv->switcher);
 
-  pipeline = gst_compositor_create_pipeline (compositor);
-  gst_compositor_set_pipeline (compositor, pipeline);
-  gst_compositor_start (compositor);
+  gst_compositor_prepare (srv->compositor);
+  gst_compositor_start (srv->compositor);
 
   main_loop = g_main_loop_new (NULL, TRUE);
+  srv->switcher->main_loop = main_loop;
+  srv->compositor->main_loop = main_loop;
 
-  switcher->main_loop = main_loop;
-  compositor->main_loop = main_loop;
+  acceptor = g_thread_new ("switch-server-acceptor",
+      (GThreadFunc) gst_switchsrv_acceptor_worker, NULL);
 
   g_main_loop_run (main_loop);
+
+  g_thread_join (acceptor);
+}
+
+static GstSwitchServer *
+gst_switchsrv_new (int *argc, char **argv[])
+{
+  GstSwitchServer *srv;
+
+  gst_switchsrv_parse_args (argc, argv);
+
+  srv = g_new0 (GstSwitchServer, 1);
+  srv->switcher = gst_switcher_new (srv);
+  srv->compositor = gst_compositor_new (srv);
+  return srv;
+}
+
+static void
+gst_switchsrv_free (GstSwitchServer * srv)
+{
+  gst_switcher_free (srv->switcher);
+  gst_compositor_free (srv->compositor);
+  g_free (srv);
 }
 
 int
 main (int argc, char *argv[])
 {
-  GstSwitcher switcher;
-  GstCompositor compositor;
-  GThread *switch_thread;
-  GThread *compositor_thread;
-
-  gst_switchsrv_parse_args (&argc, &argv);
-
-  gst_switcher_init (&switcher, &compositor);
-  gst_compositor_init (&compositor, &switcher);
-
-#if 0
-  switch_thread = g_thread_new ("switcher",
-      (GThreadFunc) gst_switcher_run, &switcher);
-
-  compositor_thread = g_thread_new ("compositor",
-      (GThreadFunc) gst_compositor_run,& compositor);
-
-  g_thread_join (switch_thread);
-  g_thread_join (compositor_thread);
-#else
-
-  run (&switcher, &compositor);
-  
-#endif
-
-  gst_switcher_fini (&switcher);
-  gst_compositor_fini (&compositor);
+  GstSwitchServer *srv = gst_switchsrv_new (&argc, &argv);
+  gst_switchsrv_run (srv);
+  gst_switchsrv_free (srv);
   return 0;
 }
