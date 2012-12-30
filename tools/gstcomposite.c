@@ -31,6 +31,14 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
+enum
+{
+  SIGNAL_END_COMPOSITE,
+  SIGNAL_LAST,
+};
+
+static guint gst_composite_signals[SIGNAL_LAST] = { 0 };
+
 G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 
 static void
@@ -43,6 +51,8 @@ gst_composite_finalize (GstComposite * composite)
 {
   if (G_OBJECT_CLASS (gst_composite_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_composite_parent_class)->finalize) (G_OBJECT (composite));
+
+  INFO ("Composite finalized");
 }
 
 static GstElement *
@@ -56,7 +66,7 @@ gst_composite_create_pipeline (GstComposite * composite)
 
   desc = g_string_new ("");
 
-#if 0
+  /*
   g_string_append_printf (desc, "videotestsrc name=src0 pattern=snow ");
   g_string_append_printf (desc, "videotestsrc name=src1 pattern=1 ");
 
@@ -75,7 +85,8 @@ gst_composite_create_pipeline (GstComposite * composite)
 
   g_string_append_printf (desc, "identity name=compose_sink ");
   g_string_append_printf (desc, "compose_sink. ! videoconvert ! xvimagesink ");
-#else
+  */
+#if 1
   g_string_append_printf (desc, "videotestsrc name=src0 pattern=0 "
       //"! video/x-raw-yuv,framerate=10/1,width=100,height=100 "
       //"! videobox border-alpha=0 left=0 top=0 "
@@ -89,6 +100,8 @@ gst_composite_create_pipeline (GstComposite * composite)
       "sink_1::alpha=0.5 "
       "! videoconvert "
       "! xvimagesink ");
+#else
+  
 #endif
 
   if (opts.verbose)
@@ -126,12 +139,30 @@ gst_composite_prepare (GstComposite *composite)
 }
 
 static void
+gst_composite_null (GstComposite *composite)
+{
+  GstWorker *worker = GST_WORKER (composite);
+
+  INFO ("null composite: %s (%p)", worker->name, composite);
+
+  g_signal_emit (composite, gst_composite_signals[SIGNAL_END_COMPOSITE], 0);
+}
+
+static void
 gst_composite_class_init (GstCompositeClass * klass)
 {
   GObjectClass * object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass * worker_class = GST_WORKER_CLASS (klass);
+
   object_class->finalize = (GObjectFinalizeFunc) gst_composite_finalize;
+
+  gst_composite_signals[SIGNAL_END_COMPOSITE] =
+    g_signal_new ("end-composite", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_composite),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  worker_class->null_state = (GstWorkerNullStateFunc) gst_composite_null;
+  worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
   worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
     gst_composite_create_pipeline;
-  worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
 }

@@ -66,6 +66,9 @@ struct _GstSwitchServer
 
   GMutex alloc_port_lock;
   gint alloc_port_count;
+
+  GMutex composite_lock;
+  GstComposite *composite;
 };
 
 struct _GstSwitchServerClass

@@ -43,6 +43,8 @@
 #define GST_SWITCH_SERVER_UNLOCK_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->acceptor_lock))
 #define GST_SWITCH_SERVER_LOCK_CASES(srv) (g_mutex_lock (&(srv)->cases_lock))
 #define GST_SWITCH_SERVER_UNLOCK_CASES(srv) (g_mutex_unlock (&(srv)->cases_lock))
+#define GST_SWITCH_SERVER_LOCK_COMPOSITE(srv) (g_mutex_lock (&(srv)->composite_lock))
+#define GST_SWITCH_SERVER_UNLOCK_COMPOSITE(srv) (g_mutex_unlock (&(srv)->composite_lock))
 
 G_DEFINE_TYPE (GstSwitchServer, gst_switchsrv, G_TYPE_OBJECT);
 
@@ -88,10 +90,13 @@ gst_switchsrv_init (GstSwitchServer *srv)
   srv->acceptor = NULL;
   srv->main_loop = NULL;
   srv->cases = NULL;
+  srv->composite = NULL;
+  srv->alloc_port_count = 0;
 
   g_mutex_init (&srv->acceptor_lock);
   g_mutex_init (&srv->cases_lock);
   g_mutex_init (&srv->alloc_port_lock);
+  g_mutex_init (&srv->composite_lock);
 }
 
 static void
@@ -100,8 +105,38 @@ gst_switchsrv_finalize (GstSwitchServer *srv)
   g_free (srv->host);
   srv->host = NULL;
 
+  g_main_loop_quit (srv->main_loop);
+  g_main_loop_unref (srv->main_loop);
+  srv->main_loop = NULL;
+
+  if (srv->cancellable) {
+    g_object_unref (srv->cancellable);
+    srv->cancellable = NULL;
+  }
+
+  if (srv->server_socket) {
+    g_object_unref (srv->server_socket);
+    srv->server_socket = NULL;
+  }
+
+  if (srv->acceptor) {
+    g_thread_join (srv->acceptor);
+  }
+
+  if (srv->cases) {
+    g_list_free_full (srv->cases, (GDestroyNotify) g_object_unref);
+    srv->cases = NULL;
+  }
+
+  if (srv->composite) {
+    g_object_unref (srv->composite);
+    srv->composite = NULL;
+  }
+
   g_mutex_clear (&srv->acceptor_lock);
   g_mutex_clear (&srv->cases_lock);
+  g_mutex_clear (&srv->alloc_port_lock);
+  g_mutex_clear (&srv->composite_lock);
 
   if (G_OBJECT_CLASS (gst_switchsrv_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_switchsrv_parent_class)->finalize) (G_OBJECT (srv));
@@ -123,6 +158,15 @@ gst_switchsrv_end_case (GstCase *cas, GstSwitchServer *srv)
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
 
   INFO ("removed case %p (%d cases left)", cas, g_list_length (srv->cases));
+}
+
+static void
+gst_switchsrv_end_composite (GstComposite *composite, GstSwitchServer *srv)
+{
+  GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+  g_object_unref (srv->composite);
+  srv->composite = NULL;
+  GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
 }
 
 static gint
@@ -301,7 +345,7 @@ gst_switchsrv_acceptor (GstSwitchServer *srv)
     return NULL;
   }
 
-  while (srv->server_socket && srv->cancellable) {
+  while (srv->acceptor && srv->server_socket && srv->cancellable) {
     socket = g_socket_accept (srv->server_socket, srv->cancellable, &error);
     if (!socket) {
       ERROR ("accept: %s", error->message);
@@ -318,6 +362,37 @@ gst_switchsrv_acceptor (GstSwitchServer *srv)
   return NULL;
 }
 
+static gboolean
+gst_switchsrv_prepare_composite (GstSwitchServer * srv)
+{
+  GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+  srv->composite = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
+	  NULL));
+  GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+
+  if (!gst_worker_prepare (GST_WORKER (srv->composite)))
+    goto error_prepare_composite;
+
+  g_signal_connect (srv->composite, "end-composite",
+      G_CALLBACK (gst_switchsrv_end_composite), srv);
+
+  gst_worker_start (GST_WORKER (srv->composite));
+
+  return TRUE;
+
+  /* Errors Handling */
+
+ error_prepare_composite:
+  {
+    ERROR ("failed to prepare composite");
+    GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+    g_object_unref (srv->composite);
+    srv->composite = NULL;
+    GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+    return FALSE;
+  }
+}
+
 static void
 gst_switchsrv_run (GstSwitchServer * srv)
 {
@@ -326,9 +401,21 @@ gst_switchsrv_run (GstSwitchServer * srv)
   srv->acceptor = g_thread_new ("switch-server-acceptor",
       (GThreadFunc) gst_switchsrv_acceptor, srv);
 
+  if (!gst_switchsrv_prepare_composite (srv))
+    goto error_prepare_composite;
+
   g_main_loop_run (srv->main_loop);
 
   g_thread_join (srv->acceptor);
+
+  return;
+
+  /* Errors Handling */
+ error_prepare_composite:
+  {
+    ERROR ("failed to prepare composite");
+    return;
+  }
 }
 
 int

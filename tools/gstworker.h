@@ -40,7 +40,7 @@ typedef struct _GstSwitchServer GstSwitchServer;
 
 typedef GstElement *(*GstWorkerCreatePipelineFunc) (GstWorker *worker);
 typedef gboolean (*GstWorkerPrepareFunc) (GstWorker *worker);
-typedef void (*GstWorkerNullState) (GstWorker *worker);
+typedef void (*GstWorkerNullStateFunc) (GstWorker *worker);
 
 struct _GstWorker
 {

@@ -27,7 +27,11 @@
 #define __GST_COMPOSITE_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
 
-#define GST_COMPOSITE_TYPE (gst_composite_get_type ())
+#define GST_TYPE_COMPOSITE (gst_composite_get_type ())
+#define GST_COMPOSITE(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_COMPOSITE, GstComposite))
+#define GST_COMPOSITE_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_COMPOSITE, GstCompositeClass))
+#define GST_IS_COMPOSITE(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_COMPOSITE, GstComposite))
+#define GST_IS_COMPOSITE_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_COMPOSITE, GstCompositeClass))
 
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
@@ -41,6 +45,8 @@ struct _GstComposite
 struct _GstCompositeClass
 {
   GstWorkerClass base_class;
+
+  void (*end_composite) (GstComposite *composite);
 };
 
 GType gst_composite_get_type (void);

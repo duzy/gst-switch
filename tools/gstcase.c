@@ -194,7 +194,7 @@ gst_case_class_init (GstCaseClass * klass)
           GST_CASE_MIN_SINK_PORT, GST_CASE_MAX_SINK_PORT, 3001,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullState) gst_case_null;
+  worker_class->null_state = (GstWorkerNullStateFunc) gst_case_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;
   worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
     gst_case_create_pipeline;
