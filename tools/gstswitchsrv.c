@@ -97,9 +97,8 @@ gst_switchsrv_acceptor_worker (GstSwitchServer *srv)
 }
 
 static void
-gst_switchsrv_run(GstSwitchServer * srv)
+gst_switchsrv_run (GstSwitchServer * srv)
 {
-  GMainLoop *main_loop;
   GThread *acceptor;
 
   gst_worker_prepare (GST_WORKER (srv->switcher));
@@ -108,12 +107,12 @@ gst_switchsrv_run(GstSwitchServer * srv)
   gst_worker_prepare (GST_WORKER (srv->compositor));
   gst_worker_start (GST_WORKER (srv->compositor));
 
-  main_loop = g_main_loop_new (NULL, TRUE);
+  srv->main_loop = g_main_loop_new (NULL, TRUE);
 
   acceptor = g_thread_new ("switch-server-acceptor",
       (GThreadFunc) gst_switchsrv_acceptor_worker, NULL);
 
-  g_main_loop_run (main_loop);
+  g_main_loop_run (srv->main_loop);
 
   g_thread_join (acceptor);
 }

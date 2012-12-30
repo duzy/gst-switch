@@ -51,6 +51,8 @@ struct _GstSwitchServer
   GObject base;
   GstSwitcher *switcher;
   GstCompositor *compositor;
+
+  GMainLoop *main_loop;
 };
 
 struct _GstSwitchServerClass

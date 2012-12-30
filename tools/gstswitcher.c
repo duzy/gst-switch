@@ -59,8 +59,8 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
   g_string_append_printf (desc, "convbin name=convert "
       "converter=gdpdepay autosink=switch ");
   g_string_append_printf (desc, "switch name=switch ");
-  g_string_append_printf (desc, "identity name=compose_a ");
-  g_string_append_printf (desc, "identity name=compose_b ");
+  g_string_append_printf (desc, "funnel name=compose_a ");
+  g_string_append_printf (desc, "funnel name=compose_b ");
   g_string_append_printf (desc, "source. ! convert. ");
   g_string_append_printf (desc, "compose_a. ! gdppay ! tcpserversink port=3001 ");
   g_string_append_printf (desc, "compose_b. ! gdppay ! tcpserversink port=3002 ");
