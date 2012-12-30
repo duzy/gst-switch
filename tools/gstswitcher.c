@@ -39,8 +39,10 @@ gst_switcher_init (GstSwitcher * switcher)
 }
 
 static void
-gst_switcher_finialize (GstSwitcher * switcher)
+gst_switcher_finalize (GstSwitcher * switcher)
 {
+  if (G_OBJECT_CLASS (gst_switcher_parent_class)->finalize)
+    (*G_OBJECT_CLASS (gst_switcher_parent_class)->finalize) (G_OBJECT (switcher));
 }
 
 static GstElement *
@@ -114,22 +116,6 @@ on_source_new_client (GstElement * element, GstPad * pad,
       GST_PAD_NAME (pad));
 }
 
-static void
-on_sink1_pad_added (GstElement * element, GstPad * pad,
-    GstSwitcher * switcher)
-{
-  INFO ("new pad %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
-static void
-on_sink2_pad_added (GstElement * element, GstPad * pad,
-    GstSwitcher * switcher)
-{
-  INFO ("new pad %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
 static gboolean
 gst_switcher_prepare (GstSwitcher *switcher)
 {
@@ -192,7 +178,7 @@ gst_switcher_class_init (GstSwitcherClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
-  object_class->finalize = (GObjectFinalizeFunc) gst_switcher_finialize;
+  object_class->finalize = (GObjectFinalizeFunc) gst_switcher_finalize;
   worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
     gst_switcher_create_pipeline;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_switcher_prepare;

@@ -50,8 +50,6 @@ struct _GstSwitchServerOpts
 struct _GstSwitchServer
 {
   GObject base;
-  GstSwitcher *switcher;
-  GstCompositor *compositor;
 
   gint port;
   gchar *host;
@@ -62,6 +60,9 @@ struct _GstSwitchServer
   GMutex acceptor_lock;
   GThread *acceptor;
   GMainLoop *main_loop;
+
+  GMutex cases_lock;
+  GList *cases;
 };
 
 struct _GstSwitchServerClass

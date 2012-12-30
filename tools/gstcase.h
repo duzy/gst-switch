@@ -23,11 +23,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_SWITCHER_H__by_Duzy_Chan__
-#define __GST_SWITCHER_H__by_Duzy_Chan__ 1
+#ifndef __GST_CASE_H__by_Duzy_Chan__
+#define __GST_CASE_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
+#include <gio/gio.h>
 
-#define GST_SWITCHER_TYPE (gst_switcher_get_type ())
+#define GST_CASE_TYPE (gst_case_get_type ())
+#define GST_CASE(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_CASE_TYPE, GstCase))
+#define GST_CASE_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_CASE_TYPE, GstCaseClass))
+#define GST_IS_CASE(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_CASE_TYPE, GstCase))
+#define GST_IS_CASE_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_CASE_TYPE, GstCaseClass))
 
 typedef struct _GstCase GstCase;
 typedef struct _GstCaseClass GstCaseClass;
@@ -36,6 +41,7 @@ typedef struct _GstSwitchServer GstSwitchServer;
 struct _GstCase
 {
   GstWorker base;
+  GInputStream *stream;
 };
 
 struct _GstCaseClass
@@ -43,6 +49,6 @@ struct _GstCaseClass
   GstWorkerClass base_class;
 };
 
-GType gst_switcher_get_type (void);
+GType gst_case_get_type (void);
 
-#endif//__GST_SWITCHER_H__by_Duzy_Chan__
+#endif//__GST_CASE_H__by_Duzy_Chan__

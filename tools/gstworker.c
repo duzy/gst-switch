@@ -30,16 +30,38 @@
 #include "gstworker.h"
 #include "gstswitchsrv.h"
 
+enum
+{
+  PROP_0,
+  PROP_NAME,
+};
+
 G_DEFINE_TYPE (GstWorker, gst_worker, G_TYPE_OBJECT);
 
 static void
 gst_worker_init (GstWorker *worker)
 {
+  worker->name = NULL;
+  worker->server = NULL;
+  worker->bus = NULL;
+  worker->pipeline = NULL;
+  worker->source = NULL;
+  worker->sink = NULL;
+  worker->paused_for_buffering = FALSE;
+  worker->timer_id = -1;
 }
 
 static void
 gst_worker_finalize (GstWorker *worker)
 {
+  g_free (worker->name);
+  worker->name = NULL;
+
+  if (worker->server) {
+    g_object_unref (worker->server);
+    worker->server = NULL;
+  }
+
   if (worker->source) {
     gst_object_unref (worker->source);
     worker->source = NULL;
@@ -60,10 +82,48 @@ gst_worker_finalize (GstWorker *worker)
 }
 
 static void
+gst_worker_set_property (GstWorker *worker, guint property_id,
+    const GValue *value, GParamSpec *pspec)
+{
+  switch (property_id) {
+  case PROP_NAME: {
+    if (worker->name) g_free (worker->name);
+    worker->name = g_strdup (g_value_get_string (value));
+    break;
+  }
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (worker), property_id, pspec);
+    break;
+  }
+}
+
+static void
+gst_worker_get_property (GstWorker *worker, guint property_id,
+    GValue *value, GParamSpec *pspec)
+{
+  switch (property_id) {
+  case PROP_NAME: {
+    worker->name = g_strdup (g_value_get_string (value));
+    break;
+  }
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (worker), property_id, pspec);
+    break;
+  }
+}
+
+static void
 gst_worker_class_init (GstWorkerClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
   object_class->finalize = (GObjectFinalizeFunc) gst_worker_finalize;
+  object_class->set_property = (GObjectSetPropertyFunc) gst_worker_set_property;
+  object_class->get_property = (GObjectGetPropertyFunc) gst_worker_get_property;
+
+  g_object_class_install_property (object_class, PROP_NAME,
+      g_param_spec_object ("name", "Name", "Name of the worker",
+          G_TYPE_PARAM_STRING, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   INFO ("Worker initialized");
 }
@@ -146,7 +206,11 @@ gst_worker_handle_paused_to_ready (GstWorker *worker)
 static void
 gst_worker_handle_ready_to_null (GstWorker *worker)
 {
-  //g_main_loop_quit (worker->main_loop);
+  GstWorkerClass *workerclass = GST_WORKER_CLASS (
+      G_OBJECT_GET_CLASS (worker));
+
+  if (workerclass->null_state)
+    (*workerclass->null_state) (worker);
 }
 
 static gboolean
@@ -317,8 +381,12 @@ gst_worker_prepare (GstWorker *worker)
   worker->source = gst_bin_get_by_name (GST_BIN (worker->pipeline), "source");
   worker->sink = gst_bin_get_by_name (GST_BIN (worker->pipeline), "sink");
 
-  if (workerclass->prepare)
-    workerclass->prepare (worker);
+  if (workerclass->prepare) {
+    if (!workerclass->prepare (worker)) {
+      WARN ("failed to prepare worker");
+      return FALSE;
+    }
+  }
 
   return TRUE;
 

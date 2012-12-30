@@ -40,10 +40,13 @@ typedef struct _GstSwitchServer GstSwitchServer;
 
 typedef GstElement *(*GstWorkerCreatePipelineFunc) (GstWorker *worker);
 typedef gboolean (*GstWorkerPrepareFunc) (GstWorker *worker);
+typedef void (*GstWorkerNullState) (GstWorker *worker);
 
 struct _GstWorker
 {
   GObject base;
+
+  gchar *name;
 
   GstSwitchServer *server;
 
@@ -62,6 +65,7 @@ struct _GstWorkerClass
 
   GstElement *(*create_pipeline) (GstWorker *worker);
   gboolean (*prepare) (GstWorker *worker);
+  void (*null_state) (GstWorker *worker);
 };
 
 gboolean gst_worker_prepare (GstWorker *worker);

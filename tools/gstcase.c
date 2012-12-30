@@ -30,42 +30,79 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gstswitchsrv.h"
+#include "gstcase.h"
+
+enum
+{
+  PROP_0,
+  PROP_STREAM,
+};
 
 G_DEFINE_TYPE (GstCase, gst_case, GST_WORKER_TYPE);
 
 static void
-gst_case_init (GstCase * switcher)
+gst_case_init (GstCase * cas)
 {
 }
 
 static void
-gst_case_finialize (GstCase * switcher)
+gst_case_finalize (GstCase * cas)
 {
+  if (cas->stream) {
+    g_object_unref (cas->stream);
+    cas->stream = NULL;
+  }
+
+  if (G_OBJECT_CLASS (gst_case_parent_class)->finalize)
+    (*G_OBJECT_CLASS (gst_case_parent_class)->finalize) (G_OBJECT (cas));
+
+  INFO ("Case finalized");
+}
+
+static void
+gst_case_get_property (GstCase *cas, guint property_id,
+    GValue *value, GParamSpec *pspec)
+{
+  switch (property_id) {
+    case PROP_STREAM:
+      g_value_set_object (value, cas->stream);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (cas, property_id, pspec);
+      break;
+  }
+}
+
+static void
+gst_case_set_property (GstCase *cas, guint property_id,
+    const GValue *value, GParamSpec *pspec)
+{
+  switch (property_id) {
+  case PROP_STREAM: {
+    GObject *stream = g_value_dup_object (value);
+    if (cas->stream)
+      g_object_unref (cas->stream);
+    cas->stream = G_INPUT_STREAM (stream);
+    break;
+  }
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (cas), property_id, pspec);
+    break;
+  }
 }
 
 static GstElement *
-gst_case_create_pipeline (GstCase * switcher)
+gst_case_create_pipeline (GstCase * cas)
 {
   GString *desc;
   GstElement *pipeline;
   GError *error = NULL;
 
-  INFO ("Listenning on port %d", opts.port);
-
   desc = g_string_new ("");
 
-  g_string_append_printf (desc, "tcpmixsrc name=source mode=loop "
-      "fill=none autosink=convert port=%d ", opts.port);
-  g_string_append_printf (desc, "convbin name=convert "
-      "converter=gdpdepay autosink=switch ");
-  g_string_append_printf (desc, "switch name=switch ");
-  g_string_append_printf (desc, "funnel name=compose_a ");
-  g_string_append_printf (desc, "funnel name=compose_b ");
-  g_string_append_printf (desc, "source. ! convert. ");
-  g_string_append_printf (desc, "compose_a. ! gdppay ! tcpserversink port=3001 ");
-  g_string_append_printf (desc, "compose_b. ! gdppay ! tcpserversink port=3002 ");
-  g_string_append_printf (desc, "switch.src_1 ! compose_b. ");
-  g_string_append_printf (desc, "switch.src_0 ! compose_a. ");
+  g_string_append_printf (desc, "giostreamsrc name=source ");
+  g_string_append_printf (desc, "fdsink name=sink fd=2 ");
+  g_string_append_printf (desc, "source. ! sink. ");
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -82,118 +119,49 @@ gst_case_create_pipeline (GstCase * switcher)
   return pipeline;
 }
 
-static void
-on_source_pad_added (GstElement * element, GstPad * pad,
-    GstCase * switcher)
-{
-  INFO ("source-pad-added: %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
-static void
-on_switch_pad_added (GstElement * element, GstPad * pad,
-    GstCase * switcher)
-{
-  INFO ("switch-pad-added: %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
-static void
-on_convert_pad_added (GstElement * element, GstPad * pad,
-    GstCase * switcher)
-{
-  INFO ("convert-pad-added: %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
-static void
-on_source_new_client (GstElement * element, GstPad * pad,
-    GstCase * switcher)
-{
-  INFO ("new client on %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
-static void
-on_sink1_pad_added (GstElement * element, GstPad * pad,
-    GstCase * switcher)
-{
-  INFO ("new pad %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
-static void
-on_sink2_pad_added (GstElement * element, GstPad * pad,
-    GstCase * switcher)
-{
-  INFO ("new pad %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
 static gboolean
-gst_case_prepare (GstCase *switcher)
+gst_case_prepare (GstCase *cas)
 {
-  GstWorker *worker = GST_WORKER (switcher);
+  GstWorker *worker = GST_WORKER (cas);
 
-  if (worker->source) {
-    g_signal_connect (worker->source, "pad-added",
-	G_CALLBACK (on_source_pad_added), switcher);
-
-    g_signal_connect (worker->source, "new-client",
-	G_CALLBACK (on_source_new_client), switcher);
+  if (!cas->stream) {
+    ERROR ("no stream for new case");
+    return FALSE;
   }
 
-  /*
-  if (switcher->switch_element) {
-    GstElement * swit = switcher->switch_element;
-    GList * item = GST_ELEMENT_PADS (swit);
-    GstPad * pad;
-    for (; item; item = g_list_next (item)) {
-      pad = GST_PAD (item->data);
-      INFO ("switch-pad: %s", GST_PAD_NAME (pad));
-    }
-
-    g_signal_connect (switcher->switch_element, "pad-added",
-	G_CALLBACK (on_switch_pad_added), switcher);
+  if (!worker->source) {
+    ERROR ("no source");
+    return FALSE;
   }
 
-  if (switcher->sink1_element) {
-    g_signal_connect (switcher->sink1_element, "pad-added",
-	G_CALLBACK (on_sink1_pad_added), switcher);
-  }
-
-  if (switcher->sink2_element) {
-    g_signal_connect (switcher->sink2_element, "pad-added",
-	G_CALLBACK (on_sink2_pad_added), switcher);
-  }
-  */
+  g_object_set (worker->source, "stream", cas->stream, NULL);
 
   return TRUE;
 }
 
-#if 0
-gboolean
-have_element (const gchar * element_name)
+static void
+gst_case_null (GstCase *cas)
 {
-  GstPluginFeature *feature;
-
-  feature = gst_default_registry_find_feature (element_name,
-      GST_TYPE_ELEMENT_FACTORY);
-  if (feature) {
-    g_object_unref (feature);
-    return TRUE;
-  }
-  return FALSE;
+  GstWorker *worker = GST_WORKER (cas);
+  INFO ("null: %s", worker->name);
 }
-#endif
 
 static void
 gst_case_class_init (GstCaseClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
-  object_class->finalize = (GObjectFinalizeFunc) gst_case_finialize;
+
+  object_class->finalize = (GObjectFinalizeFunc) gst_case_finalize;
+  object_class->set_property = (GObjectSetPropertyFunc) gst_case_set_property;
+  object_class->get_property = (GObjectGetPropertyFunc) gst_case_get_property;
+
+  g_object_class_install_property (object_class, PROP_STREAM,
+      g_param_spec_object ("stream", "Stream", "Stream to read from",
+          G_TYPE_INPUT_STREAM, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  worker_class->null_state = (GstWorkerNullState) gst_case_null;
+  worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;
   worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
     gst_case_create_pipeline;
-  worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;
 }

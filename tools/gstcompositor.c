@@ -41,6 +41,8 @@ gst_compositor_init (GstCompositor * compositor)
 static void
 gst_compositor_finalize (GstCompositor * compositor)
 {
+  if (G_OBJECT_CLASS (gst_compositor_parent_class)->finalize)
+    (*G_OBJECT_CLASS (gst_compositor_parent_class)->finalize) (G_OBJECT (compositor));
 }
 
 static GstElement *

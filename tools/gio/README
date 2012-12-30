@@ -1,0 +1,4 @@
+The older version of gio is lacking of GSocketInputStream.
+
+Here's a special version of GSocketInputStream which is intended to be
+used with old gio. It's intended to be removed in the future.

@@ -28,8 +28,11 @@
 #endif
 
 #include <gst/gst.h>
+#include <gio/gio.h>
 #include <stdlib.h>
 #include "gstswitchsrv.h"
+#include "gstcase.h"
+#include "./gio/gsocketinputstream.h"
 
 #define GETTEXT_PACKAGE "switchsrv"
 #define GST_SWITCH_SERVER_DEFAULT_PORT 3000
@@ -37,7 +40,9 @@
 #define GST_SWITCH_SERVER_LISTEN_BACKLOG 5 /* client connection queue */
 
 #define GST_SWITCH_SERVER_LOCK_ACCEPTOR(srv) (g_mutex_lock (&(srv)->acceptor_lock))
-#define GST_SWITCH_SERVER_UNLOCK_ACCEPTOR(srv) (g_mutex_lock (&(srv)->acceptor_lock))
+#define GST_SWITCH_SERVER_UNLOCK_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->acceptor_lock))
+#define GST_SWITCH_SERVER_LOCK_CASES(srv) (g_mutex_lock (&(srv)->cases_lock))
+#define GST_SWITCH_SERVER_UNLOCK_CASES(srv) (g_mutex_unlock (&(srv)->cases_lock))
 
 G_DEFINE_TYPE (GstSwitchServer, gst_switchsrv, G_TYPE_OBJECT);
 
@@ -78,24 +83,27 @@ gst_switchsrv_init (GstSwitchServer *srv)
   srv->port = GST_SWITCH_SERVER_DEFAULT_PORT;
   srv->host = g_strdup (GST_SWITCH_SERVER_DEFAULT_HOST);
 
-  //srv->switcher = g_object_new (GST_SWITCHER_TYPE, NULL);
-  srv->compositor = g_object_new (GST_COMPOSITOR_TYPE, NULL);
-
   srv->cancellable = g_cancellable_new ();
   srv->server_socket = NULL;
   srv->acceptor = NULL;
   srv->main_loop = NULL;
+  srv->cases = NULL;
+
+  g_mutex_init (&srv->acceptor_lock);
+  g_mutex_init (&srv->cases_lock);
 }
 
 static void
 gst_switchsrv_finalize (GstSwitchServer *srv)
 {
-  //g_object_unref (srv->switcher);
-  g_object_unref (srv->compositor);
   g_free (srv->host);
   srv->host = NULL;
-  srv->switcher = NULL;
-  srv->compositor = NULL;
+
+  g_mutex_clear (&srv->acceptor_lock);
+  g_mutex_clear (&srv->cases_lock);
+
+  if (G_OBJECT_CLASS (gst_switchsrv_parent_class)->finalize)
+    (*G_OBJECT_CLASS (gst_switchsrv_parent_class)->finalize) (G_OBJECT (srv));
 }
 
 static void
@@ -108,8 +116,39 @@ gst_switchsrv_class_init (GstSwitchServerClass *klass)
 static void
 gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
 {
-  INFO ("TODO: serving new client");
+  GSocketInputStream *stream = G_SOCKET_INPUT_STREAM (g_object_new (
+	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
+  GstCase *workcase;
+  gchar *name;
+
+  name = g_strdup_printf ("case-%d", g_list_length (srv->cases));
+  workcase = GST_CASE (g_object_new (GST_CASE_TYPE, "name", name,
+	  "stream", stream, NULL));
+  g_free (name);
+
   g_object_unref (client);
+  g_object_unref (stream);
+
+  if (!gst_worker_prepare (GST_WORKER (workcase)))
+    goto error_prepare_workcase;
+
+  gst_worker_start (GST_WORKER (workcase));
+
+  GST_SWITCH_SERVER_LOCK_CASES (srv);
+  srv->cases = g_list_append (srv->cases, workcase);
+  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+
+  INFO ("New client added (%d cases)", g_list_length (srv->cases));
+  return;
+
+  /* Errors Handling */
+
+ error_prepare_workcase:
+  {
+    ERROR ("can't serve new client");
+    g_object_unref (workcase);
+    return;
+  }
 }
 
 static gboolean
@@ -245,14 +284,6 @@ gst_switchsrv_acceptor (GstSwitchServer *srv)
 static void
 gst_switchsrv_run (GstSwitchServer * srv)
 {
-  /*
-  gst_worker_prepare (GST_WORKER (srv->switcher));
-  gst_worker_start (GST_WORKER (srv->switcher));
-  */
-
-  gst_worker_prepare (GST_WORKER (srv->compositor));
-  gst_worker_start (GST_WORKER (srv->compositor));
-
   srv->main_loop = g_main_loop_new (NULL, TRUE);
 
   srv->acceptor = g_thread_new ("switch-server-acceptor",
