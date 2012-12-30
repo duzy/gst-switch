@@ -31,7 +31,7 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
-G_DEFINE_TYPE (GstCompositor, gst_compositor, GST_WORKER_TYPE);
+G_DEFINE_TYPE (GstCompositor, gst_compositor, GST_TYPE_WORKER);
 
 static void
 gst_compositor_init (GstCompositor * compositor)

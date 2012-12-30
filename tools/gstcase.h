@@ -28,11 +28,11 @@
 #include "gstworker.h"
 #include <gio/gio.h>
 
-#define GST_CASE_TYPE (gst_case_get_type ())
-#define GST_CASE(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_CASE_TYPE, GstCase))
-#define GST_CASE_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_CASE_TYPE, GstCaseClass))
-#define GST_IS_CASE(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_CASE_TYPE, GstCase))
-#define GST_IS_CASE_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_CASE_TYPE, GstCaseClass))
+#define GST_TYPE_CASE (gst_case_get_type ())
+#define GST_CASE(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_CASE, GstCase))
+#define GST_CASE_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_CASE, GstCaseClass))
+#define GST_IS_CASE(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_CASE, GstCase))
+#define GST_IS_CASE_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_CASE, GstCaseClass))
 
 typedef struct _GstCase GstCase;
 typedef struct _GstCaseClass GstCaseClass;
@@ -47,6 +47,8 @@ struct _GstCase
 struct _GstCaseClass
 {
   GstWorkerClass base_class;
+
+  void (*end_case) (GstCase *cas);
 };
 
 GType gst_case_get_type (void);

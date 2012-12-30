@@ -28,11 +28,11 @@
 #include <gst/gst.h>
 #include "../logutils.h"
 
-#define GST_WORKER_TYPE (gst_worker_get_type ())
-#define GST_WORKER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_WORKER_TYPE, GstWorker))
-#define GST_WORKER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_WORKER_TYPE, GstWorkerClass))
-#define GST_IS_WORKER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_WORKER_TYPE, GstWorker))
-#define GST_IS_WORKER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_WORKER_TYPE, GstWorkerClass))
+#define GST_TYPE_WORKER (gst_worker_get_type ())
+#define GST_WORKER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_WORKER, GstWorker))
+#define GST_WORKER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_WORKER, GstWorkerClass))
+#define GST_IS_WORKER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_WORKER, GstWorker))
+#define GST_IS_WORKER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_WORKER, GstWorkerClass))
 
 typedef struct _GstWorker GstWorker;
 typedef struct _GstWorkerClass GstWorkerClass;

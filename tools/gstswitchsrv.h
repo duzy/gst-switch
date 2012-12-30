@@ -30,11 +30,11 @@
 #include "gstcompositor.h"
 #include "../logutils.h"
 
-#define GST_SWITCH_SERVER_TYPE (gst_switchsrv_get_type())
-#define GST_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_SWITCH_SERVER_TYPE, GstSwitchServer))
-#define GST_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_SWITCH_SERVER_TYPE, GstSwitchServerClass))
-#define GST_IS_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_SWITCH_SERVER_TYPE))
-#define GST_IS_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_SWITCH_SERVER_TYPE))
+#define GST_TYPE_SWITCH_SERVER (gst_switchsrv_get_type())
+#define GST_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_SERVER, GstSwitchServer))
+#define GST_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_SERVER, GstSwitchServerClass))
+#define GST_IS_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_SERVER))
+#define GST_IS_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_SERVER))
 
 typedef struct _GstSwitchServer GstSwitchServer;
 typedef struct _GstSwitchServerClass GstSwitchServerClass;

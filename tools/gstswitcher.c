@@ -31,7 +31,7 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
-G_DEFINE_TYPE (GstSwitcher, gst_switcher, GST_WORKER_TYPE);
+G_DEFINE_TYPE (GstSwitcher, gst_switcher, GST_TYPE_WORKER);
 
 static void
 gst_switcher_init (GstSwitcher * switcher)

@@ -122,8 +122,8 @@ gst_worker_class_init (GstWorkerClass *klass)
   object_class->get_property = (GObjectGetPropertyFunc) gst_worker_get_property;
 
   g_object_class_install_property (object_class, PROP_NAME,
-      g_param_spec_object ("name", "Name", "Name of the worker",
-          G_TYPE_PARAM_STRING, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_string ("name", "Name", "Name of the case",
+          "", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   INFO ("Worker initialized");
 }

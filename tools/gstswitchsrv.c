@@ -114,6 +114,17 @@ gst_switchsrv_class_init (GstSwitchServerClass *klass)
 }
 
 static void
+gst_switchsrv_end_case (GstCase *cas, GstSwitchServer *srv)
+{
+  GST_SWITCH_SERVER_LOCK_CASES (srv);
+  g_object_unref (cas);
+  srv->cases = g_list_remove (srv->cases, cas);
+  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+
+  INFO ("removed case %p (%d cases left)", cas, g_list_length (srv->cases));
+}
+
+static void
 gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
 {
   GSocketInputStream *stream = G_SOCKET_INPUT_STREAM (g_object_new (
@@ -122,7 +133,7 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
   gchar *name;
 
   name = g_strdup_printf ("case-%d", g_list_length (srv->cases));
-  workcase = GST_CASE (g_object_new (GST_CASE_TYPE, "name", name,
+  workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
 	  "stream", stream, NULL));
   g_free (name);
 
@@ -132,13 +143,16 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
   if (!gst_worker_prepare (GST_WORKER (workcase)))
     goto error_prepare_workcase;
 
+  g_signal_connect (workcase, "end-case",
+      G_CALLBACK (gst_switchsrv_end_case), srv);
+
   gst_worker_start (GST_WORKER (workcase));
 
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   srv->cases = g_list_append (srv->cases, workcase);
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
 
-  INFO ("New client added (%d cases)", g_list_length (srv->cases));
+  INFO ("New client added (%d cases) (%p)", g_list_length (srv->cases), srv);
   return;
 
   /* Errors Handling */
@@ -301,7 +315,7 @@ main (int argc, char *argv[])
 
   gst_switchsrv_parse_args (&argc, &argv);
 
-  srv = GST_SWITCH_SERVER (g_object_new (GST_SWITCH_SERVER_TYPE, NULL));
+  srv = GST_SWITCH_SERVER (g_object_new (GST_TYPE_SWITCH_SERVER, NULL));
 
   gst_switchsrv_run (srv);
 

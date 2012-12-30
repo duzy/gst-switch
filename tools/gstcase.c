@@ -38,11 +38,20 @@ enum
   PROP_STREAM,
 };
 
-G_DEFINE_TYPE (GstCase, gst_case, GST_WORKER_TYPE);
+enum
+{
+  SIGNAL_END_CASE,
+  SIGNAL_LAST,
+};
+
+static guint gst_case_signals[SIGNAL_LAST] = { 0 };
+
+G_DEFINE_TYPE (GstCase, gst_case, GST_TYPE_WORKER);
 
 static void
 gst_case_init (GstCase * cas)
 {
+  cas->stream = NULL;
 }
 
 static void
@@ -64,12 +73,12 @@ gst_case_get_property (GstCase *cas, guint property_id,
     GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
-    case PROP_STREAM:
-      g_value_set_object (value, cas->stream);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (cas, property_id, pspec);
-      break;
+  case PROP_STREAM:
+    g_value_set_object (value, cas->stream);
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (cas, property_id, pspec);
+    break;
   }
 }
 
@@ -143,7 +152,10 @@ static void
 gst_case_null (GstCase *cas)
 {
   GstWorker *worker = GST_WORKER (cas);
-  INFO ("null: %s", worker->name);
+
+  INFO ("null case: %s (%p)", worker->name, cas);
+
+  g_signal_emit (cas, gst_case_signals[SIGNAL_END_CASE], 0);
 }
 
 static void
@@ -155,6 +167,11 @@ gst_case_class_init (GstCaseClass * klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_case_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_case_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_case_get_property;
+
+  gst_case_signals[SIGNAL_END_CASE] =
+    g_signal_new ("end-case", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCaseClass, end_case),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
   g_object_class_install_property (object_class, PROP_STREAM,
       g_param_spec_object ("stream", "Stream", "Stream to read from",
