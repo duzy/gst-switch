@@ -32,10 +32,14 @@
 #include "gstswitchsrv.h"
 #include "gstcase.h"
 
+#define GST_CASE_MIN_SINK_PORT 1
+#define GST_CASE_MAX_SINK_PORT 65535
+
 enum
 {
   PROP_0,
   PROP_STREAM,
+  PROP_PORT,
 };
 
 enum
@@ -52,6 +56,7 @@ static void
 gst_case_init (GstCase * cas)
 {
   cas->stream = NULL;
+  cas->sink_port = 0;
 }
 
 static void
@@ -76,6 +81,9 @@ gst_case_get_property (GstCase *cas, guint property_id,
   case PROP_STREAM:
     g_value_set_object (value, cas->stream);
     break;
+  case PROP_PORT:
+    g_value_set_uint (value, cas->sink_port);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (cas, property_id, pspec);
     break;
@@ -94,6 +102,9 @@ gst_case_set_property (GstCase *cas, guint property_id,
     cas->stream = G_INPUT_STREAM (stream);
     break;
   }
+  case PROP_PORT:
+    cas->sink_port = g_value_get_uint (value);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (cas), property_id, pspec);
     break;
@@ -103,15 +114,16 @@ gst_case_set_property (GstCase *cas, guint property_id,
 static GstElement *
 gst_case_create_pipeline (GstCase * cas)
 {
-  GString *desc;
   GstElement *pipeline;
   GError *error = NULL;
+  GString *desc;
 
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "giostreamsrc name=source ");
-  g_string_append_printf (desc, "fdsink name=sink fd=2 ");
-  g_string_append_printf (desc, "source. ! sink. ");
+  g_string_append_printf (desc, "tcpserversink name=sink sync=false "
+      "port=%d ", cas->sink_port);
+  g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -176,6 +188,11 @@ gst_case_class_init (GstCaseClass * klass)
   g_object_class_install_property (object_class, PROP_STREAM,
       g_param_spec_object ("stream", "Stream", "Stream to read from",
           G_TYPE_INPUT_STREAM, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_PORT,
+      g_param_spec_uint ("port", "Port", "Sink port",
+          GST_CASE_MIN_SINK_PORT, GST_CASE_MAX_SINK_PORT, 3001,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullState) gst_case_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;

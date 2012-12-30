@@ -54,15 +54,19 @@ struct _GstSwitchServer
   gint port;
   gchar *host;
 
+  GMainLoop *main_loop;
+
   GCancellable *cancellable;
   GSocket *server_socket;
 
   GMutex acceptor_lock;
   GThread *acceptor;
-  GMainLoop *main_loop;
 
   GMutex cases_lock;
   GList *cases;
+
+  GMutex alloc_port_lock;
+  gint alloc_port_count;
 };
 
 struct _GstSwitchServerClass

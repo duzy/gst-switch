@@ -42,6 +42,7 @@ struct _GstCase
 {
   GstWorker base;
   GInputStream *stream;
+  gint sink_port;
 };
 
 struct _GstCaseClass

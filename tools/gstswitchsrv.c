@@ -91,6 +91,7 @@ gst_switchsrv_init (GstSwitchServer *srv)
 
   g_mutex_init (&srv->acceptor_lock);
   g_mutex_init (&srv->cases_lock);
+  g_mutex_init (&srv->alloc_port_lock);
 }
 
 static void
@@ -124,17 +125,37 @@ gst_switchsrv_end_case (GstCase *cas, GstSwitchServer *srv)
   INFO ("removed case %p (%d cases left)", cas, g_list_length (srv->cases));
 }
 
+static gint
+gst_switchsrv_alloc_port (GstSwitchServer *srv)
+{
+  gint port;
+  g_mutex_lock (&srv->alloc_port_lock);
+  srv->alloc_port_count += 1;
+  port = srv->port + srv->alloc_port_count;
+  g_mutex_unlock (&srv->alloc_port_lock);
+  return port;
+}
+
+static void
+gst_switchsrv_revoke_port (GstSwitchServer *srv, int port)
+{
+  g_mutex_lock (&srv->alloc_port_lock);
+  //srv->alloc_port_count -= 1;
+  g_mutex_unlock (&srv->alloc_port_lock);
+}
+
 static void
 gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
 {
   GSocketInputStream *stream = G_SOCKET_INPUT_STREAM (g_object_new (
 	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
+  gint port = gst_switchsrv_alloc_port (srv);
   GstCase *workcase;
   gchar *name;
 
   name = g_strdup_printf ("case-%d", g_list_length (srv->cases));
   workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
-	  "stream", stream, NULL));
+	  "port", port, "stream", stream, NULL));
   g_free (name);
 
   g_object_unref (client);
@@ -152,7 +173,8 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
   srv->cases = g_list_append (srv->cases, workcase);
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
 
-  INFO ("New client added (%d cases) (%p)", g_list_length (srv->cases), srv);
+  INFO ("New client sink to %d (%d cases) (%p)",
+      port, g_list_length (srv->cases), srv);
   return;
 
   /* Errors Handling */
@@ -161,6 +183,7 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
   {
     ERROR ("can't serve new client");
     g_object_unref (workcase);
+    gst_switchsrv_revoke_port (srv, port);
     return;
   }
 }
