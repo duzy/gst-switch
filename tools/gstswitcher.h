@@ -25,8 +25,7 @@
 
 #ifndef __GST_SWITCHER_H__by_Duzy_Chan__
 #define __GST_SWITCHER_H__by_Duzy_Chan__ 1
-#include <gst/gst.h>
-#include "../logutils.h"
+#include "gstworker.h"
 
 #define GST_SWITCHER_TYPE (gst_switcher_get_type ())
 
@@ -36,33 +35,14 @@ typedef struct _GstSwitchServer GstSwitchServer;
 
 struct _GstSwitcher
 {
-  GObject base;
-  GstSwitchServer *server;
-
-  GstElement *pipeline;
-  GstBus *bus;
-  GMainLoop *main_loop;
-
-  GstElement *source_element;
-  GstElement *sink_element;
-  GstElement *switch_element;
-  GstElement *conv_element;
-  GstElement *sink1_element;
-  GstElement *sink2_element;
-
-  gboolean paused_for_buffering;
-  guint timer_id;
+  GstWorker base;
 };
 
 struct _GstSwitcherClass
 {
-  GObjectClass base_class;
+  GstWorkerClass base_class;
 };
 
 GType gst_switcher_get_type (void);
-
-void gst_switcher_prepare (GstSwitcher * switcher);
-void gst_switcher_start (GstSwitcher * switcher);
-void gst_switcher_stop (GstSwitcher * switcher);
 
 #endif//__GST_SWITCHER_H__by_Duzy_Chan__

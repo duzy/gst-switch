@@ -31,7 +31,7 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
-G_DEFINE_TYPE (GstSwitcher, gst_switcher, G_TYPE_OBJECT);
+G_DEFINE_TYPE (GstSwitcher, gst_switcher, GST_WORKER_TYPE);
 
 static void
 gst_switcher_init (GstSwitcher * switcher)
@@ -41,38 +41,9 @@ gst_switcher_init (GstSwitcher * switcher)
 static void
 gst_switcher_finialize (GstSwitcher * switcher)
 {
-  if (switcher->source_element) {
-    gst_object_unref (switcher->source_element);
-    switcher->source_element = NULL;
-  }
-  if (switcher->sink_element) {
-    gst_object_unref (switcher->sink_element);
-    switcher->sink_element = NULL;
-  }
-  if (switcher->switch_element) {
-    gst_object_unref (switcher->switch_element);
-    switcher->switch_element = NULL;
-  }
-  if (switcher->conv_element) {
-    gst_object_unref (switcher->conv_element);
-    switcher->conv_element = NULL;
-  }
-
-  if (switcher->pipeline) {
-    gst_element_set_state (switcher->pipeline, GST_STATE_NULL);
-    gst_object_unref (switcher->pipeline);
-    switcher->pipeline = NULL;
-  }
 }
 
-static void
-gst_switcher_class_init (GstSwitcherClass * klass)
-{
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
-  object_class->finalize = (GObjectFinalizeFunc) gst_switcher_finialize;
-}
-
-static void
+static GstElement *
 gst_switcher_create_pipeline (GstSwitcher * switcher)
 {
   GString *desc;
@@ -105,235 +76,10 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
   if (error) {
     ERROR ("pipeline parsing error: %s", error->message);
     gst_object_unref (pipeline);
-    return;
+    return NULL;
   }
 
-  switcher->pipeline = pipeline;
-}
-
-static gboolean onesecond_timer (gpointer priv);
-
-void
-gst_switcher_start (GstSwitcher * switcher)
-{
-  gst_element_set_state (switcher->pipeline, GST_STATE_READY);
-
-  switcher->timer_id = g_timeout_add (1000, onesecond_timer, switcher);
-}
-
-void
-gst_switcher_stop (GstSwitcher * switcher)
-{
-  gst_element_set_state (switcher->pipeline, GST_STATE_NULL);
-
-  g_source_remove (switcher->timer_id);
-}
-
-static void
-gst_switcher_handle_eos (GstSwitcher * switcher)
-{
-  gst_switcher_stop (switcher);
-}
-
-static void
-gst_switcher_handle_error (GstSwitcher * switcher, GError * error,
-    const char *debug)
-{
-  ERROR ("%s", error->message);
-  gst_switcher_stop (switcher);
-}
-
-static void
-gst_switcher_handle_warning (GstSwitcher * switcher, GError * error,
-    const char *debug)
-{
-  WARN ("%s", error->message);
-}
-
-static void
-gst_switcher_handle_info (GstSwitcher * switcher, GError * error,
-    const char *debug)
-{
-  INFO ("%s", error->message);
-}
-
-static void
-gst_switcher_handle_null_to_ready (GstSwitcher * switcher)
-{
-  gst_element_set_state (switcher->pipeline, GST_STATE_PAUSED);
-}
-
-static void
-gst_switcher_handle_ready_to_paused (GstSwitcher * switcher)
-{
-  if (!switcher->paused_for_buffering) {
-    gst_element_set_state (switcher->pipeline, GST_STATE_PLAYING);
-  }
-}
-
-static void
-gst_switcher_handle_paused_to_playing (GstSwitcher * switcher)
-{
-}
-
-static void
-gst_switcher_handle_playing_to_paused (GstSwitcher * switcher)
-{
-}
-
-static void
-gst_switcher_handle_paused_to_ready (GstSwitcher * switcher)
-{
-}
-
-static void
-gst_switcher_handle_ready_to_null (GstSwitcher * switcher)
-{
-  //g_main_loop_quit (switcher->main_loop);
-}
-
-static gboolean
-gst_switcher_handle_pipeline_state_changed (GstSwitcher * switcher,
-    GstStateChange statechange)
-{
-  switch (statechange) {
-  case GST_STATE_CHANGE_NULL_TO_READY:
-    gst_switcher_handle_null_to_ready (switcher);
-    break;
-  case GST_STATE_CHANGE_READY_TO_PAUSED:
-    gst_switcher_handle_ready_to_paused (switcher);
-    break;
-  case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
-    gst_switcher_handle_paused_to_playing (switcher);
-    break;
-  case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
-    gst_switcher_handle_playing_to_paused (switcher);
-    break;
-  case GST_STATE_CHANGE_PAUSED_TO_READY:
-    gst_switcher_handle_paused_to_ready (switcher);
-    break;
-  case GST_STATE_CHANGE_READY_TO_NULL:
-    gst_switcher_handle_ready_to_null (switcher);
-    break;
-  default:
-    return FALSE;
-  }
-  return TRUE;
-}
-
-static gboolean
-gst_switcher_handle_message (GstBus * bus, GstMessage * message, gpointer data)
-{
-  GstSwitcher *switcher = (GstSwitcher *) data;
-
-  switch (GST_MESSAGE_TYPE (message)) {
-    case GST_MESSAGE_EOS:
-      gst_switcher_handle_eos (switcher);
-      break;
-    case GST_MESSAGE_ERROR:
-    {
-      GError *error = NULL;
-      gchar *debug;
-
-      gst_message_parse_error (message, &error, &debug);
-      gst_switcher_handle_error (switcher, error, debug);
-    } break;
-    case GST_MESSAGE_WARNING:
-    {
-      GError *error = NULL;
-      gchar *debug;
-
-      gst_message_parse_warning (message, &error, &debug);
-      gst_switcher_handle_warning (switcher, error, debug);
-    } break;
-    case GST_MESSAGE_INFO:
-    {
-      GError *error = NULL;
-      gchar *debug;
-
-      gst_message_parse_info (message, &error, &debug);
-      gst_switcher_handle_info (switcher, error, debug);
-    } break;
-    case GST_MESSAGE_TAG:
-    {
-      GstTagList *tag_list;
-
-      gst_message_parse_tag (message, &tag_list);
-      if (opts.verbose)
-        g_print ("tag\n");
-    } break;
-    case GST_MESSAGE_STATE_CHANGED:
-    {
-      gboolean ret;
-      GstState oldstate, newstate, pending;
-      gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
-      if (GST_ELEMENT (message->src) == switcher->pipeline) {
-        if (opts.verbose)
-          g_print ("switch-server: state change from %s to %s\n",
-              gst_element_state_get_name (oldstate),
-              gst_element_state_get_name (newstate));
-
-	ret = gst_switcher_handle_pipeline_state_changed (switcher,
-	    GST_STATE_TRANSITION (oldstate, newstate));
-
-	if (!ret && opts.verbose)
-	  g_print ("unknown state change from %s to %s\n",
-	      gst_element_state_get_name (oldstate),
-	      gst_element_state_get_name (newstate));
-      }
-    } break;
-    case GST_MESSAGE_BUFFERING:
-    {
-      int percent;
-      gst_message_parse_buffering (message, &percent);
-      //g_print("buffering %d\n", percent);
-      if (!switcher->paused_for_buffering && percent < 100) {
-        g_print ("pausing for buffing\n");
-        switcher->paused_for_buffering = TRUE;
-        gst_element_set_state (switcher->pipeline, GST_STATE_PAUSED);
-      } else if (switcher->paused_for_buffering && percent == 100) {
-        g_print ("unpausing for buffing\n");
-        switcher->paused_for_buffering = FALSE;
-        gst_element_set_state (switcher->pipeline, GST_STATE_PLAYING);
-      }
-    } break;
-    case GST_MESSAGE_STATE_DIRTY:
-    case GST_MESSAGE_CLOCK_PROVIDE:
-    case GST_MESSAGE_CLOCK_LOST:
-    case GST_MESSAGE_NEW_CLOCK:
-    case GST_MESSAGE_STRUCTURE_CHANGE:
-    case GST_MESSAGE_STREAM_STATUS:
-      break;
-    case GST_MESSAGE_STEP_DONE:
-    case GST_MESSAGE_APPLICATION:
-    case GST_MESSAGE_ELEMENT:
-    case GST_MESSAGE_SEGMENT_START:
-    case GST_MESSAGE_SEGMENT_DONE:
-      //case GST_MESSAGE_DURATION:
-    case GST_MESSAGE_LATENCY:
-    case GST_MESSAGE_ASYNC_START:
-    case GST_MESSAGE_ASYNC_DONE:
-    case GST_MESSAGE_REQUEST_STATE:
-    case GST_MESSAGE_STEP_START:
-    case GST_MESSAGE_QOS:
-    default:
-      if (opts.verbose) {
-        //g_print ("message: %s\n", GST_MESSAGE_TYPE_NAME (message));
-      }
-      break;
-  }
-
-  return TRUE;
-}
-
-static gboolean
-onesecond_timer (gpointer priv)
-{
-  //GstSwitcher *switcher = (GstSwitcher *)priv;
-
-  //g_print (".\n");
-
-  return TRUE;
+  return pipeline;
 }
 
 static void
@@ -384,36 +130,20 @@ on_sink2_pad_added (GstElement * element, GstPad * pad,
       GST_PAD_NAME (pad));
 }
 
-void gst_switcher_prepare (GstSwitcher *switcher)
+static gboolean
+gst_switcher_prepare (GstSwitcher *switcher)
 {
-  GstPipeline *pipeline;
-  gst_switcher_create_pipeline (switcher);
-  pipeline = GST_PIPELINE (switcher->pipeline);
+  GstWorker *worker = GST_WORKER (switcher);
 
-  gst_pipeline_set_auto_flush_bus (GST_PIPELINE (pipeline), FALSE);
-  switcher->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-  gst_bus_add_watch (switcher->bus, gst_switcher_handle_message, switcher);
-
-  switcher->source_element = gst_bin_get_by_name (GST_BIN (pipeline), "source");
-  switcher->sink_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink");
-  switcher->switch_element = gst_bin_get_by_name (GST_BIN (pipeline), "switch");
-  switcher->conv_element = gst_bin_get_by_name (GST_BIN (pipeline), "conv");
-  switcher->sink1_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink1");
-  switcher->sink2_element = gst_bin_get_by_name (GST_BIN (pipeline), "sink2");
-
-  if (switcher->source_element) {
-    g_signal_connect (switcher->source_element, "pad-added",
+  if (worker->source) {
+    g_signal_connect (worker->source, "pad-added",
 	G_CALLBACK (on_source_pad_added), switcher);
 
-    g_signal_connect (switcher->source_element, "new-client",
+    g_signal_connect (worker->source, "new-client",
 	G_CALLBACK (on_source_new_client), switcher);
   }
 
-  if (switcher->conv_element) {
-    g_signal_connect (switcher->conv_element, "pad-added",
-	G_CALLBACK (on_convert_pad_added), switcher);
-  }
-
+  /*
   if (switcher->switch_element) {
     GstElement * swit = switcher->switch_element;
     GList * item = GST_ELEMENT_PADS (swit);
@@ -436,6 +166,9 @@ void gst_switcher_prepare (GstSwitcher *switcher)
     g_signal_connect (switcher->sink2_element, "pad-added",
 	G_CALLBACK (on_sink2_pad_added), switcher);
   }
+  */
+
+  return TRUE;
 }
 
 #if 0
@@ -453,3 +186,14 @@ have_element (const gchar * element_name)
   return FALSE;
 }
 #endif
+
+static void
+gst_switcher_class_init (GstSwitcherClass * klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
+  object_class->finalize = (GObjectFinalizeFunc) gst_switcher_finialize;
+  worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
+    gst_switcher_create_pipeline;
+  worker_class->prepare = (GstWorkerPrepareFunc) gst_switcher_prepare;
+}

@@ -23,26 +23,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_COMPOSITOR_H__by_Duzy_Chan__
-#define __GST_COMPOSITOR_H__by_Duzy_Chan__ 1
-#include "gstworker.h"
+#ifndef __GST_WORKER_H__by_Duzy_Chan__
+#define __GST_WORKER_H__by_Duzy_Chan__ 1
+#include <gst/gst.h>
+#include "../logutils.h"
 
-#define GST_COMPOSITOR_TYPE (gst_compositor_get_type ())
+#define GST_WORKER_TYPE (gst_worker_get_type ())
+#define GST_WORKER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_WORKER_TYPE, GstWorker))
+#define GST_WORKER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_WORKER_TYPE, GstWorkerClass))
+#define GST_IS_WORKER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_WORKER_TYPE, GstWorker))
+#define GST_IS_WORKER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_WORKER_TYPE, GstWorkerClass))
 
-typedef struct _GstCompositor GstCompositor;
-typedef struct _GstCompositorClass GstCompositorClass;
+typedef struct _GstWorker GstWorker;
+typedef struct _GstWorkerClass GstWorkerClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
-struct _GstCompositor
+typedef GstElement *(*GstWorkerCreatePipelineFunc) (GstWorker *worker);
+typedef gboolean (*GstWorkerPrepareFunc) (GstWorker *worker);
+
+struct _GstWorker
 {
-  GstWorker base;
+  GObject base;
+
+  GstSwitchServer *server;
+
+  GstBus *bus;
+  GstElement *pipeline;
+  GstElement *source;
+  GstElement *sink;
+
+  gboolean paused_for_buffering;
+  guint timer_id;
 };
 
-struct _GstCompositorClass
+struct _GstWorkerClass
 {
-  GstWorkerClass base_class;
+  GObjectClass base_class;
+
+  GstElement *(*create_pipeline) (GstWorker *worker);
+  gboolean (*prepare) (GstWorker *worker);
 };
 
-GType gst_compositor_get_type (void);
+gboolean gst_worker_prepare (GstWorker *worker);
+void gst_worker_start (GstWorker *worker);
+void gst_worker_stop (GstWorker *worker);
 
-#endif//__GST_COMPOSITOR_H__by_Duzy_Chan__
+GType gst_worker_get_type (void);
+
+#endif//__GST_WORKER_H__by_Duzy_Chan__
