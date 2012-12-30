@@ -29,6 +29,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "gstswitcher.h"
 #include "gstswitchsrv.h"
 
 G_DEFINE_TYPE (GstSwitcher, gst_switcher, GST_TYPE_WORKER);

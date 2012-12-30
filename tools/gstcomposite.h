@@ -1,4 +1,4 @@
-/* GstSwitchSrv
+/* GstComposite
  * Copyright (C) 2012 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -23,26 +23,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_COMPOSITOR_H__by_Duzy_Chan__
-#define __GST_COMPOSITOR_H__by_Duzy_Chan__ 1
+#ifndef __GST_COMPOSITE_H__by_Duzy_Chan__
+#define __GST_COMPOSITE_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
 
-#define GST_COMPOSITOR_TYPE (gst_compositor_get_type ())
+#define GST_COMPOSITE_TYPE (gst_composite_get_type ())
 
-typedef struct _GstCompositor GstCompositor;
-typedef struct _GstCompositorClass GstCompositorClass;
+typedef struct _GstComposite GstComposite;
+typedef struct _GstCompositeClass GstCompositeClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
-struct _GstCompositor
+struct _GstComposite
 {
   GstWorker base;
 };
 
-struct _GstCompositorClass
+struct _GstCompositeClass
 {
   GstWorkerClass base_class;
 };
 
-GType gst_compositor_get_type (void);
+GType gst_composite_get_type (void);
 
-#endif//__GST_COMPOSITOR_H__by_Duzy_Chan__
+#endif//__GST_COMPOSITE_H__by_Duzy_Chan__

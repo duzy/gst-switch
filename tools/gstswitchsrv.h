@@ -26,8 +26,7 @@
 #ifndef __GST_SWITCH_SRV_H__by_Duzy_Chan__
 #define __GST_SWITCH_SRV_H__by_Duzy_Chan__ 1
 #include <gio/gio.h>
-#include "gstswitcher.h"
-#include "gstcompositor.h"
+#include "gstcomposite.h"
 #include "../logutils.h"
 
 #define GST_TYPE_SWITCH_SERVER (gst_switchsrv_get_type())

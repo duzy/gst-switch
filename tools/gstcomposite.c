@@ -1,4 +1,4 @@
-/* GstCompositor
+/* GstComposite
  * Copyright (C) 2012 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,22 +31,22 @@
 #include <string.h>
 #include "gstswitchsrv.h"
 
-G_DEFINE_TYPE (GstCompositor, gst_compositor, GST_TYPE_WORKER);
+G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 
 static void
-gst_compositor_init (GstCompositor * compositor)
+gst_composite_init (GstComposite * composite)
 {
 }
 
 static void
-gst_compositor_finalize (GstCompositor * compositor)
+gst_composite_finalize (GstComposite * composite)
 {
-  if (G_OBJECT_CLASS (gst_compositor_parent_class)->finalize)
-    (*G_OBJECT_CLASS (gst_compositor_parent_class)->finalize) (G_OBJECT (compositor));
+  if (G_OBJECT_CLASS (gst_composite_parent_class)->finalize)
+    (*G_OBJECT_CLASS (gst_composite_parent_class)->finalize) (G_OBJECT (composite));
 }
 
 static GstElement *
-gst_compositor_create_pipeline (GstCompositor * compositor)
+gst_composite_create_pipeline (GstComposite * composite)
 {
   GString *desc;
   GstElement *pipeline;
@@ -108,16 +108,16 @@ gst_compositor_create_pipeline (GstCompositor * compositor)
 
 static void
 on_source_pad_added (GstElement * element, GstPad * pad,
-    GstCompositor * compositor)
+    GstComposite * composite)
 {
   INFO ("source-pad-added: %s.%s", GST_ELEMENT_NAME (element),
       GST_PAD_NAME (pad));
 }
 
 static gboolean
-gst_compositor_prepare (GstCompositor *compositor)
+gst_composite_prepare (GstComposite *composite)
 {
-  GstWorker *worker = GST_WORKER (compositor);
+  GstWorker *worker = GST_WORKER (composite);
   if (worker->source) {
     g_signal_connect (worker->source, "pad-added",
 	G_CALLBACK (on_source_pad_added), worker);
@@ -126,12 +126,12 @@ gst_compositor_prepare (GstCompositor *compositor)
 }
 
 static void
-gst_compositor_class_init (GstCompositorClass * klass)
+gst_composite_class_init (GstCompositeClass * klass)
 {
   GObjectClass * object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass * worker_class = GST_WORKER_CLASS (klass);
-  object_class->finalize = (GObjectFinalizeFunc) gst_compositor_finalize;
+  object_class->finalize = (GObjectFinalizeFunc) gst_composite_finalize;
   worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_compositor_create_pipeline;
-  worker_class->prepare = (GstWorkerPrepareFunc) gst_compositor_prepare;
+    gst_composite_create_pipeline;
+  worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
 }
