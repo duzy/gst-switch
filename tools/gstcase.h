@@ -23,54 +23,26 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_SWITCH_SRV_H__by_Duzy_Chan__
-#define __GST_SWITCH_SRV_H__by_Duzy_Chan__ 1
-#include <gio/gio.h>
-#include "gstswitcher.h"
-#include "gstcompositor.h"
-#include "../logutils.h"
+#ifndef __GST_SWITCHER_H__by_Duzy_Chan__
+#define __GST_SWITCHER_H__by_Duzy_Chan__ 1
+#include "gstworker.h"
 
-#define GST_SWITCH_SERVER_TYPE (gst_switchsrv_get_type())
-#define GST_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_SWITCH_SERVER_TYPE, GstSwitchServer))
-#define GST_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_SWITCH_SERVER_TYPE, GstSwitchServerClass))
-#define GST_IS_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_SWITCH_SERVER_TYPE))
-#define GST_IS_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_SWITCH_SERVER_TYPE))
+#define GST_SWITCHER_TYPE (gst_switcher_get_type ())
 
+typedef struct _GstCase GstCase;
+typedef struct _GstCaseClass GstCaseClass;
 typedef struct _GstSwitchServer GstSwitchServer;
-typedef struct _GstSwitchServerClass GstSwitchServerClass;
-typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
-struct _GstSwitchServerOpts
+struct _GstCase
 {
-  gboolean verbose;
-  gchar * test_switch;
-  gint port;
+  GstWorker base;
 };
 
-struct _GstSwitchServer
+struct _GstCaseClass
 {
-  GObject base;
-  GstSwitcher *switcher;
-  GstCompositor *compositor;
-
-  gint port;
-  gchar *host;
-
-  GCancellable *cancellable;
-  GSocket *server_socket;
-
-  GMutex acceptor_lock;
-  GThread *acceptor;
-  GMainLoop *main_loop;
+  GstWorkerClass base_class;
 };
 
-struct _GstSwitchServerClass
-{
-  GObjectClass base_class;
-};
+GType gst_switcher_get_type (void);
 
-GType gst_switchsrv_get_type (void);
-
-extern GstSwitchServerOpts opts;
-
-#endif//__GST_SWITCH_SRV_H__by_Duzy_Chan__
+#endif//__GST_SWITCHER_H__by_Duzy_Chan__

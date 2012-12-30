@@ -749,7 +749,7 @@ gst_tcp_mix_src_add_client (GstTCPMixSrc *src, GSocket *socket)
 
     gst_tcp_mix_src_request_link_pad (src, pad);
 
-    if (!gst_pad_is_linked (pad)) {
+    if (!gst_pad_is_linked (GST_PAD (pad))) {
       GST_ERROR_OBJECT (src, "Pad %s.%s is not linked",
 	  GST_ELEMENT_NAME (src), GST_PAD_NAME (pad));
     }
@@ -787,6 +787,7 @@ gst_tcp_mix_src_acceptor_thread (GstTCPMixSrc *src)
   }
 
   g_mutex_lock (&src->acceptor_mutex);
+  g_thread_unref (src->acceptor);
   src->acceptor = NULL;
   g_mutex_unlock (&src->acceptor_mutex);
   return NULL;
