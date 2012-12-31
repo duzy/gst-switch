@@ -36,6 +36,8 @@ enum
   PROP_NAME,
 };
 
+extern gboolean verbose;
+
 G_DEFINE_TYPE (GstWorker, gst_worker, G_TYPE_OBJECT);
 
 static void
@@ -280,7 +282,7 @@ gst_worker_handle_message (GstBus * bus, GstMessage * message, gpointer data)
       GstTagList *tag_list;
 
       gst_message_parse_tag (message, &tag_list);
-      if (opts.verbose)
+      if (verbose)
         g_print ("tag\n");
     } break;
     case GST_MESSAGE_STATE_CHANGED:
@@ -289,7 +291,7 @@ gst_worker_handle_message (GstBus * bus, GstMessage * message, gpointer data)
       GstState oldstate, newstate, pending;
       gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
       if (GST_ELEMENT (message->src) == worker->pipeline) {
-        if (opts.verbose)
+        if (verbose)
           g_print ("switch-server: state change from %s to %s\n",
               gst_element_state_get_name (oldstate),
               gst_element_state_get_name (newstate));
@@ -297,7 +299,7 @@ gst_worker_handle_message (GstBus * bus, GstMessage * message, gpointer data)
 	ret = gst_worker_handle_pipeline_state_changed (worker,
 	    GST_STATE_TRANSITION (oldstate, newstate));
 
-	if (!ret && opts.verbose)
+	if (!ret && verbose)
 	  g_print ("unknown state change from %s to %s\n",
 	      gst_element_state_get_name (oldstate),
 	      gst_element_state_get_name (newstate));
@@ -337,7 +339,7 @@ gst_worker_handle_message (GstBus * bus, GstMessage * message, gpointer data)
     case GST_MESSAGE_STEP_START:
     case GST_MESSAGE_QOS:
     default:
-      if (opts.verbose) {
+      if (verbose) {
         //g_print ("message: %s\n", GST_MESSAGE_TYPE_NAME (message));
       }
       break;

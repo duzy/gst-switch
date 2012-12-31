@@ -47,6 +47,7 @@ enum
 };
 
 static guint gst_case_signals[SIGNAL__LAST] = { 0 };
+extern gboolean verbose;
 
 G_DEFINE_TYPE (GstCase, gst_case, GST_TYPE_WORKER);
 
@@ -144,7 +145,7 @@ gst_case_create_pipeline (GstCase * cas)
     break;
   }
 
-  if (opts.verbose)
+  if (verbose)
     g_print ("pipeline: %s\n", desc->str);
 
   pipeline = (GstElement *) gst_parse_launch (desc->str, &error);

@@ -44,9 +44,9 @@ typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
 struct _GstSwitchServerOpts
 {
-  gboolean verbose;
   gchar * test_switch;
-  gint port;
+  gint input_port;
+  gint control_port;
 };
 
 struct _GstSwitchServer

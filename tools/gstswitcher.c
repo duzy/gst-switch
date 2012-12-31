@@ -32,6 +32,8 @@
 #include "gstswitcher.h"
 #include "gstswitchsrv.h"
 
+extern gboolean verbose;
+
 G_DEFINE_TYPE (GstSwitcher, gst_switcher, GST_TYPE_WORKER);
 
 static void
@@ -53,12 +55,12 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
   GstElement *pipeline;
   GError *error = NULL;
 
-  INFO ("Listenning on port %d", opts.port);
+  INFO ("Listenning on port %d", opts.input_port);
 
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "tcpmixsrc name=source mode=loop "
-      "fill=none autosink=convert port=%d ", opts.port);
+      "fill=none autosink=convert port=%d ", opts.input_port);
   g_string_append_printf (desc, "convbin name=convert "
       "converter=gdpdepay autosink=switch ");
   g_string_append_printf (desc, "switch name=switch ");
@@ -70,7 +72,7 @@ gst_switcher_create_pipeline (GstSwitcher * switcher)
   g_string_append_printf (desc, "switch.src_1 ! compose_b. ");
   g_string_append_printf (desc, "switch.src_0 ! compose_a. ");
 
-  if (opts.verbose)
+  if (verbose)
     g_print ("pipeline: %s\n", desc->str);
 
   pipeline = (GstElement *) gst_parse_launch (desc->str, &error);

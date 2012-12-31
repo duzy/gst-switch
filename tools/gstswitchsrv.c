@@ -49,16 +49,20 @@
 G_DEFINE_TYPE (GstSwitchServer, gst_switchsrv, G_TYPE_OBJECT);
 
 GstSwitchServerOpts opts = {
-  0, NULL, 3000,
+  0, NULL, 3000, 4000,
 };
 
+gboolean verbose;
+
 static GOptionEntry entries[] = {
-  {"verbose", 'v', 0,		G_OPTION_ARG_NONE, &opts.verbose,
+  {"verbose", 'v', 0,		G_OPTION_ARG_NONE, &verbose,
        "Prompt more messages", NULL},
   {"test-switch", 't', 0,	G_OPTION_ARG_STRING, &opts.test_switch,
        "Perform switch test", "OUTPUT"},
-  {"port", 'p', 0,		G_OPTION_ARG_INT, &opts.port,
+  {"input-port", 'p', 0,	G_OPTION_ARG_INT, &opts.input_port,
        "Specify the listen port.", "NUM"},
+  {"control-port", 'p', 0,	G_OPTION_ARG_INT, &opts.control_port,
+       "Specify the control port.", "NUM"},
   { NULL }
 };
 

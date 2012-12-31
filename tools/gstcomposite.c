@@ -44,6 +44,7 @@ enum
 };
 
 static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
+extern gboolean verbose;
 
 G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 
@@ -98,7 +99,7 @@ gst_composite_create_pipeline (GstComposite * composite)
   GstElement *pipeline;
   GError *error = NULL;
 
-  INFO ("Listenning on port %d", opts.port);
+  INFO ("Listenning on port %d", opts.input_port);
 
   desc = g_string_new ("");
 
@@ -159,7 +160,7 @@ gst_composite_create_pipeline (GstComposite * composite)
       "port=%d ", composite->sink_port);
 #endif
 
-  if (opts.verbose)
+  if (verbose)
     g_print ("pipeline: %s\n", desc->str);
 
   pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
