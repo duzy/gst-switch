@@ -154,8 +154,9 @@ gst_composite_create_pipeline (GstComposite * composite)
   g_string_append_printf (desc, "source_a. "
       "! video/x-raw,framerate=10/1,width=300,height=250 "
       "! compose.sink_0 ");
-  g_string_append_printf (desc, "xvimagesink name=sink ");
-  g_string_append_printf (desc, "compose. ! sink. ");
+  g_string_append_printf (desc, "compose. ! gdppay ! sink. ");
+  g_string_append_printf (desc, "tcpserversink name=sink "
+      "port=%d ", composite->sink_port);
 #endif
 
   if (opts.verbose)
