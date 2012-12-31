@@ -52,6 +52,26 @@ PKG_CHECK_MODULES(GLIB, [
   ])
 ])
 
+dnl GTK 
+HAVE_GTK=NO
+GTK2_REQ=2.14.0
+GTK3_REQ=2.91.3
+AC_MSG_CHECKING([which gtk+ version to compile examples against (optional)])
+AC_ARG_WITH([gtk],
+  AS_HELP_STRING([--with-gtk=3.0|2.0],[which gtk+ version to compile against (default: 2.0)]),
+  [case "$with_gtk" in
+      2.0) GTK_REQ=$GTK2_REQ ;;
+      3.0) GTK_REQ=$GTK3_REQ ;;
+      *) AC_MSG_ERROR([invalid gtk+ version specified]);;
+  esac],
+  [with_gtk=2.0
+   GTK_REQ=$GTK2_REQ])
+AC_MSG_RESULT([$with_gtk (>= $GTK_REQ)])
+PKG_CHECK_MODULES(GTK, gtk+-x11-$with_gtk >= $GTK_REQ, HAVE_GTK=yes, HAVE_GTK=no)
+AC_SUBST(GTK_LIBS)
+AC_SUBST(GTK_CFLAGS)
+AM_CONDITIONAL(HAVE_GTK, test "x$HAVE_GTK" = "xyes")
+
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl This will export GST_CFLAGS and GST_LIBS variables for use in Makefile.am
 dnl

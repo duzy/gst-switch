@@ -27,6 +27,8 @@
 #include "config.h"
 #endif
 
+#include <gst/video/videooverlay.h>
+#include <stdlib.h>
 #include "gstswitchui.h"
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switchui, G_TYPE_OBJECT);
@@ -54,34 +56,99 @@ gst_switchui_parse_args (int *argc, char **argv[])
 }
 
 static void
+gst_switchui_quit (GstSwitchUI * ui)
+{
+  gtk_main_quit ();
+}
+
+static void
+gst_switchui_window_closed (GtkWidget * widget, GdkEvent * event,
+    gpointer data)
+{
+  GstSwitchUI * ui = GST_SWITCH_UI (data);
+  gst_switchui_quit (ui);
+}
+
+static gboolean
+gst_switchui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
+    gpointer data)
+{
+  GstSwitchUI * ui = GST_SWITCH_UI (data);
+  return FALSE;
+}
+
+static gboolean
+gst_switchui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
+    gpointer data)
+{
+  GstSwitchUI * ui = GST_SWITCH_UI (data);
+  return FALSE;
+}
+
+static gboolean
+gst_switchui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
+    gpointer data)
+{
+  return FALSE;
+}
+
+static void
 gst_switchui_init (GstSwitchUI * ui)
 {
-  ui->main_loop = NULL;
+  ui->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+  gtk_window_set_default_size (GTK_WINDOW (ui->window), 640, 480);
+  gtk_window_set_title (GTK_WINDOW (ui->window), "GstSwitch");
+  g_signal_connect (G_OBJECT (ui->window), "delete-event",
+      G_CALLBACK (gst_switchui_window_closed), ui);
+
+  ui->compose_view = gtk_drawing_area_new ();
+  g_signal_connect (G_OBJECT (ui->compose_view), "expose-event",
+      G_CALLBACK (gst_switchui_compose_view_expose), ui);
+  g_signal_connect (G_OBJECT (ui->compose_view), "motion-notify-event",
+      G_CALLBACK (gst_switchui_compose_view_motion), ui);
+  g_signal_connect (G_OBJECT (ui->compose_view), "button-press-event",
+      G_CALLBACK (gst_switchui_compose_view_press), ui);
+
+  gtk_widget_set_double_buffered (ui->compose_view, FALSE);
+  gtk_widget_set_events (ui->compose_view, GDK_EXPOSURE_MASK
+      //| GDK_LEAVE_NOTIFY_MASK
+      | GDK_BUTTON_PRESS_MASK
+      //| GDK_POINTER_MOTION_MASK
+      //| GDK_POINTER_MOTION_HINT_MASK
+      );
+
+  gtk_container_add (GTK_CONTAINER (ui->window), ui->compose_view);
+  gtk_container_set_border_width (GTK_CONTAINER (ui->window), 5);
 }
 
 static void
 gst_switchui_finalize (GstSwitchUI * ui)
 {
-  g_main_loop_quit (ui->main_loop);
-  g_main_loop_unref (ui->main_loop);
-  ui->main_loop = NULL;
+  gtk_widget_destroy (GTK_WIDGET (ui->window));
+  ui->window = NULL;
 
   if (G_OBJECT_CLASS (gst_switchui_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_switchui_parent_class)->finalize) (G_OBJECT (ui));
 }
 
 static void
-gst_switchui_quit (GstSwitchUI * ui)
+gst_switchui_prepare_connections (GstSwitchUI * ui)
 {
-  g_main_loop_quit (ui->main_loop);
+#if 0
+  GdkWindow *xview = gtk_widget_get_window (ui->compose_view);
+  gulong xid = GDK_WINDOW_XID (xview);
+  GstElement *sink = /* xvimagesink */;
+  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (sink), xid);
+#endif
 }
 
 static void
 gst_switchui_run (GstSwitchUI * ui)
 {
-  ui->main_loop = g_main_loop_new (NULL, TRUE);
-
-  g_main_loop_run (ui->main_loop);
+  gtk_widget_show_all (ui->window);
+  gtk_widget_realize (ui->window);
+  gst_switchui_prepare_connections (ui);
+  gtk_main ();
 }
 
 static void
@@ -98,6 +165,7 @@ main (int argc, char *argv[])
   GstSwitchUI *ui;
 
   gst_switchui_parse_args (&argc, &argv);
+  gtk_init (&argc, &argv);
 
   ui = GST_SWITCH_UI (g_object_new (GST_TYPE_SWITCH_UI, NULL));
 

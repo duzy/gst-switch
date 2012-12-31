@@ -25,7 +25,8 @@
 
 #ifndef __GST_SWITCH_UI_H__by_Duzy_Chan__
 #define __GST_SWITCH_UI_H__by_Duzy_Chan__ 1
-#include <stdlib.h>
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
 #include "gstworker.h"
 
 #define GST_TYPE_SWITCH_UI (gst_switchui_get_type ())
@@ -40,7 +41,13 @@ typedef struct _GstSwitchUIClass GstSwitchUIClass;
 struct _GstSwitchUI
 {
   GObject base;
-  GMainLoop *main_loop;
+
+  GtkWidget *window;
+  GtkWidget *compose_view;
+  GtkWidget *preview_0;
+  GtkWidget *preview_1;
+  GtkWidget *preview_2;
+  GtkWidget *preview_3;
 };
 
 struct _GstSwitchUIClass
