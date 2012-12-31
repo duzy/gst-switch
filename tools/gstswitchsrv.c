@@ -176,6 +176,9 @@ gst_switchsrv_alloc_port (GstSwitchServer *srv)
   g_mutex_lock (&srv->alloc_port_lock);
   srv->alloc_port_count += 1;
   port = srv->port + srv->alloc_port_count;
+
+  // TODO: new policy for port allocation
+
   g_mutex_unlock (&srv->alloc_port_lock);
   return port;
 }
@@ -185,6 +188,9 @@ gst_switchsrv_revoke_port (GstSwitchServer *srv, int port)
 {
   g_mutex_lock (&srv->alloc_port_lock);
   //srv->alloc_port_count -= 1;
+
+  // TODO: new policy for port allocation
+
   g_mutex_unlock (&srv->alloc_port_lock);
 }
 
@@ -195,11 +201,19 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
 	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
   gint port = gst_switchsrv_alloc_port (srv);
   GstCase *workcase;
+  GstCaseType type;
   gchar *name;
+  gint num = g_list_length (srv->cases);
 
-  name = g_strdup_printf ("case-%d", g_list_length (srv->cases));
+  switch (num) {
+  case 0:  type = GST_CASE_COMPOSITE_A; break;
+  case 1:  type = GST_CASE_COMPOSITE_B; break;
+  default: type = GST_CASE_PREVIEW; break;
+  }
+
+  name = g_strdup_printf ("case-%d", num);
   workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
-	  "port", port, "stream", stream, NULL));
+	  "type", type, "port", port, "stream", stream, NULL));
   g_free (name);
 
   g_object_unref (client);
@@ -365,9 +379,12 @@ gst_switchsrv_acceptor (GstSwitchServer *srv)
 static gboolean
 gst_switchsrv_prepare_composite (GstSwitchServer * srv)
 {
+  gint port = gst_switchsrv_alloc_port (srv);
+  port = gst_switchsrv_alloc_port (srv);
+
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
   srv->composite = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
-	  NULL));
+	  "name", "composite", "port", port, NULL));
   GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
 
   if (!gst_worker_prepare (GST_WORKER (srv->composite)))

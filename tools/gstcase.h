@@ -38,9 +38,16 @@ typedef struct _GstCase GstCase;
 typedef struct _GstCaseClass GstCaseClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
+typedef enum {
+  GST_CASE_COMPOSITE_A,
+  GST_CASE_COMPOSITE_B,
+  GST_CASE_PREVIEW,
+} GstCaseType;
+
 struct _GstCase
 {
   GstWorker base;
+  GstCaseType type;
   GInputStream *stream;
   gint sink_port;
 };

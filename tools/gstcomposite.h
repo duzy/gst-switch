@@ -40,6 +40,8 @@ typedef struct _GstSwitchServer GstSwitchServer;
 struct _GstComposite
 {
   GstWorker base;
+
+  gint sink_port;
 };
 
 struct _GstCompositeClass

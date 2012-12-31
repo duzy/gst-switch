@@ -35,6 +35,9 @@
 #define GST_IS_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_SERVER))
 #define GST_IS_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_SERVER))
 
+#define GST_SWITCH_MIN_SINK_PORT 1
+#define GST_SWITCH_MAX_SINK_PORT 65535
+
 typedef struct _GstSwitchServer GstSwitchServer;
 typedef struct _GstSwitchServerClass GstSwitchServerClass;
 typedef struct _GstSwitchServerOpts GstSwitchServerOpts;

@@ -32,12 +32,10 @@
 #include "gstswitchsrv.h"
 #include "gstcase.h"
 
-#define GST_CASE_MIN_SINK_PORT 1
-#define GST_CASE_MAX_SINK_PORT 65535
-
 enum
 {
   PROP_0,
+  PROP_TYPE,
   PROP_STREAM,
   PROP_PORT,
 };
@@ -45,16 +43,17 @@ enum
 enum
 {
   SIGNAL_END_CASE,
-  SIGNAL_LAST,
+  SIGNAL__LAST,
 };
 
-static guint gst_case_signals[SIGNAL_LAST] = { 0 };
+static guint gst_case_signals[SIGNAL__LAST] = { 0 };
 
 G_DEFINE_TYPE (GstCase, gst_case, GST_TYPE_WORKER);
 
 static void
 gst_case_init (GstCase * cas)
 {
+  cas->type = GST_CASE_PREVIEW;
   cas->stream = NULL;
   cas->sink_port = 0;
 }
@@ -78,6 +77,9 @@ gst_case_get_property (GstCase *cas, guint property_id,
     GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
+  case PROP_TYPE:
+    g_value_set_uint (value, cas->type);
+    break;
   case PROP_STREAM:
     g_value_set_object (value, cas->stream);
     break;
@@ -95,6 +97,9 @@ gst_case_set_property (GstCase *cas, guint property_id,
     const GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
+  case PROP_TYPE:
+    cas->type = (GstCaseType) g_value_get_uint (value);
+    break;
   case PROP_STREAM: {
     GObject *stream = g_value_dup_object (value);
     if (cas->stream)
@@ -117,13 +122,27 @@ gst_case_create_pipeline (GstCase * cas)
   GstElement *pipeline;
   GError *error = NULL;
   GString *desc;
+  gchar *channel = NULL;
 
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "giostreamsrc name=source ");
-  g_string_append_printf (desc, "tcpserversink name=sink sync=false "
-      "port=%d ", cas->sink_port);
-  g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
+
+  switch (cas->type) {
+  case GST_CASE_COMPOSITE_A:
+    channel = "composite_a";
+  case GST_CASE_COMPOSITE_B:
+    if (channel == NULL) channel = "composite_b";
+    g_string_append_printf (desc, "intervideosink name=sink "
+	"channel=%s ", channel);
+    g_string_append_printf (desc, "source. ! gdpdepay ! sink. ");
+    break;
+  case GST_CASE_PREVIEW:
+    g_string_append_printf (desc, "tcpserversink name=sink sync=false "
+	"port=%d ", cas->sink_port);
+    g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
+    break;
+  }
 
   if (opts.verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -185,13 +204,19 @@ gst_case_class_init (GstCaseClass * klass)
 	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCaseClass, end_case),
 	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
+  g_object_class_install_property (object_class, PROP_TYPE,
+      g_param_spec_uint ("type", "Type", "Case type",
+          GST_CASE_COMPOSITE_A, GST_CASE_PREVIEW, GST_CASE_PREVIEW,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   g_object_class_install_property (object_class, PROP_STREAM,
       g_param_spec_object ("stream", "Stream", "Stream to read from",
           G_TYPE_INPUT_STREAM, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",
-          GST_CASE_MIN_SINK_PORT, GST_CASE_MAX_SINK_PORT, 3001,
+          GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
+	  GST_SWITCH_MIN_SINK_PORT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_case_null;

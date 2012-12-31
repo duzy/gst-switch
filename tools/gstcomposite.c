@@ -33,11 +33,17 @@
 
 enum
 {
-  SIGNAL_END_COMPOSITE,
-  SIGNAL_LAST,
+  PROP_0,
+  PROP_PORT,
 };
 
-static guint gst_composite_signals[SIGNAL_LAST] = { 0 };
+enum
+{
+  SIGNAL_END_COMPOSITE,
+  SIGNAL__LAST,
+};
+
+static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
 
 G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 
@@ -53,6 +59,36 @@ gst_composite_finalize (GstComposite * composite)
     (*G_OBJECT_CLASS (gst_composite_parent_class)->finalize) (G_OBJECT (composite));
 
   INFO ("Composite finalized");
+}
+
+static void
+gst_composite_set_property (GstComposite * composite, guint property_id,
+    const GValue *value, GParamSpec *pspec)
+{
+  switch (property_id) {
+  case PROP_PORT:
+    composite->sink_port = g_value_get_uint (value);
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
+	pspec);
+    break;
+  }
+}
+
+static void
+gst_composite_get_property (GstComposite * composite, guint property_id,
+    GValue *value, GParamSpec *pspec)
+{
+  switch (property_id) {
+  case PROP_PORT:
+    g_value_set_uint (value, composite->sink_port);
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
+	pspec);
+    break;
+  }
 }
 
 static GstElement *
@@ -86,7 +122,7 @@ gst_composite_create_pipeline (GstComposite * composite)
   g_string_append_printf (desc, "identity name=compose_sink ");
   g_string_append_printf (desc, "compose_sink. ! videoconvert ! xvimagesink ");
   */
-#if 1
+#if 0
   g_string_append_printf (desc, "videotestsrc name=src0 pattern=0 "
       //"! video/x-raw-yuv,framerate=10/1,width=100,height=100 "
       //"! videobox border-alpha=0 left=0 top=0 "
@@ -101,7 +137,21 @@ gst_composite_create_pipeline (GstComposite * composite)
       "! videoconvert "
       "! xvimagesink ");
 #else
-  
+  g_string_append_printf (desc, "intervideosrc name=source_a "
+      "channel=composite_a ");
+  g_string_append_printf (desc, "intervideosrc name=source_b "
+      "channel=composite_b ");
+#if 0
+  g_string_append_printf (desc, "tcpserversink name=sink_a "
+      "port=%d ", composite->sink_port);
+  g_string_append_printf (desc, "tcpserversink name=sink_b "
+      "port=%d ", composite->sink_port+1);
+#else
+  g_string_append_printf (desc, "xvimagesink name=sink_a ");
+  g_string_append_printf (desc, "xvimagesink name=sink_b ");
+#endif
+  g_string_append_printf (desc, "source_a. ! sink_a. ");
+  g_string_append_printf (desc, "source_b. ! sink_b. ");
 #endif
 
   if (opts.verbose)
@@ -155,11 +205,19 @@ gst_composite_class_init (GstCompositeClass * klass)
   GstWorkerClass * worker_class = GST_WORKER_CLASS (klass);
 
   object_class->finalize = (GObjectFinalizeFunc) gst_composite_finalize;
+  object_class->set_property = (GObjectSetPropertyFunc) gst_composite_set_property;
+  object_class->get_property = (GObjectGetPropertyFunc) gst_composite_get_property;
 
   gst_composite_signals[SIGNAL_END_COMPOSITE] =
     g_signal_new ("end-composite", G_TYPE_FROM_CLASS (klass),
 	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_composite),
 	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  g_object_class_install_property (object_class, PROP_PORT,
+      g_param_spec_uint ("port", "Port", "Sink port",
+          GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
+	  GST_SWITCH_MIN_SINK_PORT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_composite_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
