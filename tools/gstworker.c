@@ -156,7 +156,7 @@ static void
 gst_worker_handle_error (GstWorker *worker, GError * error,
     const char *debug)
 {
-  ERROR ("%s", error->message);
+  ERROR ("%s: %s", worker->name, error->message);
   gst_worker_stop (worker);
 }
 
@@ -164,14 +164,14 @@ static void
 gst_worker_handle_warning (GstWorker *worker, GError * error,
     const char *debug)
 {
-  WARN ("%s", error->message);
+  WARN ("%s: %s", worker->name, error->message);
 }
 
 static void
 gst_worker_handle_info (GstWorker *worker, GError * error,
     const char *debug)
 {
-  INFO ("%s", error->message);
+  INFO ("%s: %s", worker->name, error->message);
 }
 
 static void

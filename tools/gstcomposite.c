@@ -141,17 +141,21 @@ gst_composite_create_pipeline (GstComposite * composite)
       "channel=composite_a ");
   g_string_append_printf (desc, "intervideosrc name=source_b "
       "channel=composite_b ");
-#if 0
-  g_string_append_printf (desc, "tcpserversink name=sink_a "
-      "port=%d ", composite->sink_port);
-  g_string_append_printf (desc, "tcpserversink name=sink_b "
-      "port=%d ", composite->sink_port+1);
-#else
-  g_string_append_printf (desc, "xvimagesink name=sink_a ");
-  g_string_append_printf (desc, "xvimagesink name=sink_b ");
-#endif
-  g_string_append_printf (desc, "source_a. ! sink_a. ");
-  g_string_append_printf (desc, "source_b. ! sink_b. ");
+  g_string_append_printf (desc, "videomixer name=compose "
+      "sink_0::alpha=0.8 "
+      "sink_0::zorder=0 "
+      "sink_1::alpha=0.5 "
+      "sink_1::xpos=20 sink_1::ypos=20 "
+      "sink_1::zorder=1 ");
+  g_string_append_printf (desc, "source_b. "
+      "! video/x-raw,framerate=10/1,width=100,height=80 "
+      //"! videobox border-alpha=0 left=50 top=50 right=150 bottom=230 "
+      "! compose.sink_1 ");
+  g_string_append_printf (desc, "source_a. "
+      "! video/x-raw,framerate=10/1,width=300,height=250 "
+      "! compose.sink_0 ");
+  g_string_append_printf (desc, "xvimagesink name=sink ");
+  g_string_append_printf (desc, "compose. ! sink. ");
 #endif
 
   if (opts.verbose)
