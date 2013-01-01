@@ -74,6 +74,7 @@ gst_switchui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
     gpointer data)
 {
   GstSwitchUI * ui = GST_SWITCH_UI (data);
+  (void) ui;
   return FALSE;
 }
 
@@ -82,6 +83,7 @@ gst_switchui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
     gpointer data)
 {
   GstSwitchUI * ui = GST_SWITCH_UI (data);
+  (void) ui;
   return FALSE;
 }
 
@@ -89,6 +91,8 @@ static gboolean
 gst_switchui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
     gpointer data)
 {
+  GstSwitchUI * ui = GST_SWITCH_UI (data);
+  (void) ui;
   return FALSE;
 }
 

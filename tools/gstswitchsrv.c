@@ -35,12 +35,15 @@
 #include "./gio/gsocketinputstream.h"
 
 #define GETTEXT_PACKAGE "switchsrv"
-#define GST_SWITCH_SERVER_DEFAULT_PORT 3000
 #define GST_SWITCH_SERVER_DEFAULT_HOST "localhost"
+#define GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT 3000
+#define GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT 5000
 #define GST_SWITCH_SERVER_LISTEN_BACKLOG 5 /* client connection queue */
 
 #define GST_SWITCH_SERVER_LOCK_ACCEPTOR(srv) (g_mutex_lock (&(srv)->acceptor_lock))
 #define GST_SWITCH_SERVER_UNLOCK_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->acceptor_lock))
+#define GST_SWITCH_SERVER_LOCK_CONTROLLER(srv) (g_mutex_lock (&(srv)->controller_lock))
+#define GST_SWITCH_SERVER_UNLOCK_CONTROLLER(srv) (g_mutex_unlock (&(srv)->controller_lock))
 #define GST_SWITCH_SERVER_LOCK_CASES(srv) (g_mutex_lock (&(srv)->cases_lock))
 #define GST_SWITCH_SERVER_UNLOCK_CASES(srv) (g_mutex_unlock (&(srv)->cases_lock))
 #define GST_SWITCH_SERVER_LOCK_COMPOSITE(srv) (g_mutex_lock (&(srv)->composite_lock))
@@ -49,7 +52,9 @@
 G_DEFINE_TYPE (GstSwitchServer, gst_switchsrv, G_TYPE_OBJECT);
 
 GstSwitchServerOpts opts = {
-  0, NULL, 3000, 4000,
+  NULL,
+  GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT,
+  GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
 };
 
 gboolean verbose;
@@ -86,18 +91,22 @@ gst_switchsrv_parse_args (int *argc, char **argv[])
 static void
 gst_switchsrv_init (GstSwitchServer *srv)
 {
-  srv->port = GST_SWITCH_SERVER_DEFAULT_PORT;
   srv->host = g_strdup (GST_SWITCH_SERVER_DEFAULT_HOST);
 
   srv->cancellable = g_cancellable_new ();
-  srv->server_socket = NULL;
+  srv->acceptor_port = GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT;
+  srv->acceptor_socket = NULL;
   srv->acceptor = NULL;
+  srv->controller_port = GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT;
+  srv->controller_socket = NULL;
+  srv->controller_thread = NULL;
   srv->main_loop = NULL;
   srv->cases = NULL;
   srv->composite = NULL;
   srv->alloc_port_count = 0;
 
   g_mutex_init (&srv->acceptor_lock);
+  g_mutex_init (&srv->controller_lock);
   g_mutex_init (&srv->cases_lock);
   g_mutex_init (&srv->alloc_port_lock);
   g_mutex_init (&srv->composite_lock);
@@ -118,13 +127,22 @@ gst_switchsrv_finalize (GstSwitchServer *srv)
     srv->cancellable = NULL;
   }
 
-  if (srv->server_socket) {
-    g_object_unref (srv->server_socket);
-    srv->server_socket = NULL;
+  if (srv->acceptor_socket) {
+    g_object_unref (srv->acceptor_socket);
+    srv->acceptor_socket = NULL;
+  }
+
+  if (srv->controller_socket) {
+    g_object_unref (srv->controller_socket);
+    srv->controller_socket = NULL;
   }
 
   if (srv->acceptor) {
     g_thread_join (srv->acceptor);
+  }
+
+  if (srv->controller_thread) {
+    g_thread_join (srv->controller_thread);
   }
 
   if (srv->cases) {
@@ -138,6 +156,7 @@ gst_switchsrv_finalize (GstSwitchServer *srv)
   }
 
   g_mutex_clear (&srv->acceptor_lock);
+  g_mutex_clear (&srv->controller_lock);
   g_mutex_clear (&srv->cases_lock);
   g_mutex_clear (&srv->alloc_port_lock);
   g_mutex_clear (&srv->composite_lock);
@@ -179,7 +198,7 @@ gst_switchsrv_alloc_port (GstSwitchServer *srv)
   gint port;
   g_mutex_lock (&srv->alloc_port_lock);
   srv->alloc_port_count += 1;
-  port = srv->port + srv->alloc_port_count;
+  port = srv->acceptor_port + srv->alloc_port_count;
 
   // TODO: new policy for port allocation
 
@@ -250,15 +269,25 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
   }
 }
 
-static gboolean
-gst_switchsrv_listen (GstSwitchServer *srv)
+static void
+gst_switchsrv_allow_tcp_control (GstSwitchServer *srv, GSocket *client)
+{
+  ERROR ("control via TCP not implemented");
+  g_object_unref (client);
+}
+
+static GSocket *
+gst_switchsrv_listen (GstSwitchServer *srv, gint port,
+    gint *bound_port)
 {
   GError *err = NULL;
   GInetAddress *addr;
+  GSocket *socket = NULL;
   GSocketAddress *saddr;
   GResolver *resolver;
-  gint bound_port = 0;
   gchar *ip;
+
+  *bound_port = 0;
 
   /* look up name if we need to */
   addr = g_inet_address_new_from_string (srv->host);
@@ -278,42 +307,42 @@ gst_switchsrv_listen (GstSwitchServer *srv)
   }
 
   ip = g_inet_address_to_string (addr);
-  saddr = g_inet_socket_address_new (addr, srv->port);
+  saddr = g_inet_socket_address_new (addr, port);
   g_object_unref (addr);
 
   /* create the server listener socket */
-  srv->server_socket = g_socket_new (g_socket_address_get_family (saddr),
+  socket = g_socket_new (g_socket_address_get_family (saddr),
       G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &err);
-  if (!srv->server_socket)
+  if (!socket)
     goto socket_new_failed;
   
   /* bind it */
-  if (!g_socket_bind (srv->server_socket, saddr, TRUE, &err))
+  if (!g_socket_bind (socket, saddr, TRUE, &err))
     goto socket_bind_failed;
 
   g_object_unref (saddr);
 
   /* listen on the socket */
-  g_socket_set_listen_backlog (srv->server_socket,
+  g_socket_set_listen_backlog (socket,
       GST_SWITCH_SERVER_LISTEN_BACKLOG);
-  if (!g_socket_listen (srv->server_socket, &err))
+  if (!g_socket_listen (socket, &err))
     goto socket_listen_failed;
 
-  if (srv->port == 0) {
-    saddr = g_socket_get_local_address (srv->server_socket, NULL);
-    bound_port = g_inet_socket_address_get_port ((GInetSocketAddress *) saddr);
+  if (port == 0) {
+    saddr = g_socket_get_local_address (socket, NULL);
+    *bound_port = g_inet_socket_address_get_port ((GInetSocketAddress *) saddr);
     g_object_unref (saddr);
   } else {
-    bound_port = srv->port;
+    *bound_port = port;
   }
 
-  INFO ("Listening on %s (%s:%d)", srv->host, ip, bound_port);
+  INFO ("Listening on %s (%s:%d)", srv->host, ip, *bound_port);
 
   g_free (ip);
 
   //g_atomic_int_set (&srv->bound_port, bound_port);
   //g_object_notify (G_OBJECT (src), "bound-port");
-  return TRUE;
+  return socket;
 
   /* Errors Handling */
 
@@ -322,7 +351,7 @@ gst_switchsrv_listen (GstSwitchServer *srv)
     ERROR ("resolve: %s", err->message);
     g_object_unref (resolver);
     g_object_unref (addr);
-    return FALSE;
+    return NULL;
   }
 
  socket_new_failed:
@@ -331,7 +360,7 @@ gst_switchsrv_listen (GstSwitchServer *srv)
     g_clear_error (&err);
     g_object_unref (saddr);
     g_free (ip);
-    return FALSE;
+    return NULL;
   }
 
  socket_bind_failed:
@@ -340,7 +369,7 @@ gst_switchsrv_listen (GstSwitchServer *srv)
     g_clear_error (&err);
     g_object_unref (saddr);
     g_free (ip);
-    return FALSE;
+    return NULL;
   }
 
  socket_listen_failed:
@@ -349,7 +378,7 @@ gst_switchsrv_listen (GstSwitchServer *srv)
     g_clear_error (&err);
     g_object_unref (saddr);
     g_free (ip);
-    return FALSE;
+    return NULL;
   }
 }
 
@@ -358,13 +387,16 @@ gst_switchsrv_acceptor (GstSwitchServer *srv)
 {
   GSocket *socket;
   GError *error;
+  gint bound_port;
 
-  if (!gst_switchsrv_listen (srv)) {
+  srv->acceptor_socket = gst_switchsrv_listen (srv,
+      srv->acceptor_port, &bound_port);
+  if (!srv->acceptor_socket) {
     return NULL;
   }
 
-  while (srv->acceptor && srv->server_socket && srv->cancellable) {
-    socket = g_socket_accept (srv->server_socket, srv->cancellable, &error);
+  while (srv->acceptor && srv->acceptor_socket && srv->cancellable) {
+    socket = g_socket_accept (srv->acceptor_socket, srv->cancellable, &error);
     if (!socket) {
       ERROR ("accept: %s", error->message);
       continue;
@@ -378,6 +410,57 @@ gst_switchsrv_acceptor (GstSwitchServer *srv)
   srv->acceptor = NULL;
   GST_SWITCH_SERVER_UNLOCK_ACCEPTOR (srv);
   return NULL;
+}
+
+static gpointer
+gst_switchsrv_controller (GstSwitchServer *srv)
+{
+  GSocket *socket;
+  GError *error;
+  gint bound_port;
+
+  srv->controller_socket = gst_switchsrv_listen (srv,
+      srv->controller_port, &bound_port);
+  if (!srv->controller_socket) {
+    return NULL;
+  }
+
+  while (srv->controller_thread && srv->controller_socket && srv->cancellable) {
+    socket = g_socket_accept (srv->controller_socket, srv->cancellable, &error);
+    if (!socket) {
+      ERROR ("accept: %s", error->message);
+      continue;
+    }
+
+    gst_switchsrv_allow_tcp_control (srv, socket);
+  }
+
+  GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+  g_thread_unref (srv->controller_thread);
+  srv->controller_thread = NULL;
+  GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+  return NULL;
+}
+
+static void
+gst_switchsrv_prepare_bus_controller (GstSwitchServer * srv)
+{
+  if (!srv->controller) {
+    GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+    srv->controller = GST_SWITCH_CONTROLLER (g_object_new (
+	    GST_TYPE_SWITCH_CONTROLLER,
+	    NULL));
+    GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+  }
+
+  /*
+  GDBusMessage *m = g_dbus_message_new_method_call (
+      "info.duzy.GstSwitchController",
+      "/info/duzy/GstSwitchController",
+      "info.duzy.GstSwitchController",
+      "test");
+  //g_dbus_message_set ()
+  */
 }
 
 static gboolean
@@ -422,13 +505,18 @@ gst_switchsrv_run (GstSwitchServer * srv)
   srv->acceptor = g_thread_new ("switch-server-acceptor",
       (GThreadFunc) gst_switchsrv_acceptor, srv);
 
+  srv->controller_thread = g_thread_new ("switch-server-controller",
+      (GThreadFunc) gst_switchsrv_controller, srv);
+
+  gst_switchsrv_prepare_bus_controller (srv);
+
   if (!gst_switchsrv_prepare_composite (srv))
     goto error_prepare_composite;
 
   g_main_loop_run (srv->main_loop);
 
   g_thread_join (srv->acceptor);
-
+  g_thread_join (srv->controller_thread);
   return;
 
   /* Errors Handling */

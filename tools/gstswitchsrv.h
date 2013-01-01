@@ -27,6 +27,7 @@
 #define __GST_SWITCH_SRV_H__by_Duzy_Chan__ 1
 #include <gio/gio.h>
 #include "gstcomposite.h"
+#include "gstswitchcontroller.h"
 #include "../logutils.h"
 
 #define GST_TYPE_SWITCH_SERVER (gst_switchsrv_get_type())
@@ -53,16 +54,24 @@ struct _GstSwitchServer
 {
   GObject base;
 
-  gint port;
   gchar *host;
 
   GMainLoop *main_loop;
 
   GCancellable *cancellable;
-  GSocket *server_socket;
-
   GMutex acceptor_lock;
   GThread *acceptor;
+  GSocket *acceptor_socket;
+  gint acceptor_port;
+
+  GMutex controller_lock;
+  GThread *controller_thread;
+  GSocket *controller_socket;
+  gint controller_port;
+
+  //GDBusNodeInfo controller_node;
+  //guint bus_controller;
+  GstSwitchController * controller;
 
   GMutex cases_lock;
   GList *cases;
