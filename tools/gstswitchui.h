@@ -42,6 +42,8 @@ struct _GstSwitchUI
 {
   GObject base;
 
+  GDBusConnection *controller;
+
   GtkWidget *window;
   GtkWidget *compose_view;
   GtkWidget *preview_0;

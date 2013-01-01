@@ -57,6 +57,8 @@ gst_case_init (GstCase * cas)
   cas->type = GST_CASE_PREVIEW;
   cas->stream = NULL;
   cas->sink_port = 0;
+
+  INFO ("Case initialized");
 }
 
 static void

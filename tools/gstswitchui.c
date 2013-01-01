@@ -30,6 +30,7 @@
 #include <gst/video/videooverlay.h>
 #include <stdlib.h>
 #include "gstswitchui.h"
+#include "gstswitchcontroller.h"
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switchui, G_TYPE_OBJECT);
 
@@ -136,6 +137,60 @@ gst_switchui_finalize (GstSwitchUI * ui)
 }
 
 static void
+gst_switchui_connect_controller (GstSwitchUI * ui)
+{
+  GError *error = NULL;
+  GVariant *value;
+  gint num;
+
+  ui->controller = g_dbus_connection_new_for_address_sync (
+      SWITCH_CONTROLLER_ADDRESS,
+      G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
+      NULL, /* GDBusAuthObserver */
+      NULL, /* GCancellable */
+      &error);
+
+  if (ui->controller == NULL)
+    goto error_new_connection;
+
+  value = g_dbus_connection_call_sync (ui->controller,
+      NULL, /* bus_name */
+      SWITCH_CONTROLLER_OBJECT_PATH,
+      SWITCH_CONTROLLER_OBJECT_NAME,
+      "test",
+      g_variant_new ("(i)", 5),
+      G_VARIANT_TYPE ("(i)"),
+      G_DBUS_CALL_FLAGS_NONE,
+      -1,
+      NULL,
+      &error);
+
+  if (!value)
+    goto error_call_sync;
+
+  g_variant_get (value, "(&i)", &num);
+
+  INFO ("test: %d\n", num);
+
+  g_variant_unref (value);
+  return;
+
+ error_new_connection:
+  {
+    ERROR ("%s", error->message);
+    g_error_free (error);
+    return;
+  }
+
+ error_call_sync:
+  {
+    ERROR ("%s", error->message);
+    g_error_free (error);
+    return;
+  }
+}
+
+static void
 gst_switchui_prepare_connections (GstSwitchUI * ui)
 {
 #if 0
@@ -149,6 +204,8 @@ gst_switchui_prepare_connections (GstSwitchUI * ui)
 static void
 gst_switchui_run (GstSwitchUI * ui)
 {
+  gst_switchui_connect_controller (ui);
+
   gtk_widget_show_all (ui->window);
   gtk_widget_realize (ui->window);
   gst_switchui_prepare_connections (ui);

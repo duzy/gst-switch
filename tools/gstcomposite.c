@@ -51,6 +51,7 @@ G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 static void
 gst_composite_init (GstComposite * composite)
 {
+  INFO ("Composite initialized");
 }
 
 static void

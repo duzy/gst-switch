@@ -34,6 +34,10 @@
 #define GST_IS_SWITCH_CONTROLLER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_CONTROLLER, GstSwitchController))
 #define GST_IS_SWITCH_CONTROLLER_CLASS(class) (G_TYPE_CHECK_INSTANCE_TYPE ((class), GST_TYPE_SWITCH_CONTROLLER, GstSwitchControllerClass))
 
+#define SWITCH_CONTROLLER_OBJECT_NAME "info.duzy.GstSwitchController"
+#define SWITCH_CONTROLLER_OBJECT_PATH "/info/duzy/GstSwitchController"
+#define SWITCH_CONTROLLER_ADDRESS "unix:abstract=gst-switch"
+
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
 
@@ -41,7 +45,7 @@ struct _GstSwitchController
 {
   GObject base;
 
-  guint owner_id;
+  GDBusServer *server;
 };
 
 struct _GstSwitchControllerClass

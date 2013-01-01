@@ -28,7 +28,6 @@
 #endif
 
 #include "gstswitchcontroller.h"
-#define SWITCH_CONTROLLER_OBJECT_NAME "info.duzy.GstSwitchController"
 
 enum
 {
@@ -63,11 +62,15 @@ gst_switch_controller_do_method_call (
     gpointer               user_data)
 {
   GstSwitchController *controller = GST_SWITCH_CONTROLLER (user_data);
+
+  INFO ("call: %s", method_name);
+
   if (g_strcmp0 (method_name, "test") == 0) {
     gint num = 0;
     g_variant_get (parameters, "(i)", &num);
     num *= 2; // simple test function
-    g_dbus_method_invocation_return_value (invocation, NULL);
+    g_dbus_method_invocation_return_value (invocation,
+	g_variant_new ("(i)", num));
   }
 }
 
@@ -83,6 +86,8 @@ gst_switch_controller_do_get_property (
 {
   GstSwitchController *controller = GST_SWITCH_CONTROLLER (user_data);
   GVariant *ret = NULL;
+
+  INFO ("get: %s", property_name);
 
   if (g_strcmp0 (property_name, "num") == 0) {
   }
@@ -101,6 +106,7 @@ gst_switch_controller_do_set_property (
     GError          **error,
     gpointer          user_data)
 {
+  INFO ("set: %s", property_name);
   return FALSE;
 }
 
@@ -110,6 +116,7 @@ static const GDBusInterfaceVTable gst_switch_controller_interface_vtable = {
   gst_switch_controller_do_set_property
 };
 
+#if 0
 static void
 gst_switch_controller_send_property_change (GstSwitchController *controller,
     GParamSpec *pspec, GDBusConnection *connection)
@@ -130,7 +137,7 @@ gst_switch_controller_bus_acquired (GDBusConnection *connection,
       G_CALLBACK (gst_switch_controller_send_property_change), connection);
 
   register_id = g_dbus_connection_register_object (connection,
-      "/info/duzy/GstSwitchController",
+      SWITCH_CONTROLLER_OBJECT_PATH,
       introspection_data->interfaces[0],
       &gst_switch_controller_interface_vtable,
       controller, /* user_data */
@@ -170,22 +177,93 @@ gst_switch_controller_export (GstSwitchController * controller)
   
   INFO ("TODO: export");
 }
+#endif
+
+static void
+gst_switch_controller_on_new_connection (GDBusServer *server,
+    GDBusConnection *connection, gpointer user_data)
+{
+  GstSwitchController *controller = GST_SWITCH_CONTROLLER (user_data);
+  GCredentials *credentials = g_dbus_connection_get_peer_credentials (
+      connection);
+  gchar *credentials_str = g_credentials_to_string (credentials);
+  guint register_id;
+
+  register_id = g_dbus_connection_register_object (connection,
+      SWITCH_CONTROLLER_OBJECT_PATH,
+      introspection_data->interfaces[0],
+      &gst_switch_controller_interface_vtable,
+      controller, /* user_data */
+      NULL, /* user_data_free_func */
+      NULL /* GError** */);
+
+  g_assert (0 < register_id);
+
+  //g_object_unref (connection);
+
+  INFO ("new connection: %p, %d, %s (%s, %s)", connection, register_id,
+      g_dbus_connection_get_unique_name (connection),
+      g_dbus_connection_get_guid (connection), credentials_str);
+
+  g_free (credentials_str);
+}
 
 static void
 gst_switch_controller_init (GstSwitchController * controller)
 {
-  controller->owner_id = 0;
+  gchar * guid = g_dbus_generate_guid ();
+  GDBusServerFlags flags = G_DBUS_SERVER_FLAGS_NONE;
+  GError * error = NULL;
+
+  /*
+  flags |= G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS;
+  */
+
+  controller->server = g_dbus_server_new_sync (
+      SWITCH_CONTROLLER_ADDRESS,
+      flags, guid,
+      NULL, /* GDBusAuthObserver */
+      NULL, /* GCancellable */
+      &error);
+
+  g_dbus_server_start (controller->server);
+  g_free (guid);
+
+  if (controller->server == NULL)
+    goto error_new_server;
+
+  INFO ("Switch Controller is listening at: %s",
+      g_dbus_server_get_client_address (controller->server));
+
+  introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
+  g_assert (introspection_data != NULL);
+
+  g_signal_connect (controller->server, "new-connection",
+      G_CALLBACK (gst_switch_controller_on_new_connection),
+      controller);
 
   // TODO: singleton object
 
-  gst_switch_controller_export (controller);
+  //controller->owner_id = 0;
+  //gst_switch_controller_export (controller);
+
+  return;
+
+  /* Errors Handling */
+ error_new_server:
+  {
+    ERROR ("%s", error->message);
+    return;
+  }
 }
 
 static void
 gst_switch_controller_finalize (GstSwitchController * controller)
 {
+  /*
   g_bus_unown_name (controller->owner_id);
   controller->owner_id = 0;
+  */
 
   if (introspection_data) {
     g_dbus_node_info_unref (introspection_data);
