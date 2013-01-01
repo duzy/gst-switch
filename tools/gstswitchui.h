@@ -55,6 +55,8 @@ struct _GstSwitchUI
 struct _GstSwitchUIClass
 {
   GObjectClass base_class;
+
+  GHashTable *methods;
 };
 
 GType gst_switchui_get_type (void);

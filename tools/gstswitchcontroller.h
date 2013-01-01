@@ -30,16 +30,25 @@
 
 #define GST_TYPE_SWITCH_CONTROLLER (gst_switch_controller_get_type ())
 #define GST_SWITCH_CONTROLLER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_CONTROLLER, GstSwitchController))
-#define GST_SWITCH_CONTROLLER_CLASS(class) (G_TYPE_CHECK_INSTANCE_CAST ((class), GST_TYPE_SWITCH_CONTROLLER, GstSwitchControllerClass))
+#define GST_SWITCH_CONTROLLER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_CONTROLLER, GstSwitchControllerClass))
 #define GST_IS_SWITCH_CONTROLLER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_CONTROLLER, GstSwitchController))
-#define GST_IS_SWITCH_CONTROLLER_CLASS(class) (G_TYPE_CHECK_INSTANCE_TYPE ((class), GST_TYPE_SWITCH_CONTROLLER, GstSwitchControllerClass))
+#define GST_IS_SWITCH_CONTROLLER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_CONTROLLER, GstSwitchControllerClass))
 
-#define SWITCH_CONTROLLER_OBJECT_NAME "info.duzy.GstSwitchController"
-#define SWITCH_CONTROLLER_OBJECT_PATH "/info/duzy/GstSwitchController"
-#define SWITCH_CONTROLLER_ADDRESS "unix:abstract=gst-switch"
+#define SWITCH_CONTROLLER_ADDRESS "unix:abstract=switch"
+#define SWITCH_CONTROLLER_OBJECT_NAME "info.duzy.SwitchControllerInterface"
+#define SWITCH_CONTROLLER_OBJECT_PATH "/info/duzy/SwitchController"
+#define SWITCH_UI_OBJECT_NAME "info.duzy.SwitchUIInterface"
+#define SWITCH_UI_OBJECT_PATH "/info/duzy/SwitchUI"
 
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
+
+typedef GVariant * (*MethodFunc) (GObject *, GVariant *);
+typedef struct _MethodTableEntry MethodTableEntry;
+struct _MethodTableEntry {
+  const gchar *name;
+  MethodFunc func;
+};
 
 struct _GstSwitchController
 {
@@ -51,6 +60,8 @@ struct _GstSwitchController
 struct _GstSwitchControllerClass
 {
   GObjectClass base_class;
+
+  GHashTable *methods;
 };
 
 GType gst_switch_controller_get_type (void);

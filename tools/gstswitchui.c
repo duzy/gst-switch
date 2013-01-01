@@ -34,6 +34,17 @@
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switchui, G_TYPE_OBJECT);
 
+static GDBusNodeInfo *introspection_data = NULL;
+static const gchar introspection_xml[] =
+  "<node>"
+  "  <interface name='" SWITCH_UI_OBJECT_NAME "'>"
+  "    <method name='test'>"
+  "      <arg type='s' name='name' direction='in'/>"
+  "      <arg type='s' name='result' direction='out'/>"
+  "    </method>"
+  "  </interface>"
+  "</node>";
+
 gboolean verbose;
 
 static GOptionEntry entries[] = {
@@ -136,15 +147,154 @@ gst_switchui_finalize (GstSwitchUI * ui)
     (*G_OBJECT_CLASS (gst_switchui_parent_class)->finalize) (G_OBJECT (ui));
 }
 
+static GVariant *
+gst_switchui_call_controller (GstSwitchUI * ui, const gchar *method_name,
+    GVariant *parameters, const GVariantType *reply_type)
+{
+  GVariant *value = NULL;
+  GError *error = NULL;
+
+  if (!ui->controller)
+    goto error_no_controller_connection;
+
+  INFO ("calling: %s/%s", SWITCH_CONTROLLER_OBJECT_NAME, method_name);
+
+  value = g_dbus_connection_call_sync (ui->controller, NULL, /* bus_name */
+      SWITCH_CONTROLLER_OBJECT_PATH,
+      SWITCH_CONTROLLER_OBJECT_NAME,
+      method_name, parameters, reply_type,
+      G_DBUS_CALL_FLAGS_NONE,
+      5000, /* timeout_msec */
+      NULL /* TODO: cancellable */,
+      &error);
+
+  if (!value)
+    goto error_call_sync;
+
+  return value;
+
+  /* ERRORS */
+ error_no_controller_connection:
+  {
+    ERROR ("No controller connection");
+    return NULL;
+  }
+
+ error_call_sync:
+  {
+    ERROR ("%s", error->message);
+    g_error_free (error);
+    return NULL;
+  }
+}
+
+static gchar *
+gst_switchui_controller_test (GstSwitchUI * ui, const gchar *s)
+{
+  gchar *result = NULL;
+  GVariant *value = gst_switchui_call_controller (ui, "test",
+      g_variant_new ("(s)", s), G_VARIANT_TYPE ("(s)"));
+
+  if (value) {
+    g_variant_get (value, "(&s)", &result);
+    if (result) result = g_strdup (result);
+    g_variant_unref (value);
+  }
+
+  return result;
+}
+
+static gboolean
+gst_switch_ui_method_match (const gchar *key,
+    MethodTableEntry *entry, const gchar *match)
+{
+  if (g_strcmp0 (key, match) == 0)
+    return TRUE;
+  return FALSE;
+}
+
+static void
+gst_switch_ui_do_method_call (
+    GDBusConnection       *connection,
+    const gchar           *sender,
+    const gchar           *object_path,
+    const gchar           *interface_name,
+    const gchar           *method_name,
+    GVariant              *parameters,
+    GDBusMethodInvocation *invocation,
+    gpointer               user_data)
+{
+  GstSwitchUI *ui = GST_SWITCH_UI (user_data);
+  GstSwitchUIClass *klass = GST_SWITCH_UI_CLASS (G_OBJECT_GET_CLASS (ui));
+  MethodFunc entry = (MethodFunc) g_hash_table_find (klass->methods,
+      (GHRFunc) gst_switch_ui_method_match, (gpointer) method_name);
+  GVariant *results;
+
+  if (!entry)
+    goto error_no_method;
+
+  /*
+  INFO ("calling: %s/%s", interface_name, method_name);
+  */
+
+  results = (*entry) (G_OBJECT (ui), parameters);
+  g_dbus_method_invocation_return_value (invocation, results);
+  return;
+
+ error_no_method:
+  {
+    ERROR ("unsupported method: %s", method_name);
+    g_dbus_method_invocation_return_error (invocation, 0, -1,
+	"Unsupported call %s", method_name);
+  }
+}
+
+static GVariant *
+gst_switch_ui_do_get_property (
+    GDBusConnection  *connection,
+    const gchar      *sender,
+    const gchar      *object_path,
+    const gchar      *interface_name,
+    const gchar      *property_name,
+    GError          **error,
+    gpointer          user_data)
+{
+  GVariant *ret = NULL;
+  INFO ("get: %s", property_name);
+  return ret;
+}
+
+static gboolean
+gst_switch_ui_do_set_property (
+    GDBusConnection  *connection,
+    const gchar      *sender,
+    const gchar      *object_path,
+    const gchar      *interface_name,
+    const gchar      *property_name,
+    GVariant         *value,
+    GError          **error,
+    gpointer          user_data)
+{
+  INFO ("set: %s", property_name);
+  return FALSE;
+}
+
+static const GDBusInterfaceVTable gst_switch_ui_interface_vtable = {
+  gst_switch_ui_do_method_call,
+  gst_switch_ui_do_get_property,
+  gst_switch_ui_do_set_property
+};
+
 static void
 gst_switchui_connect_controller (GstSwitchUI * ui)
 {
   GError *error = NULL;
-  GVariant *value;
-  gint num;
+  gchar *test_result = NULL;
+  guint register_id;
 
   ui->controller = g_dbus_connection_new_for_address_sync (
       SWITCH_CONTROLLER_ADDRESS,
+      G_DBUS_SERVER_FLAGS_RUN_IN_THREAD |
       G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
       NULL, /* GDBusAuthObserver */
       NULL, /* GCancellable */
@@ -153,36 +303,25 @@ gst_switchui_connect_controller (GstSwitchUI * ui)
   if (ui->controller == NULL)
     goto error_new_connection;
 
-  value = g_dbus_connection_call_sync (ui->controller,
-      NULL, /* bus_name */
-      SWITCH_CONTROLLER_OBJECT_PATH,
-      SWITCH_CONTROLLER_OBJECT_NAME,
-      "test",
-      g_variant_new ("(i)", 5),
-      G_VARIANT_TYPE ("(i)"),
-      G_DBUS_CALL_FLAGS_NONE,
-      -1,
-      NULL,
-      &error);
+  /* Register Object */
+  register_id = g_dbus_connection_register_object (ui->controller,
+      SWITCH_UI_OBJECT_PATH,
+      introspection_data->interfaces[0],
+      &gst_switch_ui_interface_vtable,
+      ui, /* user_data */
+      NULL, /* user_data_free_func */
+      NULL /* GError** */);
 
-  if (!value)
-    goto error_call_sync;
+  g_assert (0 < register_id);
 
-  g_variant_get (value, "(&i)", &num);
-
-  INFO ("test: %d\n", num);
-
-  g_variant_unref (value);
+  test_result = gst_switchui_controller_test (ui, "hello, gst-switch");
+  if (test_result) {
+    INFO ("test: %s\n", test_result);
+    g_free (test_result);
+  }
   return;
 
  error_new_connection:
-  {
-    ERROR ("%s", error->message);
-    g_error_free (error);
-    return;
-  }
-
- error_call_sync:
   {
     ERROR ("%s", error->message);
     g_error_free (error);
@@ -212,12 +351,37 @@ gst_switchui_run (GstSwitchUI * ui)
   gtk_main ();
 }
 
+static GVariant *
+gst_switch_ui__test (GstSwitchUI *ui, GVariant *parameters)
+{
+  gchar *s = NULL;
+  g_variant_get (parameters, "(&s)", &s);
+  INFO ("test: %s", s);
+  return g_variant_new ("(s)", "hello, controller");
+}
+
+static MethodTableEntry gst_switch_ui_method_table[] = {
+  { "test", (MethodFunc) gst_switch_ui__test },
+  { NULL, NULL }
+};
+
 static void
 gst_switchui_class_init (GstSwitchUIClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   object_class->finalize = (GObjectFinalizeFunc) gst_switchui_finalize;
+
+  klass->methods = g_hash_table_new (g_str_hash, g_str_equal);
+
+  MethodTableEntry *entry = &gst_switch_ui_method_table[0];
+  for (; entry->name && entry->func; ++entry) {
+    g_hash_table_insert (klass->methods, (gpointer) entry->name,
+	(gpointer) entry->func);
+  }
+
+  introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
+  g_assert (introspection_data != NULL);
 }
 
 int
