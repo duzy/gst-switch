@@ -110,13 +110,15 @@ gst_composite_create_pipeline (GstComposite * composite)
       composite->sink_port);
   g_string_append_printf (desc, "videomixer name=compose "
       "sink_0::zorder=0 "
-      "sink_1::alpha=0.3 "
+      "sink_1::alpha=0.4 "
       "sink_1::xpos=20 "
       "sink_1::ypos=20 "
       "sink_1::zorder=1 ");
   g_string_append_printf (desc, "source_b. ! video/x-raw"
+      ",width=100,height=80"
       "! queue2 ! compose.sink_1 ");
   g_string_append_printf (desc, "source_a. ! video/x-raw"
+      ",width=640,height=480"
       "! queue2 ! compose.sink_0 ");
   g_string_append_printf (desc, "compose. ! gdppay ! sink. ");
 

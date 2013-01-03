@@ -139,6 +139,7 @@ gst_case_create_pipeline (GstCase * cas)
       //"! timeoverlay "
       //"! textoverlay text=A shaded-background=true "
       //"! videoconvert "
+	"! videoscale ! video/x-raw,width=640,height=480 "
       ;
   case GST_CASE_COMPOSITE_B:
     //"! videobox border-alpha=0 left=50 top=50 right=150 bottom=230 "
@@ -147,9 +148,7 @@ gst_case_create_pipeline (GstCase * cas)
       convert = "identity "
 	//"! timeoverlay "
 	//"! textoverlay text=B shaded-background=true "
-	//"videoscale ! video/x-raw "
-	//"! videoscale ! video/x-raw,width=100,height=80 "
-	//"! videoconvert "
+	"! videoscale ! video/x-raw,width=100,height=80 "
 	;
     }
     g_string_append_printf (desc, "intervideosink name=sink channel=%s ",
