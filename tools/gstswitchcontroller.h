@@ -1,4 +1,4 @@
-/* GstSwitchSrv
+/* GstSwitchController
  * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@
 
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
+typedef struct _GstSwitchServer GstSwitchServer;
 
 typedef GVariant * (*MethodFunc) (GObject *, GDBusConnection *, GVariant *);
 typedef struct _MethodTableEntry MethodTableEntry;
@@ -54,7 +55,8 @@ struct _GstSwitchController
 {
   GObject base;
 
-  GDBusServer *server;
+  GstSwitchServer *server;
+  GDBusServer *bus_server;
   GList *uis;
 };
 

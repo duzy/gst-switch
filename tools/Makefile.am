@@ -1,6 +1,6 @@
 bin_PROGRAMS = gst-switch-srv gst-switch-ui
 
-gst_switch_srv_SOURCES = gstworker.c gstswitchsrv.c gstcase.c \
+gst_switch_srv_SOURCES = gstworker.c gstswitchserver.c gstcase.c \
   gstswitcher.c gstcomposite.c gstswitchcontroller.c \
   gio/gsocketinputstream.c
 gst_switch_srv_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) \

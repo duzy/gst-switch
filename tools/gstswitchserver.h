@@ -1,4 +1,4 @@
-/* GstSwitchSrv
+/* GstSwitchServer
  * Copyright (C) 2012 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -86,6 +86,8 @@ struct _GstSwitchServerClass
 };
 
 GType gst_switch_server_get_type (void);
+gint gst_switch_server_get_composite_sink_port (GstSwitchServer * srv);
+GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv);
 
 extern GstSwitchServerOpts opts;
 

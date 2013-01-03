@@ -1,4 +1,4 @@
-/* GstSwitchSrv
+/* GstSwitchServer
  * Copyright (C) 2012 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,11 +30,10 @@
 #include <gst/gst.h>
 #include <gio/gio.h>
 #include <stdlib.h>
-#include "gstswitchsrv.h"
+#include "gstswitchserver.h"
 #include "gstcase.h"
 #include "./gio/gsocketinputstream.h"
 
-#define GETTEXT_PACKAGE "switchsrv"
 #define GST_SWITCH_SERVER_DEFAULT_HOST "localhost"
 #define GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT 3000
 #define GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT 5000
@@ -49,6 +48,7 @@
 #define GST_SWITCH_SERVER_LOCK_COMPOSITE(srv) (g_mutex_lock (&(srv)->composite_lock))
 #define GST_SWITCH_SERVER_UNLOCK_COMPOSITE(srv) (g_mutex_unlock (&(srv)->composite_lock))
 
+#define gst_switch_server_parent_class parent_class
 G_DEFINE_TYPE (GstSwitchServer, gst_switch_server, G_TYPE_OBJECT);
 
 GstSwitchServerOpts opts = {
@@ -78,7 +78,7 @@ gst_switch_server_parse_args (int *argc, char **argv[])
   GOptionContext *context;
 
   context = g_option_context_new ("");
-  g_option_context_add_main_entries (context, entries, GETTEXT_PACKAGE);
+  g_option_context_add_main_entries (context, entries, "gst-switch");
   g_option_context_add_group (context, gst_init_get_option_group ());
   if (!g_option_context_parse (context, argc, argv, &error)) {
     g_print ("option parsing failed: %s\n", error->message);
@@ -161,8 +161,8 @@ gst_switch_server_finalize (GstSwitchServer *srv)
   g_mutex_clear (&srv->alloc_port_lock);
   g_mutex_clear (&srv->composite_lock);
 
-  if (G_OBJECT_CLASS (gst_switch_server_parent_class)->finalize)
-    (*G_OBJECT_CLASS (gst_switch_server_parent_class)->finalize) (G_OBJECT (srv));
+  if (G_OBJECT_CLASS (parent_class)->finalize)
+    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (srv));
 }
 
 static void
@@ -463,19 +463,10 @@ gst_switch_server_prepare_bus_controller (GstSwitchServer * srv)
   if (!srv->controller) {
     GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
     srv->controller = GST_SWITCH_CONTROLLER (g_object_new (
-	    GST_TYPE_SWITCH_CONTROLLER,
-	    NULL));
+	    GST_TYPE_SWITCH_CONTROLLER, NULL));
+    srv->controller->server = srv;
     GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
   }
-
-  /*
-  GDBusMessage *m = g_dbus_message_new_method_call (
-      "info.duzy.GstSwitchController",
-      "/info/duzy/GstSwitchController",
-      "info.duzy.GstSwitchController",
-      "test");
-  //g_dbus_message_set ()
-  */
 }
 
 static gboolean
@@ -513,10 +504,37 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv)
   }
 }
 
+gint
+gst_switch_server_get_composite_sink_port (GstSwitchServer * srv)
+{
+  gint port = 0;
+  if (srv->composite) {
+    GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+    port = srv->composite->sink_port;
+    GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+  }
+  return port;
+}
+
+GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv)
+{
+  GArray *a = g_array_new (FALSE, TRUE, sizeof (gint));
+  GList *item;
+  GST_SWITCH_SERVER_LOCK_CASES (srv);
+  for (item = srv->cases; item; item = g_list_next (item)) {
+    a = g_array_append_val (a, GST_CASE (item->data)->sink_port);
+  }
+  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+  return a;
+}
+
 static void
 gst_switch_server_run (GstSwitchServer * srv)
 {
   srv->main_loop = g_main_loop_new (NULL, TRUE);
+
+  if (!gst_switch_server_prepare_composite (srv))
+    goto error_prepare_composite;
 
   srv->acceptor = g_thread_new ("switch-server-acceptor",
       (GThreadFunc) gst_switch_server_acceptor, srv);
@@ -525,9 +543,6 @@ gst_switch_server_run (GstSwitchServer * srv)
       (GThreadFunc) gst_switch_server_controller, srv);
 
   gst_switch_server_prepare_bus_controller (srv);
-
-  if (!gst_switch_server_prepare_composite (srv))
-    goto error_prepare_composite;
 
   g_main_loop_run (srv->main_loop);
 

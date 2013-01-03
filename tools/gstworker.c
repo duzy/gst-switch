@@ -28,7 +28,7 @@
 #endif
 
 #include "gstworker.h"
-#include "gstswitchsrv.h"
+#include "gstswitchserver.h"
 
 enum
 {

@@ -28,7 +28,7 @@
 #endif
 
 #include "gstvideodisp.h"
-#include "gstswitchsrv.h"
+#include "gstswitchserver.h"
 #include <gst/video/videooverlay.h>
 
 #define parent_class gst_video_disp_parent_class

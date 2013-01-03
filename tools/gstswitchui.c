@@ -65,7 +65,7 @@ gst_switch_ui_parse_args (int *argc, char **argv[])
   GOptionContext *context;
   GError *error = NULL;
   context = g_option_context_new ("");
-  g_option_context_add_main_entries (context, entries, "switchui");
+  g_option_context_add_main_entries (context, entries, "gst-switch");
   g_option_context_add_group (context, gst_init_get_option_group ());
   if (!g_option_context_parse (context, argc, argv, &error)) {
     g_print ("option parsing failed: %s\n", error->message);
@@ -176,7 +176,7 @@ gst_switch_ui_call_controller (GstSwitchUI * ui, const gchar *method_name,
   if (!ui->controller)
     goto error_no_controller_connection;
 
-  INFO ("calling: %s/%s", SWITCH_CONTROLLER_OBJECT_NAME, method_name);
+  //INFO ("calling: %s/%s", SWITCH_CONTROLLER_OBJECT_NAME, method_name);
 
   value = g_dbus_connection_call_sync (ui->controller, NULL, /* bus_name */
       SWITCH_CONTROLLER_OBJECT_PATH,
@@ -221,6 +221,25 @@ gst_switch_ui_controller_test (GstSwitchUI * ui, const gchar *s)
   }
 
   return result;
+}
+
+static gint
+gst_switch_ui_controller_get_compose_port (GstSwitchUI * ui)
+{
+  gint port = 0;
+  GVariant *value = gst_switch_ui_call_controller (ui, "get_compose_port",
+      NULL, G_VARIANT_TYPE ("(i)"));
+  if (value) {
+    g_variant_get (value, "(i)", &port);
+  }
+  return port;
+}
+
+static GVariant *
+gst_switch_ui_controller_get_preview_ports (GstSwitchUI * ui)
+{
+  return gst_switch_ui_call_controller (ui, "get_preview_ports",
+      NULL, G_VARIANT_TYPE ("(ai)"));
 }
 
 static gboolean
@@ -332,7 +351,6 @@ gst_switch_ui_on_controller_closed (GDBusConnection *connection,
       "%s", error->message);
   gtk_widget_show_now (msg);
   gtk_main_quit ();
-  //g_object_unref (ui);
 }
 
 static void
@@ -403,15 +421,28 @@ gst_switch_ui_connect_controller (GstSwitchUI * ui)
   }
 }
 
+static void gst_switch_ui_set_compose_port (GstSwitchUI *, gint);
+static void gst_switch_ui_add_preview_port (GstSwitchUI *, gint);
+
 static void
-gst_switch_ui_prepare_connections (GstSwitchUI * ui)
+gst_switch_ui_prepare_videos (GstSwitchUI * ui)
 {
-#if 0
-  GdkWindow *xview = gtk_widget_get_window (ui->compose_view);
-  gulong xid = GDK_WINDOW_XID (xview);
-  GstElement *sink = /* xvimagesink */;
-  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (sink), xid);
-#endif
+  gint port = gst_switch_ui_controller_get_compose_port (ui);
+  GVariant *preview_ports;
+  gsize n, num_previews = 0;
+
+  gst_switch_ui_set_compose_port (ui, port);
+
+  preview_ports = gst_switch_ui_controller_get_preview_ports (ui);
+  if (preview_ports) {
+    GVariant *ports = NULL;
+    g_variant_get (preview_ports, "(ai)", &ports);
+    num_previews = g_variant_n_children (ports);
+    for (n = 0; n < num_previews; ++n) {
+      g_variant_get_child (ports, n, "i", &port);
+      gst_switch_ui_add_preview_port (ui, port);
+    }
+  }
 }
 
 static void
@@ -422,14 +453,14 @@ gst_switch_ui_run (GstSwitchUI * ui)
     gchar *test_result = NULL;
     test_result = gst_switch_ui_controller_test (ui, "hello, controller");
     if (test_result) {
-      INFO ("%s\n", test_result);
+      INFO ("%s", test_result);
       g_free (test_result);
     }
   }
 
   gtk_widget_show_all (ui->window);
   gtk_widget_realize (ui->window);
-  gst_switch_ui_prepare_connections (ui);
+  gst_switch_ui_prepare_videos (ui);
   gtk_main ();
 }
 

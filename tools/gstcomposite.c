@@ -29,7 +29,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "gstswitchsrv.h"
+#include "gstswitchserver.h"
 
 enum
 {
@@ -106,8 +106,8 @@ gst_composite_create_pipeline (GstComposite * composite)
       "channel=composite_a ");
   g_string_append_printf (desc, "intervideosrc name=source_b "
       "channel=composite_b ");
-  g_string_append_printf (desc, "tcpserversink name=sink "
-      "port=%d ", composite->sink_port);
+  g_string_append_printf (desc, "tcpserversink name=sink port=%d ",
+      composite->sink_port);
   g_string_append_printf (desc, "videomixer name=compose "
       "sink_0::zorder=0 "
       "sink_1::alpha=0.3 "
@@ -115,11 +115,9 @@ gst_composite_create_pipeline (GstComposite * composite)
       "sink_1::ypos=20 "
       "sink_1::zorder=1 ");
   g_string_append_printf (desc, "source_b. ! video/x-raw"
-      //"! queue2 "
-      "! compose.sink_1 ");
+      "! queue2 ! compose.sink_1 ");
   g_string_append_printf (desc, "source_a. ! video/x-raw"
-      //"! queue2 "
-      "! compose.sink_0 ");
+      "! queue2 ! compose.sink_0 ");
   g_string_append_printf (desc, "compose. ! gdppay ! sink. ");
 
   if (verbose)

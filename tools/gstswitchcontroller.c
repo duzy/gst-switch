@@ -1,4 +1,4 @@
-/* GstSwitchSrv
+/* GstSwitchController
  * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #endif
 
 #include "gstswitchcontroller.h"
+#include "gstswitchserver.h"
 
 enum
 {
@@ -44,8 +45,11 @@ static const gchar introspection_xml[] =
   "      <arg type='s' name='name' direction='in'/>"
   "      <arg type='s' name='result' direction='out'/>"
   "    </method>"
-  "    <method name='get_ports'>"
-  "      <arg type='s' name='ports' direction='out'/>"
+  "    <method name='get_compose_port'>"
+  "      <arg type='i' name='port' direction='out'/>"
+  "    </method>"
+  "    <method name='get_preview_ports'>"
+  "      <arg type='ai' name='ports' direction='out'/>"
   "    </method>"
   "    <signal name='testsignal'>"
   "      <arg type='s' name='str'/>"
@@ -334,7 +338,7 @@ gst_switch_controller_init (GstSwitchController * controller)
   flags |= G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS;
 
   auth_observer = g_dbus_auth_observer_new ();
-  controller->server = g_dbus_server_new_sync (
+  controller->bus_server = g_dbus_server_new_sync (
       SWITCH_CONTROLLER_ADDRESS,
       flags, guid,
       auth_observer,
@@ -345,20 +349,20 @@ gst_switch_controller_init (GstSwitchController * controller)
   g_object_unref (auth_observer);
   g_free (guid);
 
-  if (controller->server == NULL)
+  if (controller->bus_server == NULL)
     goto error_new_server;
 
   INFO ("Switch Controller is listening at: %s",
-      g_dbus_server_get_client_address (controller->server));
+      g_dbus_server_get_client_address (controller->bus_server));
 
-  g_signal_connect (controller->server, "new-connection",
+  g_signal_connect (controller->bus_server, "new-connection",
       G_CALLBACK (gst_switch_controller_on_new_connection), controller);
 
   g_signal_connect (auth_observer, "authorize-authenticated-peer",
       G_CALLBACK (gst_switch_controller_authorize_authenticated_peer),
       controller);
 
-  g_dbus_server_start (controller->server);
+  g_dbus_server_start (controller->bus_server);
 
   // TODO: singleton object
   return;
@@ -374,9 +378,9 @@ gst_switch_controller_init (GstSwitchController * controller)
 static void
 gst_switch_controller_finalize (GstSwitchController * controller)
 {
-  if (controller->server) {
-    g_object_unref (controller->server);
-    controller->server = NULL;
+  if (controller->bus_server) {
+    g_object_unref (controller->bus_server);
+    controller->bus_server = NULL;
   }
 
   if (G_OBJECT_CLASS (gst_switch_controller_parent_class)->finalize)
@@ -516,8 +520,48 @@ gst_switch_controller__test (GstSwitchController *controller,
   return g_variant_new ("(s)", "hello, ui");
 }
 
+static GVariant *
+gst_switch_controller__get_compose_port (GstSwitchController *controller,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  gint port = 0;
+  if (controller->server) {
+    port = gst_switch_server_get_composite_sink_port (controller->server);
+  }
+  return g_variant_new ("(i)", port);
+}
+
+static GVariant *
+gst_switch_controller__get_preview_ports (GstSwitchController *controller,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  GVariant *result = NULL;
+  if (controller->server) {
+    GArray *a = gst_switch_server_get_preview_sink_ports (
+	controller->server);
+    int n;
+    GVariantBuilder *builder;
+    GVariant *value;
+
+    builder = g_variant_builder_new (G_VARIANT_TYPE ("ai"));
+    for (n = 0; n < a->len; ++n) {
+      g_variant_builder_add (builder, "i", g_array_index (a, gint, n));
+    }
+    value = g_variant_builder_end (builder);
+    //INFO ("value: %d", g_variant_n_children (value));
+
+    result = g_variant_new_tuple (&value, 1);
+    //INFO ("result: %d", g_variant_n_children (result));
+
+    g_array_free (a, TRUE);
+  }
+  return result;
+}
+
 static MethodTableEntry gst_switch_controller_method_table[] = {
   { "test", (MethodFunc) gst_switch_controller__test },
+  { "get_compose_port", (MethodFunc) gst_switch_controller__get_compose_port },
+  { "get_preview_ports", (MethodFunc) gst_switch_controller__get_preview_ports },
   { NULL, NULL }
 };
 

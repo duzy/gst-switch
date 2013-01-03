@@ -1,5 +1,4 @@
 #!/bin/bash
-#cd /store/open/gstreamer/stage
 
 #gdb --args \
 ./tools/gst-switch-srv -v \
