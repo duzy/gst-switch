@@ -102,62 +102,25 @@ gst_composite_create_pipeline (GstComposite * composite)
 
   desc = g_string_new ("");
 
-  /*
-  g_string_append_printf (desc, "videotestsrc name=src0 pattern=snow ");
-  g_string_append_printf (desc, "videotestsrc name=src1 pattern=1 ");
-
-  g_string_append_printf (desc, "videomixer name=compose "
-      "sink_0::alpha=0.6 sink_1::alpha=0.5 ");
-  g_string_append_printf (desc, "identity name=compose_a ");
-  g_string_append_printf (desc, "identity name=compose_b ");
-  g_string_append_printf (desc, "compose_a. ! compose.sink_0 ");
-  g_string_append_printf (desc, "compose_b. ! compose.sink_1 ");
-  g_string_append_printf (desc, "compose. ! compose_sink. ");
-
-  g_string_append_printf (desc, "src0. ! video/x-raw-yuv, framerate=10/1, width=200, height=150 ! compose_a. ");
-  g_string_append_printf (desc, "src1. ! video/x-raw-yuv, framerate=10/1 ! compose_b. ");
-  //g_string_append_printf (desc, "src0. ! compose_a. ");
-  //g_string_append_printf (desc, "src1. ! compose_b. ");
-
-  g_string_append_printf (desc, "identity name=compose_sink ");
-  g_string_append_printf (desc, "compose_sink. ! videoconvert ! xvimagesink ");
-  */
-#if 0
-  g_string_append_printf (desc, "videotestsrc name=src0 pattern=0 "
-      //"! video/x-raw-yuv,framerate=10/1,width=100,height=100 "
-      //"! videobox border-alpha=0 left=0 top=0 "
-      "! compose. ");
-  g_string_append_printf (desc, "videotestsrc name=src1 pattern=snow "
-      //"! video/x-raw-yuv,framerate=10/1,width=300,height=250 "
-      "! videobox border-alpha=0 left=100 top=100 "
-      "! compose. ");
-  g_string_append_printf (desc, "videomixer name=compose "
-      //"sink_0::alpha=0.6 "
-      "sink_1::alpha=0.5 "
-      "! videoconvert "
-      "! xvimagesink ");
-#else
   g_string_append_printf (desc, "intervideosrc name=source_a "
       "channel=composite_a ");
   g_string_append_printf (desc, "intervideosrc name=source_b "
       "channel=composite_b ");
-  g_string_append_printf (desc, "videomixer name=compose "
-      "sink_0::alpha=0.8 "
-      "sink_0::zorder=0 "
-      "sink_1::alpha=0.5 "
-      "sink_1::xpos=20 sink_1::ypos=20 "
-      "sink_1::zorder=1 ");
-  g_string_append_printf (desc, "source_b. "
-      "! video/x-raw,framerate=10/1,width=100,height=80 "
-      //"! videobox border-alpha=0 left=50 top=50 right=150 bottom=230 "
-      "! compose.sink_1 ");
-  g_string_append_printf (desc, "source_a. "
-      "! video/x-raw,framerate=10/1,width=300,height=250 "
-      "! compose.sink_0 ");
-  g_string_append_printf (desc, "compose. ! gdppay ! sink. ");
   g_string_append_printf (desc, "tcpserversink name=sink "
       "port=%d ", composite->sink_port);
-#endif
+  g_string_append_printf (desc, "videomixer name=compose "
+      "sink_0::zorder=0 "
+      "sink_1::alpha=0.3 "
+      "sink_1::xpos=20 "
+      "sink_1::ypos=20 "
+      "sink_1::zorder=1 ");
+  g_string_append_printf (desc, "source_b. ! video/x-raw"
+      //"! queue2 "
+      "! compose.sink_1 ");
+  g_string_append_printf (desc, "source_a. ! video/x-raw"
+      //"! queue2 "
+      "! compose.sink_0 ");
+  g_string_append_printf (desc, "compose. ! gdppay ! sink. ");
 
   if (verbose)
     g_print ("pipeline: %s\n", desc->str);

@@ -107,6 +107,7 @@ gst_video_disp_create_pipeline (GstVideoDisp *disp)
   g_string_append_printf (desc, "tcpclientsrc name=source "
       "port=%d ", disp->port);
   g_string_append_printf (desc, "! gdpdepay ");
+  g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! xvimagesink name=sink ");
 
   if (verbose)

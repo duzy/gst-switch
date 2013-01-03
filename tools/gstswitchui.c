@@ -126,7 +126,7 @@ gst_switch_ui_init (GstSwitchUI * ui)
 
   main_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
   ui->preview_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_size_request (ui->preview_box, 100, -1);
+  gtk_widget_set_size_request (ui->preview_box, 120, -1);
   gtk_widget_set_vexpand (ui->preview_box, TRUE);
 
   ui->compose_view = gtk_drawing_area_new ();
@@ -322,6 +322,20 @@ gst_switch_ui_on_signal_received (
 }
 
 static void
+gst_switch_ui_on_controller_closed (GDBusConnection *connection,
+    gboolean vanished, GError *error, gpointer user_data)
+{
+  GstSwitchUI * ui = GST_SWITCH_UI (user_data);
+  GtkWidget * msg = gtk_message_dialog_new (GTK_WINDOW (ui->window),
+      GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+      "Switch server closed.\n"
+      "%s", error->message);
+  gtk_widget_show_now (msg);
+  gtk_main_quit ();
+  //g_object_unref (ui);
+}
+
+static void
 gst_switch_ui_connect_controller (GstSwitchUI * ui)
 {
   GError *error = NULL;
@@ -338,6 +352,9 @@ gst_switch_ui_connect_controller (GstSwitchUI * ui)
   if (ui->controller == NULL)
     goto error_new_connection;
 
+  g_signal_connect (ui->controller, "closed",
+      G_CALLBACK (gst_switch_ui_on_controller_closed), ui);
+
   /* Register Object */
   id = g_dbus_connection_register_object (ui->controller,
       SWITCH_UI_OBJECT_PATH,
@@ -345,9 +362,10 @@ gst_switch_ui_connect_controller (GstSwitchUI * ui)
       &gst_switch_ui_interface_vtable,
       ui, /* user_data */
       NULL, /* user_data_free_func */
-      NULL /* GError** */);
+      &error);
 
-  g_assert (0 < id);
+  if (id <= 0)
+    goto error_register_object;
 
   id = g_dbus_connection_signal_subscribe (ui->controller,
       NULL, /* sender */
@@ -359,13 +377,28 @@ gst_switch_ui_connect_controller (GstSwitchUI * ui)
       gst_switch_ui_on_signal_received,
       ui, NULL/* user_data, user_data_free_func */);
 
-  g_assert (0 < id);
+  if (id <= 0)
+    goto error_subscribe;
+  
   return;
 
  error_new_connection:
   {
     ERROR ("%s", error->message);
     g_error_free (error);
+    return;
+  }
+
+ error_register_object:
+  {
+    ERROR ("%s", error->message);
+    g_error_free (error);
+    return;
+  }
+
+ error_subscribe:
+  {
+    ERROR ("failed to subscribe signals");
     return;
   }
 }
@@ -439,6 +472,7 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port)
   gtk_container_add (GTK_CONTAINER (ui->preview_box), preview);
 
   disp = gst_switch_ui_new_video_disp (ui, preview, port);
+  (void) disp;
 }
 
 static GVariant *

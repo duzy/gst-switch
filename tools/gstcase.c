@@ -126,6 +126,7 @@ gst_case_create_pipeline (GstCase * cas)
   GError *error = NULL;
   GString *desc;
   gchar *channel = NULL;
+  gchar *convert = NULL;
 
   desc = g_string_new ("");
 
@@ -134,11 +135,26 @@ gst_case_create_pipeline (GstCase * cas)
   switch (cas->type) {
   case GST_CASE_COMPOSITE_A:
     channel = "composite_a";
+    convert = "identity"
+      //"! timeoverlay "
+      "! textoverlay text=A shaded-background=true "
+      ;
   case GST_CASE_COMPOSITE_B:
-    if (channel == NULL) channel = "composite_b";
-    g_string_append_printf (desc, "intervideosink name=sink "
-	"channel=%s ", channel);
-    g_string_append_printf (desc, "source. ! gdpdepay ! sink. ");
+    //"! videobox border-alpha=0 left=50 top=50 right=150 bottom=230 "
+    if (channel == NULL) {
+      channel = "composite_b";
+      convert = "identity"
+	//"videoscale ! video/x-raw,width=100,height=80 "
+	//"videoscale ! video/x-raw "
+	//"! videoconvert"
+	//"! timeoverlay "
+	"! textoverlay text=B shaded-background=true "
+	;
+    }
+    g_string_append_printf (desc, "intervideosink name=sink channel=%s ",
+	channel);
+    g_string_append_printf (desc, "source. ! gdpdepay ! %s ! sink. ",
+	convert);
     break;
   case GST_CASE_PREVIEW:
     g_string_append_printf (desc, "tcpserversink name=sink sync=false "
