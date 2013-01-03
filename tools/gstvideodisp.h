@@ -1,5 +1,5 @@
-/* GstSwitchUI
- * Copyright (C) 2012 Duzy Chan <code@duzy.info>
+/* GstVideoDisp
+ * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,44 +23,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_SWITCH_UI_H__by_Duzy_Chan__
-#define __GST_SWITCH_UI_H__by_Duzy_Chan__ 1
-#include <gdk/gdkx.h>
-#include <gtk/gtk.h>
+#ifndef __GST_VIDEO_DISP_H__by_Duzy_Chan__
+#define __GST_VIDEO_DISP_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
 
-#define GST_TYPE_SWITCH_UI (gst_switch_ui_get_type ())
-#define GST_SWITCH_UI(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_UI, GstSwitchUI))
-#define GST_SWITCH_UI_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_UI, GstSwitchUIClass))
-#define GST_IS_SWITCH_UI(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_UI, GstSwitchUI))
-#define GST_IS_SWITCH_UI_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_UI, GstSwitchUIClass))
+#define GST_TYPE_VIDEO_DISP (gst_video_disp_get_type ())
+#define GST_VIDEO_DISP(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_VIDEO_DISP, GstVideoDisp))
+#define GST_VIDEO_DISP_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_VIDEO_DISP, GstVideoDispClass))
+#define GST_IS_VIDEO_DISP(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_VIDEO_DISP, GstVideoDisp))
+#define GST_IS_VIDEO_DISP_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_VIDEO_DISP, GstVideoDispClass))
 
-typedef struct _GstSwitchUI GstSwitchUI;
-typedef struct _GstSwitchUIClass GstSwitchUIClass;
 typedef struct _GstVideoDisp GstVideoDisp;
+typedef struct _GstVideoDispClass GstVideoDispClass;
 
-struct _GstSwitchUI
+struct _GstVideoDisp
 {
-  GObject base;
+  GstWorker base;
 
-  GDBusConnection *controller;
-
-  GtkWidget *window;
-  GtkWidget *compose_view;
-  GtkWidget *preview_box;
-
-  gint compose_port;
-
-  GstVideoDisp *compose_video;
+  gint port;
+  gulong handle;
 };
 
-struct _GstSwitchUIClass
+struct _GstVideoDispClass
 {
-  GObjectClass base_class;
-
-  GHashTable *methods;
+  GstWorkerClass base_class;
 };
 
-GType gst_switch_ui_get_type (void);
+GType gst_video_disp_get_type (void);
 
-#endif//__GST_SWITCH_UI_H__by_Duzy_Chan__
+#endif//__GST_VIDEO_DISP_H__by_Duzy_Chan__

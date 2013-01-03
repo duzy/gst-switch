@@ -58,14 +58,14 @@ GTK2_REQ=2.14.0
 GTK3_REQ=2.91.3
 AC_MSG_CHECKING([which gtk+ version to compile examples against (optional)])
 AC_ARG_WITH([gtk],
-  AS_HELP_STRING([--with-gtk=3.0|2.0],[which gtk+ version to compile against (default: 2.0)]),
+  AS_HELP_STRING([--with-gtk=3.0|2.0],[which gtk+ version to compile against (default: 3.0)]),
   [case "$with_gtk" in
       2.0) GTK_REQ=$GTK2_REQ ;;
       3.0) GTK_REQ=$GTK3_REQ ;;
       *) AC_MSG_ERROR([invalid gtk+ version specified]);;
   esac],
-  [with_gtk=2.0
-   GTK_REQ=$GTK2_REQ])
+  [with_gtk=3.0
+   GTK_REQ=$GTK3_REQ])
 AC_MSG_RESULT([$with_gtk (>= $GTK_REQ)])
 PKG_CHECK_MODULES(GTK, gtk+-x11-$with_gtk >= $GTK_REQ, HAVE_GTK=yes, HAVE_GTK=no)
 AC_SUBST(GTK_LIBS)
@@ -89,6 +89,7 @@ PKG_CHECK_MODULES(GST, [
   gstreamer-1.0 >= $GST_REQUIRED
   gstreamer-base-1.0 >= $GST_REQUIRED
   gstreamer-controller-1.0 >= $GST_REQUIRED
+  gstreamer-video-1.0 >= $GST_REQUIRED
 ], [
   AC_SUBST(GST_CFLAGS)
   AC_SUBST(GST_LIBS)

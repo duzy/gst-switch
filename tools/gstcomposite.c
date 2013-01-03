@@ -100,8 +100,6 @@ gst_composite_create_pipeline (GstComposite * composite)
   GstElement *pipeline;
   GError *error = NULL;
 
-  INFO ("Listenning on port %d", opts.input_port);
-
   desc = g_string_new ("");
 
   /*

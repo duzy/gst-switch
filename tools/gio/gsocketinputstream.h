@@ -25,33 +25,33 @@ G_BEGIN_DECLS
 
 #define G_TYPE_SOCKET_INPUT_STREAM                          (_g_socket_input_stream_get_type ())
 #define G_SOCKET_INPUT_STREAM(inst)                         (G_TYPE_CHECK_INSTANCE_CAST ((inst),                     \
-                                                             G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStream))
+                                                             G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStreamX))
 #define G_SOCKET_INPUT_STREAM_CLASS(class)                  (G_TYPE_CHECK_CLASS_CAST ((class),                       \
-                                                             G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStreamClass))
+                                                             G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStreamXClass))
 #define G_IS_SOCKET_INPUT_STREAM(inst)                      (G_TYPE_CHECK_INSTANCE_TYPE ((inst),                     \
                                                              G_TYPE_SOCKET_INPUT_STREAM))
 #define G_IS_SOCKET_INPUT_STREAM_CLASS(class)               (G_TYPE_CHECK_CLASS_TYPE ((class),                       \
                                                              G_TYPE_SOCKET_INPUT_STREAM))
 #define G_SOCKET_INPUT_STREAM_GET_CLASS(inst)               (G_TYPE_INSTANCE_GET_CLASS ((inst),                      \
-                                                             G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStreamClass))
+                                                             G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStreamXClass))
 
-typedef struct _GSocketInputStreamPrivate                   GSocketInputStreamPrivate;
-typedef struct _GSocketInputStreamClass                     GSocketInputStreamClass;
-typedef struct _GSocketInputStream                          GSocketInputStream;
+typedef struct _GSocketInputStreamXPrivate                   GSocketInputStreamXPrivate;
+typedef struct _GSocketInputStreamXClass                     GSocketInputStreamXClass;
+typedef struct _GSocketInputStreamX                          GSocketInputStreamX;
 
-struct _GSocketInputStreamClass
+struct _GSocketInputStreamXClass
 {
   GInputStreamClass parent_class;
 };
 
-struct _GSocketInputStream
+struct _GSocketInputStreamX
 {
   GInputStream parent_instance;
-  GSocketInputStreamPrivate *priv;
+  GSocketInputStreamXPrivate *priv;
 };
 
 GType                   _g_socket_input_stream_get_type                  (void) G_GNUC_CONST;
-GSocketInputStream *    _g_socket_input_stream_new                      (GSocket *socket);
+GSocketInputStreamX *    _g_socket_input_stream_new                      (GSocket *socket);
 
 G_END_DECLS
 

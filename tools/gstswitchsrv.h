@@ -30,7 +30,7 @@
 #include "gstswitchcontroller.h"
 #include "../logutils.h"
 
-#define GST_TYPE_SWITCH_SERVER (gst_switchsrv_get_type())
+#define GST_TYPE_SWITCH_SERVER (gst_switch_server_get_type())
 #define GST_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_SERVER, GstSwitchServer))
 #define GST_SWITCH_SERVER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_SERVER, GstSwitchServerClass))
 #define GST_IS_SWITCH_SERVER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_SERVER))
@@ -68,9 +68,6 @@ struct _GstSwitchServer
   GThread *controller_thread;
   GSocket *controller_socket;
   gint controller_port;
-
-  //GDBusNodeInfo controller_node;
-  //guint bus_controller;
   GstSwitchController * controller;
 
   GMutex cases_lock;
@@ -88,7 +85,7 @@ struct _GstSwitchServerClass
   GObjectClass base_class;
 };
 
-GType gst_switchsrv_get_type (void);
+GType gst_switch_server_get_type (void);
 
 extern GstSwitchServerOpts opts;
 

@@ -27,12 +27,12 @@
 #include "config.h"
 #endif
 
-#include <gst/video/videooverlay.h>
 #include <stdlib.h>
 #include "gstswitchui.h"
 #include "gstswitchcontroller.h"
+#include "gstvideodisp.h"
 
-G_DEFINE_TYPE (GstSwitchUI, gst_switchui, G_TYPE_OBJECT);
+G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, G_TYPE_OBJECT);
 
 static GDBusNodeInfo *introspection_data = NULL;
 static const gchar introspection_xml[] =
@@ -42,8 +42,15 @@ static const gchar introspection_xml[] =
   "      <arg type='s' name='name' direction='in'/>"
   "      <arg type='s' name='result' direction='out'/>"
   "    </method>"
+  "    <method name='set_compose_port'>"
+  "      <arg type='i' name='port' direction='in'/>"
+  "    </method>"
+  "    <method name='add_preview_port'>"
+  "      <arg type='i' name='port' direction='in'/>"
+  "    </method>"
   "  </interface>"
-  "</node>";
+  "</node>"
+  ;
 
 gboolean verbose;
 
@@ -53,7 +60,7 @@ static GOptionEntry entries[] = {
 };
 
 static void
-gst_switchui_parse_args (int *argc, char **argv[])
+gst_switch_ui_parse_args (int *argc, char **argv[])
 {
   GOptionContext *context;
   GError *error = NULL;
@@ -68,30 +75,21 @@ gst_switchui_parse_args (int *argc, char **argv[])
 }
 
 static void
-gst_switchui_quit (GstSwitchUI * ui)
+gst_switch_ui_quit (GstSwitchUI * ui)
 {
   gtk_main_quit ();
 }
 
 static void
-gst_switchui_window_closed (GtkWidget * widget, GdkEvent * event,
+gst_switch_ui_window_closed (GtkWidget * widget, GdkEvent * event,
     gpointer data)
 {
   GstSwitchUI * ui = GST_SWITCH_UI (data);
-  gst_switchui_quit (ui);
+  gst_switch_ui_quit (ui);
 }
 
 static gboolean
-gst_switchui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
-    gpointer data)
-{
-  GstSwitchUI * ui = GST_SWITCH_UI (data);
-  (void) ui;
-  return FALSE;
-}
-
-static gboolean
-gst_switchui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
+gst_switch_ui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
     gpointer data)
 {
   GstSwitchUI * ui = GST_SWITCH_UI (data);
@@ -100,7 +98,16 @@ gst_switchui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
 }
 
 static gboolean
-gst_switchui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
+gst_switch_ui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
+    gpointer data)
+{
+  GstSwitchUI * ui = GST_SWITCH_UI (data);
+  (void) ui;
+  return FALSE;
+}
+
+static gboolean
+gst_switch_ui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
     gpointer data)
 {
   GstSwitchUI * ui = GST_SWITCH_UI (data);
@@ -109,23 +116,23 @@ gst_switchui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
 }
 
 static void
-gst_switchui_init (GstSwitchUI * ui)
+gst_switch_ui_init (GstSwitchUI * ui)
 {
+  GtkWidget *main_box;
+
   ui->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size (GTK_WINDOW (ui->window), 640, 480);
   gtk_window_set_title (GTK_WINDOW (ui->window), "GstSwitch");
-  g_signal_connect (G_OBJECT (ui->window), "delete-event",
-      G_CALLBACK (gst_switchui_window_closed), ui);
+
+  main_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+  ui->preview_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_size_request (ui->preview_box, 100, -1);
+  gtk_widget_set_vexpand (ui->preview_box, TRUE);
 
   ui->compose_view = gtk_drawing_area_new ();
-  g_signal_connect (G_OBJECT (ui->compose_view), "expose-event",
-      G_CALLBACK (gst_switchui_compose_view_expose), ui);
-  g_signal_connect (G_OBJECT (ui->compose_view), "motion-notify-event",
-      G_CALLBACK (gst_switchui_compose_view_motion), ui);
-  g_signal_connect (G_OBJECT (ui->compose_view), "button-press-event",
-      G_CALLBACK (gst_switchui_compose_view_press), ui);
-
   gtk_widget_set_double_buffered (ui->compose_view, FALSE);
+  gtk_widget_set_hexpand (ui->compose_view, TRUE);
+  gtk_widget_set_vexpand (ui->compose_view, TRUE);
   gtk_widget_set_events (ui->compose_view, GDK_EXPOSURE_MASK
       //| GDK_LEAVE_NOTIFY_MASK
       | GDK_BUTTON_PRESS_MASK
@@ -133,22 +140,34 @@ gst_switchui_init (GstSwitchUI * ui)
       //| GDK_POINTER_MOTION_HINT_MASK
       );
 
-  gtk_container_add (GTK_CONTAINER (ui->window), ui->compose_view);
+  gtk_container_add (GTK_CONTAINER (main_box), ui->preview_box);
+  gtk_container_add (GTK_CONTAINER (main_box), ui->compose_view);
+  gtk_container_add (GTK_CONTAINER (ui->window), main_box);
   gtk_container_set_border_width (GTK_CONTAINER (ui->window), 5);
+
+  g_signal_connect (G_OBJECT (ui->window), "delete-event",
+      G_CALLBACK (gst_switch_ui_window_closed), ui);
+
+  g_signal_connect (G_OBJECT (ui->compose_view), "expose-event",
+      G_CALLBACK (gst_switch_ui_compose_view_expose), ui);
+  g_signal_connect (G_OBJECT (ui->compose_view), "motion-notify-event",
+      G_CALLBACK (gst_switch_ui_compose_view_motion), ui);
+  g_signal_connect (G_OBJECT (ui->compose_view), "button-press-event",
+      G_CALLBACK (gst_switch_ui_compose_view_press), ui);
 }
 
 static void
-gst_switchui_finalize (GstSwitchUI * ui)
+gst_switch_ui_finalize (GstSwitchUI * ui)
 {
   gtk_widget_destroy (GTK_WIDGET (ui->window));
   ui->window = NULL;
 
-  if (G_OBJECT_CLASS (gst_switchui_parent_class)->finalize)
-    (*G_OBJECT_CLASS (gst_switchui_parent_class)->finalize) (G_OBJECT (ui));
+  if (G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize)
+    (*G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize) (G_OBJECT (ui));
 }
 
 static GVariant *
-gst_switchui_call_controller (GstSwitchUI * ui, const gchar *method_name,
+gst_switch_ui_call_controller (GstSwitchUI * ui, const gchar *method_name,
     GVariant *parameters, const GVariantType *reply_type)
 {
   GVariant *value = NULL;
@@ -189,10 +208,10 @@ gst_switchui_call_controller (GstSwitchUI * ui, const gchar *method_name,
 }
 
 static gchar *
-gst_switchui_controller_test (GstSwitchUI * ui, const gchar *s)
+gst_switch_ui_controller_test (GstSwitchUI * ui, const gchar *s)
 {
   gchar *result = NULL;
-  GVariant *value = gst_switchui_call_controller (ui, "test",
+  GVariant *value = gst_switch_ui_call_controller (ui, "test",
       g_variant_new ("(s)", s), G_VARIANT_TYPE ("(s)"));
 
   if (value) {
@@ -237,7 +256,7 @@ gst_switch_ui_do_method_call (
   INFO ("calling: %s/%s", interface_name, method_name);
   */
 
-  results = (*entry) (G_OBJECT (ui), parameters);
+  results = (*entry) (G_OBJECT (ui), connection, parameters);
   g_dbus_method_invocation_return_value (invocation, results);
   return;
 
@@ -286,11 +305,27 @@ static const GDBusInterfaceVTable gst_switch_ui_interface_vtable = {
 };
 
 static void
-gst_switchui_connect_controller (GstSwitchUI * ui)
+gst_switch_ui_on_signal_received (
+    GDBusConnection *connection,
+    const gchar     *sender_name,
+    const gchar     *object_path,
+    const gchar     *interface_name,
+    const gchar     *signal_name,
+    GVariant        *parameters,
+    gpointer         user_data)
+{
+  GstSwitchUI *ui = GST_SWITCH_UI (user_data);
+
+  (void) ui;
+
+  INFO ("signal: %s, %s", sender_name, signal_name);
+}
+
+static void
+gst_switch_ui_connect_controller (GstSwitchUI * ui)
 {
   GError *error = NULL;
-  gchar *test_result = NULL;
-  guint register_id;
+  guint id;
 
   ui->controller = g_dbus_connection_new_for_address_sync (
       SWITCH_CONTROLLER_ADDRESS,
@@ -304,7 +339,7 @@ gst_switchui_connect_controller (GstSwitchUI * ui)
     goto error_new_connection;
 
   /* Register Object */
-  register_id = g_dbus_connection_register_object (ui->controller,
+  id = g_dbus_connection_register_object (ui->controller,
       SWITCH_UI_OBJECT_PATH,
       introspection_data->interfaces[0],
       &gst_switch_ui_interface_vtable,
@@ -312,13 +347,19 @@ gst_switchui_connect_controller (GstSwitchUI * ui)
       NULL, /* user_data_free_func */
       NULL /* GError** */);
 
-  g_assert (0 < register_id);
+  g_assert (0 < id);
 
-  test_result = gst_switchui_controller_test (ui, "hello, gst-switch");
-  if (test_result) {
-    INFO ("test: %s\n", test_result);
-    g_free (test_result);
-  }
+  id = g_dbus_connection_signal_subscribe (ui->controller,
+      NULL, /* sender */
+      SWITCH_CONTROLLER_OBJECT_NAME,
+      NULL, /* member */
+      SWITCH_CONTROLLER_OBJECT_PATH,
+      NULL, /* arg0 */
+      G_DBUS_SIGNAL_FLAGS_NONE,
+      gst_switch_ui_on_signal_received,
+      ui, NULL/* user_data, user_data_free_func */);
+
+  g_assert (0 < id);
   return;
 
  error_new_connection:
@@ -330,7 +371,7 @@ gst_switchui_connect_controller (GstSwitchUI * ui)
 }
 
 static void
-gst_switchui_prepare_connections (GstSwitchUI * ui)
+gst_switch_ui_prepare_connections (GstSwitchUI * ui)
 {
 #if 0
   GdkWindow *xview = gtk_widget_get_window (ui->compose_view);
@@ -341,36 +382,110 @@ gst_switchui_prepare_connections (GstSwitchUI * ui)
 }
 
 static void
-gst_switchui_run (GstSwitchUI * ui)
+gst_switch_ui_run (GstSwitchUI * ui)
 {
-  gst_switchui_connect_controller (ui);
+  gst_switch_ui_connect_controller (ui);
+  {
+    gchar *test_result = NULL;
+    test_result = gst_switch_ui_controller_test (ui, "hello, controller");
+    if (test_result) {
+      INFO ("%s\n", test_result);
+      g_free (test_result);
+    }
+  }
 
   gtk_widget_show_all (ui->window);
   gtk_widget_realize (ui->window);
-  gst_switchui_prepare_connections (ui);
+  gst_switch_ui_prepare_connections (ui);
   gtk_main ();
 }
 
+static GstVideoDisp *
+gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
+{
+  GdkWindow *xview = gtk_widget_get_window (view);
+  GstVideoDisp *disp = GST_VIDEO_DISP (g_object_new (GST_TYPE_VIDEO_DISP,
+	  "name", "compose", "port", port,
+	  "handle", (gulong) GDK_WINDOW_XID (xview),
+	  NULL));
+  g_object_set_data (G_OBJECT (view), "video-display", disp);
+  gst_worker_prepare (GST_WORKER (disp));
+  gst_worker_start (GST_WORKER (disp));
+  return disp;
+}
+
+static void
+gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
+{
+  if (ui->compose_port == port)
+    return;
+
+  if (ui->compose_video)
+    g_object_unref (ui->compose_video);
+
+  ui->compose_port = port;
+  ui->compose_video = gst_switch_ui_new_video_disp (ui, ui->compose_view,
+      port);
+}
+
+static void
+gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port)
+{
+  GstVideoDisp *disp;
+  GtkWidget *preview = gtk_drawing_area_new ();
+  gtk_widget_set_double_buffered (preview, FALSE);
+  gtk_widget_set_size_request (preview, -1, 80);
+  gtk_widget_show (preview);
+  gtk_container_add (GTK_CONTAINER (ui->preview_box), preview);
+
+  disp = gst_switch_ui_new_video_disp (ui, preview, port);
+}
+
 static GVariant *
-gst_switch_ui__test (GstSwitchUI *ui, GVariant *parameters)
+gst_switch_ui__test (GstSwitchUI *ui, GDBusConnection *connection,
+    GVariant *parameters)
 {
   gchar *s = NULL;
   g_variant_get (parameters, "(&s)", &s);
-  INFO ("test: %s", s);
+  INFO ("%s", s);
   return g_variant_new ("(s)", "hello, controller");
+}
+
+static GVariant *
+gst_switch_ui__set_compose_port (GstSwitchUI *ui,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  gint port = 0;
+  g_variant_get (parameters, "(i)", &port);
+  INFO ("compose: %d", port);
+  gst_switch_ui_set_compose_port (ui, port);
+  return NULL;
+}
+
+static GVariant *
+gst_switch_ui__add_preview_port (GstSwitchUI *ui,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  gint port = 0;
+  g_variant_get (parameters, "(i)", &port);
+  INFO ("preview: %d", port);
+  gst_switch_ui_add_preview_port (ui, port);
+  return NULL;
 }
 
 static MethodTableEntry gst_switch_ui_method_table[] = {
   { "test", (MethodFunc) gst_switch_ui__test },
+  { "set_compose_port", (MethodFunc) gst_switch_ui__set_compose_port },
+  { "add_preview_port", (MethodFunc) gst_switch_ui__add_preview_port },
   { NULL, NULL }
 };
 
 static void
-gst_switchui_class_init (GstSwitchUIClass * klass)
+gst_switch_ui_class_init (GstSwitchUIClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
-  object_class->finalize = (GObjectFinalizeFunc) gst_switchui_finalize;
+  object_class->finalize = (GObjectFinalizeFunc) gst_switch_ui_finalize;
 
   klass->methods = g_hash_table_new (g_str_hash, g_str_equal);
 
@@ -389,12 +504,12 @@ main (int argc, char *argv[])
 {
   GstSwitchUI *ui;
 
-  gst_switchui_parse_args (&argc, &argv);
+  gst_switch_ui_parse_args (&argc, &argv);
   gtk_init (&argc, &argv);
 
   ui = GST_SWITCH_UI (g_object_new (GST_TYPE_SWITCH_UI, NULL));
 
-  gst_switchui_run (ui);
+  gst_switch_ui_run (ui);
 
   g_object_unref (G_OBJECT (ui));
   return 0;

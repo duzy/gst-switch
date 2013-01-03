@@ -30,7 +30,7 @@
 
 #define g_socket_input_stream_get_type _g_socket_input_stream_get_type
 
-G_DEFINE_TYPE (GSocketInputStream, g_socket_input_stream, G_TYPE_INPUT_STREAM);
+G_DEFINE_TYPE (GSocketInputStreamX, g_socket_input_stream, G_TYPE_INPUT_STREAM);
 
 enum
 {
@@ -38,7 +38,7 @@ enum
   PROP_SOCKET
 };
 
-struct _GSocketInputStreamPrivate
+struct _GSocketInputStreamXPrivate
 {
   GSocket *socket;
 
@@ -55,7 +55,7 @@ g_socket_input_stream_get_property (GObject    *object,
                                     GValue     *value,
                                     GParamSpec *pspec)
 {
-  GSocketInputStream *stream = G_SOCKET_INPUT_STREAM (object);
+  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
 
   switch (prop_id)
     {
@@ -74,7 +74,7 @@ g_socket_input_stream_set_property (GObject      *object,
                                     const GValue *value,
                                     GParamSpec   *pspec)
 {
-  GSocketInputStream *stream = G_SOCKET_INPUT_STREAM (object);
+  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
 
   switch (prop_id)
     {
@@ -90,7 +90,7 @@ g_socket_input_stream_set_property (GObject      *object,
 static void
 g_socket_input_stream_finalize (GObject *object)
 {
-  GSocketInputStream *stream = G_SOCKET_INPUT_STREAM (object);
+  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
 
   if (stream->priv->socket)
     g_object_unref (stream->priv->socket);
@@ -106,7 +106,7 @@ g_socket_input_stream_read (GInputStream  *stream,
                             GCancellable  *cancellable,
                             GError       **error)
 {
-  GSocketInputStream *input_stream = G_SOCKET_INPUT_STREAM (stream);
+  GSocketInputStreamX *input_stream = G_SOCKET_INPUT_STREAM (stream);
 
   return g_socket_receive_with_blocking (input_stream->priv->socket,
 					 buffer, count, TRUE,
@@ -114,12 +114,12 @@ g_socket_input_stream_read (GInputStream  *stream,
 }
 
 static void
-g_socket_input_stream_class_init (GSocketInputStreamClass *klass)
+g_socket_input_stream_class_init (GSocketInputStreamXClass *klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GInputStreamClass *ginputstream_class = G_INPUT_STREAM_CLASS (klass);
 
-  g_type_class_add_private (klass, sizeof (GSocketInputStreamPrivate));
+  g_type_class_add_private (klass, sizeof (GSocketInputStreamXPrivate));
 
   gobject_class->finalize = g_socket_input_stream_finalize;
   gobject_class->get_property = g_socket_input_stream_get_property;
@@ -136,12 +136,12 @@ g_socket_input_stream_class_init (GSocketInputStreamClass *klass)
 }
 
 static void
-g_socket_input_stream_init (GSocketInputStream *stream)
+g_socket_input_stream_init (GSocketInputStreamX *stream)
 {
-  stream->priv = G_TYPE_INSTANCE_GET_PRIVATE (stream, G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStreamPrivate);
+  stream->priv = G_TYPE_INSTANCE_GET_PRIVATE (stream, G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStreamXPrivate);
 }
 
-GSocketInputStream *
+GSocketInputStreamX *
 _g_socket_input_stream_new (GSocket *socket)
 {
   return G_SOCKET_INPUT_STREAM (g_object_new (G_TYPE_SOCKET_INPUT_STREAM, "socket", socket, NULL));

@@ -49,7 +49,7 @@
 #define GST_SWITCH_SERVER_LOCK_COMPOSITE(srv) (g_mutex_lock (&(srv)->composite_lock))
 #define GST_SWITCH_SERVER_UNLOCK_COMPOSITE(srv) (g_mutex_unlock (&(srv)->composite_lock))
 
-G_DEFINE_TYPE (GstSwitchServer, gst_switchsrv, G_TYPE_OBJECT);
+G_DEFINE_TYPE (GstSwitchServer, gst_switch_server, G_TYPE_OBJECT);
 
 GstSwitchServerOpts opts = {
   NULL,
@@ -72,7 +72,7 @@ static GOptionEntry entries[] = {
 };
 
 static void
-gst_switchsrv_parse_args (int *argc, char **argv[])
+gst_switch_server_parse_args (int *argc, char **argv[])
 {
   GError *error = NULL;
   GOptionContext *context;
@@ -89,7 +89,7 @@ gst_switchsrv_parse_args (int *argc, char **argv[])
 }
 
 static void
-gst_switchsrv_init (GstSwitchServer *srv)
+gst_switch_server_init (GstSwitchServer *srv)
 {
   srv->host = g_strdup (GST_SWITCH_SERVER_DEFAULT_HOST);
 
@@ -113,7 +113,7 @@ gst_switchsrv_init (GstSwitchServer *srv)
 }
 
 static void
-gst_switchsrv_finalize (GstSwitchServer *srv)
+gst_switch_server_finalize (GstSwitchServer *srv)
 {
   g_free (srv->host);
   srv->host = NULL;
@@ -161,19 +161,19 @@ gst_switchsrv_finalize (GstSwitchServer *srv)
   g_mutex_clear (&srv->alloc_port_lock);
   g_mutex_clear (&srv->composite_lock);
 
-  if (G_OBJECT_CLASS (gst_switchsrv_parent_class)->finalize)
-    (*G_OBJECT_CLASS (gst_switchsrv_parent_class)->finalize) (G_OBJECT (srv));
+  if (G_OBJECT_CLASS (gst_switch_server_parent_class)->finalize)
+    (*G_OBJECT_CLASS (gst_switch_server_parent_class)->finalize) (G_OBJECT (srv));
 }
 
 static void
-gst_switchsrv_class_init (GstSwitchServerClass *klass)
+gst_switch_server_class_init (GstSwitchServerClass *klass)
 {
   GObjectClass * object_class = G_OBJECT_CLASS (klass);
-  object_class->finalize = (GObjectFinalizeFunc) gst_switchsrv_finalize;
+  object_class->finalize = (GObjectFinalizeFunc) gst_switch_server_finalize;
 }
 
 static void
-gst_switchsrv_end_case (GstCase *cas, GstSwitchServer *srv)
+gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
 {
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   g_object_unref (cas);
@@ -184,7 +184,7 @@ gst_switchsrv_end_case (GstCase *cas, GstSwitchServer *srv)
 }
 
 static void
-gst_switchsrv_end_composite (GstComposite *composite, GstSwitchServer *srv)
+gst_switch_server_end_composite (GstComposite *composite, GstSwitchServer *srv)
 {
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
   g_object_unref (srv->composite);
@@ -193,7 +193,7 @@ gst_switchsrv_end_composite (GstComposite *composite, GstSwitchServer *srv)
 }
 
 static gint
-gst_switchsrv_alloc_port (GstSwitchServer *srv)
+gst_switch_server_alloc_port (GstSwitchServer *srv)
 {
   gint port;
   g_mutex_lock (&srv->alloc_port_lock);
@@ -207,7 +207,7 @@ gst_switchsrv_alloc_port (GstSwitchServer *srv)
 }
 
 static void
-gst_switchsrv_revoke_port (GstSwitchServer *srv, int port)
+gst_switch_server_revoke_port (GstSwitchServer *srv, int port)
 {
   g_mutex_lock (&srv->alloc_port_lock);
   //srv->alloc_port_count -= 1;
@@ -218,20 +218,26 @@ gst_switchsrv_revoke_port (GstSwitchServer *srv, int port)
 }
 
 static void
-gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
+gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
 {
-  GSocketInputStream *stream = G_SOCKET_INPUT_STREAM (g_object_new (
+  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (g_object_new (
 	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
-  gint port = gst_switchsrv_alloc_port (srv);
   GstCase *workcase;
   GstCaseType type;
   gchar *name;
+  gint port;
   gint num = g_list_length (srv->cases);
 
   switch (num) {
   case 0:  type = GST_CASE_COMPOSITE_A; break;
   case 1:  type = GST_CASE_COMPOSITE_B; break;
   default: type = GST_CASE_PREVIEW; break;
+  }
+
+  if (type == GST_CASE_PREVIEW) {
+    port = gst_switch_server_alloc_port (srv);
+  } else {
+    port = srv->composite->sink_port;
   }
 
   name = g_strdup_printf ("case-%d", num);
@@ -246,7 +252,7 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
     goto error_prepare_workcase;
 
   g_signal_connect (workcase, "end-case",
-      G_CALLBACK (gst_switchsrv_end_case), srv);
+      G_CALLBACK (gst_switch_server_end_case), srv);
 
   gst_worker_start (GST_WORKER (workcase));
 
@@ -254,8 +260,17 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
   srv->cases = g_list_append (srv->cases, workcase);
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
 
-  INFO ("New client sink to %d (%d cases) (%p)",
-      port, g_list_length (srv->cases), srv);
+  switch (type) {
+  case GST_CASE_COMPOSITE_A:
+  case GST_CASE_COMPOSITE_B:
+    gst_switch_controller_tell_compose_port (srv->controller, port);
+    break;
+  case GST_CASE_PREVIEW:
+    gst_switch_controller_tell_preview_port (srv->controller, port);
+    INFO ("New client sink to %d (%d cases) (%p)", port,
+	g_list_length (srv->cases), srv);
+    break;
+  }
   return;
 
   /* Errors Handling */
@@ -264,20 +279,20 @@ gst_switchsrv_serve (GstSwitchServer *srv, GSocket *client)
   {
     ERROR ("can't serve new client");
     g_object_unref (workcase);
-    gst_switchsrv_revoke_port (srv, port);
+    gst_switch_server_revoke_port (srv, port);
     return;
   }
 }
 
 static void
-gst_switchsrv_allow_tcp_control (GstSwitchServer *srv, GSocket *client)
+gst_switch_server_allow_tcp_control (GstSwitchServer *srv, GSocket *client)
 {
   ERROR ("control via TCP not implemented");
   g_object_unref (client);
 }
 
 static GSocket *
-gst_switchsrv_listen (GstSwitchServer *srv, gint port,
+gst_switch_server_listen (GstSwitchServer *srv, gint port,
     gint *bound_port)
 {
   GError *err = NULL;
@@ -383,13 +398,13 @@ gst_switchsrv_listen (GstSwitchServer *srv, gint port,
 }
 
 static gpointer
-gst_switchsrv_acceptor (GstSwitchServer *srv)
+gst_switch_server_acceptor (GstSwitchServer *srv)
 {
   GSocket *socket;
   GError *error;
   gint bound_port;
 
-  srv->acceptor_socket = gst_switchsrv_listen (srv,
+  srv->acceptor_socket = gst_switch_server_listen (srv,
       srv->acceptor_port, &bound_port);
   if (!srv->acceptor_socket) {
     return NULL;
@@ -402,7 +417,7 @@ gst_switchsrv_acceptor (GstSwitchServer *srv)
       continue;
     }
 
-    gst_switchsrv_serve (srv, socket);
+    gst_switch_server_serve (srv, socket);
   }
 
   GST_SWITCH_SERVER_LOCK_ACCEPTOR (srv);
@@ -413,13 +428,13 @@ gst_switchsrv_acceptor (GstSwitchServer *srv)
 }
 
 static gpointer
-gst_switchsrv_controller (GstSwitchServer *srv)
+gst_switch_server_controller (GstSwitchServer *srv)
 {
   GSocket *socket;
   GError *error;
   gint bound_port;
 
-  srv->controller_socket = gst_switchsrv_listen (srv,
+  srv->controller_socket = gst_switch_server_listen (srv,
       srv->controller_port, &bound_port);
   if (!srv->controller_socket) {
     return NULL;
@@ -432,7 +447,7 @@ gst_switchsrv_controller (GstSwitchServer *srv)
       continue;
     }
 
-    gst_switchsrv_allow_tcp_control (srv, socket);
+    gst_switch_server_allow_tcp_control (srv, socket);
   }
 
   GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
@@ -443,7 +458,7 @@ gst_switchsrv_controller (GstSwitchServer *srv)
 }
 
 static void
-gst_switchsrv_prepare_bus_controller (GstSwitchServer * srv)
+gst_switch_server_prepare_bus_controller (GstSwitchServer * srv)
 {
   if (!srv->controller) {
     GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
@@ -464,11 +479,12 @@ gst_switchsrv_prepare_bus_controller (GstSwitchServer * srv)
 }
 
 static gboolean
-gst_switchsrv_prepare_composite (GstSwitchServer * srv)
+gst_switch_server_prepare_composite (GstSwitchServer * srv)
 {
-  gint port = gst_switchsrv_alloc_port (srv);
-  port = gst_switchsrv_alloc_port (srv);
+  gint port = gst_switch_server_alloc_port (srv);
+  //port = gst_switch_server_alloc_port (srv);
 
+  INFO ("Compose sink to %d", port);
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
   srv->composite = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
 	  "name", "composite", "port", port, NULL));
@@ -478,7 +494,7 @@ gst_switchsrv_prepare_composite (GstSwitchServer * srv)
     goto error_prepare_composite;
 
   g_signal_connect (srv->composite, "end-composite",
-      G_CALLBACK (gst_switchsrv_end_composite), srv);
+      G_CALLBACK (gst_switch_server_end_composite), srv);
 
   gst_worker_start (GST_WORKER (srv->composite));
 
@@ -498,19 +514,19 @@ gst_switchsrv_prepare_composite (GstSwitchServer * srv)
 }
 
 static void
-gst_switchsrv_run (GstSwitchServer * srv)
+gst_switch_server_run (GstSwitchServer * srv)
 {
   srv->main_loop = g_main_loop_new (NULL, TRUE);
 
   srv->acceptor = g_thread_new ("switch-server-acceptor",
-      (GThreadFunc) gst_switchsrv_acceptor, srv);
+      (GThreadFunc) gst_switch_server_acceptor, srv);
 
   srv->controller_thread = g_thread_new ("switch-server-controller",
-      (GThreadFunc) gst_switchsrv_controller, srv);
+      (GThreadFunc) gst_switch_server_controller, srv);
 
-  gst_switchsrv_prepare_bus_controller (srv);
+  gst_switch_server_prepare_bus_controller (srv);
 
-  if (!gst_switchsrv_prepare_composite (srv))
+  if (!gst_switch_server_prepare_composite (srv))
     goto error_prepare_composite;
 
   g_main_loop_run (srv->main_loop);
@@ -532,11 +548,11 @@ main (int argc, char *argv[])
 {
   GstSwitchServer *srv;
 
-  gst_switchsrv_parse_args (&argc, &argv);
+  gst_switch_server_parse_args (&argc, &argv);
 
   srv = GST_SWITCH_SERVER (g_object_new (GST_TYPE_SWITCH_SERVER, NULL));
 
-  gst_switchsrv_run (srv);
+  gst_switch_server_run (srv);
 
   g_object_unref (G_OBJECT (srv));
   return 0;

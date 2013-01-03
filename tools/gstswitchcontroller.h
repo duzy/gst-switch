@@ -43,7 +43,7 @@
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
 
-typedef GVariant * (*MethodFunc) (GObject *, GVariant *);
+typedef GVariant * (*MethodFunc) (GObject *, GDBusConnection *, GVariant *);
 typedef struct _MethodTableEntry MethodTableEntry;
 struct _MethodTableEntry {
   const gchar *name;
@@ -55,6 +55,7 @@ struct _GstSwitchController
   GObject base;
 
   GDBusServer *server;
+  GList *uis;
 };
 
 struct _GstSwitchControllerClass
@@ -65,5 +66,8 @@ struct _GstSwitchControllerClass
 };
 
 GType gst_switch_controller_get_type (void);
+
+void gst_switch_controller_tell_compose_port (GstSwitchController *, gint port);
+void gst_switch_controller_tell_preview_port (GstSwitchController *, gint port);
 
 #endif//__GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__

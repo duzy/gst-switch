@@ -44,6 +44,18 @@ static const gchar introspection_xml[] =
   "      <arg type='s' name='name' direction='in'/>"
   "      <arg type='s' name='result' direction='out'/>"
   "    </method>"
+  "    <method name='get_ports'>"
+  "      <arg type='s' name='ports' direction='out'/>"
+  "    </method>"
+  "    <signal name='testsignal'>"
+  "      <arg type='s' name='str'/>"
+  "    </signal>"
+  "    <signal name='compose_port'>"
+  "      <arg type='i' name='port'/>"
+  "    </signal>"
+  "    <signal name='preview_port'>"
+  "      <arg type='i' name='port'/>"
+  "    </signal>"
   "  </interface>"
   "</node>";
 /*
@@ -85,7 +97,7 @@ gst_switch_controller_do_method_call (
   INFO ("calling: %s/%s", interface_name, method_name);
   */
 
-  results = (*entry) (G_OBJECT (controller), parameters);
+  results = (*entry) (G_OBJECT (controller), connection, parameters);
   g_dbus_method_invocation_return_value (invocation, results);
   return;
 
@@ -201,13 +213,57 @@ gst_switch_controller_export (GstSwitchController * controller)
 }
 #endif
 
-static GVariant *
-gst_switch_controller_call_ui (GstSwitchController * controller,
-    GDBusConnection *connection,
-    const gchar *method_name, GVariant *parameters,
-    const GVariantType *reply_type);
+static void
+gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
+    const gchar *signame, GVariant *parameters)
+{
+  GError *error;
+  gboolean res;
+  GList *ui;
+  gint num;
+
+  for (ui = controller->uis, num = 0; ui; ui = g_list_next (ui)) {
+    error = NULL;
+    res = g_dbus_connection_emit_signal (G_DBUS_CONNECTION (ui->data),
+	NULL, /* destination_bus_name */
+	SWITCH_UI_OBJECT_PATH, SWITCH_UI_OBJECT_NAME,
+	signame, parameters, &error);
+
+    if (!res) {
+      ERROR ("emit: (%d) %s", num, error->message);
+    } else {
+      ++num;
+    }
+  }
+
+  INFO ("emit: %s (%d/%d)", signame, num, g_list_length (controller->uis));
+}
 
 static void
+gst_switch_controller_on_connection_closed (GDBusConnection *connection,
+    gboolean vanished, GError *error, gpointer user_data)
+{
+  GstSwitchController *controller = GST_SWITCH_CONTROLLER (user_data);
+
+  (void) controller;
+
+  if (error) {
+    WARN ("close: %s", error->message);
+    g_error_free (error);
+  }
+
+  if (vanished) {
+    g_object_unref (connection);
+    controller->uis = g_list_remove (controller->uis, connection);
+  }
+
+  /*
+  INFO ("closed: %p, %d (%d uis)", connection, vanished,
+      g_list_length (controller->uis));
+  */
+}
+
+static gboolean
 gst_switch_controller_on_new_connection (GDBusServer *server,
     GDBusConnection *connection, gpointer user_data)
 {
@@ -215,6 +271,7 @@ gst_switch_controller_on_new_connection (GDBusServer *server,
   guint register_id = 0;
   GError *error = NULL;
 
+  controller->uis = g_list_append (controller->uis, connection);
   g_object_ref (connection);
 
   register_id = g_dbus_connection_register_object (connection,
@@ -225,21 +282,31 @@ gst_switch_controller_on_new_connection (GDBusServer *server,
       NULL, /* user_data_free_func */
       &error);
 
-  if (register_id <= 0) {
-    ERROR ("register: %s", error->message);
-  }
-
-  g_assert (0 < register_id);
+  if (register_id <= 0)
+    goto error_register_object;
 
   /*
   INFO ("registered: %d, %s, %s", register_id, SWITCH_CONTROLLER_OBJECT_PATH,
       introspection_data->interfaces[0]->name);
   */
 
-  /*
-  gst_switch_controller_call_ui (controller, connection, "test",
-      g_variant_new ("(s)", "hi, ui"), G_VARIANT_TYPE ("(s)"));
-  */
+  g_signal_connect (connection, "closed",
+      G_CALLBACK (gst_switch_controller_on_connection_closed),
+      controller);
+
+  gst_switch_controller_emit_ui_signal (controller, "testsignal",
+      g_variant_new ("(s)", "test signal"));
+
+  return TRUE;
+
+  /* ERRORS */
+error_register_object:
+  {
+    ERROR ("register: %s", error->message);
+    controller->uis = g_list_remove (controller->uis, connection);
+    g_object_unref (connection);
+    return FALSE;
+  }
 }
 
 static gboolean
@@ -260,6 +327,8 @@ gst_switch_controller_init (GstSwitchController * controller)
   GDBusServerFlags flags = G_DBUS_SERVER_FLAGS_NONE;
   GDBusAuthObserver *auth_observer;
   GError * error = NULL;
+
+  controller->uis = NULL;
 
   flags |= G_DBUS_SERVER_FLAGS_RUN_IN_THREAD;
   flags |= G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS;
@@ -285,8 +354,7 @@ gst_switch_controller_init (GstSwitchController * controller)
   g_signal_connect (controller->server, "new-connection",
       G_CALLBACK (gst_switch_controller_on_new_connection), controller);
 
-  g_signal_connect (auth_observer,
-      "authorize-authenticated-peer",
+  g_signal_connect (auth_observer, "authorize-authenticated-peer",
       G_CALLBACK (gst_switch_controller_authorize_authenticated_peer),
       controller);
 
@@ -352,6 +420,53 @@ gst_switch_controller_call_ui (GstSwitchController * controller,
 }
 
 static void
+gst_switch_controller_call_uis (GstSwitchController * controller,
+    const gchar *method_name, GVariant *parameters,
+    const GVariantType *reply_type)
+{
+  GVariant *value;
+  GList *ui;
+  for (ui = controller->uis; ui; ui = g_list_next (ui)) {
+    value = gst_switch_controller_call_ui (controller,
+	G_DBUS_CONNECTION (ui->data), method_name, parameters, reply_type);
+    if (value) {
+      // ...
+    }
+  }
+}
+
+static gchar *
+gst_switch_controller_test_ui (GstSwitchController * controller,
+    GDBusConnection *connection, gchar *s)
+{
+  gchar *result = NULL;
+  GVariant *value = gst_switch_controller_call_ui (controller, connection,
+      "test", g_variant_new ("(s)", "hey, ui"), G_VARIANT_TYPE ("(s)"));
+  if (value) {
+    g_variant_get (value, "(&s)", &result);
+    if (result) result = g_strdup (result);
+    g_variant_unref (value);
+  }
+  return result;
+}
+
+static void
+gst_switch_controller_set_ui_compose_port (GstSwitchController * controller,
+    gint port)
+{
+  gst_switch_controller_call_uis (controller, "set_compose_port",
+      g_variant_new ("(i)", port), G_VARIANT_TYPE ("()"));
+}
+
+static void
+gst_switch_controller_add_ui_preview_port (GstSwitchController * controller,
+    gint port)
+{
+  gst_switch_controller_call_uis (controller, "add_preview_port",
+      g_variant_new ("(i)", port), G_VARIANT_TYPE ("()"));
+}
+
+static void
 gst_switch_controller_get_property(GstSwitchController * controller,
     guint prop_id, GValue *value, GParamSpec *pspec)
 {
@@ -373,13 +488,31 @@ gst_switch_controller_set_property(GstSwitchController * controller,
   }
 }
 
+void
+gst_switch_controller_tell_compose_port (GstSwitchController *controller,
+    gint port)
+{
+  gst_switch_controller_emit_ui_signal (controller, "compose_port",
+      g_variant_new ("(i)", port));
+  gst_switch_controller_set_ui_compose_port (controller, port);
+}
+
+void
+gst_switch_controller_tell_preview_port (GstSwitchController *controller,
+    gint port)
+{
+  gst_switch_controller_emit_ui_signal (controller, "preview_port",
+      g_variant_new ("(i)", port));
+  gst_switch_controller_add_ui_preview_port (controller, port);
+}
+
 static GVariant *
 gst_switch_controller__test (GstSwitchController *controller,
-    GVariant *parameters)
+    GDBusConnection *connection, GVariant *parameters)
 {
   gchar *s = NULL;
   g_variant_get (parameters, "(&s)", &s);
-  INFO ("test: %s", s);
+  INFO ("%s", s);
   return g_variant_new ("(s)", "hello, ui");
 }
 
