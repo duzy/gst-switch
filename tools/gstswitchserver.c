@@ -52,7 +52,7 @@
 G_DEFINE_TYPE (GstSwitchServer, gst_switch_server, G_TYPE_OBJECT);
 
 GstSwitchServerOpts opts = {
-  NULL, "save.gdp",
+  NULL, NULL,
   GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT,
   GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
 };
