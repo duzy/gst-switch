@@ -132,6 +132,7 @@ gst_composite_create_pipeline (GstComposite * composite)
   GString *desc;
   GstElement *pipeline;
   GError *error = NULL;
+  gint ax = 0, ay = 0, bx = 20, by = 20;
 
   desc = g_string_new ("");
 
@@ -143,10 +144,13 @@ gst_composite_create_pipeline (GstComposite * composite)
       composite->sink_port);
   g_string_append_printf (desc, "videomixer name=compose "
       "sink_0::zorder=0 "
-      "sink_1::alpha=0.4 "
-      "sink_1::xpos=20 "
-      "sink_1::ypos=20 "
-      "sink_1::zorder=1 ");
+      "sink_0::xpos=%d "
+      "sink_0::ypos=%d "
+      "sink_1::alpha=0.8 "
+      "sink_1::xpos=%d "
+      "sink_1::ypos=%d "
+      "sink_1::zorder=1 ",
+      ax, ay, bx, by);
   g_string_append_printf (desc, "source_b.!video/x-raw,width=%d,height=%d"
       "! queue2 ! compose.sink_1 ",
       composite->b_width, composite->b_height);

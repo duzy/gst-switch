@@ -49,7 +49,7 @@ static const gchar introspection_xml[] =
   "      <arg type='i' name='port' direction='out'/>"
   "    </method>"
   "    <method name='get_preview_ports'>"
-  "      <arg type='ai' name='ports' direction='out'/>"
+  "      <arg type='s' name='ports' direction='out'/>"
   "    </method>"
   "    <signal name='testsignal'>"
   "      <arg type='s' name='str'/>"
@@ -542,17 +542,24 @@ gst_switch_controller__get_preview_ports (GstSwitchController *controller,
     int n;
     GVariantBuilder *builder;
     GVariant *value;
+    gchar *res;
 
     builder = g_variant_builder_new (G_VARIANT_TYPE ("ai"));
     for (n = 0; n < a->len; ++n) {
       g_variant_builder_add (builder, "i", g_array_index (a, gint, n));
     }
     value = g_variant_builder_end (builder);
-    //INFO ("value: %d", g_variant_n_children (value));
+    //result = g_variant_new_tuple (&value, 1);
+    res = g_variant_print (value, FALSE);
+    result = g_variant_new ("(s)", res);
 
-    result = g_variant_new_tuple (&value, 1);
-    //INFO ("result: %d", g_variant_n_children (result));
+    /*
+    INFO ("value: %s (%d)", g_variant_get_type_string (value),
+	g_variant_n_children (value));
+    INFO ("result: %s, %s", g_variant_get_type_string (result), res);
+    */
 
+    g_free (res);
     g_array_free (a, TRUE);
   }
   return result;

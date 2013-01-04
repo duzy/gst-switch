@@ -38,6 +38,12 @@
 #define GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH	100
 #define GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT	80
 
+enum {
+  COMPOSE_MODE_0,
+  COMPOSE_MODE_1,
+  COMPOSE_MODE_2,
+};
+
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
 typedef struct _GstSwitchServer GstSwitchServer;
