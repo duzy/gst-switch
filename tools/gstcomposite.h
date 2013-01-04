@@ -33,6 +33,11 @@
 #define GST_IS_COMPOSITE(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_COMPOSITE, GstComposite))
 #define GST_IS_COMPOSITE_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_COMPOSITE, GstCompositeClass))
 
+#define GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH	640
+#define GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT	480
+#define GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH	100
+#define GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT	80
+
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
 typedef struct _GstSwitchServer GstSwitchServer;
@@ -42,6 +47,11 @@ struct _GstComposite
   GstWorker base;
 
   gint sink_port;
+
+  guint a_width;
+  guint a_height;
+  guint b_width;
+  guint b_height;
 };
 
 struct _GstCompositeClass

@@ -50,6 +50,10 @@ struct _GstCase
   GstCaseType type;
   GInputStream *stream;
   gint sink_port;
+  guint a_width;
+  guint a_height;
+  guint b_width;
+  guint b_height;
 };
 
 struct _GstCaseClass

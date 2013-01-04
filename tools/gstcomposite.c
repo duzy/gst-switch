@@ -35,6 +35,10 @@ enum
 {
   PROP_0,
   PROP_PORT,
+  PROP_A_WIDTH,
+  PROP_A_HEIGHT,
+  PROP_B_WIDTH,
+  PROP_B_HEIGHT,
 };
 
 enum
@@ -51,6 +55,11 @@ G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 static void
 gst_composite_init (GstComposite * composite)
 {
+  composite->a_width = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
+  composite->a_height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
+  composite->b_width = GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH;
+  composite->b_height = GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT;
+
   INFO ("Composite initialized");
 }
 
@@ -71,6 +80,18 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
   case PROP_PORT:
     composite->sink_port = g_value_get_uint (value);
     break;
+  case PROP_A_WIDTH:
+    composite->a_width = g_value_get_uint (value);
+    break;
+  case PROP_A_HEIGHT:
+    composite->a_height = g_value_get_uint (value);
+    break;
+  case PROP_B_WIDTH:
+    composite->b_width = g_value_get_uint (value);
+    break;
+  case PROP_B_HEIGHT:
+    composite->b_height = g_value_get_uint (value);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
 	pspec);
@@ -85,6 +106,18 @@ gst_composite_get_property (GstComposite * composite, guint property_id,
   switch (property_id) {
   case PROP_PORT:
     g_value_set_uint (value, composite->sink_port);
+    break;
+  case PROP_A_WIDTH:
+    g_value_set_uint (value, composite->a_width);
+    break;
+  case PROP_A_HEIGHT:
+    g_value_set_uint (value, composite->a_height);
+    break;
+  case PROP_B_WIDTH:
+    g_value_set_uint (value, composite->b_width);
+    break;
+  case PROP_B_HEIGHT:
+    g_value_set_uint (value, composite->b_height);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
@@ -115,11 +148,13 @@ gst_composite_create_pipeline (GstComposite * composite)
       "sink_1::ypos=20 "
       "sink_1::zorder=1 ");
   g_string_append_printf (desc, "source_b. ! video/x-raw"
-      ",width=100,height=80"
-      "! queue2 ! compose.sink_1 ");
+      ",width=%d,height=%d"
+      "! queue2 ! compose.sink_1 ",
+      composite->b_width, composite->b_height);
   g_string_append_printf (desc, "source_a. ! video/x-raw"
-      ",width=640,height=480"
-      "! queue2 ! compose.sink_0 ");
+      ",width=%d,height=%d"
+      "! queue2 ! compose.sink_0 ",
+      composite->a_width, composite->a_height);
   g_string_append_printf (desc, "compose. ! gdppay ! sink. ");
 
   if (verbose)
@@ -185,6 +220,26 @@ gst_composite_class_init (GstCompositeClass * klass)
       g_param_spec_uint ("port", "Port", "Sink port",
           GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
 	  GST_SWITCH_MIN_SINK_PORT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_A_WIDTH,
+      g_param_spec_uint ("awidth", "A Width", "Channel A frame width",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_A_HEIGHT,
+      g_param_spec_uint ("aheight", "A Height", "Channel A frame height",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_B_WIDTH,
+      g_param_spec_uint ("bwidth", "B Width", "Channel B frame width",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_B_HEIGHT,
+      g_param_spec_uint ("bheight", "B Height", "Channel B frame height",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_composite_null;

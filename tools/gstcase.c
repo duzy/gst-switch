@@ -38,6 +38,10 @@ enum
   PROP_TYPE,
   PROP_STREAM,
   PROP_PORT,
+  PROP_A_WIDTH,
+  PROP_A_HEIGHT,
+  PROP_B_WIDTH,
+  PROP_B_HEIGHT,
 };
 
 enum
@@ -89,6 +93,18 @@ gst_case_get_property (GstCase *cas, guint property_id,
   case PROP_PORT:
     g_value_set_uint (value, cas->sink_port);
     break;
+  case PROP_A_WIDTH:
+    g_value_set_uint (value, cas->a_width);
+    break;
+  case PROP_A_HEIGHT:
+    g_value_set_uint (value, cas->a_height);
+    break;
+  case PROP_B_WIDTH:
+    g_value_set_uint (value, cas->b_width);
+    break;
+  case PROP_B_HEIGHT:
+    g_value_set_uint (value, cas->b_height);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (cas, property_id, pspec);
     break;
@@ -113,6 +129,18 @@ gst_case_set_property (GstCase *cas, guint property_id,
   case PROP_PORT:
     cas->sink_port = g_value_get_uint (value);
     break;
+  case PROP_A_WIDTH:
+    cas->a_width = g_value_get_uint (value);
+    break;
+  case PROP_A_HEIGHT:
+    cas->a_height = g_value_get_uint (value);
+    break;
+  case PROP_B_WIDTH:
+    cas->b_width = g_value_get_uint (value);
+    break;
+  case PROP_B_HEIGHT:
+    cas->b_height = g_value_get_uint (value);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (cas), property_id, pspec);
     break;
@@ -135,21 +163,21 @@ gst_case_create_pipeline (GstCase * cas)
   switch (cas->type) {
   case GST_CASE_COMPOSITE_A:
     channel = "composite_a";
-    convert = "identity "
-      //"! timeoverlay "
-      //"! textoverlay text=A shaded-background=true "
-      //"! videoconvert "
-	"! videoscale ! video/x-raw,width=640,height=480 "
-      ;
+    convert = g_strdup_printf ("identity "
+	//"! timeoverlay "
+	//"! textoverlay text=A shaded-background=true "
+	//"! videoconvert "
+	"! videoscale ! video/x-raw,width=%d,height=%d ",
+	cas->a_width, cas->a_height);
   case GST_CASE_COMPOSITE_B:
     //"! videobox border-alpha=0 left=50 top=50 right=150 bottom=230 "
     if (channel == NULL) {
       channel = "composite_b";
-      convert = "identity "
-	//"! timeoverlay "
-	//"! textoverlay text=B shaded-background=true "
-	"! videoscale ! video/x-raw,width=100,height=80 "
-	;
+      convert = g_strdup_printf ("identity "
+	  //"! timeoverlay "
+	  //"! textoverlay text=B shaded-background=true "
+	  "! videoscale ! video/x-raw,width=%d,height=%d ",
+	  cas->b_width, cas->b_height);
     }
     g_string_append_printf (desc, "intervideosink name=sink channel=%s ",
 	channel);
@@ -162,6 +190,9 @@ gst_case_create_pipeline (GstCase * cas)
     g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
     break;
   }
+
+  g_free (convert);
+  convert = NULL;
 
   if (verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -236,6 +267,26 @@ gst_case_class_init (GstCaseClass * klass)
       g_param_spec_uint ("port", "Port", "Sink port",
           GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
 	  GST_SWITCH_MIN_SINK_PORT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_A_WIDTH,
+      g_param_spec_uint ("awidth", "A Width", "Channel A width",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_A_HEIGHT,
+      g_param_spec_uint ("aheight", "A Height", "Channel A height",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_B_WIDTH,
+      g_param_spec_uint ("bwidth", "B Width", "Channel B width",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_B_HEIGHT,
+      g_param_spec_uint ("bheight", "B Height", "Channel B height",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_case_null;

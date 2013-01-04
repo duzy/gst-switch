@@ -242,9 +242,13 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
 
   name = g_strdup_printf ("case-%d", num);
   workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
-	  "type", type, "port", port, "stream", stream, NULL));
+	  "type", type, "port", port, "stream", stream,
+	  "awidth", srv->composite->a_width,
+	  "aheight", srv->composite->a_height,
+	  "bwidth", srv->composite->b_width,
+	  "bheight", srv->composite->b_height,
+	  NULL));
   g_free (name);
-
   g_object_unref (client);
   g_object_unref (stream);
 
@@ -473,7 +477,6 @@ static gboolean
 gst_switch_server_prepare_composite (GstSwitchServer * srv)
 {
   gint port = gst_switch_server_alloc_port (srv);
-  //port = gst_switch_server_alloc_port (srv);
 
   INFO ("Compose sink to %d", port);
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
