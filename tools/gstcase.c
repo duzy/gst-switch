@@ -164,20 +164,18 @@ gst_case_create_pipeline (GstCase * cas)
   case GST_CASE_COMPOSITE_A:
     channel = "composite_a";
     convert = g_strdup_printf ("identity "
-	//"! timeoverlay "
+	"! videoscale ! video/x-raw,width=%d,height=%d "
 	//"! textoverlay text=A shaded-background=true "
-	//"! videoconvert "
-	"! videoscale ! video/x-raw,width=%d,height=%d ",
-	cas->a_width, cas->a_height);
+	//"! timeoverlay "
+	, cas->a_width, cas->a_height);
   case GST_CASE_COMPOSITE_B:
-    //"! videobox border-alpha=0 left=50 top=50 right=150 bottom=230 "
     if (channel == NULL) {
       channel = "composite_b";
       convert = g_strdup_printf ("identity "
-	  //"! timeoverlay "
+	  "! videoscale ! video/x-raw,width=%d,height=%d "
 	  //"! textoverlay text=B shaded-background=true "
-	  "! videoscale ! video/x-raw,width=%d,height=%d ",
-	  cas->b_width, cas->b_height);
+	  //"! videobox border-alpha=0 left=50 top=50 right=150 bottom=230 "
+	  , cas->b_width, cas->b_height);
     }
     g_string_append_printf (desc, "intervideosink name=sink channel=%s ",
 	channel);

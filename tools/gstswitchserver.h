@@ -46,6 +46,7 @@ typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 struct _GstSwitchServerOpts
 {
   gchar * test_switch;
+  gchar * record_filename;
   gint input_port;
   gint control_port;
 };

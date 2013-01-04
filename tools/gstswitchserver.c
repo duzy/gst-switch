@@ -52,7 +52,7 @@
 G_DEFINE_TYPE (GstSwitchServer, gst_switch_server, G_TYPE_OBJECT);
 
 GstSwitchServerOpts opts = {
-  NULL,
+  NULL, "save.gdp",
   GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT,
   GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
 };
@@ -64,6 +64,9 @@ static GOptionEntry entries[] = {
        "Prompt more messages", NULL},
   {"test-switch", 't', 0,	G_OPTION_ARG_STRING, &opts.test_switch,
        "Perform switch test", "OUTPUT"},
+  {"record", 'r', 0,		G_OPTION_ARG_STRING, &opts.record_filename,
+       "Enable recorder and record into the specified FILENAME",
+       "FILENAME"},
   {"input-port", 'p', 0,	G_OPTION_ARG_INT, &opts.input_port,
        "Specify the listen port.", "NUM"},
   {"control-port", 'p', 0,	G_OPTION_ARG_INT, &opts.control_port,

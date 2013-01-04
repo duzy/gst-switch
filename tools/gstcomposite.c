@@ -147,15 +147,20 @@ gst_composite_create_pipeline (GstComposite * composite)
       "sink_1::xpos=20 "
       "sink_1::ypos=20 "
       "sink_1::zorder=1 ");
-  g_string_append_printf (desc, "source_b. ! video/x-raw"
-      ",width=%d,height=%d"
+  g_string_append_printf (desc, "source_b.!video/x-raw,width=%d,height=%d"
       "! queue2 ! compose.sink_1 ",
       composite->b_width, composite->b_height);
-  g_string_append_printf (desc, "source_a. ! video/x-raw"
-      ",width=%d,height=%d"
+  g_string_append_printf (desc, "source_a.!video/x-raw,width=%d,height=%d"
       "! queue2 ! compose.sink_0 ",
       composite->a_width, composite->a_height);
-  g_string_append_printf (desc, "compose. ! gdppay ! sink. ");
+  g_string_append_printf (desc, "compose. ! gdppay ! tee name=result ");
+  g_string_append_printf (desc, "result. ! queue ! sink. ");
+
+  if (opts.record_filename) {
+    g_string_append_printf (desc, "result. ! queue ! record. ");
+    g_string_append_printf (desc, "filesink name=record location=%s ",
+	opts.record_filename);
+  }
 
   if (verbose)
     g_print ("pipeline: %s\n", desc->str);
