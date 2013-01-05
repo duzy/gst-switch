@@ -41,15 +41,21 @@ typedef enum {
   GST_CASE_UNKNOWN,
   GST_CASE_COMPOSITE_A,
   GST_CASE_COMPOSITE_B,
-  GST_CASE_PREVIEW_VIDEO,
-  GST_CASE_PREVIEW_AUDIO,
+  GST_CASE_PREVIEW,
 } GstCaseType;
+
+typedef enum {
+  GST_SERVE_NOTHING,
+  GST_SERVE_VIDEO_STREAM,
+  GST_SERVE_AUDIO_STREAM,
+} GstSwitchServeStreamType;
 
 struct _GstCase
 {
   GstWorker base;
   GstCaseType type;
   GInputStream *stream;
+  GstSwitchServeStreamType serve_type;
   gint sink_port;
   guint a_width;
   guint a_height;

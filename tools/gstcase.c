@@ -36,6 +36,7 @@ enum
 {
   PROP_0,
   PROP_TYPE,
+  PROP_SERVE,
   PROP_STREAM,
   PROP_PORT,
   PROP_A_WIDTH,
@@ -60,7 +61,12 @@ gst_case_init (GstCase * cas)
 {
   cas->type = GST_CASE_UNKNOWN;
   cas->stream = NULL;
+  cas->serve_type = GST_SERVE_NOTHING;
   cas->sink_port = 0;
+  cas->a_width = 0;
+  cas->a_height = 0;
+  cas->b_width = 0;
+  cas->b_height = 0;
 
   INFO ("Case initialized");
 }
@@ -86,6 +92,9 @@ gst_case_get_property (GstCase *cas, guint property_id,
   switch (property_id) {
   case PROP_TYPE:
     g_value_set_uint (value, cas->type);
+    break;
+  case PROP_SERVE:
+    g_value_set_uint (value, cas->serve_type);
     break;
   case PROP_STREAM:
     g_value_set_object (value, cas->stream);
@@ -118,6 +127,9 @@ gst_case_set_property (GstCase *cas, guint property_id,
   switch (property_id) {
   case PROP_TYPE:
     cas->type = (GstCaseType) g_value_get_uint (value);
+    break;
+  case PROP_SERVE:
+    cas->serve_type = (GstSwitchServeStreamType) g_value_get_uint (value);
     break;
   case PROP_STREAM: {
     GObject *stream = g_value_dup_object (value);
@@ -182,8 +194,7 @@ gst_case_create_pipeline (GstCase * cas)
     g_string_append_printf (desc, "source. ! gdpdepay ! %s ! sink. ",
 	convert);
     break;
-  case GST_CASE_PREVIEW_VIDEO:
-  case GST_CASE_PREVIEW_AUDIO:
+  case GST_CASE_PREVIEW:
     g_string_append_printf (desc, "tcpserversink name=sink sync=false "
 	"port=%d ", cas->sink_port);
     g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
@@ -258,7 +269,12 @@ gst_case_class_init (GstCaseClass * klass)
 
   g_object_class_install_property (object_class, PROP_TYPE,
       g_param_spec_uint ("type", "Type", "Case type",
-          GST_CASE_UNKNOWN, GST_CASE_PREVIEW_AUDIO, GST_CASE_UNKNOWN,
+          GST_CASE_UNKNOWN, GST_CASE_PREVIEW, GST_CASE_UNKNOWN,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_SERVE,
+      g_param_spec_uint ("serve", "Serve", "Serve type",
+          GST_SERVE_NOTHING, GST_SERVE_AUDIO_STREAM, GST_SERVE_NOTHING,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_STREAM,

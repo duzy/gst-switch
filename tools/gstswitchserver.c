@@ -190,32 +190,6 @@ gst_switch_server_class_init (GstSwitchServerClass *klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_switch_server_finalize;
 }
 
-static void
-gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
-{
-  gint caseport = 0;
-
-  GST_SWITCH_SERVER_LOCK_CASES (srv);
-  caseport = cas->sink_port;
-  g_object_unref (cas);
-  srv->cases = g_list_remove (srv->cases, cas);
-  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
-
-  if (caseport)
-    gst_switch_server_revoke_port (caseport);
-
-  INFO ("removed case %p (%d cases left)", cas, g_list_length (srv->cases));
-}
-
-static void
-gst_switch_server_end_composite (GstComposite *composite, GstSwitchServer *srv)
-{
-  GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
-  g_object_unref (srv->composite);
-  srv->composite = NULL;
-  GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
-}
-
 static gint
 gst_switch_server_alloc_port (GstSwitchServer *srv)
 {
@@ -242,22 +216,57 @@ gst_switch_server_revoke_port (GstSwitchServer *srv, int port)
 }
 
 static void
-gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
+gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
 {
-  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (g_object_new (
-	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
-  GstCase *workcase;
-  GstCaseType type;
-  gchar *name;
-  gint port;
-  gint num = g_list_length (srv->cases);
+  gint caseport = 0;
 
+  GST_SWITCH_SERVER_LOCK_CASES (srv);
+  caseport = cas->sink_port;
+  g_object_unref (cas);
+  srv->cases = g_list_remove (srv->cases, cas);
+  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+
+  if (caseport)
+    gst_switch_server_revoke_port (srv, caseport);
+
+  INFO ("removed case %p (%d cases left)", cas, g_list_length (srv->cases));
+}
+
+static void
+gst_switch_server_end_composite (GstComposite *composite, GstSwitchServer *srv)
+{
+  GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+  g_object_unref (srv->composite);
+  srv->composite = NULL;
+  GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+}
+
+static GstCaseType
+gst_switch_server_suggest_case_type (GstSwitchServer *srv,
+    GstSwitchServeStreamType serve_type)
+{
+  GstCaseType type = GST_CASE_UNKNOWN;
+  gint num = g_list_length (srv->cases);
   // TODO: switching policy
   switch (num) {
   case 0:  type = GST_CASE_COMPOSITE_A; break;
   case 1:  type = GST_CASE_COMPOSITE_B; break;
-  default: type = GST_CASE_PREVIEW_VIDEO; break;
+  default: type = GST_CASE_PREVIEW; break;
   }
+  return type;
+}
+
+static void
+gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
+    GstSwitchServeStreamType serve_type)
+{
+  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (g_object_new (
+	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
+  GstCaseType type = gst_switch_server_suggest_case_type (srv, serve_type);
+  gint num_cases = g_list_length (srv->cases);
+  GstCase *workcase;
+  gchar *name;
+  gint port;
 
   switch (type) {
   case GST_CASE_COMPOSITE_A:
@@ -269,16 +278,16 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
     break;
   }
 
-  name = g_strdup_printf ("case-%d", num);
+  name = g_strdup_printf ("case-%d", num_cases);
   workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
-	  "type", type, "port", port, "stream", stream, NULL));
+	  "type", type, "port", port, "stream", stream,
+	  "serve", serve_type, NULL));
   g_free (name);
   g_object_unref (client);
   g_object_unref (stream);
 
-  switch (type) {
-  case GST_CASE_COMPOSITE_A:
-  case GST_CASE_COMPOSITE_B:
+  switch (serve_type) {
+  case GST_SERVE_VIDEO_STREAM:
     g_object_set (workcase,
 	"awidth",  srv->composite->a_width,
 	"aheight", srv->composite->a_height,
@@ -305,10 +314,14 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
   case GST_CASE_COMPOSITE_B:
     gst_switch_controller_tell_compose_port (srv->controller, port);
     /* fallthrough */
-  case GST_CASE_PREVIEW_VIDEO:
+    break;
+  case GST_CASE_PREVIEW:
     gst_switch_controller_tell_preview_port (srv->controller, port);
-    INFO ("New client sink to %d (%d cases) (%p)", port,
+    INFO ("New client (of type %d) sink to %d (%d cases) (%p)", type, port,
 	g_list_length (srv->cases), srv);
+    break;
+  default:
+    ERROR ("unknown case");
     break;
   }
   return;
@@ -457,7 +470,7 @@ gst_switch_server_video_acceptor (GstSwitchServer *srv)
       continue;
     }
 
-    gst_switch_server_serve (srv, socket);
+    gst_switch_server_serve (srv, socket, GST_SERVE_VIDEO_STREAM);
   }
 
   GST_SWITCH_SERVER_LOCK_VIDEO_ACCEPTOR (srv);
@@ -487,7 +500,7 @@ gst_switch_server_audio_acceptor (GstSwitchServer *srv)
       continue;
     }
 
-    gst_switch_server_serve (srv, socket);
+    gst_switch_server_serve (srv, socket, GST_SERVE_AUDIO_STREAM);
   }
 
   GST_SWITCH_SERVER_LOCK_AUDIO_ACCEPTOR (srv);
