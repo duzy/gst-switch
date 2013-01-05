@@ -440,11 +440,7 @@ gst_switch_ui_prepare_videos (GstSwitchUI * ui)
     gchar *s = NULL;
 
     g_variant_get (preview_ports, "(&s)", &s);
-    //INFO ("ports: %s", s);
-
     ports = g_variant_parse (G_VARIANT_TYPE ("ai"), s, NULL, NULL, &error);
-    //INFO ("ports: %p (%d)", ports, g_variant_n_children (ports));
-    //INFO ("ports: %s", g_variant_get_type_string (ports));
 
     num_previews = g_variant_n_children (ports);
     for (n = 0; n < num_previews; ++n) {
