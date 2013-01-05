@@ -252,7 +252,7 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
   gint port;
   gint num = g_list_length (srv->cases);
 
-  // TODO switching policy
+  // TODO: switching policy
   switch (num) {
   case 0:  type = GST_CASE_COMPOSITE_A; break;
   case 1:  type = GST_CASE_COMPOSITE_B; break;
@@ -262,17 +262,16 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
   switch (type) {
   case GST_CASE_COMPOSITE_A:
   case GST_CASE_COMPOSITE_B:
-    port = gst_switch_server_alloc_port (srv);
+    port = srv->composite->sink_port;
     break;
   default:
-    port = srv->composite->sink_port;
+    port = gst_switch_server_alloc_port (srv);
     break;
   }
 
   name = g_strdup_printf ("case-%d", num);
   workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
-	  "type", type, "port", port, "stream", stream,
-	  NULL));
+	  "type", type, "port", port, "stream", stream, NULL));
   g_free (name);
   g_object_unref (client);
   g_object_unref (stream);
