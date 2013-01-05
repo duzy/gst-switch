@@ -58,7 +58,7 @@ G_DEFINE_TYPE (GstCase, gst_case, GST_TYPE_WORKER);
 static void
 gst_case_init (GstCase * cas)
 {
-  cas->type = GST_CASE_PREVIEW;
+  cas->type = GST_CASE_UNKNOWN;
   cas->stream = NULL;
   cas->sink_port = 0;
 
@@ -182,10 +182,14 @@ gst_case_create_pipeline (GstCase * cas)
     g_string_append_printf (desc, "source. ! gdpdepay ! %s ! sink. ",
 	convert);
     break;
-  case GST_CASE_PREVIEW:
+  case GST_CASE_PREVIEW_VIDEO:
+  case GST_CASE_PREVIEW_AUDIO:
     g_string_append_printf (desc, "tcpserversink name=sink sync=false "
 	"port=%d ", cas->sink_port);
     g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
+    break;
+  case GST_CASE_UNKNOWN:
+    ERROR ("unknown case");
     break;
   }
 
@@ -254,7 +258,7 @@ gst_case_class_init (GstCaseClass * klass)
 
   g_object_class_install_property (object_class, PROP_TYPE,
       g_param_spec_uint ("type", "Type", "Case type",
-          GST_CASE_COMPOSITE_A, GST_CASE_PREVIEW, GST_CASE_PREVIEW,
+          GST_CASE_UNKNOWN, GST_CASE_PREVIEW_AUDIO, GST_CASE_UNKNOWN,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_STREAM,

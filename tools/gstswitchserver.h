@@ -47,7 +47,9 @@ struct _GstSwitchServerOpts
 {
   gchar * test_switch;
   gchar * record_filename;
-  gint input_port;
+  gchar * controller_address;
+  gint video_input_port;
+  gint audio_input_port;
   gint control_port;
 };
 
@@ -60,10 +62,15 @@ struct _GstSwitchServer
   GMainLoop *main_loop;
 
   GCancellable *cancellable;
-  GMutex acceptor_lock;
-  GThread *acceptor;
-  GSocket *acceptor_socket;
-  gint acceptor_port;
+  GMutex video_acceptor_lock;
+  GThread *video_acceptor;
+  GSocket *video_acceptor_socket;
+  gint video_acceptor_port;
+
+  GMutex audio_acceptor_lock;
+  GThread *audio_acceptor;
+  GSocket *audio_acceptor_socket;
+  gint audio_acceptor_port;
 
   GMutex controller_lock;
   GThread *controller_thread;

@@ -35,12 +35,15 @@
 #include "./gio/gsocketinputstream.h"
 
 #define GST_SWITCH_SERVER_DEFAULT_HOST "localhost"
-#define GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT 3000
-#define GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT 5000
+#define GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT	3000
+#define GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT	4000
+#define GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT	5000
 #define GST_SWITCH_SERVER_LISTEN_BACKLOG 5 /* client connection queue */
 
-#define GST_SWITCH_SERVER_LOCK_ACCEPTOR(srv) (g_mutex_lock (&(srv)->acceptor_lock))
-#define GST_SWITCH_SERVER_UNLOCK_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->acceptor_lock))
+#define GST_SWITCH_SERVER_LOCK_VIDEO_ACCEPTOR(srv) (g_mutex_lock (&(srv)->video_acceptor_lock))
+#define GST_SWITCH_SERVER_UNLOCK_VIDEO_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->video_acceptor_lock))
+#define GST_SWITCH_SERVER_LOCK_AUDIO_ACCEPTOR(srv) (g_mutex_lock (&(srv)->audio_acceptor_lock))
+#define GST_SWITCH_SERVER_UNLOCK_AUDIO_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->audio_acceptor_lock))
 #define GST_SWITCH_SERVER_LOCK_CONTROLLER(srv) (g_mutex_lock (&(srv)->controller_lock))
 #define GST_SWITCH_SERVER_UNLOCK_CONTROLLER(srv) (g_mutex_unlock (&(srv)->controller_lock))
 #define GST_SWITCH_SERVER_LOCK_CASES(srv) (g_mutex_lock (&(srv)->cases_lock))
@@ -52,24 +55,27 @@
 G_DEFINE_TYPE (GstSwitchServer, gst_switch_server, G_TYPE_OBJECT);
 
 GstSwitchServerOpts opts = {
-  NULL, NULL,
-  GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT,
+  NULL, NULL, NULL,
+  GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT,
+  GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT,
   GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
 };
 
 gboolean verbose;
 
 static GOptionEntry entries[] = {
-  {"verbose", 'v', 0,		G_OPTION_ARG_NONE, &verbose,
+  {"verbose",		'v', 0,	G_OPTION_ARG_NONE,   &verbose,
        "Prompt more messages", NULL},
-  {"test-switch", 't', 0,	G_OPTION_ARG_STRING, &opts.test_switch,
+  {"test-switch",	't', 0,	G_OPTION_ARG_STRING, &opts.test_switch,
        "Perform switch test", "OUTPUT"},
-  {"record", 'r', 0,		G_OPTION_ARG_STRING, &opts.record_filename,
+  {"record",		'r', 0,	G_OPTION_ARG_STRING, &opts.record_filename,
        "Enable recorder and record into the specified FILENAME",
        "FILENAME"},
-  {"input-port", 'p', 0,	G_OPTION_ARG_INT, &opts.input_port,
-       "Specify the listen port.", "NUM"},
-  {"control-port", 'p', 0,	G_OPTION_ARG_INT, &opts.control_port,
+  {"video-input-port",	'p', 0,	G_OPTION_ARG_INT,    &opts.video_input_port,
+       "Specify the video input listen port.", "NUM"},
+  {"audio-input-port",	'a', 0,	G_OPTION_ARG_INT,    &opts.audio_input_port,
+       "Specify the audio input listen port.", "NUM"},
+  {"control-port",	'p', 0,	G_OPTION_ARG_INT,    &opts.control_port,
        "Specify the control port.", "NUM"},
   { NULL }
 };
@@ -97,10 +103,13 @@ gst_switch_server_init (GstSwitchServer *srv)
   srv->host = g_strdup (GST_SWITCH_SERVER_DEFAULT_HOST);
 
   srv->cancellable = g_cancellable_new ();
-  srv->acceptor_port = GST_SWITCH_SERVER_DEFAULT_ACCEPTOR_PORT;
-  srv->acceptor_socket = NULL;
-  srv->acceptor = NULL;
-  srv->controller_port = GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT;
+  srv->video_acceptor_port = opts.video_input_port;
+  srv->video_acceptor_socket = NULL;
+  srv->video_acceptor = NULL;
+  srv->audio_acceptor_port = opts.audio_input_port;
+  srv->audio_acceptor_socket = NULL;
+  srv->audio_acceptor = NULL;
+  srv->controller_port = opts.control_port;
   srv->controller_socket = NULL;
   srv->controller_thread = NULL;
   srv->main_loop = NULL;
@@ -108,7 +117,8 @@ gst_switch_server_init (GstSwitchServer *srv)
   srv->composite = NULL;
   srv->alloc_port_count = 0;
 
-  g_mutex_init (&srv->acceptor_lock);
+  g_mutex_init (&srv->video_acceptor_lock);
+  g_mutex_init (&srv->audio_acceptor_lock);
   g_mutex_init (&srv->controller_lock);
   g_mutex_init (&srv->cases_lock);
   g_mutex_init (&srv->alloc_port_lock);
@@ -130,9 +140,9 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     srv->cancellable = NULL;
   }
 
-  if (srv->acceptor_socket) {
-    g_object_unref (srv->acceptor_socket);
-    srv->acceptor_socket = NULL;
+  if (srv->video_acceptor_socket) {
+    g_object_unref (srv->video_acceptor_socket);
+    srv->video_acceptor_socket = NULL;
   }
 
   if (srv->controller_socket) {
@@ -140,8 +150,12 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     srv->controller_socket = NULL;
   }
 
-  if (srv->acceptor) {
-    g_thread_join (srv->acceptor);
+  if (srv->video_acceptor) {
+    g_thread_join (srv->video_acceptor);
+  }
+
+  if (srv->audio_acceptor) {
+    g_thread_join (srv->audio_acceptor);
   }
 
   if (srv->controller_thread) {
@@ -158,7 +172,8 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     srv->composite = NULL;
   }
 
-  g_mutex_clear (&srv->acceptor_lock);
+  g_mutex_clear (&srv->video_acceptor_lock);
+  g_mutex_clear (&srv->audio_acceptor_lock);
   g_mutex_clear (&srv->controller_lock);
   g_mutex_clear (&srv->cases_lock);
   g_mutex_clear (&srv->alloc_port_lock);
@@ -201,7 +216,7 @@ gst_switch_server_alloc_port (GstSwitchServer *srv)
   gint port;
   g_mutex_lock (&srv->alloc_port_lock);
   srv->alloc_port_count += 1;
-  port = srv->acceptor_port + srv->alloc_port_count;
+  port = srv->video_acceptor_port + srv->alloc_port_count;
 
   // TODO: new policy for port allocation
 
@@ -221,7 +236,7 @@ gst_switch_server_revoke_port (GstSwitchServer *srv, int port)
 }
 
 static void
-gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
+gst_switch_server_serve_video (GstSwitchServer *srv, GSocket *client)
 {
   GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (g_object_new (
 	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
@@ -231,29 +246,42 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
   gint port;
   gint num = g_list_length (srv->cases);
 
+  // TODO switching policy
   switch (num) {
   case 0:  type = GST_CASE_COMPOSITE_A; break;
   case 1:  type = GST_CASE_COMPOSITE_B; break;
-  default: type = GST_CASE_PREVIEW; break;
+  default: type = GST_CASE_PREVIEW_VIDEO; break;
   }
 
-  if (type == GST_CASE_PREVIEW) {
+  switch (type) {
+  case GST_CASE_COMPOSITE_A:
+  case GST_CASE_COMPOSITE_B:
     port = gst_switch_server_alloc_port (srv);
-  } else {
+    break;
+  default:
     port = srv->composite->sink_port;
+    break;
   }
 
   name = g_strdup_printf ("case-%d", num);
   workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
 	  "type", type, "port", port, "stream", stream,
-	  "awidth", srv->composite->a_width,
-	  "aheight", srv->composite->a_height,
-	  "bwidth", srv->composite->b_width,
-	  "bheight", srv->composite->b_height,
 	  NULL));
   g_free (name);
   g_object_unref (client);
   g_object_unref (stream);
+
+  switch (type) {
+  case GST_CASE_COMPOSITE_A:
+  case GST_CASE_COMPOSITE_B:
+    g_object_set (workcase,
+	"awidth",  srv->composite->a_width,
+	"aheight", srv->composite->a_height,
+	"bwidth",  srv->composite->b_width,
+	"bheight", srv->composite->b_height,
+	NULL);
+  default: break;
+  }
 
   if (!gst_worker_prepare (GST_WORKER (workcase)))
     goto error_prepare_workcase;
@@ -271,8 +299,8 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
   case GST_CASE_COMPOSITE_A:
   case GST_CASE_COMPOSITE_B:
     gst_switch_controller_tell_compose_port (srv->controller, port);
-    break;
-  case GST_CASE_PREVIEW:
+    /* fallthrough */
+  case GST_CASE_PREVIEW_VIDEO:
     gst_switch_controller_tell_preview_port (srv->controller, port);
     INFO ("New client sink to %d (%d cases) (%p)", port,
 	g_list_length (srv->cases), srv);
@@ -285,10 +313,17 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
  error_prepare_workcase:
   {
     ERROR ("can't serve new client");
+    g_object_unref (stream);
     g_object_unref (workcase);
     gst_switch_server_revoke_port (srv, port);
     return;
   }
+}
+
+static void
+gst_switch_server_serve_audio (GstSwitchServer *srv, GSocket *client)
+{
+  INFO ("TODO: serving audio port");
 }
 
 static void
@@ -345,8 +380,7 @@ gst_switch_server_listen (GstSwitchServer *srv, gint port,
   g_object_unref (saddr);
 
   /* listen on the socket */
-  g_socket_set_listen_backlog (socket,
-      GST_SWITCH_SERVER_LISTEN_BACKLOG);
+  g_socket_set_listen_backlog (socket, GST_SWITCH_SERVER_LISTEN_BACKLOG);
   if (!g_socket_listen (socket, &err))
     goto socket_listen_failed;
 
@@ -405,32 +439,62 @@ gst_switch_server_listen (GstSwitchServer *srv, gint port,
 }
 
 static gpointer
-gst_switch_server_acceptor (GstSwitchServer *srv)
+gst_switch_server_video_acceptor (GstSwitchServer *srv)
 {
   GSocket *socket;
   GError *error;
   gint bound_port;
 
-  srv->acceptor_socket = gst_switch_server_listen (srv,
-      srv->acceptor_port, &bound_port);
-  if (!srv->acceptor_socket) {
+  srv->video_acceptor_socket = gst_switch_server_listen (srv,
+      srv->video_acceptor_port, &bound_port);
+  if (!srv->video_acceptor_socket) {
     return NULL;
   }
 
-  while (srv->acceptor && srv->acceptor_socket && srv->cancellable) {
-    socket = g_socket_accept (srv->acceptor_socket, srv->cancellable, &error);
+  while (srv->video_acceptor && srv->video_acceptor_socket && srv->cancellable) {
+    socket = g_socket_accept (srv->video_acceptor_socket, srv->cancellable, &error);
     if (!socket) {
       ERROR ("accept: %s", error->message);
       continue;
     }
 
-    gst_switch_server_serve (srv, socket);
+    gst_switch_server_serve_video (srv, socket);
   }
 
-  GST_SWITCH_SERVER_LOCK_ACCEPTOR (srv);
-  g_thread_unref (srv->acceptor);
-  srv->acceptor = NULL;
-  GST_SWITCH_SERVER_UNLOCK_ACCEPTOR (srv);
+  GST_SWITCH_SERVER_LOCK_VIDEO_ACCEPTOR (srv);
+  g_thread_unref (srv->video_acceptor);
+  srv->video_acceptor = NULL;
+  GST_SWITCH_SERVER_UNLOCK_VIDEO_ACCEPTOR (srv);
+  return NULL;
+}
+
+static gpointer
+gst_switch_server_audio_acceptor (GstSwitchServer *srv)
+{
+  GSocket *socket;
+  GError *error;
+  gint bound_port;
+
+  srv->audio_acceptor_socket = gst_switch_server_listen (srv,
+      srv->audio_acceptor_port, &bound_port);
+  if (!srv->audio_acceptor_socket) {
+    return NULL;
+  }
+
+  while (srv->audio_acceptor && srv->audio_acceptor_socket && srv->cancellable) {
+    socket = g_socket_accept (srv->audio_acceptor_socket, srv->cancellable, &error);
+    if (!socket) {
+      ERROR ("accept: %s", error->message);
+      continue;
+    }
+
+    gst_switch_server_serve_audio (srv, socket);
+  }
+
+  GST_SWITCH_SERVER_LOCK_AUDIO_ACCEPTOR (srv);
+  g_thread_unref (srv->audio_acceptor);
+  srv->audio_acceptor = NULL;
+  GST_SWITCH_SERVER_UNLOCK_AUDIO_ACCEPTOR (srv);
   return NULL;
 }
 
@@ -542,8 +606,11 @@ gst_switch_server_run (GstSwitchServer * srv)
   if (!gst_switch_server_prepare_composite (srv))
     goto error_prepare_composite;
 
-  srv->acceptor = g_thread_new ("switch-server-acceptor",
-      (GThreadFunc) gst_switch_server_acceptor, srv);
+  srv->video_acceptor = g_thread_new ("switch-server-video-acceptor",
+      (GThreadFunc) gst_switch_server_video_acceptor, srv);
+
+  srv->audio_acceptor = g_thread_new ("switch-server-audio-acceptor",
+      (GThreadFunc) gst_switch_server_audio_acceptor, srv);
 
   srv->controller_thread = g_thread_new ("switch-server-controller",
       (GThreadFunc) gst_switch_server_controller, srv);
@@ -552,7 +619,8 @@ gst_switch_server_run (GstSwitchServer * srv)
 
   g_main_loop_run (srv->main_loop);
 
-  g_thread_join (srv->acceptor);
+  g_thread_join (srv->video_acceptor);
+  g_thread_join (srv->audio_acceptor);
   g_thread_join (srv->controller_thread);
   return;
 

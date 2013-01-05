@@ -36,12 +36,13 @@
 
 typedef struct _GstCase GstCase;
 typedef struct _GstCaseClass GstCaseClass;
-typedef struct _GstSwitchServer GstSwitchServer;
 
 typedef enum {
+  GST_CASE_UNKNOWN,
   GST_CASE_COMPOSITE_A,
   GST_CASE_COMPOSITE_B,
-  GST_CASE_PREVIEW,
+  GST_CASE_PREVIEW_VIDEO,
+  GST_CASE_PREVIEW_AUDIO,
 } GstCaseType;
 
 struct _GstCase

@@ -7,5 +7,6 @@
     --gst-debug="convbin:0" \
     --gst-debug="tcpmixsrc:0" \
     --gst-debug="multiqueue:0" \
-    --input-port="3000" \
-    --control-port="4000" \
+    --video-input-port="3000" \
+    --audio-input-port="4000" \
+    --control-port="5000" \

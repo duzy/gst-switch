@@ -352,7 +352,7 @@ gst_switch_controller_init (GstSwitchController * controller)
   if (controller->bus_server == NULL)
     goto error_new_server;
 
-  INFO ("Switch Controller is listening at: %s",
+  INFO ("Controller is listening at: %s",
       g_dbus_server_get_client_address (controller->bus_server));
 
   g_signal_connect (controller->bus_server, "new-connection",
