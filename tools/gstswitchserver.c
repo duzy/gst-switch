@@ -193,10 +193,16 @@ gst_switch_server_class_init (GstSwitchServerClass *klass)
 static void
 gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
 {
+  gint caseport = 0;
+
   GST_SWITCH_SERVER_LOCK_CASES (srv);
+  caseport = cas->sink_port;
   g_object_unref (cas);
   srv->cases = g_list_remove (srv->cases, cas);
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+
+  if (caseport)
+    gst_switch_server_revoke_port (caseport);
 
   INFO ("removed case %p (%d cases left)", cas, g_list_length (srv->cases));
 }
@@ -236,7 +242,7 @@ gst_switch_server_revoke_port (GstSwitchServer *srv, int port)
 }
 
 static void
-gst_switch_server_serve_video (GstSwitchServer *srv, GSocket *client)
+gst_switch_server_serve (GstSwitchServer *srv, GSocket *client)
 {
   GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (g_object_new (
 	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
@@ -318,12 +324,6 @@ gst_switch_server_serve_video (GstSwitchServer *srv, GSocket *client)
     gst_switch_server_revoke_port (srv, port);
     return;
   }
-}
-
-static void
-gst_switch_server_serve_audio (GstSwitchServer *srv, GSocket *client)
-{
-  INFO ("TODO: serving audio port");
 }
 
 static void
@@ -458,7 +458,7 @@ gst_switch_server_video_acceptor (GstSwitchServer *srv)
       continue;
     }
 
-    gst_switch_server_serve_video (srv, socket);
+    gst_switch_server_serve (srv, socket);
   }
 
   GST_SWITCH_SERVER_LOCK_VIDEO_ACCEPTOR (srv);
@@ -488,7 +488,7 @@ gst_switch_server_audio_acceptor (GstSwitchServer *srv)
       continue;
     }
 
-    gst_switch_server_serve_audio (srv, socket);
+    gst_switch_server_serve (srv, socket);
   }
 
   GST_SWITCH_SERVER_LOCK_AUDIO_ACCEPTOR (srv);
