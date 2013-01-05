@@ -194,6 +194,9 @@ gst_case_create_pipeline (GstCase * cas)
     g_string_append_printf (desc, "source. ! gdpdepay ! %s ! sink. ",
 	convert);
     break;
+  case GST_CASE_COMPOSITE_a:
+    // TODO: ...
+    break;
   case GST_CASE_PREVIEW:
     g_string_append_printf (desc, "tcpserversink name=sink sync=false "
 	"port=%d ", cas->sink_port);

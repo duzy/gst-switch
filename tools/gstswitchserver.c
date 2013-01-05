@@ -90,7 +90,7 @@ gst_switch_server_parse_args (int *argc, char **argv[])
   g_option_context_add_main_entries (context, entries, "gst-switch");
   g_option_context_add_group (context, gst_init_get_option_group ());
   if (!g_option_context_parse (context, argc, argv, &error)) {
-    g_print ("option parsing failed: %s\n", error->message);
+    ERROR ("option parsing failed: %s", error->message);
     exit (1);
   }
 
@@ -247,12 +247,44 @@ gst_switch_server_suggest_case_type (GstSwitchServer *srv,
 {
   GstCaseType type = GST_CASE_UNKNOWN;
   gint num = g_list_length (srv->cases);
-  // TODO: switching policy
-  switch (num) {
-  case 0:  type = GST_CASE_COMPOSITE_A; break;
-  case 1:  type = GST_CASE_COMPOSITE_B; break;
-  default: type = GST_CASE_PREVIEW; break;
+  gboolean has_composite_A = FALSE;
+  gboolean has_composite_B = FALSE;
+  gboolean has_composite_a = FALSE;
+  GList *item = srv->cases;
+
+  for (; item; item = g_list_next (item)) {
+    switch (GST_CASE (item->data)->serve_type) {
+    case GST_SERVE_VIDEO_STREAM:
+    {
+      switch (GST_CASE (item->data)->type) {
+      case GST_CASE_COMPOSITE_A: has_composite_A = TRUE; break;
+      case GST_CASE_COMPOSITE_B: has_composite_B = TRUE; break;
+      default: break;
+      }
+    } break;
+    case GST_SERVE_AUDIO_STREAM:
+    {
+      if (GST_CASE (item->data)->type == GST_CASE_COMPOSITE_a)
+	has_composite_a = TRUE;
+    } break;
+    case GST_SERVE_NOTHING: break;
+    }
   }
+
+  switch (serve_type) {
+  case GST_SERVE_VIDEO_STREAM:
+    if (!has_composite_A)	type = GST_CASE_COMPOSITE_A;
+    else if (!has_composite_B)	type = GST_CASE_COMPOSITE_B;
+    else			type = GST_CASE_PREVIEW;
+    break;
+  case GST_SERVE_AUDIO_STREAM:
+    if (!has_composite_a)	type = GST_CASE_COMPOSITE_a;
+    break;
+  case GST_SERVE_NOTHING: break;
+  }
+
+  // TODO: better switching policy?
+
   return type;
 }
 
