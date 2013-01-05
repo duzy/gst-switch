@@ -604,6 +604,7 @@ GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv)
   GList *item;
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   for (item = srv->cases; item; item = g_list_next (item)) {
+    if (GST_CASE (item->data)->type != GST_CASE_PREVIEW) continue;
     a = g_array_append_val (a, GST_CASE (item->data)->sink_port);
   }
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
