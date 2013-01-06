@@ -43,6 +43,8 @@ enum
   PROP_B_Y,
   PROP_B_WIDTH,
   PROP_B_HEIGHT,
+  PROP_WIDTH,
+  PROP_HEIGHT,
 };
 
 enum
@@ -67,6 +69,8 @@ gst_composite_init (GstComposite * composite)
   composite->b_y = GST_SWITCH_COMPOSITE_DEFAULT_B_Y;
   composite->b_width = GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH;
   composite->b_height = GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT;
+  composite->width = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
+  composite->height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
 
   INFO ("Composite initialized");
 }
@@ -112,6 +116,12 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
   case PROP_B_HEIGHT:
     composite->b_height = g_value_get_uint (value);
     break;
+  case PROP_WIDTH:
+    composite->width = g_value_get_uint (value);
+    break;
+  case PROP_HEIGHT:
+    composite->height = g_value_get_uint (value);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
 	pspec);
@@ -150,6 +160,12 @@ gst_composite_get_property (GstComposite * composite, guint property_id,
     break;
   case PROP_B_HEIGHT:
     g_value_set_uint (value, composite->b_height);
+    break;
+  case PROP_WIDTH:
+    g_value_set_uint (value, composite->width);
+    break;
+  case PROP_HEIGHT:
+    g_value_set_uint (value, composite->height);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
@@ -201,7 +217,8 @@ gst_composite_create_pipeline (GstComposite * composite)
     g_string_append_printf (desc, "filesink name=record location=%s ",
 	opts.record_filename);
 #else
-    g_string_append_printf (desc, "intervideosink name=record "
+    g_string_append_printf (desc, "gdpdepay name=record ");
+    g_string_append_printf (desc, "record. ! intervideosink "
 	"channel=composite_video sync=false ");
 #endif
   }
@@ -309,6 +326,16 @@ gst_composite_class_init (GstCompositeClass * klass)
   g_object_class_install_property (object_class, PROP_B_HEIGHT,
       g_param_spec_uint ("bheight", "B Height", "Channel B frame height",
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_WIDTH,
+      g_param_spec_uint ("width", "Composite Width", "Output frame width",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_HEIGHT,
+      g_param_spec_uint ("height", "Composite Height", "Output frame height",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_composite_null;

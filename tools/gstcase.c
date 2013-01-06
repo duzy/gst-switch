@@ -195,8 +195,8 @@ gst_case_create_pipeline (GstCase * cas)
 	convert);
     break;
   case GST_CASE_COMPOSITE_a:
-    g_string_append_printf (desc, "interaudiosink name=sink channel=%s ",
-	"composite_audio");
+    g_string_append_printf (desc, "interaudiosink name=sink "
+	"channel=composite_audio ");
     g_string_append_printf (desc, "source. ! sink. ");
     break;
   case GST_CASE_PREVIEW:

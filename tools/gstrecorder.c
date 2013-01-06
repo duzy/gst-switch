@@ -30,12 +30,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gstswitchserver.h"
+#include "gstcomposite.h"
 #include "gstrecorder.h"
 
 enum
 {
   PROP_0,
   PROP_PORT,
+  PROP_WIDTH,
+  PROP_HEIGHT,
 };
 
 enum
@@ -55,6 +58,8 @@ static void
 gst_recorder_init (GstRecorder * rec)
 {
   INFO ("Recorder initialized");
+  rec->width = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
+  rec->height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
 }
 
 static void
@@ -74,6 +79,12 @@ gst_recorder_get_property (GstRecorder *rec, guint property_id,
   case PROP_PORT:
     g_value_set_uint (value, rec->sink_port);
     break;
+  case PROP_WIDTH:
+    g_value_set_uint (value, rec->width);
+    break;
+  case PROP_HEIGHT:
+    g_value_set_uint (value, rec->height);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (rec, property_id, pspec);
     break;
@@ -87,6 +98,12 @@ gst_recorder_set_property (GstRecorder *rec, guint property_id,
   switch (property_id) {
   case PROP_PORT:
     rec->sink_port = g_value_get_uint (value);
+    break;
+  case PROP_WIDTH:
+    rec->width = g_value_get_uint (value);
+    break;
+  case PROP_HEIGHT:
+    rec->height = g_value_get_uint (value);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (rec), property_id, pspec);
@@ -107,8 +124,10 @@ gst_recorder_create_pipeline (GstRecorder * rec)
       "channel=composite_video ");
   g_string_append_printf (desc, "interaudiosrc name=source_audio "
       "channel=composite_audio ");
-  g_string_append_printf (desc, "source_video. ! queue ! autovideosink ");
-  g_string_append_printf (desc, "source_audio. ! queue ! autoaudiosink ");
+  g_string_append_printf (desc, "source_video.!video/x-raw,width=%d,height=%d"
+      "! queue ! autovideosink ", rec->width, rec->height);
+  g_string_append_printf (desc, "source_audio. "
+      "! queue ! autoaudiosink ");
 
   if (verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -164,6 +183,16 @@ gst_recorder_class_init (GstRecorderClass * klass)
       g_param_spec_uint ("port", "Port", "Sink port",
           GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
 	  GST_SWITCH_MIN_SINK_PORT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_WIDTH,
+      g_param_spec_uint ("width", "Input Width", "Input video frame width",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_HEIGHT,
+      g_param_spec_uint ("height", "Input Height", "Input video frame height",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_recorder_null;

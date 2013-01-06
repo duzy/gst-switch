@@ -66,6 +66,9 @@ struct _GstComposite
   guint b_y;
   guint b_width;
   guint b_height;
+
+  guint width;
+  guint height;
 };
 
 struct _GstCompositeClass

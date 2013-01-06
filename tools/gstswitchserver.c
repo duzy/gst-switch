@@ -365,6 +365,7 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   switch (type) {
   case GST_CASE_COMPOSITE_A:
   case GST_CASE_COMPOSITE_B:
+  case GST_CASE_COMPOSITE_a:
     gst_switch_controller_tell_compose_port (srv->controller, port);
     /* fallthrough */
     break;
@@ -644,12 +645,15 @@ static gboolean
 gst_switch_server_prepare_recorder (GstSwitchServer * srv)
 {
   gint port = gst_switch_server_alloc_port (srv);
+  guint w = 640, h = 480;
 
-  INFO ("Recorder sink to %d", port);
+  //g_object_get (srv->composite, "width", &w, "height", &h, NULL);
+
+  INFO ("Recorder sink to %d (%dx%d)", port, w, h);
 
   GST_SWITCH_SERVER_LOCK_RECORDER (srv);
   srv->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
-	  "name", "recorder", "port", port, NULL));
+	  "name", "recorder", "port", port, "width", w, "height", h, NULL));
   GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
 
   if (!gst_worker_prepare (GST_WORKER (srv->recorder)))
