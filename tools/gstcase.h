@@ -1,5 +1,5 @@
-/* GstCase
- * Copyright (C) 2012 Duzy Chan <code@duzy.info>
+/* GstSwitch
+ * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

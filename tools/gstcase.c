@@ -1,5 +1,5 @@
-/* GstCase
- * Copyright (C) 2012 Duzy Chan <code@duzy.info>
+/* GstSwitch
+ * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -195,7 +195,9 @@ gst_case_create_pipeline (GstCase * cas)
 	convert);
     break;
   case GST_CASE_COMPOSITE_a:
-    // TODO: ...
+    g_string_append_printf (desc, "interaudiosink name=sink channel=%s ",
+	"composite_audio");
+    g_string_append_printf (desc, "source. ! sink. ");
     break;
   case GST_CASE_PREVIEW:
     g_string_append_printf (desc, "tcpserversink name=sink sync=false "
@@ -250,7 +252,7 @@ gst_case_null (GstCase *cas)
 {
   GstWorker *worker = GST_WORKER (cas);
 
-  INFO ("null case: %s (%p)", worker->name, cas);
+  INFO ("null: %s (%p)", worker->name, cas);
 
   g_signal_emit (cas, gst_case_signals[SIGNAL_END_CASE], 0);
 }

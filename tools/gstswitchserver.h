@@ -1,5 +1,5 @@
-/* GstSwitchServer
- * Copyright (C) 2012 Duzy Chan <code@duzy.info>
+/* GstSwitch
+ * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -27,6 +27,7 @@
 #define __GST_SWITCH_SRV_H__by_Duzy_Chan__ 1
 #include <gio/gio.h>
 #include "gstcomposite.h"
+#include "gstrecorder.h"
 #include "gstswitchcontroller.h"
 #include "../logutils.h"
 
@@ -86,6 +87,9 @@ struct _GstSwitchServer
 
   GMutex composite_lock;
   GstComposite *composite;
+
+  GMutex recorder_lock;
+  GstRecorder *recorder;
 };
 
 struct _GstSwitchServerClass

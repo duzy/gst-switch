@@ -27,88 +27,88 @@
 #include "config.h"
 #endif
 
-#include "gstvideodisp.h"
+#include <stdlib.h>
+#include <string.h>
 #include "gstswitchserver.h"
-#include <gst/video/videooverlay.h>
-
-#define parent_class gst_video_disp_parent_class
+#include "gstrecorder.h"
 
 enum
 {
   PROP_0,
   PROP_PORT,
-  PROP_HANDLE,
 };
 
+enum
+{
+  SIGNAL_END_RECORDER,
+  SIGNAL__LAST,
+};
+
+static guint gst_recorder_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
-G_DEFINE_TYPE (GstVideoDisp, gst_video_disp, GST_TYPE_WORKER);
+#define parent_class gst_recorder_parent_class
+
+G_DEFINE_TYPE (GstRecorder, gst_recorder, GST_TYPE_WORKER);
 
 static void
-gst_video_disp_init (GstVideoDisp *disp)
+gst_recorder_init (GstRecorder * rec)
 {
-  INFO ("Video display initialized");
+  INFO ("Recorder initialized");
 }
 
 static void
-gst_video_disp_finalize (GstVideoDisp *disp)
+gst_recorder_finalize (GstRecorder * rec)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
-    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (disp));
+    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (rec));
 
-  INFO ("Video display finalized");
+  INFO ("Recorder finalized");
 }
 
 static void
-gst_video_disp_set_property (GstVideoDisp *disp, guint property_id,
-    const GValue *value, GParamSpec *pspec)
+gst_recorder_get_property (GstRecorder *rec, guint property_id,
+    GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   case PROP_PORT:
-    disp->port = g_value_get_uint (value);
-    break;
-  case PROP_HANDLE:
-    disp->handle = g_value_get_ulong (value);
+    g_value_set_uint (value, rec->sink_port);
     break;
   default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (rec, property_id, pspec);
     break;
   }
 }
 
 static void
-gst_video_disp_get_property (GstVideoDisp *disp, guint property_id,
-    GValue *value, GParamSpec *pspec)
+gst_recorder_set_property (GstRecorder *rec, guint property_id,
+    const GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   case PROP_PORT:
-    g_value_set_uint (value, disp->port);
-    break;
-  case PROP_HANDLE:
-    g_value_set_ulong (value, disp->handle);
+    rec->sink_port = g_value_get_uint (value);
     break;
   default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (rec), property_id, pspec);
     break;
   }
 }
 
 static GstElement *
-gst_video_disp_create_pipeline (GstVideoDisp *disp)
+gst_recorder_create_pipeline (GstRecorder * rec)
 {
   GstElement *pipeline;
   GError *error = NULL;
   GString *desc;
 
-  INFO ("display video %d", disp->port);
-
   desc = g_string_new ("");
 
-  g_string_append_printf (desc, "tcpclientsrc name=source "
-      "port=%d ", disp->port);
-  g_string_append_printf (desc, "! gdpdepay ");
-  g_string_append_printf (desc, "! videoconvert ");
-  g_string_append_printf (desc, "! xvimagesink name=sink ");
+  g_string_append_printf (desc, "intervideosrc name=source_video "
+      "channel=composite_video ");
+  g_string_append_printf (desc, "interaudiosrc name=source_audio "
+      "channel=composite_audio ");
+  g_string_append_printf (desc, "source_video. ! queue ! autovideosink ");
+  g_string_append_printf (desc, "source_audio. ! queue ! autoaudiosink ");
 
   if (verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -125,30 +125,40 @@ gst_video_disp_create_pipeline (GstVideoDisp *disp)
   return pipeline;
 }
 
-static void
-gst_video_disp_null (GstVideoDisp *disp)
+static gboolean
+gst_recorder_prepare (GstRecorder *rec)
 {
+  GstWorker *worker = GST_WORKER (rec);
+
+  (void) worker;
+
+  return TRUE;
 }
 
 static void
-gst_video_disp_prepare (GstVideoDisp *disp)
+gst_recorder_null (GstRecorder *rec)
 {
-  GstWorker *worker = GST_WORKER (disp);
-  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (worker->sink),
-      disp->handle);
+  GstWorker *worker = GST_WORKER (rec);
 
-  INFO ("prepared display video on %ld", disp->handle);
+  INFO ("null: %s (%p)", worker->name, rec);
+
+  g_signal_emit (rec, gst_recorder_signals[SIGNAL_END_RECORDER], 0);
 }
 
 static void
-gst_video_disp_class_init (GstVideoDispClass *klass)
+gst_recorder_class_init (GstRecorderClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
-  object_class->finalize = (GObjectFinalizeFunc) gst_video_disp_finalize;
-  object_class->set_property = (GObjectSetPropertyFunc) gst_video_disp_set_property;
-  object_class->get_property = (GObjectGetPropertyFunc) gst_video_disp_get_property;
+  object_class->finalize = (GObjectFinalizeFunc) gst_recorder_finalize;
+  object_class->set_property = (GObjectSetPropertyFunc) gst_recorder_set_property;
+  object_class->get_property = (GObjectGetPropertyFunc) gst_recorder_get_property;
+
+  gst_recorder_signals[SIGNAL_END_RECORDER] =
+    g_signal_new ("end-recorder", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstRecorderClass, end_recorder),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",
@@ -156,12 +166,8 @@ gst_video_disp_class_init (GstVideoDispClass *klass)
 	  GST_SWITCH_MIN_SINK_PORT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  g_object_class_install_property (object_class, PROP_HANDLE,
-      g_param_spec_ulong ("handle", "Handle", "Window Handle",
-          0, ((gulong)-1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_video_disp_null;
-  worker_class->prepare = (GstWorkerPrepareFunc) gst_video_disp_prepare;
+  worker_class->null_state = (GstWorkerNullStateFunc) gst_recorder_null;
+  worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;
   worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_video_disp_create_pipeline;
+    gst_recorder_create_pipeline;
 }

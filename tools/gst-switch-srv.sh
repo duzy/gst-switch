@@ -10,3 +10,4 @@
     --video-input-port="3000" \
     --audio-input-port="4000" \
     --control-port="5000" \
+    --record="/dev/null"

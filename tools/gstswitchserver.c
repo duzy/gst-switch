@@ -1,5 +1,5 @@
-/* GstSwitchServer
- * Copyright (C) 2012 Duzy Chan <code@duzy.info>
+/* GstSwitch
+ * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -38,7 +38,7 @@
 #define GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT	3000
 #define GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT	4000
 #define GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT	5000
-#define GST_SWITCH_SERVER_LISTEN_BACKLOG 5 /* client connection queue */
+#define GST_SWITCH_SERVER_LISTEN_BACKLOG 8 /* client connection queue */
 
 #define GST_SWITCH_SERVER_LOCK_VIDEO_ACCEPTOR(srv) (g_mutex_lock (&(srv)->video_acceptor_lock))
 #define GST_SWITCH_SERVER_UNLOCK_VIDEO_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->video_acceptor_lock))
@@ -46,10 +46,12 @@
 #define GST_SWITCH_SERVER_UNLOCK_AUDIO_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->audio_acceptor_lock))
 #define GST_SWITCH_SERVER_LOCK_CONTROLLER(srv) (g_mutex_lock (&(srv)->controller_lock))
 #define GST_SWITCH_SERVER_UNLOCK_CONTROLLER(srv) (g_mutex_unlock (&(srv)->controller_lock))
-#define GST_SWITCH_SERVER_LOCK_CASES(srv) (g_mutex_lock (&(srv)->cases_lock))
-#define GST_SWITCH_SERVER_UNLOCK_CASES(srv) (g_mutex_unlock (&(srv)->cases_lock))
 #define GST_SWITCH_SERVER_LOCK_COMPOSITE(srv) (g_mutex_lock (&(srv)->composite_lock))
 #define GST_SWITCH_SERVER_UNLOCK_COMPOSITE(srv) (g_mutex_unlock (&(srv)->composite_lock))
+#define GST_SWITCH_SERVER_LOCK_RECORDER(srv) (g_mutex_lock (&(srv)->recorder_lock))
+#define GST_SWITCH_SERVER_UNLOCK_RECORDER(srv) (g_mutex_unlock (&(srv)->recorder_lock))
+#define GST_SWITCH_SERVER_LOCK_CASES(srv) (g_mutex_lock (&(srv)->cases_lock))
+#define GST_SWITCH_SERVER_UNLOCK_CASES(srv) (g_mutex_unlock (&(srv)->cases_lock))
 
 #define gst_switch_server_parent_class parent_class
 G_DEFINE_TYPE (GstSwitchServer, gst_switch_server, G_TYPE_OBJECT);
@@ -112,9 +114,11 @@ gst_switch_server_init (GstSwitchServer *srv)
   srv->controller_port = opts.control_port;
   srv->controller_socket = NULL;
   srv->controller_thread = NULL;
+  srv->controller = NULL;
   srv->main_loop = NULL;
   srv->cases = NULL;
   srv->composite = NULL;
+  srv->recorder = NULL;
   srv->alloc_port_count = 0;
 
   g_mutex_init (&srv->video_acceptor_lock);
@@ -123,6 +127,7 @@ gst_switch_server_init (GstSwitchServer *srv)
   g_mutex_init (&srv->cases_lock);
   g_mutex_init (&srv->alloc_port_lock);
   g_mutex_init (&srv->composite_lock);
+  g_mutex_init (&srv->recorder_lock);
 }
 
 static void
@@ -172,15 +177,23 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     srv->composite = NULL;
   }
 
+  if (srv->recorder) {
+    g_object_unref (srv->recorder);
+    srv->recorder = NULL;
+  }
+
   g_mutex_clear (&srv->video_acceptor_lock);
   g_mutex_clear (&srv->audio_acceptor_lock);
   g_mutex_clear (&srv->controller_lock);
   g_mutex_clear (&srv->cases_lock);
   g_mutex_clear (&srv->alloc_port_lock);
   g_mutex_clear (&srv->composite_lock);
+  g_mutex_clear (&srv->recorder_lock);
 
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (srv));
+
+  INFO ("SwitchServer finalized");
 }
 
 static void
@@ -241,12 +254,20 @@ gst_switch_server_end_composite (GstComposite *composite, GstSwitchServer *srv)
   GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
 }
 
+static void
+gst_switch_server_end_recorder (GstRecorder *recorder, GstSwitchServer *srv)
+{
+  GST_SWITCH_SERVER_LOCK_RECORDER (srv);
+  g_object_unref (srv->recorder);
+  srv->recorder = NULL;
+  GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+}
+
 static GstCaseType
 gst_switch_server_suggest_case_type (GstSwitchServer *srv,
     GstSwitchServeStreamType serve_type)
 {
   GstCaseType type = GST_CASE_UNKNOWN;
-  gint num = g_list_length (srv->cases);
   gboolean has_composite_A = FALSE;
   gboolean has_composite_B = FALSE;
   gboolean has_composite_a = FALSE;
@@ -590,6 +611,7 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv)
   gint port = gst_switch_server_alloc_port (srv);
 
   INFO ("Compose sink to %d", port);
+
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
   srv->composite = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
 	  "name", "composite", "port", port, NULL));
@@ -614,6 +636,36 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv)
     g_object_unref (srv->composite);
     srv->composite = NULL;
     GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+    return FALSE;
+  }
+}
+
+static gboolean
+gst_switch_server_prepare_recorder (GstSwitchServer * srv)
+{
+  gint port = gst_switch_server_alloc_port (srv);
+
+  INFO ("Recorder sink to %d", port);
+
+  GST_SWITCH_SERVER_LOCK_RECORDER (srv);
+  srv->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
+	  "name", "recorder", "port", port, NULL));
+  GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+
+  if (!gst_worker_prepare (GST_WORKER (srv->recorder)))
+    goto error_prepare_recorder;
+
+  g_signal_connect (srv->recorder, "end-recorder",
+      G_CALLBACK (gst_switch_server_end_recorder), srv);
+
+  gst_worker_start (GST_WORKER (srv->recorder));
+
+  return TRUE;
+
+  /* Errors Handling */
+
+ error_prepare_recorder:
+  {
     return FALSE;
   }
 }
@@ -648,6 +700,9 @@ gst_switch_server_run (GstSwitchServer * srv)
 {
   srv->main_loop = g_main_loop_new (NULL, TRUE);
 
+  if (!gst_switch_server_prepare_recorder (srv))
+    goto error_prepare_recorder;
+
   if (!gst_switch_server_prepare_composite (srv))
     goto error_prepare_composite;
 
@@ -670,6 +725,12 @@ gst_switch_server_run (GstSwitchServer * srv)
   return;
 
   /* Errors Handling */
+ error_prepare_recorder:
+  {
+    ERROR ("failed to prepare recorder");
+    return;
+  }
+
  error_prepare_composite:
   {
     ERROR ("failed to prepare composite");

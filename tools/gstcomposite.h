@@ -1,5 +1,5 @@
-/* GstComposite
- * Copyright (C) 2012 Duzy Chan <code@duzy.info>
+/* GstSwitch
+ * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,8 +33,12 @@
 #define GST_IS_COMPOSITE(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_COMPOSITE, GstComposite))
 #define GST_IS_COMPOSITE_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_COMPOSITE, GstCompositeClass))
 
+#define GST_SWITCH_COMPOSITE_DEFAULT_A_X	0
+#define GST_SWITCH_COMPOSITE_DEFAULT_A_Y	0
 #define GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH	640
 #define GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT	480
+#define GST_SWITCH_COMPOSITE_DEFAULT_B_X	20
+#define GST_SWITCH_COMPOSITE_DEFAULT_B_Y	20
 #define GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH	100
 #define GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT	80
 
@@ -54,8 +58,12 @@ struct _GstComposite
 
   gint sink_port;
 
+  guint a_x;
+  guint a_y;
   guint a_width;
   guint a_height;
+  guint b_x;
+  guint b_y;
   guint b_width;
   guint b_height;
 };

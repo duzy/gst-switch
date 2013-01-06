@@ -1,7 +1,7 @@
 bin_PROGRAMS = gst-switch-srv gst-switch-ui
 
 gst_switch_srv_SOURCES = gstworker.c gstswitchserver.c gstcase.c \
-  gstcomposite.c gstswitchcontroller.c \
+  gstcomposite.c gstswitchcontroller.c gstrecorder.c \
   gio/gsocketinputstream.c
 gst_switch_srv_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) \
   $(GST_PLUGINS_BASE_CFLAGS) -DLOG_PREFIX="\"./tools\""

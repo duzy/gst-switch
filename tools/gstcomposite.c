@@ -1,5 +1,5 @@
-/* GstComposite
- * Copyright (C) 2012 Duzy Chan <code@duzy.info>
+/* GstSwitch
+ * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,8 +35,12 @@ enum
 {
   PROP_0,
   PROP_PORT,
+  PROP_A_X,
+  PROP_A_Y,
   PROP_A_WIDTH,
   PROP_A_HEIGHT,
+  PROP_B_X,
+  PROP_B_Y,
   PROP_B_WIDTH,
   PROP_B_HEIGHT,
 };
@@ -55,8 +59,12 @@ G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 static void
 gst_composite_init (GstComposite * composite)
 {
+  composite->a_x = GST_SWITCH_COMPOSITE_DEFAULT_A_X;
+  composite->a_y = GST_SWITCH_COMPOSITE_DEFAULT_A_Y;
   composite->a_width = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
   composite->a_height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
+  composite->b_x = GST_SWITCH_COMPOSITE_DEFAULT_B_X;
+  composite->b_y = GST_SWITCH_COMPOSITE_DEFAULT_B_Y;
   composite->b_width = GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH;
   composite->b_height = GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT;
 
@@ -80,11 +88,23 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
   case PROP_PORT:
     composite->sink_port = g_value_get_uint (value);
     break;
+  case PROP_A_X:
+    composite->a_x = g_value_get_uint (value);
+    break;
+  case PROP_A_Y:
+    composite->a_y = g_value_get_uint (value);
+    break;
   case PROP_A_WIDTH:
     composite->a_width = g_value_get_uint (value);
     break;
   case PROP_A_HEIGHT:
     composite->a_height = g_value_get_uint (value);
+    break;
+  case PROP_B_X:
+    composite->b_x = g_value_get_uint (value);
+    break;
+  case PROP_B_Y:
+    composite->b_y = g_value_get_uint (value);
     break;
   case PROP_B_WIDTH:
     composite->b_width = g_value_get_uint (value);
@@ -107,11 +127,23 @@ gst_composite_get_property (GstComposite * composite, guint property_id,
   case PROP_PORT:
     g_value_set_uint (value, composite->sink_port);
     break;
+  case PROP_A_X:
+    g_value_set_uint (value, composite->a_x);
+    break;
+  case PROP_A_Y:
+    g_value_set_uint (value, composite->a_y);
+    break;
   case PROP_A_WIDTH:
     g_value_set_uint (value, composite->a_width);
     break;
   case PROP_A_HEIGHT:
     g_value_set_uint (value, composite->a_height);
+    break;
+  case PROP_B_X:
+    g_value_set_uint (value, composite->b_x);
+    break;
+  case PROP_B_Y:
+    g_value_set_uint (value, composite->b_y);
     break;
   case PROP_B_WIDTH:
     g_value_set_uint (value, composite->b_width);
@@ -132,7 +164,10 @@ gst_composite_create_pipeline (GstComposite * composite)
   GString *desc;
   GstElement *pipeline;
   GError *error = NULL;
-  gint ax = 0, ay = 0, bx = 20, by = 20;
+  gint ax = composite->a_x;
+  gint ay = composite->a_y;
+  gint bx = composite->b_x;
+  gint by = composite->b_y;
 
   desc = g_string_new ("");
 
@@ -140,8 +175,8 @@ gst_composite_create_pipeline (GstComposite * composite)
       "channel=composite_a ");
   g_string_append_printf (desc, "intervideosrc name=source_b "
       "channel=composite_b ");
-  g_string_append_printf (desc, "tcpserversink name=sink port=%d ",
-      composite->sink_port);
+  g_string_append_printf (desc, "tcpserversink name=sink sync=false "
+      "port=%d ", composite->sink_port);
   g_string_append_printf (desc, "videomixer name=compose "
       "sink_0::zorder=0 "
       "sink_0::xpos=%d "
@@ -162,8 +197,13 @@ gst_composite_create_pipeline (GstComposite * composite)
 
   if (opts.record_filename) {
     g_string_append_printf (desc, "result. ! queue ! record. ");
+#if 0
     g_string_append_printf (desc, "filesink name=record location=%s ",
 	opts.record_filename);
+#else
+    g_string_append_printf (desc, "intervideosink name=record "
+	"channel=composite_video sync=false ");
+#endif
   }
 
   if (verbose)
@@ -205,7 +245,7 @@ gst_composite_null (GstComposite *composite)
 {
   GstWorker *worker = GST_WORKER (composite);
 
-  INFO ("null composite: %s (%p)", worker->name, composite);
+  INFO ("null: %s (%p)", worker->name, composite);
 
   g_signal_emit (composite, gst_composite_signals[SIGNAL_END_COMPOSITE], 0);
 }
@@ -231,6 +271,16 @@ gst_composite_class_init (GstCompositeClass * klass)
 	  GST_SWITCH_MIN_SINK_PORT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (object_class, PROP_A_X,
+      g_param_spec_uint ("ax", "A xpos", "Channel A frame xpos",
+          0, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_X,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_A_Y,
+      g_param_spec_uint ("ay", "A ypos", "Channel A frame ypos",
+          0, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_Y,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   g_object_class_install_property (object_class, PROP_A_WIDTH,
       g_param_spec_uint ("awidth", "A Width", "Channel A frame width",
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
@@ -239,6 +289,16 @@ gst_composite_class_init (GstCompositeClass * klass)
   g_object_class_install_property (object_class, PROP_A_HEIGHT,
       g_param_spec_uint ("aheight", "A Height", "Channel A frame height",
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_B_X,
+      g_param_spec_uint ("bx", "B xpos", "Channel B frame xpos",
+          0, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_X,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_B_Y,
+      g_param_spec_uint ("by", "B ypos", "Channel B frame ypos",
+          0, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_Y,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_WIDTH,
