@@ -117,6 +117,12 @@ gst_recorder_create_pipeline (GstRecorder * rec)
   GstElement *pipeline;
   GError *error = NULL;
   GString *desc;
+  gchar *filename = opts.record_filename;
+  if (!filename) {
+    filename = "/dev/null";
+  }
+
+  INFO ("recording to %s", filename);
 
   desc = g_string_new ("");
 
@@ -124,10 +130,16 @@ gst_recorder_create_pipeline (GstRecorder * rec)
       "channel=composite_video ");
   g_string_append_printf (desc, "interaudiosrc name=source_audio "
       "channel=composite_audio ");
-  g_string_append_printf (desc, "source_video.!video/x-raw,width=%d,height=%d"
-      "! queue ! autovideosink ", rec->width, rec->height);
+  g_string_append_printf (desc, "source_video. "
+      "! video/x-raw,width=%d,height=%d "
+      "! queue ! mpeg2enc "
+      "! mux. ", rec->width, rec->height);
   g_string_append_printf (desc, "source_audio. "
-      "! queue ! autoaudiosink ");
+      "! queue ! faac "
+      "! mux. ");
+  g_string_append_printf (desc, "avimux name=mux ! sink. ");
+  g_string_append_printf (desc, "filesink name=sink location=%s ",
+      filename);
 
   if (verbose)
     g_print ("pipeline: %s\n", desc->str);
