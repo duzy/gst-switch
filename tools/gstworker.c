@@ -292,7 +292,7 @@ gst_worker_handle_message (GstBus * bus, GstMessage * message, gpointer data)
       gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
       if (GST_ELEMENT (message->src) == worker->pipeline) {
         if (verbose)
-          g_print ("switch-server: state change from %s to %s\n",
+          g_print ("%s: state change from %s to %s\n", worker->name,
               gst_element_state_get_name (oldstate),
               gst_element_state_get_name (newstate));
 
