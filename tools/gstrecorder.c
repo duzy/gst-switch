@@ -132,7 +132,7 @@ gst_recorder_create_pipeline (GstRecorder * rec)
       "channel=composite_audio ");
   g_string_append_printf (desc, "source_video. "
       "! video/x-raw,width=%d,height=%d "
-      "! queue " //! mpeg2enc "
+      "! queue ! vp8enc " //! mpeg2enc "
       "! mux. ", rec->width, rec->height);
   g_string_append_printf (desc, "source_audio. "
       "! queue ! faac "
