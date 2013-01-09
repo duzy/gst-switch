@@ -31,6 +31,8 @@
 #include "gstswitchui.h"
 #include "gstswitchcontroller.h"
 #include "gstvideodisp.h"
+#include "gstaudiovisual.h"
+#include "gstcase.h"
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, G_TYPE_OBJECT);
 
@@ -47,6 +49,7 @@ static const gchar introspection_xml[] =
   "    </method>"
   "    <method name='add_preview_port'>"
   "      <arg type='i' name='port' direction='in'/>"
+  "      <arg type='i' name='type' direction='in'/>"
   "    </method>"
   "  </interface>"
   "</node>"
@@ -228,6 +231,18 @@ gst_switch_ui_controller_get_compose_port (GstSwitchUI * ui)
 {
   gint port = 0;
   GVariant *value = gst_switch_ui_call_controller (ui, "get_compose_port",
+      NULL, G_VARIANT_TYPE ("(i)"));
+  if (value) {
+    g_variant_get (value, "(i)", &port);
+  }
+  return port;
+}
+
+static gint
+gst_switch_ui_controller_get_encode_port (GstSwitchUI * ui)
+{
+  gint port = 0;
+  GVariant *value = gst_switch_ui_call_controller (ui, "get_encode_port",
       NULL, G_VARIANT_TYPE ("(i)"));
   if (value) {
     g_variant_get (value, "(i)", &port);
@@ -422,30 +437,36 @@ gst_switch_ui_connect_controller (GstSwitchUI * ui)
 }
 
 static void gst_switch_ui_set_compose_port (GstSwitchUI *, gint);
-static void gst_switch_ui_add_preview_port (GstSwitchUI *, gint);
+static void gst_switch_ui_add_preview_port (GstSwitchUI *, gint, gint);
 
 static void
 gst_switch_ui_prepare_videos (GstSwitchUI * ui)
 {
-  gint port = gst_switch_ui_controller_get_compose_port (ui);
   GVariant *preview_ports;
   gsize n, num_previews = 0;
+  gint port;
 
+  port = gst_switch_ui_controller_get_compose_port (ui);
   gst_switch_ui_set_compose_port (ui, port);
+
+  port = gst_switch_ui_controller_get_encode_port (ui);
+  INFO ("Encoded output port: %d", port);
 
   preview_ports = gst_switch_ui_controller_get_preview_ports (ui);
   if (preview_ports) {
     GVariant *ports = NULL;
     GError *error = NULL;
     gchar *s = NULL;
+    gint type;
 
     g_variant_get (preview_ports, "(&s)", &s);
-    ports = g_variant_parse (G_VARIANT_TYPE ("ai"), s, NULL, NULL, &error);
+    ports = g_variant_parse (G_VARIANT_TYPE ("a(ii)"), s, NULL, NULL, &error);
 
     num_previews = g_variant_n_children (ports);
     for (n = 0; n < num_previews; ++n) {
-      g_variant_get_child (ports, n, "i", &port);
-      gst_switch_ui_add_preview_port (ui, port);
+      g_variant_get_child (ports, n, "(ii)", &port, &type);
+      gst_switch_ui_add_preview_port (ui, port, type);
+      //INFO ("preview: %d, %d", port, type);
     }
   }
 }
@@ -483,6 +504,20 @@ gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
   return disp;
 }
 
+static GstVideoDisp *
+gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
+{
+  GdkWindow *xview = gtk_widget_get_window (view);
+  GstAudioVisual *visu = GST_AUDIO_VISUAL (g_object_new (GST_TYPE_AUDIO_VISUAL,
+	  "name", "compose", "port", port,
+	  "handle", (gulong) GDK_WINDOW_XID (xview),
+	  NULL));
+  g_object_set_data (G_OBJECT (view), "video-display", visu);
+  gst_worker_prepare (GST_WORKER (visu));
+  gst_worker_start (GST_WORKER (visu));
+  return visu;
+}
+
 static void
 gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
 {
@@ -498,17 +533,30 @@ gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
 }
 
 static void
-gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port)
+gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
 {
-  GstVideoDisp *disp;
+  GstVideoDisp *disp = NULL;
+  GstAudioVisual *visu = NULL;
   GtkWidget *preview = gtk_drawing_area_new ();
   gtk_widget_set_double_buffered (preview, FALSE);
   gtk_widget_set_size_request (preview, -1, 80);
   gtk_widget_show (preview);
   gtk_container_add (GTK_CONTAINER (ui->preview_box), preview);
 
-  disp = gst_switch_ui_new_video_disp (ui, preview, port);
+  switch (type) {
+  case GST_SERVE_VIDEO_STREAM:
+    disp = gst_switch_ui_new_video_disp (ui, preview, port);
+    break;
+  case GST_SERVE_AUDIO_STREAM:
+    visu = gst_switch_ui_new_audio_visual (ui, preview, port);
+    break;
+  default:
+    gtk_widget_destroy (preview);
+    break;
+  }
+
   (void) disp;
+  (void) visu;
 }
 
 static GVariant *
@@ -537,9 +585,10 @@ gst_switch_ui__add_preview_port (GstSwitchUI *ui,
     GDBusConnection *connection, GVariant *parameters)
 {
   gint port = 0;
-  g_variant_get (parameters, "(i)", &port);
-  INFO ("preview: %d", port);
-  gst_switch_ui_add_preview_port (ui, port);
+  gint type = 0;
+  g_variant_get (parameters, "(ii)", &port, &type);
+  INFO ("preview: %d, %d", port, type);
+  gst_switch_ui_add_preview_port (ui, port, type);
   return NULL;
 }
 

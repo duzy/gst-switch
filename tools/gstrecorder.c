@@ -117,12 +117,12 @@ gst_recorder_create_pipeline (GstRecorder * rec)
   GstElement *pipeline;
   GError *error = NULL;
   GString *desc;
-  gchar *filename = opts.record_filename;
+  const gchar *filename = opts.record_filename;
   if (!filename) {
     filename = "/dev/null";
   }
 
-  INFO ("recording to %s", filename);
+  INFO ("Recording to %s and port %d", filename, rec->sink_port);
 
   desc = g_string_new ("");
 
@@ -132,14 +132,18 @@ gst_recorder_create_pipeline (GstRecorder * rec)
       "channel=composite_audio ");
   g_string_append_printf (desc, "source_video. "
       "! video/x-raw,width=%d,height=%d "
-      "! queue ! vp8enc " //! mpeg2enc "
+      "! queue ! vp8enc " //! mpeg2enc
       "! mux. ", rec->width, rec->height);
   g_string_append_printf (desc, "source_audio. "
       "! queue ! faac "
       "! mux. ");
-  g_string_append_printf (desc, "avimux name=mux ! sink. ");
-  g_string_append_printf (desc, "filesink name=sink location=%s ",
-      filename);
+  g_string_append_printf (desc, "avimux name=mux ! tee name=result ");
+  g_string_append_printf (desc, "filesink name=disk_sink sync=false "
+      "location=%s ", filename);
+  g_string_append_printf (desc, "tcpserversink name=tcp_sink sync=false "
+      "port=%d ", rec->sink_port);
+  g_string_append_printf (desc, "result. ! queue2 ! disk_sink. ");
+  g_string_append_printf (desc, "result. ! queue2 ! gdppay ! tcp_sink. ");
 
   if (verbose)
     g_print ("pipeline: %s\n", desc->str);

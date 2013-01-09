@@ -300,6 +300,7 @@ gst_switch_server_suggest_case_type (GstSwitchServer *srv,
     break;
   case GST_SERVE_AUDIO_STREAM:
     if (!has_composite_a)	type = GST_CASE_COMPOSITE_a;
+    else			type = GST_CASE_PREVIEW;
     break;
   case GST_SERVE_NOTHING: break;
   }
@@ -326,9 +327,14 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   case GST_CASE_COMPOSITE_B:
     port = srv->composite->sink_port;
     break;
-  default:
+  case GST_CASE_COMPOSITE_a:
+    port = GST_SWITCH_MIN_SINK_PORT;
+    break;
+  case GST_CASE_PREVIEW:
     port = gst_switch_server_alloc_port (srv);
     break;
+  default:
+    goto error_unknown_case_type;
   }
 
   name = g_strdup_printf ("case-%d", num_cases);
@@ -340,6 +346,9 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   g_object_unref (stream);
 
   switch (serve_type) {
+  case GST_SERVE_AUDIO_STREAM:
+    INFO ("TODO: serve audio stream: %d", type);
+    break;
   case GST_SERVE_VIDEO_STREAM:
     g_object_set (workcase,
 	"awidth",  srv->composite->a_width,
@@ -367,10 +376,10 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   case GST_CASE_COMPOSITE_B:
   case GST_CASE_COMPOSITE_a:
     gst_switch_controller_tell_compose_port (srv->controller, port);
-    /* fallthrough */
     break;
   case GST_CASE_PREVIEW:
-    gst_switch_controller_tell_preview_port (srv->controller, port);
+    gst_switch_controller_tell_preview_port (srv->controller,
+	port, serve_type);
     INFO ("New client (of type %d) sink to %d (%d cases) (%p)", type, port,
 	g_list_length (srv->cases), srv);
     break;
@@ -381,6 +390,13 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   return;
 
   /* Errors Handling */
+
+ error_unknown_case_type:
+  {
+    ERROR ("unknown case type (serve type %d)", serve_type);
+    g_object_unref (stream);
+    return;
+  }
 
  error_prepare_workcase:
   {
@@ -618,14 +634,27 @@ gst_switch_server_get_composite_sink_port (GstSwitchServer * srv)
   return port;
 }
 
-GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv)
+gint
+gst_switch_server_get_encode_sink_port (GstSwitchServer * srv)
+{
+  gint port = 0;
+  WARN ("TODO: return encode sink port");
+  return port;
+}
+
+GArray *
+gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
 {
   GArray *a = g_array_new (FALSE, TRUE, sizeof (gint));
   GList *item;
+
+  if (t) *t = g_array_new (FALSE, TRUE, sizeof (gint));
+  
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   for (item = srv->cases; item; item = g_list_next (item)) {
     if (GST_CASE (item->data)->type != GST_CASE_PREVIEW) continue;
     a = g_array_append_val (a, GST_CASE (item->data)->sink_port);
+    if (t) *t = g_array_append_val (*t, GST_CASE (item->data)->serve_type);
   }
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
   return a;

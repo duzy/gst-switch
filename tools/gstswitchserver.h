@@ -99,7 +99,8 @@ struct _GstSwitchServerClass
 
 GType gst_switch_server_get_type (void);
 gint gst_switch_server_get_composite_sink_port (GstSwitchServer * srv);
-GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv);
+gint gst_switch_server_get_encode_sink_port (GstSwitchServer * srv);
+GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **types);
 
 extern GstSwitchServerOpts opts;
 

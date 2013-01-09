@@ -48,6 +48,9 @@ static const gchar introspection_xml[] =
   "    <method name='get_compose_port'>"
   "      <arg type='i' name='port' direction='out'/>"
   "    </method>"
+  "    <method name='get_encode_port'>"
+  "      <arg type='i' name='port' direction='out'/>"
+  "    </method>"
   "    <method name='get_preview_ports'>"
   "      <arg type='s' name='ports' direction='out'/>"
   "    </method>"
@@ -464,10 +467,10 @@ gst_switch_controller_set_ui_compose_port (GstSwitchController * controller,
 
 static void
 gst_switch_controller_add_ui_preview_port (GstSwitchController * controller,
-    gint port)
+    gint port, gint type)
 {
   gst_switch_controller_call_uis (controller, "add_preview_port",
-      g_variant_new ("(i)", port), G_VARIANT_TYPE ("()"));
+      g_variant_new ("(ii)", port, type), G_VARIANT_TYPE ("()"));
 }
 
 static void
@@ -503,11 +506,11 @@ gst_switch_controller_tell_compose_port (GstSwitchController *controller,
 
 void
 gst_switch_controller_tell_preview_port (GstSwitchController *controller,
-    gint port)
+    gint port, gint type)
 {
   gst_switch_controller_emit_ui_signal (controller, "preview_port",
-      g_variant_new ("(i)", port));
-  gst_switch_controller_add_ui_preview_port (controller, port);
+      g_variant_new ("(ii)", port, type));
+  gst_switch_controller_add_ui_preview_port (controller, port, type);
 }
 
 static GVariant *
@@ -532,21 +535,35 @@ gst_switch_controller__get_compose_port (GstSwitchController *controller,
 }
 
 static GVariant *
+gst_switch_controller__get_encode_port (GstSwitchController *controller,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  gint port = 0;
+  if (controller->server) {
+    port = gst_switch_server_get_encode_sink_port (controller->server);
+  }
+  return g_variant_new ("(i)", port);
+}
+
+static GVariant *
 gst_switch_controller__get_preview_ports (GstSwitchController *controller,
     GDBusConnection *connection, GVariant *parameters)
 {
   GVariant *result = NULL;
   if (controller->server) {
-    GArray *a = gst_switch_server_get_preview_sink_ports (
-	controller->server);
+    GArray *types = NULL;
+    GArray *ports = gst_switch_server_get_preview_sink_ports (
+	controller->server, &types);
     int n;
     GVariantBuilder *builder;
     GVariant *value;
     gchar *res;
 
-    builder = g_variant_builder_new (G_VARIANT_TYPE ("ai"));
-    for (n = 0; n < a->len; ++n) {
-      g_variant_builder_add (builder, "i", g_array_index (a, gint, n));
+    builder = g_variant_builder_new (G_VARIANT_TYPE ("a(ii)"));
+    for (n = 0; n < ports->len; ++n) {
+      g_variant_builder_add (builder, "(ii)",
+	  g_array_index (ports, gint, n),
+	  g_array_index (types, gint, n));
     }
     value = g_variant_builder_end (builder);
     //result = g_variant_new_tuple (&value, 1);
@@ -560,7 +577,8 @@ gst_switch_controller__get_preview_ports (GstSwitchController *controller,
     */
 
     g_free (res);
-    g_array_free (a, TRUE);
+    g_array_free (ports, TRUE);
+    g_array_free (types, TRUE);
   }
   return result;
 }
@@ -568,6 +586,7 @@ gst_switch_controller__get_preview_ports (GstSwitchController *controller,
 static MethodTableEntry gst_switch_controller_method_table[] = {
   { "test", (MethodFunc) gst_switch_controller__test },
   { "get_compose_port", (MethodFunc) gst_switch_controller__get_compose_port },
+  { "get_encode_port", (MethodFunc) gst_switch_controller__get_encode_port },
   { "get_preview_ports", (MethodFunc) gst_switch_controller__get_preview_ports },
   { NULL, NULL }
 };
