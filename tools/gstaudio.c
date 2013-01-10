@@ -27,11 +27,11 @@
 #include "config.h"
 #endif
 
-#include "gstvideodisp.h"
+#include "gstaudio.h"
 #include "gstswitchserver.h"
 #include <gst/video/videooverlay.h>
 
-#define parent_class gst_video_disp_parent_class
+#define parent_class gst_audio_parent_class
 
 enum
 {
@@ -42,73 +42,73 @@ enum
 
 extern gboolean verbose;
 
-G_DEFINE_TYPE (GstVideoDisp, gst_video_disp, GST_TYPE_WORKER);
+G_DEFINE_TYPE (GstAudio, gst_audio, GST_TYPE_WORKER);
 
 static void
-gst_video_disp_init (GstVideoDisp *disp)
+gst_audio_init (GstAudio *audio)
 {
-  INFO ("Video display initialized");
+  INFO ("Audio play initialized");
 }
 
 static void
-gst_video_disp_finalize (GstVideoDisp *disp)
+gst_audio_finalize (GstAudio *audio)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
-    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (disp));
+    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (audio));
 
-  INFO ("Video display finalized");
+  INFO ("Audia play finalized");
 }
 
 static void
-gst_video_disp_set_property (GstVideoDisp *disp, guint property_id,
+gst_audio_set_property (GstAudio *audio, guint property_id,
     const GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   case PROP_PORT:
-    disp->port = g_value_get_uint (value);
+    audio->port = g_value_get_uint (value);
     break;
   case PROP_HANDLE:
-    disp->handle = g_value_get_ulong (value);
+    audio->handle = g_value_get_ulong (value);
     break;
   default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (audio), property_id, pspec);
     break;
   }
 }
 
 static void
-gst_video_disp_get_property (GstVideoDisp *disp, guint property_id,
+gst_audio_get_property (GstAudio *audio, guint property_id,
     GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   case PROP_PORT:
-    g_value_set_uint (value, disp->port);
+    g_value_set_uint (value, audio->port);
     break;
   case PROP_HANDLE:
-    g_value_set_ulong (value, disp->handle);
+    g_value_set_ulong (value, audio->handle);
     break;
   default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (audio), property_id, pspec);
     break;
   }
 }
 
 static GstElement *
-gst_video_disp_create_pipeline (GstVideoDisp *disp)
+gst_audio_create_pipeline (GstAudio *audio)
 {
   GstElement *pipeline;
   GError *error = NULL;
   GString *desc;
 
-  INFO ("display video %d", disp->port);
+  INFO ("play audio %d", audio->port);
 
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "tcpclientsrc name=source "
-      "port=%d ", disp->port);
+      "port=%d ", audio->port);
   g_string_append_printf (desc, "! gdpdepay ");
-  g_string_append_printf (desc, "! videoconvert ");
-  g_string_append_printf (desc, "! xvimagesink name=sink ");
+  g_string_append_printf (desc, "! audioconvert ");
+  g_string_append_printf (desc, "! autoaudiosink name=sink ");
 
   if (verbose)
     g_print ("pipeline: %s\n", desc->str);
@@ -126,30 +126,26 @@ gst_video_disp_create_pipeline (GstVideoDisp *disp)
 }
 
 static void
-gst_video_disp_null (GstVideoDisp *disp)
+gst_audio_null (GstAudio *audio)
 {
-}
-
-static gboolean
-gst_video_disp_prepare (GstVideoDisp *disp)
-{
-  GstWorker *worker = GST_WORKER (disp);
-  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (worker->sink),
-      disp->handle);
-
-  INFO ("prepared display video on %ld", disp->handle);
-  return TRUE;
 }
 
 static void
-gst_video_disp_class_init (GstVideoDispClass *klass)
+gst_audio_prepare (GstAudio *audio)
+{
+  GstWorker *worker = GST_WORKER (audio);
+  (void) worker;
+}
+
+static void
+gst_audio_class_init (GstAudioClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
-  object_class->finalize = (GObjectFinalizeFunc) gst_video_disp_finalize;
-  object_class->set_property = (GObjectSetPropertyFunc) gst_video_disp_set_property;
-  object_class->get_property = (GObjectGetPropertyFunc) gst_video_disp_get_property;
+  object_class->finalize = (GObjectFinalizeFunc) gst_audio_finalize;
+  object_class->set_property = (GObjectSetPropertyFunc) gst_audio_set_property;
+  object_class->get_property = (GObjectGetPropertyFunc) gst_audio_get_property;
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",
@@ -161,8 +157,8 @@ gst_video_disp_class_init (GstVideoDispClass *klass)
       g_param_spec_ulong ("handle", "Handle", "Window Handle",
           0, ((gulong)-1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_video_disp_null;
-  worker_class->prepare = (GstWorkerPrepareFunc) gst_video_disp_prepare;
+  worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_null;
+  worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_prepare;
   worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_video_disp_create_pipeline;
+    gst_audio_create_pipeline;
 }

@@ -169,36 +169,58 @@ gst_case_create_pipeline (GstCase * cas)
 
   desc = g_string_new ("");
 
-  g_string_append_printf (desc, "giostreamsrc name=source ");
+  switch (cas->type) {
+  case GST_CASE_BRANCH_A:
+    g_string_append_printf (desc, "interaudiosrc name=source "
+	"channel=branch_%d ", cas->sink_port);
+    break;
+  case GST_CASE_BRANCH_V:
+    g_string_append_printf (desc, "intervideosrc name=source "
+	"channel=branch_%d ", cas->sink_port);
+    break;
+  default:
+    g_string_append_printf (desc, "giostreamsrc name=source ");
+    break;
+  }
 
   switch (cas->type) {
   case GST_CASE_COMPOSITE_A:
     channel = "composite_a";
     convert = g_strdup_printf ("identity "
 	"! videoscale ! video/x-raw,width=%d,height=%d "
-	//"! textoverlay text=A shaded-background=true "
-	//"! timeoverlay "
 	, cas->a_width, cas->a_height);
   case GST_CASE_COMPOSITE_B:
     if (channel == NULL) {
       channel = "composite_b";
       convert = g_strdup_printf ("identity "
 	  "! videoscale ! video/x-raw,width=%d,height=%d "
-	  //"! textoverlay text=B shaded-background=true "
-	  //"! videobox border-alpha=0 left=50 top=50 right=150 bottom=230 "
 	  , cas->b_width, cas->b_height);
     }
+#if 1
     g_string_append_printf (desc, "intervideosink name=sink channel=%s ",
 	channel);
     g_string_append_printf (desc, "source. ! gdpdepay ! %s ! sink. ",
 	convert);
+#else
+    g_string_append_printf (desc, "source. ! tee name=vs ");
+    g_string_append_printf (desc, "vs. ! queue2 ! "
+	"intervideosink name=sink1 channel=branch_%d ", cas->sink_port);
+    g_string_append_printf (desc, "vs. ! queue2 ! "
+	"intervideosink name=sink2 channel=%s ", channel);
+#endif
     break;
   case GST_CASE_COMPOSITE_a:
     g_string_append_printf (desc, "source. ! tee name=as ");
-    g_string_append_printf (desc, "as. ! queue2 ! gdpdepay ! gdppay "
-	"tcpserversink name=sink1 port=%d ", cas->sink_port);
+    g_string_append_printf (desc, "as. ! queue2 ! "
+	"interaudiosink name=sink1 channel=branch_%d ", cas->sink_port);
     g_string_append_printf (desc, "as. ! queue2 ! "
 	"interaudiosink name=sink2 channel=composite_audio ");
+    break;
+  case GST_CASE_BRANCH_A:
+  case GST_CASE_BRANCH_V:
+    g_string_append_printf (desc, "tcpserversink name=sink "
+	"port=%d ", cas->sink_port);
+    g_string_append_printf (desc, "source. ! gdppay ! sink. ");
     break;
   case GST_CASE_PREVIEW:
     g_string_append_printf (desc, "tcpserversink name=sink sync=false "
@@ -232,19 +254,24 @@ static gboolean
 gst_case_prepare (GstCase *cas)
 {
   GstWorker *worker = GST_WORKER (cas);
+  switch (cas->type) {
+  default:
+    if (!cas->stream) {
+      ERROR ("no stream for new case");
+      return FALSE;
+    }
+    if (!worker->source) {
+      ERROR ("no source");
+      return FALSE;
+    }
+    g_object_set (worker->source, "stream", cas->stream, NULL);
+    break;
 
-  if (!cas->stream) {
-    ERROR ("no stream for new case");
-    return FALSE;
+  case GST_CASE_BRANCH_A:
+  case GST_CASE_BRANCH_V:
+    break;
   }
-
-  if (!worker->source) {
-    ERROR ("no source");
-    return FALSE;
-  }
-
-  g_object_set (worker->source, "stream", cas->stream, NULL);
-
+ 
   return TRUE;
 }
 

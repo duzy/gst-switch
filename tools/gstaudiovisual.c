@@ -129,16 +129,18 @@ gst_audio_visual_create_pipeline (GstAudioVisual *disp)
 static void
 gst_audio_visual_null (GstAudioVisual *disp)
 {
+  //INFO ();
 }
 
-static void
+static gboolean
 gst_audio_visual_prepare (GstAudioVisual *disp)
 {
   GstWorker *worker = GST_WORKER (disp);
   gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (worker->sink),
       disp->handle);
 
-  INFO ("prepared display video on %ld", disp->handle);
+  INFO ("prepared audio visual display on %ld", disp->handle);
+  return TRUE;
 }
 
 static void

@@ -32,6 +32,7 @@
 #include "gstswitchcontroller.h"
 #include "gstvideodisp.h"
 #include "gstaudiovisual.h"
+#include "gstaudio.h"
 #include "gstcase.h"
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, G_TYPE_OBJECT);
@@ -43,6 +44,9 @@ static const gchar introspection_xml[] =
   "    <method name='test'>"
   "      <arg type='s' name='name' direction='in'/>"
   "      <arg type='s' name='result' direction='out'/>"
+  "    </method>"
+  "    <method name='set_audio_port'>"
+  "      <arg type='i' name='port' direction='in'/>"
   "    </method>"
   "    <method name='set_compose_port'>"
   "      <arg type='i' name='port' direction='in'/>"
@@ -250,6 +254,18 @@ gst_switch_ui_controller_get_encode_port (GstSwitchUI * ui)
   return port;
 }
 
+static gint
+gst_switch_ui_controller_get_audio_port (GstSwitchUI * ui)
+{
+  gint port = 0;
+  GVariant *value = gst_switch_ui_call_controller (ui, "get_audio_port",
+      NULL, G_VARIANT_TYPE ("(i)"));
+  if (value) {
+    g_variant_get (value, "(i)", &port);
+  }
+  return port;
+}
+
 static GVariant *
 gst_switch_ui_controller_get_preview_ports (GstSwitchUI * ui)
 {
@@ -436,6 +452,7 @@ gst_switch_ui_connect_controller (GstSwitchUI * ui)
   }
 }
 
+static void gst_switch_ui_set_audio_port (GstSwitchUI *, gint);
 static void gst_switch_ui_set_compose_port (GstSwitchUI *, gint);
 static void gst_switch_ui_add_preview_port (GstSwitchUI *, gint, gint);
 
@@ -448,6 +465,9 @@ gst_switch_ui_prepare_videos (GstSwitchUI * ui)
 
   port = gst_switch_ui_controller_get_compose_port (ui);
   gst_switch_ui_set_compose_port (ui, port);
+
+  port = gst_switch_ui_controller_get_audio_port (ui);
+  gst_switch_ui_set_audio_port (ui, port);
 
   port = gst_switch_ui_controller_get_encode_port (ui);
   INFO ("Encoded output port: %d", port);
@@ -504,18 +524,32 @@ gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
   return disp;
 }
 
-static GstVideoDisp *
+static GstAudioVisual *
 gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
 {
+  gchar *name = g_strdup_printf ("visual-%d", port);
   GdkWindow *xview = gtk_widget_get_window (view);
   GstAudioVisual *visu = GST_AUDIO_VISUAL (g_object_new (GST_TYPE_AUDIO_VISUAL,
-	  "name", "compose", "port", port,
+	  "name", name, "port", port,
 	  "handle", (gulong) GDK_WINDOW_XID (xview),
 	  NULL));
   g_object_set_data (G_OBJECT (view), "video-display", visu);
   gst_worker_prepare (GST_WORKER (visu));
   gst_worker_start (GST_WORKER (visu));
+  g_free (name);
   return visu;
+}
+
+static GstAudio *
+gst_switch_ui_new_audio (GstSwitchUI *ui, gint port)
+{
+  gchar *name = g_strdup_printf ("audio-%d", port);
+  GstAudio *audio = GST_AUDIO (g_object_new (GST_TYPE_AUDIO,
+	  "name", name, "port", port, NULL));
+  gst_worker_prepare (GST_WORKER (audio));
+  gst_worker_start (GST_WORKER (audio));
+  g_free (name);
+  return audio;
 }
 
 static void
@@ -530,6 +564,19 @@ gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
   ui->compose_port = port;
   ui->compose_video = gst_switch_ui_new_video_disp (ui, ui->compose_view,
       port);
+}
+
+static void
+gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
+{
+  if (ui->audio_port == port)
+    return;
+
+  if (ui->audio)
+    g_object_unref (ui->audio);
+
+  ui->audio_port = port;
+  ui->audio = gst_switch_ui_new_audio (ui, port);
 }
 
 static void
@@ -570,6 +617,17 @@ gst_switch_ui__test (GstSwitchUI *ui, GDBusConnection *connection,
 }
 
 static GVariant *
+gst_switch_ui__set_audio_port (GstSwitchUI *ui,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  gint port = 0;
+  g_variant_get (parameters, "(i)", &port);
+  INFO ("audio: %d", port);
+  gst_switch_ui_set_audio_port (ui, port);
+  return NULL;
+}
+
+static GVariant *
 gst_switch_ui__set_compose_port (GstSwitchUI *ui,
     GDBusConnection *connection, GVariant *parameters)
 {
@@ -594,6 +652,7 @@ gst_switch_ui__add_preview_port (GstSwitchUI *ui,
 
 static MethodTableEntry gst_switch_ui_method_table[] = {
   { "test", (MethodFunc) gst_switch_ui__test },
+  { "set_audio_port", (MethodFunc) gst_switch_ui__set_audio_port },
   { "set_compose_port", (MethodFunc) gst_switch_ui__set_compose_port },
   { "add_preview_port", (MethodFunc) gst_switch_ui__add_preview_port },
   { NULL, NULL }

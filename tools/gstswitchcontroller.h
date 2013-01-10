@@ -69,6 +69,7 @@ struct _GstSwitchControllerClass
 
 GType gst_switch_controller_get_type (void);
 
+void gst_switch_controller_tell_audio_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_compose_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_preview_port (GstSwitchController *, gint port, gint type);
 

@@ -51,17 +51,24 @@ static const gchar introspection_xml[] =
   "    <method name='get_encode_port'>"
   "      <arg type='i' name='port' direction='out'/>"
   "    </method>"
+  "    <method name='get_audio_port'>"
+  "      <arg type='i' name='port' direction='out'/>"
+  "    </method>"
   "    <method name='get_preview_ports'>"
   "      <arg type='s' name='ports' direction='out'/>"
   "    </method>"
   "    <signal name='testsignal'>"
   "      <arg type='s' name='str'/>"
   "    </signal>"
+  "    <signal name='audio_port'>"
+  "      <arg type='i' name='port'/>"
+  "    </signal>"
   "    <signal name='compose_port'>"
   "      <arg type='i' name='port'/>"
   "    </signal>"
   "    <signal name='preview_port'>"
   "      <arg type='i' name='port'/>"
+  "      <arg type='i' name='type'/>"
   "    </signal>"
   "  </interface>"
   "</node>";
@@ -458,6 +465,14 @@ gst_switch_controller_test_ui (GstSwitchController * controller,
 }
 
 static void
+gst_switch_controller_set_ui_audio_port (GstSwitchController * controller,
+    gint port)
+{
+  gst_switch_controller_call_uis (controller, "set_audio_port",
+      g_variant_new ("(i)", port), G_VARIANT_TYPE ("()"));
+}
+
+static void
 gst_switch_controller_set_ui_compose_port (GstSwitchController * controller,
     gint port)
 {
@@ -493,6 +508,15 @@ gst_switch_controller_set_property(GstSwitchController * controller,
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (controller), prop_id, pspec);
     break;
   }
+}
+
+void
+gst_switch_controller_tell_audio_port (GstSwitchController *controller,
+    gint port)
+{
+  gst_switch_controller_emit_ui_signal (controller, "audio_port",
+      g_variant_new ("(i)", port));
+  gst_switch_controller_set_ui_audio_port (controller, port);
 }
 
 void
@@ -546,6 +570,17 @@ gst_switch_controller__get_encode_port (GstSwitchController *controller,
 }
 
 static GVariant *
+gst_switch_controller__get_audio_port (GstSwitchController *controller,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  gint port = 0;
+  if (controller->server) {
+    port = gst_switch_server_get_audio_sink_port (controller->server);
+  }
+  return g_variant_new ("(i)", port);
+}
+
+static GVariant *
 gst_switch_controller__get_preview_ports (GstSwitchController *controller,
     GDBusConnection *connection, GVariant *parameters)
 {
@@ -587,6 +622,7 @@ static MethodTableEntry gst_switch_controller_method_table[] = {
   { "test", (MethodFunc) gst_switch_controller__test },
   { "get_compose_port", (MethodFunc) gst_switch_controller__get_compose_port },
   { "get_encode_port", (MethodFunc) gst_switch_controller__get_encode_port },
+  { "get_audio_port", (MethodFunc) gst_switch_controller__get_audio_port },
   { "get_preview_ports", (MethodFunc) gst_switch_controller__get_preview_ports },
   { NULL, NULL }
 };

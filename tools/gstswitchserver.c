@@ -318,18 +318,32 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
 	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
   GstCaseType type = gst_switch_server_suggest_case_type (srv, serve_type);
   gint num_cases = g_list_length (srv->cases);
-  GstCase *workcase;
+  GstCase *branch, *workcase;
   gchar *name;
-  gint port;
+  gint port = 0;
 
   switch (type) {
   case GST_CASE_COMPOSITE_A:
   case GST_CASE_COMPOSITE_B:
     port = srv->composite->sink_port;
-    break;
+    break; /* fallthrough */
   case GST_CASE_COMPOSITE_a:
-    //port = GST_SWITCH_MIN_SINK_PORT;
-    //break;
+    if (!port)
+      port = gst_switch_server_alloc_port (srv);
+
+    name = g_strdup_printf ("branch_%d", port);
+    branch = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
+	    "type", GST_CASE_BRANCH_A, "port", port,
+	    "serve", serve_type, NULL));
+    g_free (name);
+
+    gst_worker_prepare (GST_WORKER (branch));
+    gst_worker_start (GST_WORKER (branch));
+
+    GST_SWITCH_SERVER_LOCK_CASES (srv);
+    srv->cases = g_list_append (srv->cases, branch);
+    GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    break;
   case GST_CASE_PREVIEW:
     port = gst_switch_server_alloc_port (srv);
     break;
@@ -341,9 +355,9 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
 	  "type", type, "port", port, "stream", stream,
 	  "serve", serve_type, NULL));
-  g_free (name);
   g_object_unref (client);
   g_object_unref (stream);
+  g_free (name);
 
   switch (serve_type) {
   case GST_SERVE_AUDIO_STREAM:
@@ -375,13 +389,18 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   case GST_CASE_COMPOSITE_A:
   case GST_CASE_COMPOSITE_B:
     gst_switch_controller_tell_compose_port (srv->controller, port);
-    break;
+    break; //goto preview;
   case GST_CASE_COMPOSITE_a:
+    gst_switch_controller_tell_audio_port (srv->controller, port);
+    /* fallthrough */
+  preview:
   case GST_CASE_PREVIEW:
     gst_switch_controller_tell_preview_port (srv->controller,
 	port, serve_type);
+    /*
     INFO ("New client (of type %d) sink to %d (%d cases) (%p)", type, port,
 	g_list_length (srv->cases), srv);
+    */
     break;
   default:
     ERROR ("unknown case");
@@ -642,6 +661,22 @@ gst_switch_server_get_encode_sink_port (GstSwitchServer * srv)
   return port;
 }
 
+gint
+gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
+{
+  gint port = 0;
+  GList *item;
+  GST_SWITCH_SERVER_LOCK_CASES (srv);
+  for (item = srv->cases; item; item = g_list_next (item)) {
+    if (GST_CASE (item->data)->type == GST_CASE_COMPOSITE_a) {
+      port = GST_CASE (item->data)->sink_port;
+      break;
+    }
+  }
+  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+  return port;
+}
+
 GArray *
 gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
 {
@@ -652,9 +687,14 @@ gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
   
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   for (item = srv->cases; item; item = g_list_next (item)) {
-    if (GST_CASE (item->data)->type != GST_CASE_PREVIEW) continue;
-    a = g_array_append_val (a, GST_CASE (item->data)->sink_port);
-    if (t) *t = g_array_append_val (*t, GST_CASE (item->data)->serve_type);
+    switch (GST_CASE (item->data)->type) {
+    case GST_CASE_BRANCH_A:
+    case GST_CASE_BRANCH_V:
+    case GST_CASE_PREVIEW:
+      a = g_array_append_val (a, GST_CASE (item->data)->sink_port);
+      if (t) *t = g_array_append_val (*t, GST_CASE (item->data)->serve_type);
+    default: break;
+    }
   }
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
   return a;
