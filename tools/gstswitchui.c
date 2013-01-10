@@ -32,7 +32,7 @@
 #include "gstswitchcontroller.h"
 #include "gstvideodisp.h"
 #include "gstaudiovisual.h"
-#include "gstaudio.h"
+#include "gstaudioplay.h"
 #include "gstcase.h"
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, G_TYPE_OBJECT);
@@ -540,11 +540,11 @@ gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
   return visu;
 }
 
-static GstAudio *
+static GstAudioPlay *
 gst_switch_ui_new_audio (GstSwitchUI *ui, gint port)
 {
   gchar *name = g_strdup_printf ("audio-%d", port);
-  GstAudio *audio = GST_AUDIO (g_object_new (GST_TYPE_AUDIO,
+  GstAudioPlay *audio = GST_AUDIO_PLAY (g_object_new (GST_TYPE_AUDIO_PLAY,
 	  "name", name, "port", port, NULL));
   gst_worker_prepare (GST_WORKER (audio));
   gst_worker_start (GST_WORKER (audio));

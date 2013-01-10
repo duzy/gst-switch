@@ -27,11 +27,11 @@
 #include "config.h"
 #endif
 
-#include "gstaudio.h"
+#include "gstaudioplay.h"
 #include "gstswitchserver.h"
 #include <gst/video/videooverlay.h>
 
-#define parent_class gst_audio_parent_class
+#define parent_class gst_audio_play_parent_class
 
 enum
 {
@@ -42,72 +42,71 @@ enum
 
 extern gboolean verbose;
 
-G_DEFINE_TYPE (GstAudio, gst_audio, GST_TYPE_WORKER);
+G_DEFINE_TYPE (GstAudioPlay, gst_audio_play, GST_TYPE_WORKER);
 
 static void
-gst_audio_init (GstAudio *audio)
+gst_audio_play_init (GstAudioPlay *audio_play)
 {
   INFO ("Audio play initialized");
 }
 
 static void
-gst_audio_finalize (GstAudio *audio)
+gst_audio_play_finalize (GstAudioPlay *audio_play)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
-    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (audio));
+    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (audio_play));
 
   INFO ("Audia play finalized");
 }
 
 static void
-gst_audio_set_property (GstAudio *audio, guint property_id,
+gst_audio_play_set_property (GstAudioPlay *audio_play, guint property_id,
     const GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   case PROP_PORT:
-    audio->port = g_value_get_uint (value);
+    audio_play->port = g_value_get_uint (value);
     break;
   case PROP_HANDLE:
-    audio->handle = g_value_get_ulong (value);
+    audio_play->handle = g_value_get_ulong (value);
     break;
   default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (audio), property_id, pspec);
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (audio_play), property_id, pspec);
     break;
   }
 }
 
 static void
-gst_audio_get_property (GstAudio *audio, guint property_id,
+gst_audio_play_get_property (GstAudioPlay *audio_play, guint property_id,
     GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   case PROP_PORT:
-    g_value_set_uint (value, audio->port);
+    g_value_set_uint (value, audio_play->port);
     break;
   case PROP_HANDLE:
-    g_value_set_ulong (value, audio->handle);
+    g_value_set_ulong (value, audio_play->handle);
     break;
   default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (audio), property_id, pspec);
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (audio_play), property_id, pspec);
     break;
   }
 }
 
 static GstElement *
-gst_audio_create_pipeline (GstAudio *audio)
+gst_audio_play_create_pipeline (GstAudioPlay *audio_play)
 {
   GstElement *pipeline;
   GError *error = NULL;
   GString *desc;
 
-  INFO ("play audio %d", audio->port);
+  INFO ("play audio %d", audio_play->port);
 
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "tcpclientsrc name=source "
-      "port=%d ", audio->port);
-  g_string_append_printf (desc, "! gdpdepay ");
-  g_string_append_printf (desc, "! audioconvert ");
+      "port=%d ", audio_play->port);
+  g_string_append_printf (desc, "! gdpdepay ! faad ");
   g_string_append_printf (desc, "! autoaudiosink name=sink ");
 
   if (verbose)
@@ -126,26 +125,26 @@ gst_audio_create_pipeline (GstAudio *audio)
 }
 
 static void
-gst_audio_null (GstAudio *audio)
+gst_audio_play_null (GstAudioPlay *audio_play)
 {
 }
 
 static void
-gst_audio_prepare (GstAudio *audio)
+gst_audio_play_prepare (GstAudioPlay *audio_play)
 {
-  GstWorker *worker = GST_WORKER (audio);
+  GstWorker *worker = GST_WORKER (audio_play);
   (void) worker;
 }
 
 static void
-gst_audio_class_init (GstAudioClass *klass)
+gst_audio_play_class_init (GstAudioPlayClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
-  object_class->finalize = (GObjectFinalizeFunc) gst_audio_finalize;
-  object_class->set_property = (GObjectSetPropertyFunc) gst_audio_set_property;
-  object_class->get_property = (GObjectGetPropertyFunc) gst_audio_get_property;
+  object_class->finalize = (GObjectFinalizeFunc) gst_audio_play_finalize;
+  object_class->set_property = (GObjectSetPropertyFunc) gst_audio_play_set_property;
+  object_class->get_property = (GObjectGetPropertyFunc) gst_audio_play_get_property;
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",
@@ -157,8 +156,8 @@ gst_audio_class_init (GstAudioClass *klass)
       g_param_spec_ulong ("handle", "Handle", "Window Handle",
           0, ((gulong)-1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_null;
-  worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_prepare;
+  worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_play_null;
+  worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_play_prepare;
   worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_audio_create_pipeline;
+    gst_audio_play_create_pipeline;
 }

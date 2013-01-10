@@ -38,7 +38,7 @@
 typedef struct _GstSwitchUI GstSwitchUI;
 typedef struct _GstSwitchUIClass GstSwitchUIClass;
 typedef struct _GstVideoDisp GstVideoDisp;
-typedef struct _GstAudio GstAudio;
+typedef struct _GstAudioPlay GstAudioPlay;
 
 struct _GstSwitchUI
 {
@@ -53,7 +53,7 @@ struct _GstSwitchUI
   gint audio_port;
   gint compose_port;
 
-  GstAudio *audio;
+  GstAudioPlay *audio;
   GstVideoDisp *compose_video;
 };
 

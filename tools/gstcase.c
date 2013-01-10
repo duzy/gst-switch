@@ -220,12 +220,16 @@ gst_case_create_pipeline (GstCase * cas)
   case GST_CASE_BRANCH_V:
     g_string_append_printf (desc, "tcpserversink name=sink "
 	"port=%d ", cas->sink_port);
-    g_string_append_printf (desc, "source. ! gdppay ! sink. ");
+    g_string_append_printf (desc, "source. ! faac ! gdppay ! sink. ");
     break;
   case GST_CASE_PREVIEW:
     g_string_append_printf (desc, "tcpserversink name=sink sync=false "
 	"port=%d ", cas->sink_port);
-    g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
+    if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
+      g_string_append_printf (desc, "source. ! gdpdepay ! faac ! gdppay ! sink. ");
+    } else {
+      g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
+    }
     break;
   case GST_CASE_UNKNOWN:
     ERROR ("unknown case");

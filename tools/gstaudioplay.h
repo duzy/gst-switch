@@ -23,20 +23,20 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_AUDIO_H__by_Duzy_Chan__
-#define __GST_AUDIO_H__by_Duzy_Chan__ 1
+#ifndef __GST_AUDIO_PLAY_H__by_Duzy_Chan__
+#define __GST_AUDIO_PLAY_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
 
-#define GST_TYPE_AUDIO (gst_audio_get_type ())
-#define GST_AUDIO(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_AUDIO, GstAudio))
-#define GST_AUDIO_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_AUDIO, GstAudioClass))
-#define GST_IS_AUDIO(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_AUDIO, GstAudio))
-#define GST_IS_AUDIO_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_AUDIO, GstAudioClass))
+#define GST_TYPE_AUDIO_PLAY (gst_audio_play_get_type ())
+#define GST_AUDIO_PLAY(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_AUDIO_PLAY, GstAudioPlay))
+#define GST_AUDIO_PLAY_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_AUDIO_PLAY, GstAudioPlayClass))
+#define GST_IS_AUDIO_PLAY(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_AUDIO_PLAY, GstAudioPlay))
+#define GST_IS_AUDIO_PLAY_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_AUDIO_PLAY, GstAudioPlayClass))
 
-typedef struct _GstAudio GstAudio;
-typedef struct _GstAudioClass GstAudioClass;
+typedef struct _GstAudioPlay GstAudioPlay;
+typedef struct _GstAudioPlayClass GstAudioPlayClass;
 
-struct _GstAudio
+struct _GstAudioPlay
 {
   GstWorker base;
 
@@ -44,11 +44,11 @@ struct _GstAudio
   gulong handle;
 };
 
-struct _GstAudioClass
+struct _GstAudioPlayClass
 {
   GstWorkerClass base_class;
 };
 
-GType gst_audio_get_type (void);
+GType gst_audio_play_get_type (void);
 
-#endif//__GST_AUDIO_H__by_Duzy_Chan__
+#endif//__GST_AUDIO_PLAY_H__by_Duzy_Chan__
