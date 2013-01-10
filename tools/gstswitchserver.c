@@ -328,8 +328,8 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
     port = srv->composite->sink_port;
     break;
   case GST_CASE_COMPOSITE_a:
-    port = GST_SWITCH_MIN_SINK_PORT;
-    break;
+    //port = GST_SWITCH_MIN_SINK_PORT;
+    //break;
   case GST_CASE_PREVIEW:
     port = gst_switch_server_alloc_port (srv);
     break;
@@ -374,9 +374,9 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   switch (type) {
   case GST_CASE_COMPOSITE_A:
   case GST_CASE_COMPOSITE_B:
-  case GST_CASE_COMPOSITE_a:
     gst_switch_controller_tell_compose_port (srv->controller, port);
     break;
+  case GST_CASE_COMPOSITE_a:
   case GST_CASE_PREVIEW:
     gst_switch_controller_tell_preview_port (srv->controller,
 	port, serve_type);
@@ -734,13 +734,13 @@ gst_switch_server_prepare (GstSwitchServer * srv)
   return TRUE;
 
  error_launch:
-  {
+  if (srv->recorder) {
     GST_SWITCH_SERVER_LOCK_RECORDER (srv);
     g_object_unref (srv->recorder);
     srv->recorder = NULL;
     GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
   }
-  {
+  if (srv->composite) {
     GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
     g_object_unref (srv->composite);
     srv->composite = NULL;

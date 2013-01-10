@@ -23,8 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_SWITCH_SRV_H__by_Duzy_Chan__
-#define __GST_SWITCH_SRV_H__by_Duzy_Chan__ 1
+#ifndef __GST_SWITCH_SERVER_H__by_Duzy_Chan__
+#define __GST_SWITCH_SERVER_H__by_Duzy_Chan__ 1
 #include <gio/gio.h>
 #include "gstcomposite.h"
 #include "gstrecorder.h"
@@ -104,4 +104,4 @@ GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray 
 
 extern GstSwitchServerOpts opts;
 
-#endif//__GST_SWITCH_SRV_H__by_Duzy_Chan__
+#endif//__GST_SWITCH_SERVER_H__by_Duzy_Chan__

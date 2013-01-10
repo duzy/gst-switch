@@ -10,11 +10,15 @@ if [[ "x$pattern" == "x" ]]; then
 fi
 
 if [[ "x$width" == "x" ]]; then
-    width=640
+    #width=640
+    #width=1280
+    width=356
 fi
 
 if [[ "x$height" == "x" ]]; then
-    height=480
+    #height=480
+    #height=768
+    height=200
 fi
 
 launch -v \

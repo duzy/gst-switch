@@ -136,8 +136,7 @@ gst_case_set_property (GstCase *cas, guint property_id,
     if (cas->stream)
       g_object_unref (cas->stream);
     cas->stream = G_INPUT_STREAM (stream);
-    break;
-  }
+  } break;
   case PROP_PORT:
     cas->sink_port = g_value_get_uint (value);
     break;
@@ -195,9 +194,11 @@ gst_case_create_pipeline (GstCase * cas)
 	convert);
     break;
   case GST_CASE_COMPOSITE_a:
-    g_string_append_printf (desc, "interaudiosink name=sink "
-	"channel=composite_audio ");
-    g_string_append_printf (desc, "source. ! sink. ");
+    g_string_append_printf (desc, "source. ! tee name=as ");
+    g_string_append_printf (desc, "as. ! queue2 ! gdpdepay ! gdppay "
+	"tcpserversink name=sink1 port=%d ", cas->sink_port);
+    g_string_append_printf (desc, "as. ! queue2 ! "
+	"interaudiosink name=sink2 channel=composite_audio ");
     break;
   case GST_CASE_PREVIEW:
     g_string_append_printf (desc, "tcpserversink name=sink sync=false "

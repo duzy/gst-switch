@@ -202,10 +202,10 @@ gst_composite_create_pipeline (GstComposite * composite)
       "sink_1::ypos=%d "
       "sink_1::zorder=1 ",
       ax, ay, bx, by);
-  g_string_append_printf (desc, "source_b.!video/x-raw,width=%d,height=%d"
+  g_string_append_printf (desc, "source_b.!video/x-raw,width=%d,height=%d "
       "! queue2 ! compose.sink_1 ",
       composite->b_width, composite->b_height);
-  g_string_append_printf (desc, "source_a.!video/x-raw,width=%d,height=%d"
+  g_string_append_printf (desc, "source_a.!video/x-raw,width=%d,height=%d "
       "! queue2 ! compose.sink_0 ",
       composite->a_width, composite->a_height);
   g_string_append_printf (desc, "compose. ! gdppay ! tee name=result ");
