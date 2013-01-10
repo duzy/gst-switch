@@ -170,11 +170,12 @@ gst_case_create_pipeline (GstCase * cas)
   desc = g_string_new ("");
 
   switch (cas->type) {
-  case GST_CASE_BRANCH_A:
+  case GST_CASE_BRANCH_a:
     g_string_append_printf (desc, "interaudiosrc name=source "
 	"channel=branch_%d ", cas->sink_port);
     break;
-  case GST_CASE_BRANCH_V:
+  case GST_CASE_BRANCH_A:
+  case GST_CASE_BRANCH_B:
     g_string_append_printf (desc, "intervideosrc name=source "
 	"channel=branch_%d ", cas->sink_port);
     break;
@@ -197,16 +198,20 @@ gst_case_create_pipeline (GstCase * cas)
 	  , cas->b_width, cas->b_height);
     }
 #if 1
+    g_string_append_printf (desc, "intervideosink name=sink1 "
+	"channel=branch_%d ", cas->sink_port);
+    g_string_append_printf (desc, "intervideosink name=sink2 "
+	"channel=%s ", channel);
+    g_string_append_printf (desc, "source. ! gdpdepay ! tee name=vs ");
+    g_string_append_printf (desc, "vs. ! queue2 ! videoscale "
+	"! video/x-raw,width=%d,height=%d ! sink1. ",
+	cas->a_width, cas->a_height);
+    g_string_append_printf (desc, "vs. ! queue2 ! %s ! sink2. ", convert);
+#else
     g_string_append_printf (desc, "intervideosink name=sink channel=%s ",
 	channel);
     g_string_append_printf (desc, "source. ! gdpdepay ! %s ! sink. ",
 	convert);
-#else
-    g_string_append_printf (desc, "source. ! tee name=vs ");
-    g_string_append_printf (desc, "vs. ! queue2 ! "
-	"intervideosink name=sink1 channel=branch_%d ", cas->sink_port);
-    g_string_append_printf (desc, "vs. ! queue2 ! "
-	"intervideosink name=sink2 channel=%s ", channel);
 #endif
     break;
   case GST_CASE_COMPOSITE_a:
@@ -217,7 +222,13 @@ gst_case_create_pipeline (GstCase * cas)
 	"interaudiosink name=sink2 channel=composite_audio ");
     break;
   case GST_CASE_BRANCH_A:
-  case GST_CASE_BRANCH_V:
+  case GST_CASE_BRANCH_B:
+    g_string_append_printf (desc, "tcpserversink name=sink "
+	"port=%d ", cas->sink_port);
+    g_string_append_printf (desc, "source. ! video/x-raw,width=%d,height=%d "
+	"! gdppay ! sink. ", cas->a_width, cas->a_height);
+    break;
+  case GST_CASE_BRANCH_a:
     g_string_append_printf (desc, "tcpserversink name=sink "
 	"port=%d ", cas->sink_port);
     g_string_append_printf (desc, "source. ! faac ! gdppay ! sink. ");
@@ -272,7 +283,8 @@ gst_case_prepare (GstCase *cas)
     break;
 
   case GST_CASE_BRANCH_A:
-  case GST_CASE_BRANCH_V:
+  case GST_CASE_BRANCH_B:
+  case GST_CASE_BRANCH_a:
     break;
   }
  

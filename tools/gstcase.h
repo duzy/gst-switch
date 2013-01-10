@@ -42,8 +42,9 @@ typedef enum {
   GST_CASE_COMPOSITE_A,
   GST_CASE_COMPOSITE_B,
   GST_CASE_COMPOSITE_a, /* composite audio */
-  GST_CASE_BRANCH_A, /* audio branch */
-  GST_CASE_BRANCH_V, /* video branch */
+  GST_CASE_BRANCH_A, /* video branch */
+  GST_CASE_BRANCH_B, /* video branch */
+  GST_CASE_BRANCH_a, /* audio branch */
   GST_CASE_PREVIEW,
 } GstCaseType;
 

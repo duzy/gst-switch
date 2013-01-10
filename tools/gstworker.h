@@ -38,6 +38,7 @@ typedef struct _GstWorker GstWorker;
 typedef struct _GstWorkerClass GstWorkerClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
+typedef GString *(*GstWorkerGetPipelineString) (GstWorker *worker);
 typedef GstElement *(*GstWorkerCreatePipelineFunc) (GstWorker *worker);
 typedef gboolean (*GstWorkerPrepareFunc) (GstWorker *worker);
 typedef void (*GstWorkerNullStateFunc) (GstWorker *worker);
@@ -55,6 +56,9 @@ struct _GstWorker
   GstElement *source;
   GstElement *sink;
 
+  GstWorkerGetPipelineString pipeline_func;
+  GString *pipeline_string;
+
   gboolean paused_for_buffering;
   guint timer_id;
 };
@@ -63,6 +67,7 @@ struct _GstWorkerClass
 {
   GObjectClass base_class;
 
+  GString *(*get_pipeline_string) (GstWorker *worker);
   GstElement *(*create_pipeline) (GstWorker *worker);
   gboolean (*prepare) (GstWorker *worker);
   void (*null_state) (GstWorker *worker);

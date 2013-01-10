@@ -49,6 +49,8 @@ gst_worker_init (GstWorker *worker)
   worker->pipeline = NULL;
   worker->source = NULL;
   worker->sink = NULL;
+  worker->pipeline_func = NULL;
+  worker->pipeline_string = NULL;
   worker->paused_for_buffering = FALSE;
   worker->timer_id = -1;
 }
@@ -78,6 +80,11 @@ gst_worker_finalize (GstWorker *worker)
     gst_element_set_state (worker->pipeline, GST_STATE_NULL);
     gst_object_unref (worker->pipeline);
     worker->pipeline = NULL;
+  }
+
+  if (worker->pipeline_string) {
+    g_string_free (worker->pipeline_string, FALSE);
+    worker->pipeline_string = NULL;
   }
 
   INFO ("Worker finalized");
@@ -114,6 +121,41 @@ gst_worker_get_property (GstWorker *worker, guint property_id,
   }
 }
 
+static GString *
+gst_worker_get_pipeline_string (GstWorker *worker)
+{
+  GString *desc = NULL;
+  if (worker->pipeline_func)
+    desc = worker->pipeline_func (worker);
+  if (!desc && worker->pipeline_string)
+    desc = g_string_new (worker->pipeline_string->str);
+  if (!desc)
+    desc = g_string_new ("");
+  return desc;
+}
+
+static GstElement *
+gst_worker_create_pipeline (GstWorker *worker)
+{
+  GstWorkerClass *workerclass = GST_WORKER_CLASS (
+      G_OBJECT_GET_CLASS (worker));
+
+  GString *desc = workerclass->get_pipeline_string (worker);
+  GstElement *pipeline;
+  GError *error = NULL;
+
+  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
+  g_string_free (desc, FALSE);
+
+  if (error) {
+    ERROR ("%s: pipeline parsing error: %s", worker->name, error->message);
+    gst_object_unref (pipeline);
+    return NULL;
+  }
+
+  return pipeline;
+}
+
 static void
 gst_worker_class_init (GstWorkerClass *klass)
 {
@@ -126,6 +168,9 @@ gst_worker_class_init (GstWorkerClass *klass)
   g_object_class_install_property (object_class, PROP_NAME,
       g_param_spec_string ("name", "Name", "Name of the case",
           "", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  klass->get_pipeline_string = gst_worker_get_pipeline_string;
+  klass->create_pipeline = gst_worker_create_pipeline;
 
   INFO ("Worker initialized");
 }
@@ -396,13 +441,13 @@ gst_worker_prepare (GstWorker *worker)
 
  error_create_pipeline_not_installed:
   {
-    ERROR ("create_pipeline was not installed");
+    ERROR ("%s: create_pipeline was not installed", worker->name);
     return FALSE;
   }
 
  error_create_pipeline:
   {
-    ERROR ("failed to create new pipeline");
+    ERROR ("%s: failed to create new pipeline", worker->name);
     return FALSE;
   }
 }

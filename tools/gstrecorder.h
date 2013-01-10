@@ -43,6 +43,9 @@ struct _GstRecorder
   gint sink_port;
   guint width;
   guint height;
+
+  GstWorker *write_disk;
+  GstWorker *write_tcp;
 };
 
 struct _GstRecorderClass
