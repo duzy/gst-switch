@@ -144,6 +144,10 @@ gst_worker_create_pipeline (GstWorker *worker)
   GstElement *pipeline;
   GError *error = NULL;
 
+  if (verbose) {
+    g_print ("%s: %s\n", worker->name, desc->str);
+  }
+
   pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
   g_string_free (desc, FALSE);
 
