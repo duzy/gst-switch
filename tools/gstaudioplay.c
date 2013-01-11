@@ -93,11 +93,9 @@ gst_audio_play_get_property (GstAudioPlay *audio_play, guint property_id,
   }
 }
 
-static GstElement *
-gst_audio_play_create_pipeline (GstAudioPlay *audio_play)
+static GString *
+gst_audio_play_get_pipeline_string (GstAudioPlay *audio_play)
 {
-  GstElement *pipeline;
-  GError *error = NULL;
   GString *desc;
 
   INFO ("play audio %d", audio_play->port);
@@ -109,19 +107,7 @@ gst_audio_play_create_pipeline (GstAudioPlay *audio_play)
   g_string_append_printf (desc, "! gdpdepay ! faad ");
   g_string_append_printf (desc, "! autoaudiosink name=sink ");
 
-  if (verbose)
-    g_print ("pipeline: %s\n", desc->str);
-
-  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
-  g_string_free (desc, FALSE);
-
-  if (error) {
-    ERROR ("pipeline parsing error: %s", error->message);
-    gst_object_unref (pipeline);
-    return NULL;
-  }
-
-  return pipeline;
+  return desc;
 }
 
 static void
@@ -158,6 +144,6 @@ gst_audio_play_class_init (GstAudioPlayClass *klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_play_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_play_prepare;
-  worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_audio_play_create_pipeline;
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+    gst_audio_play_get_pipeline_string;
 }

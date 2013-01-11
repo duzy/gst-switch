@@ -174,12 +174,10 @@ gst_composite_get_property (GstComposite * composite, guint property_id,
   }
 }
 
-static GstElement *
-gst_composite_create_pipeline (GstComposite * composite)
+static GString *
+gst_composite_get_pipeline_string (GstComposite * composite)
 {
   GString *desc;
-  GstElement *pipeline;
-  GError *error = NULL;
   gint ax = composite->a_x;
   gint ay = composite->a_y;
   gint bx = composite->b_x;
@@ -223,19 +221,7 @@ gst_composite_create_pipeline (GstComposite * composite)
 #endif
   }
 
-  if (verbose)
-    g_print ("pipeline: %s\n", desc->str);
-
-  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
-  g_string_free (desc, FALSE);
-
-  if (error) {
-    ERROR ("pipeline parsing error: %s", error->message);
-    gst_object_unref (pipeline);
-    return NULL;
-  }
-
-  return pipeline;
+  return desc;
 }
 
 static void
@@ -340,6 +326,6 @@ gst_composite_class_init (GstCompositeClass * klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_composite_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
-  worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_composite_create_pipeline;
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+    gst_composite_get_pipeline_string;
 }

@@ -128,7 +128,6 @@ static GString *
 gst_recorder_get_write_disk_string (GstRecorder *rec)
 {
   GString *desc = g_string_new ("");
-  g_string_append_printf (desc, "");
   return desc;
 }
 
@@ -136,15 +135,12 @@ static GString *
 gst_recorder_get_write_tcp_string (GstRecorder *rec)
 {
   GString *desc = g_string_new ("");
-  g_string_append_printf (desc, "");
   return desc;
 }
 
-static GstElement *
-gst_recorder_create_pipeline (GstRecorder * rec)
+static GString *
+gst_recorder_get_pipeline_string (GstRecorder * rec)
 {
-  GstElement *pipeline;
-  GError *error = NULL;
   GString *desc;
   const gchar *filename = opts.record_filename;
   if (!filename) {
@@ -174,19 +170,7 @@ gst_recorder_create_pipeline (GstRecorder * rec)
   g_string_append_printf (desc, "result. ! queue2 ! disk_sink. ");
   g_string_append_printf (desc, "result. ! queue2 ! gdppay ! tcp_sink. ");
 
-  if (verbose)
-    g_print ("pipeline: %s\n", desc->str);
-
-  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
-  g_string_free (desc, FALSE);
-
-  if (error) {
-    ERROR ("pipeline parsing error: %s", error->message);
-    gst_object_unref (pipeline);
-    return NULL;
-  }
-
-  return pipeline;
+  return desc;
 }
 
 static gboolean
@@ -228,6 +212,8 @@ gst_recorder_prepare (GstRecorder *rec)
     rec->write_tcp->pipeline_string = NULL;
     return FALSE;
   }
+#else
+  return TRUE;
 #endif
 }
 
@@ -274,6 +260,6 @@ gst_recorder_class_init (GstRecorderClass * klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_recorder_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;
-  worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_recorder_create_pipeline;
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+    gst_recorder_get_pipeline_string;
 }

@@ -93,11 +93,9 @@ gst_audio_visual_get_property (GstAudioVisual *disp, guint property_id,
   }
 }
 
-static GstElement *
-gst_audio_visual_create_pipeline (GstAudioVisual *disp)
+static GString *
+gst_audio_visual_get_pipeline_string (GstAudioVisual *disp)
 {
-  GstElement *pipeline;
-  GError *error = NULL;
   GString *desc;
 
   INFO ("display video %d", disp->port);
@@ -111,19 +109,7 @@ gst_audio_visual_create_pipeline (GstAudioVisual *disp)
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! xvimagesink name=sink ");
 
-  if (verbose)
-    g_print ("pipeline: %s\n", desc->str);
-
-  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
-  g_string_free (desc, FALSE);
-
-  if (error) {
-    ERROR ("pipeline parsing error: %s", error->message);
-    gst_object_unref (pipeline);
-    return NULL;
-  }
-
-  return pipeline;
+  return desc;
 }
 
 static void
@@ -165,6 +151,6 @@ gst_audio_visual_class_init (GstAudioVisualClass *klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_visual_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_visual_prepare;
-  worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_audio_visual_create_pipeline;
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+    gst_audio_visual_get_pipeline_string;
 }
