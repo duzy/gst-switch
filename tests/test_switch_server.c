@@ -81,7 +81,9 @@ testcase_state_change (TestCase *t, GstState oldstate, GstState newstate, GstSta
   case GST_STATE_CHANGE_PAUSED_TO_READY:
     break;    
   case GST_STATE_CHANGE_READY_TO_NULL:
+    /*
     INFO ("quit: %s\n", t->name);
+    */
     testcase_ok (t);
     break;
   default:
@@ -127,7 +129,9 @@ testcase_pipeline_message (GstBus * bus, GstMessage * message, gpointer data)
   } break;
   default:
   {
+    /*
     INFO ("%s: %s", GST_OBJECT_NAME (message->src), GST_MESSAGE_TYPE_NAME (message));
+    */
   } break;
   }
   return TRUE;
@@ -160,68 +164,6 @@ testcase_launch_pipeline (TestCase *t)
   return TRUE;
 }
 
-static void
-testcase_server_activate (GApplication *app)
-{
-  g_application_hold (app);
-  INFO ("activated");
-  g_application_release (app);
-}
-
-static void
-testcase_server_open (GApplication  *application, GFile **files,
-    gint n_files, const gchar *hint)
-{
-  gint i;
-
-  g_application_hold (application);
-  g_print ("open");
-
-  for (i = 0; i < n_files; i++) {
-    gchar *uri = g_file_get_uri (files[i]);
-    g_print (" %s", uri);
-    g_free (uri);
-  }
-
-  g_application_release (application);
-
-  g_print ("\n");
-}
-
-static int
-testcase_server_command_line (GApplication *app, GApplicationCommandLine *cmdline)
-{
-  gint argc, i;
-  gchar **argv;
-  argv = g_application_command_line_get_arguments (cmdline, &argc);
-  /*
-  g_application_command_line_print (cmdline, "./tools/gst-switch-srv ");
-  g_application_command_line_print (cmdline, "-v");
-  g_application_command_line_print (cmdline, " --gst-debug-no-color\n");
-  INFO ("cmd: %d, %s", argc, argv[0]);
-  */
-  for (i = 0; i < argc; ++i) INFO ("argument: %s", argv[i]);
-  g_strfreev (argv);
-  return 0;
-}
-
-#if 0
-static gpointer
-testcase_run_server (TestCase *t)
-{
-  GString *cmd = g_string_new ("./tools/gst-switch-srv");
-  gint cmdret;
-  g_string_append_printf (cmd, " -v");
-  g_string_append_printf (cmd, " --gst-debug-no-color");
-  cmdret = system (cmd->str);
-  g_string_free (cmd, FALSE);
-  if (cmdret) {
-    ERROR ("error-exit: %d", cmdret);
-  }
-  return NULL;
-}
-#endif
-
 static GPid
 launch_server ()
 {
@@ -240,7 +182,9 @@ launch_server ()
     ERROR ("spawn: %s", error->message);
     return 0;
   }
+  /*
   INFO ("server: %d", pid);
+  */
   return pid;
 }
 
@@ -261,16 +205,19 @@ launch_ui ()
     ERROR ("spawn: %s", error->message);
     return 0;
   }
-  INFO ("server: %d", pid);
+  /*
+  INFO ("UI: %d", pid);
+  */
   return pid;
 }
 
 static void
-close_server(GPid server_pid)
+close_pid (GPid pid)
 {
-  //kill (server_pid, SIGKILL);
-  kill (server_pid, SIGTERM);
-  g_spawn_close_pid (server_pid);
+  //kill (pid, SIGKILL);
+  kill (pid, SIGTERM);
+  g_spawn_close_pid (pid);
+  sleep (2); /* give a second for cleaning up */
 }
 
 static gboolean
@@ -419,7 +366,7 @@ test_video (void)
   g_thread_unref (thread_sink2);
   g_thread_unref (thread_sink3);
 
-  close_server (server_pid);
+  close_pid (server_pid);
 
   g_assert_cmpstr (source1.name, ==, "test_video_source1");
   g_assert_cmpint (source1.timer, ==, 0);
@@ -550,7 +497,7 @@ test_audio (void)
 
   server_pid = launch_server ();
   g_assert_cmpint (server_pid, !=, 0);
-  sleep (2); /* give a second for server to be online */
+  sleep (3); /* give a second for server to be online */
 
   thread_source1 = testcase_run_thread (&source1, source1.name);
   thread_source2 = testcase_run_thread (&source2, source2.name);
@@ -572,7 +519,7 @@ test_audio (void)
   g_thread_unref (thread_sink2);
   g_thread_unref (thread_sink3);
 
-  close_server (server_pid);
+  close_pid (server_pid);
 
   g_assert_cmpint (source1.timer, ==, 0);
   g_assert (source1.desc == NULL);
@@ -637,19 +584,19 @@ test_ui (void)
   video_source1.live_seconds = seconds;
   video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
   g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
-  g_string_append_printf (video_source1.desc, "! %s text=video_source1 ", textoverlay);
+  g_string_append_printf (video_source1.desc, "! %s text=video1 ", textoverlay);
   g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source2.live_seconds = seconds;
   video_source2.desc = g_string_new ("videotestsrc pattern=1 ");
   g_string_append_printf (video_source2.desc, "! video/x-raw,width=1280,height=720 ");
-  g_string_append_printf (video_source2.desc, "! %s text=video_source2 ", textoverlay);
+  g_string_append_printf (video_source2.desc, "! %s text=video2 ", textoverlay);
   g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source3.live_seconds = seconds;
   video_source3.desc = g_string_new ("videotestsrc pattern=15 ");
   g_string_append_printf (video_source3.desc, "! video/x-raw,width=1280,height=720 ");
-  g_string_append_printf (video_source3.desc, "! %s text=video_source3 ", textoverlay);
+  g_string_append_printf (video_source3.desc, "! %s text=video3 ", textoverlay);
   g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   audio_source1.live_seconds = seconds;
@@ -667,18 +614,18 @@ test_ui (void)
 
   server_pid = launch_server ();
   g_assert_cmpint (server_pid, !=, 0);
-  sleep (2); /* give a second for server to be online */
+  sleep (3); /* give a second for server to be online */
 
   ui_pid = launch_ui ();
   g_assert_cmpint (ui_pid, !=, 0);
   sleep (1); /* give a second for ui to be ready */
 
-  thread_video_source1 = testcase_run_thread (&video_source1, video_source1.name);
-  thread_video_source2 = testcase_run_thread (&video_source2, video_source2.name);
-  thread_video_source3 = testcase_run_thread (&video_source3, video_source3.name);
-  thread_audio_source1 = testcase_run_thread (&audio_source1, audio_source1.name);
-  thread_audio_source2 = testcase_run_thread (&audio_source2, audio_source2.name);
-  thread_audio_source3 = testcase_run_thread (&audio_source3, audio_source3.name);
+  thread_video_source1 = testcase_run_thread (&video_source1, video_source1.name); //sleep (1);
+  thread_video_source2 = testcase_run_thread (&video_source2, video_source2.name); //sleep (1);
+  thread_video_source3 = testcase_run_thread (&video_source3, video_source3.name); //sleep (1);
+  thread_audio_source1 = testcase_run_thread (&audio_source1, audio_source1.name); //sleep (1);
+  thread_audio_source2 = testcase_run_thread (&audio_source2, audio_source2.name); //sleep (1);
+  thread_audio_source3 = testcase_run_thread (&audio_source3, audio_source3.name); //sleep (1);
   g_thread_join (thread_video_source1);
   g_thread_join (thread_video_source2);
   g_thread_join (thread_video_source3);
@@ -692,8 +639,8 @@ test_ui (void)
   g_thread_unref (thread_audio_source2);
   g_thread_unref (thread_audio_source3);
 
-  close_server (ui_pid);
-  close_server (server_pid);
+  close_pid (ui_pid);
+  close_pid (server_pid);
 }
 
 static void
