@@ -244,6 +244,27 @@ launch_server ()
   return pid;
 }
 
+static GPid
+launch_ui ()
+{
+  GPid pid = 0;
+  gchar *argv[] = {
+    "./tools/gst-switch-ui", "-v",
+    "--gst-debug-no-color",
+    NULL
+  };
+  GError *error = NULL;
+  gboolean ok;
+  ok = g_spawn_async (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
+      NULL, NULL, &pid, &error);
+  if (!ok) {
+    ERROR ("spawn: %s", error->message);
+    return 0;
+  }
+  INFO ("server: %d", pid);
+  return pid;
+}
+
 static void
 close_server(GPid server_pid)
 {
@@ -589,6 +610,106 @@ test_audio_recording_result (void)
   }
 }
 
+static void
+test_ui (void)
+{
+  const gint seconds = 40;
+  GPid server_pid;
+  GPid ui_pid;
+  GThread *thread_video_source1;
+  GThread *thread_video_source2;
+  GThread *thread_video_source3;
+  GThread *thread_audio_source1;
+  GThread *thread_audio_source2;
+  GThread *thread_audio_source3;
+  TestCase video_source1 = { "test_video_source1", 0 };
+  TestCase video_source2 = { "test_video_source2", 0 };
+  TestCase video_source3 = { "test_video_source3", 0 };
+  TestCase audio_source1 = { "test_audio_source1", 0 };
+  TestCase audio_source2 = { "test_audio_source2", 0 };
+  TestCase audio_source3 = { "test_audio_source3", 0 };
+  const gchar *textoverlay = "textoverlay "
+    "font-desc=\"Sans 80\" "
+    "auto-resize=true "
+    "shaded-background=true "
+    ;
+
+  video_source1.live_seconds = seconds;
+  video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
+  g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
+  g_string_append_printf (video_source1.desc, "! %s text=video_source1 ", textoverlay);
+  g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  video_source2.live_seconds = seconds;
+  video_source2.desc = g_string_new ("videotestsrc pattern=1 ");
+  g_string_append_printf (video_source2.desc, "! video/x-raw,width=1280,height=720 ");
+  g_string_append_printf (video_source2.desc, "! %s text=video_source2 ", textoverlay);
+  g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  video_source3.live_seconds = seconds;
+  video_source3.desc = g_string_new ("videotestsrc pattern=15 ");
+  g_string_append_printf (video_source3.desc, "! video/x-raw,width=1280,height=720 ");
+  g_string_append_printf (video_source3.desc, "! %s text=video_source3 ", textoverlay);
+  g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  audio_source1.live_seconds = seconds;
+  audio_source1.desc = g_string_new ("audiotestsrc ");
+  //g_string_append_printf (audio_source1.desc, "! audio/x-raw ");
+  g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
+
+  audio_source2.live_seconds = seconds;
+  audio_source2.desc = g_string_new ("audiotestsrc ");
+  g_string_append_printf (audio_source2.desc, "! gdppay ! tcpclientsink port=4000");
+
+  audio_source3.live_seconds = seconds;
+  audio_source3.desc = g_string_new ("audiotestsrc ");
+  g_string_append_printf (audio_source3.desc, "! gdppay ! tcpclientsink port=4000");
+
+  server_pid = launch_server ();
+  g_assert_cmpint (server_pid, !=, 0);
+  sleep (2); /* give a second for server to be online */
+
+  ui_pid = launch_ui ();
+  g_assert_cmpint (ui_pid, !=, 0);
+  sleep (1); /* give a second for ui to be ready */
+
+  thread_video_source1 = testcase_run_thread (&video_source1, video_source1.name);
+  thread_video_source2 = testcase_run_thread (&video_source2, video_source2.name);
+  thread_video_source3 = testcase_run_thread (&video_source3, video_source3.name);
+  thread_audio_source1 = testcase_run_thread (&audio_source1, audio_source1.name);
+  thread_audio_source2 = testcase_run_thread (&audio_source2, audio_source2.name);
+  thread_audio_source3 = testcase_run_thread (&audio_source3, audio_source3.name);
+  g_thread_join (thread_video_source1);
+  g_thread_join (thread_video_source2);
+  g_thread_join (thread_video_source3);
+  g_thread_join (thread_audio_source1);
+  g_thread_join (thread_audio_source2);
+  g_thread_join (thread_audio_source3);
+  g_thread_unref (thread_video_source1);
+  g_thread_unref (thread_video_source2);
+  g_thread_unref (thread_video_source3);
+  g_thread_unref (thread_audio_source1);
+  g_thread_unref (thread_audio_source2);
+  g_thread_unref (thread_audio_source3);
+
+  close_server (ui_pid);
+  close_server (server_pid);
+}
+
+static void
+test_recording_result (void)
+{
+  {
+    GFile *file = g_file_new_for_path ("test-recording.data");
+    GError *error = NULL;
+    g_assert (g_file_query_exists (file, NULL));
+    g_assert (g_file_delete (file, NULL, &error));
+    g_assert (error == NULL);
+    g_assert (!g_file_query_exists (file, NULL));
+    g_object_unref (file);
+  }
+}
+
 int main (int argc, char**argv)
 {
   gst_init (&argc, &argv);
@@ -598,5 +719,7 @@ int main (int argc, char**argv)
   g_test_add_func ("/gst-switch/video-recording-result", test_video_recording_result);
   g_test_add_func ("/gst-switch/audio", test_audio);
   g_test_add_func ("/gst-switch/audio-recording-result", test_audio_recording_result);
+  g_test_add_func ("/gst-switch/ui", test_ui);
+  g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   return g_test_run ();
 }
