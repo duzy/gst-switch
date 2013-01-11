@@ -73,10 +73,10 @@ struct _GstWorkerClass
   void (*null_state) (GstWorker *worker);
 };
 
+GType gst_worker_get_type (void);
+
 gboolean gst_worker_prepare (GstWorker *worker);
 void gst_worker_start (GstWorker *worker);
 void gst_worker_stop (GstWorker *worker);
-
-GType gst_worker_get_type (void);
 
 #endif//__GST_WORKER_H__by_Duzy_Chan__

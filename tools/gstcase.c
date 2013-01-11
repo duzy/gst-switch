@@ -158,11 +158,9 @@ gst_case_set_property (GstCase *cas, guint property_id,
   }
 }
 
-static GstElement *
-gst_case_create_pipeline (GstCase * cas)
+static GString *
+gst_case_get_pipeline_string (GstCase * cas)
 {
-  GstElement *pipeline;
-  GError *error = NULL;
   GString *desc;
   gchar *channel = NULL;
   gchar *convert = NULL;
@@ -197,22 +195,15 @@ gst_case_create_pipeline (GstCase * cas)
 	  "! videoscale ! video/x-raw,width=%d,height=%d "
 	  , cas->b_width, cas->b_height);
     }
-#if 1
     g_string_append_printf (desc, "intervideosink name=sink1 "
 	"channel=branch_%d ", cas->sink_port);
     g_string_append_printf (desc, "intervideosink name=sink2 "
 	"channel=%s ", channel);
     g_string_append_printf (desc, "source. ! gdpdepay ! tee name=vs ");
     g_string_append_printf (desc, "vs. ! queue2 ! videoscale "
-	"! video/x-raw,width=%d,height=%d ! sink1. ",
-	cas->a_width, cas->a_height);
+	"! video/x-raw,width=%d,height=%d ! sink1. "
+	, cas->a_width, cas->a_height);
     g_string_append_printf (desc, "vs. ! queue2 ! %s ! sink2. ", convert);
-#else
-    g_string_append_printf (desc, "intervideosink name=sink channel=%s ",
-	channel);
-    g_string_append_printf (desc, "source. ! gdpdepay ! %s ! sink. ",
-	convert);
-#endif
     break;
   case GST_CASE_COMPOSITE_a:
     g_string_append_printf (desc, "source. ! tee name=as ");
@@ -250,19 +241,7 @@ gst_case_create_pipeline (GstCase * cas)
   g_free (convert);
   convert = NULL;
 
-  if (verbose)
-    g_print ("pipeline: %s\n", desc->str);
-
-  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
-  g_string_free (desc, FALSE);
-
-  if (error) {
-    ERROR ("pipeline parsing error: %s", error->message);
-    gst_object_unref (pipeline);
-    return NULL;
-  }
-
-  return pipeline;
+  return desc;
 }
 
 static gboolean
@@ -358,6 +337,6 @@ gst_case_class_init (GstCaseClass * klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_case_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;
-  worker_class->create_pipeline = (GstWorkerCreatePipelineFunc)
-    gst_case_create_pipeline;
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+    gst_case_get_pipeline_string;
 }
