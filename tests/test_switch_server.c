@@ -37,6 +37,8 @@ struct _TestCase
   const gchar *name;
   GMainLoop *mainloop;
   GstElement *pipeline;
+  GMutex lock;
+  GThread *thread;
   GString *desc;
   gint timer;
   gint live_seconds;
@@ -94,7 +96,7 @@ testcase_state_change (TestCase *t, GstState oldstate, GstState newstate, GstSta
 static void
 testcase_error_message (TestCase *t, GError *error, const gchar *info)
 {
-  ERROR ("error (%s): %s", t->name, error->message);
+  ERROR ("%s: %s", t->name, error->message);
 
   /*
   g_print ("%s\n", info);
@@ -283,6 +285,8 @@ testcase_second_timer (TestCase *t)
 static gpointer
 testcase_run (TestCase *t)
 {
+  g_mutex_init (&t->lock);
+
   g_print ("========== %s\n", t->name);
   t->mainloop = g_main_loop_new (NULL, TRUE);
   if (testcase_launch_pipeline (t)) {
@@ -302,13 +306,34 @@ testcase_run (TestCase *t)
   t->pipeline = NULL;
   t->desc = NULL;
   t->timer = 0;
+
+  if (t->error_count)
+    ERROR ("%s: %d errors", t->name, t->error_count);
+
+  g_mutex_lock (&t->lock);
+  g_thread_unref (t->thread);
+  t->thread = NULL;
+  g_mutex_unlock (&t->lock);
   return NULL;
 }
 
-static GThread *
-testcase_run_thread (TestCase *testcase, const gchar *name)
+static void
+testcase_run_thread (TestCase *t)
 {
-  return g_thread_new (name, (GThreadFunc) testcase_run, testcase);
+  t->thread = g_thread_new (t->name, (GThreadFunc) testcase_run, t);
+}
+
+static void
+testcase_join (TestCase *t)
+{
+  GThread *thread = NULL;
+  g_mutex_lock (&t->lock);
+  if (t->thread) {
+    thread = t->thread;
+    g_thread_ref (thread);
+  }
+  g_mutex_unlock (&t->lock);
+  if (thread) g_thread_join (thread);
 }
 
 static void
@@ -322,15 +347,8 @@ test_controller (void)
 static void
 test_video (void)
 {
-  const gint seconds = 30;
+  const gint seconds = 15;
   GPid server_pid;
-  GThread *thread_source1;
-  GThread *thread_source2;
-  GThread *thread_source3;
-  GThread *thread_sink0;
-  GThread *thread_sink1;
-  GThread *thread_sink2;
-  GThread *thread_sink3;
   TestCase source1 = { "test_video_source1", 0 };
   TestCase source2 = { "test_video_source2", 0 };
   TestCase source3 = { "test_video_source3", 0 };
@@ -345,6 +363,13 @@ test_video (void)
     ;
 
   g_print ("\n");
+  g_assert (!source1.thread);
+  g_assert (!source2.thread);
+  g_assert (!source3.thread);
+  g_assert (!sink0.thread);
+  g_assert (!sink1.thread);
+  g_assert (!sink2.thread);
+  g_assert (!sink3.thread);
 
   source1.live_seconds = seconds;
   source1.desc = g_string_new ("videotestsrc pattern=0 ");
@@ -392,30 +417,22 @@ test_video (void)
   g_assert_cmpint (server_pid, !=, 0);
   sleep (2); /* give a second for server to be online */
 
-  thread_source1 = testcase_run_thread (&source1, source1.name);
+  testcase_run_thread (&source1);
   sleep (1); /* give a second for source1 to be online */
-  thread_source2 = testcase_run_thread (&source2, source2.name);
-  thread_source3 = testcase_run_thread (&source3, source3.name);
+  testcase_run_thread (&source2);
+  testcase_run_thread (&source3);
   sleep (1); /* give a second for sources to be online */
-  thread_sink0 = testcase_run_thread (&sink0, sink0.name);
-  thread_sink1 = testcase_run_thread (&sink1, sink1.name);
-  thread_sink2 = testcase_run_thread (&sink2, sink2.name);
-  thread_sink3 = testcase_run_thread (&sink3, sink3.name);
-
-  g_thread_join (thread_source1);
-  g_thread_join (thread_source2);
-  g_thread_join (thread_source3);
-  g_thread_join (thread_sink0);
-  g_thread_join (thread_sink1);
-  g_thread_join (thread_sink2);
-  g_thread_join (thread_sink3);
-  g_thread_unref (thread_source1);
-  g_thread_unref (thread_source2);
-  g_thread_unref (thread_source3);
-  g_thread_unref (thread_sink0);
-  g_thread_unref (thread_sink1);
-  g_thread_unref (thread_sink2);
-  g_thread_unref (thread_sink3);
+  testcase_run_thread (&sink0);
+  testcase_run_thread (&sink1);
+  testcase_run_thread (&sink2);
+  testcase_run_thread (&sink3);
+  testcase_join (&source1);
+  testcase_join (&source2);
+  testcase_join (&source3);
+  testcase_join (&sink0);
+  testcase_join (&sink1);
+  testcase_join (&sink2);
+  testcase_join (&sink3);
 
   close_pid (server_pid);
 
@@ -424,56 +441,42 @@ test_video (void)
   g_assert (source1.desc == NULL);
   g_assert (source1.mainloop == NULL);
   g_assert (source1.pipeline == NULL);
-  if (source1.error_count)
-    ERROR ("%s: %d errors", source1.name, source1.error_count);
 
   g_assert_cmpstr (source2.name, ==, "test_video_source2");
   g_assert_cmpint (source2.timer, ==, 0);
   g_assert (source2.desc == NULL);
   g_assert (source2.mainloop == NULL);
   g_assert (source2.pipeline == NULL);
-  if (source2.error_count)
-    ERROR ("%s: %d errors", source2.name, source2.error_count);
 
   g_assert_cmpstr (source3.name, ==, "test_video_source3");
   g_assert_cmpint (source3.timer, ==, 0);
   g_assert (source3.desc == NULL);
   g_assert (source3.mainloop == NULL);
   g_assert (source3.pipeline == NULL);
-  if (source3.error_count)
-    ERROR ("%s: %d errors", source3.name, source3.error_count);
 
   g_assert_cmpstr (sink0.name, ==, "test_video_compose_sink");
   g_assert_cmpint (sink0.timer, ==, 0);
   g_assert (sink0.desc == NULL);
   g_assert (sink0.mainloop == NULL);
   g_assert (sink0.pipeline == NULL);
-  if (sink0.error_count)
-    ERROR ("%s: %d errors", sink0.name, sink0.error_count);
 
   g_assert_cmpstr (sink1.name, ==, "test_video_preview_sink1");
   g_assert_cmpint (sink1.timer, ==, 0);
   g_assert (sink1.desc == NULL);
   g_assert (sink1.mainloop == NULL);
   g_assert (sink1.pipeline == NULL);
-  if (sink1.error_count)
-    ERROR ("%s: %d errors", sink1.name, sink1.error_count);
 
   g_assert_cmpstr (sink2.name, ==, "test_video_preview_sink2");
   g_assert_cmpint (sink2.timer, ==, 0);
   g_assert (sink2.desc == NULL);
   g_assert (sink2.mainloop == NULL);
   g_assert (sink2.pipeline == NULL);
-  if (sink2.error_count)
-    ERROR ("%s: %d errors", sink2.name, sink2.error_count);
 
   g_assert_cmpstr (sink3.name, ==, "test_video_preview_sink3");
   g_assert_cmpint (sink3.timer, ==, 0);
   g_assert (sink3.desc == NULL);
   g_assert (sink3.mainloop == NULL);
   g_assert (sink3.pipeline == NULL);
-  if (sink3.error_count)
-    ERROR ("%s: %d errors", sink3.name, sink3.error_count);
 
   {
     GFile *file = g_file_new_for_path ("test-recording.data");
@@ -500,13 +503,7 @@ test_video_recording_result (void)
 static void
 test_audio (void)
 {
-  const gint seconds = 30;
-  GThread *thread_source1;
-  GThread *thread_source2;
-  GThread *thread_source3;
-  GThread *thread_sink1;
-  GThread *thread_sink2;
-  GThread *thread_sink3;
+  const gint seconds = 15;
   TestCase source1 = { "test_audio_source1", 0 };
   TestCase source2 = { "test_audio_source2", 0 };
   TestCase source3 = { "test_audio_source3", 0 };
@@ -521,6 +518,12 @@ test_audio (void)
     ;
 
   g_print ("\n");
+  g_assert (!source1.thread);
+  g_assert (!source2.thread);
+  g_assert (!source3.thread);
+  g_assert (!sink1.thread);
+  g_assert (!sink2.thread);
+  g_assert (!sink3.thread);
 
   source1.live_seconds = seconds;
   source1.desc = g_string_new ("audiotestsrc ");
@@ -560,25 +563,19 @@ test_audio (void)
   g_assert_cmpint (server_pid, !=, 0);
   sleep (3); /* give a second for server to be online */
 
-  thread_source1 = testcase_run_thread (&source1, source1.name);
-  thread_source2 = testcase_run_thread (&source2, source2.name);
-  thread_source3 = testcase_run_thread (&source3, source3.name);
+  testcase_run_thread (&source1);
+  testcase_run_thread (&source2);
+  testcase_run_thread (&source3);
   sleep (2); /* give a second for audios to be online */
-  thread_sink1 = testcase_run_thread (&sink1, sink1.name);
-  thread_sink2 = testcase_run_thread (&sink2, sink2.name);
-  thread_sink3 = testcase_run_thread (&sink3, sink3.name);
-  g_thread_join (thread_source1);
-  g_thread_join (thread_source2);
-  g_thread_join (thread_source3);
-  g_thread_join (thread_sink1);
-  g_thread_join (thread_sink2);
-  g_thread_join (thread_sink3);
-  g_thread_unref (thread_source1);
-  g_thread_unref (thread_source2);
-  g_thread_unref (thread_source3);
-  g_thread_unref (thread_sink1);
-  g_thread_unref (thread_sink2);
-  g_thread_unref (thread_sink3);
+  testcase_run_thread (&sink1);
+  testcase_run_thread (&sink2);
+  testcase_run_thread (&sink3);
+  testcase_join (&source1);
+  testcase_join (&source2);
+  testcase_join (&source3);
+  testcase_join (&sink1);
+  testcase_join (&sink2);
+  testcase_join (&sink3);
 
   close_pid (server_pid);
 
@@ -586,29 +583,16 @@ test_audio (void)
   g_assert (source1.desc == NULL);
   g_assert (source1.mainloop == NULL);
   g_assert (source1.pipeline == NULL);
-  if (source1.error_count)
-    ERROR ("%s: %d errors", source1.name, source1.error_count);
 
   g_assert_cmpint (source2.timer, ==, 0);
   g_assert (source2.desc == NULL);
   g_assert (source2.mainloop == NULL);
   g_assert (source2.pipeline == NULL);
-  if (source2.error_count)
-    ERROR ("%s: %d errors", source2.name, source2.error_count);
 
   g_assert_cmpint (source3.timer, ==, 0);
   g_assert (source3.desc == NULL);
   g_assert (source3.mainloop == NULL);
   g_assert (source3.pipeline == NULL);
-  if (source3.error_count)
-    ERROR ("%s: %d errors", source3.name, source3.error_count);
-
-  if (sink1.error_count)
-    ERROR ("%s: %d errors", sink1.name, sink1.error_count);
-  if (sink2.error_count)
-    ERROR ("%s: %d errors", sink2.name, sink2.error_count);
-  if (sink3.error_count)
-    ERROR ("%s: %d errors", sink3.name, sink3.error_count);
 
   {
     GFile *file = g_file_new_for_path ("test-recording.data");
@@ -635,15 +619,9 @@ test_audio_recording_result (void)
 static void
 test_ui (void)
 {
-  const gint seconds = 40;
+  const gint seconds = 20;
   GPid server_pid;
   GPid ui_pid;
-  GThread *thread_video_source1;
-  GThread *thread_video_source2;
-  GThread *thread_video_source3;
-  GThread *thread_audio_source1;
-  GThread *thread_audio_source2;
-  GThread *thread_audio_source3;
   TestCase video_source1 = { "test_video_source1", 0 };
   TestCase video_source2 = { "test_video_source2", 0 };
   TestCase video_source3 = { "test_video_source3", 0 };
@@ -695,26 +673,20 @@ test_ui (void)
 
   ui_pid = launch_ui ();
   g_assert_cmpint (ui_pid, !=, 0);
-  sleep (1); /* give a second for ui to be ready */
+  sleep (2); /* give a second for ui to be ready */
 
-  thread_video_source1 = testcase_run_thread (&video_source1, video_source1.name); //sleep (1);
-  thread_video_source2 = testcase_run_thread (&video_source2, video_source2.name); //sleep (1);
-  thread_video_source3 = testcase_run_thread (&video_source3, video_source3.name); //sleep (1);
-  thread_audio_source1 = testcase_run_thread (&audio_source1, audio_source1.name); //sleep (1);
-  thread_audio_source2 = testcase_run_thread (&audio_source2, audio_source2.name); //sleep (1);
-  thread_audio_source3 = testcase_run_thread (&audio_source3, audio_source3.name); //sleep (1);
-  g_thread_join (thread_video_source1);
-  g_thread_join (thread_video_source2);
-  g_thread_join (thread_video_source3);
-  g_thread_join (thread_audio_source1);
-  g_thread_join (thread_audio_source2);
-  g_thread_join (thread_audio_source3);
-  g_thread_unref (thread_video_source1);
-  g_thread_unref (thread_video_source2);
-  g_thread_unref (thread_video_source3);
-  g_thread_unref (thread_audio_source1);
-  g_thread_unref (thread_audio_source2);
-  g_thread_unref (thread_audio_source3);
+  testcase_run_thread (&video_source1); //sleep (1);
+  testcase_run_thread (&video_source2); //sleep (1);
+  testcase_run_thread (&video_source3); //sleep (1);
+  testcase_run_thread (&audio_source1); //sleep (1);
+  testcase_run_thread (&audio_source2); //sleep (1);
+  testcase_run_thread (&audio_source3); //sleep (1);
+  testcase_join (&video_source1);
+  testcase_join (&video_source2);
+  testcase_join (&video_source3);
+  testcase_join (&audio_source1);
+  testcase_join (&audio_source2);
+  testcase_join (&audio_source3);
 
   close_pid (ui_pid);
   close_pid (server_pid);
@@ -735,6 +707,11 @@ test_recording_result (void)
   }
 }
 
+static void
+test_random_connections (void)
+{
+}
+
 int main (int argc, char**argv)
 {
   gst_init (&argc, &argv);
@@ -746,5 +723,6 @@ int main (int argc, char**argv)
   g_test_add_func ("/gst-switch/audio-recording-result", test_audio_recording_result);
   g_test_add_func ("/gst-switch/ui", test_ui);
   g_test_add_func ("/gst-switch/recording-result", test_recording_result);
+  g_test_add_func ("/gst-switch/random-connections", test_random_connections);
   return g_test_run ();
 }
