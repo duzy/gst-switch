@@ -248,10 +248,18 @@ gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
 static void
 gst_switch_server_end_composite (GstComposite *composite, GstSwitchServer *srv)
 {
+  INFO ("the composite has ended");
+
+#if 0
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
   g_object_unref (srv->composite);
   srv->composite = NULL;
   GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+#else
+
+  // the composte will restart automaticly
+
+#endif
 }
 
 static void

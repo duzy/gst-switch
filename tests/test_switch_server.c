@@ -96,7 +96,9 @@ testcase_state_change (TestCase *t, GstState oldstate, GstState newstate, GstSta
 static void
 testcase_error_message (TestCase *t, GError *error, const gchar *info)
 {
+  /*
   ERROR ("%s: %s", t->name, error->message);
+  */
 
   /*
   g_print ("%s\n", info);
@@ -172,13 +174,40 @@ testcase_launch_pipeline (TestCase *t)
 static void
 child_quit (GPid pid, gint status, gpointer data)
 {
+  GOutputStream *ostream = G_OUTPUT_STREAM (data);
+  GError *error = NULL;
+
   INFO ("quit %d", pid);
+
+  g_output_stream_flush (ostream, NULL, &error);
+  g_assert_no_error (error);
+  g_output_stream_close (ostream, NULL, &error);
+  g_assert_no_error (error);
+  g_object_unref (ostream);
 }
 
 static void
 child_stdout (GIOChannel *channel, GIOCondition condition, gpointer data)
 {
+  char buf[1024];
+  GError *error = NULL;
+  gsize bytes_read;
+  GOutputStream *ostream = G_OUTPUT_STREAM (data);
+
   //INFO ("out");
+
+  if (condition & G_IO_IN) {
+    gsize bytes_written;
+    GIOStatus status = g_io_channel_read_chars (channel, buf, sizeof (buf), &bytes_read, &error);
+    g_assert_no_error (error);
+    g_output_stream_write_all (ostream, buf, bytes_read, &bytes_written, NULL, &error);
+    g_assert_no_error (error);
+    g_assert_cmpint (bytes_read, ==, bytes_written);
+  }
+  if (condition & G_IO_HUP) {
+    g_output_stream_flush (ostream, NULL, &error);
+    g_assert_no_error (error);
+  }
 }
 
 static void
@@ -196,6 +225,9 @@ launch (const gchar *name, ...)
   GIOChannel *channel;
   GSource *source;
   gint fd_in, fd_out, fd_err;
+  GFileOutputStream *outstream;
+  GFile *outfile;
+  gchar *outfilename;
   gchar **argv;
   gboolean ok;
   GPtrArray *array = g_ptr_array_new ();
@@ -218,9 +250,18 @@ launch (const gchar *name, ...)
 
   context = g_main_context_default ();
 
+  outfilename = g_strdup_printf ("test-server-%d.log", pid);
+  outfile = g_file_new_for_path (outfilename);
+  outstream = g_file_create (outfile, G_FILE_CREATE_NONE, NULL, &error);
+
+  g_free (outfilename);
+  g_assert_no_error (error);
+  g_assert (outfile);
+  g_assert (outstream);
+
   channel = g_io_channel_unix_new (fd_out);
   source = g_io_create_watch (channel, G_IO_IN | G_IO_HUP | G_IO_ERR);
-  g_source_set_callback (source, (GSourceFunc) child_stdout, NULL, NULL);
+  g_source_set_callback (source, (GSourceFunc) child_stdout, outstream, NULL);
   g_source_attach (source, context);
   g_source_unref (source);
   g_io_channel_unref (channel);
@@ -235,7 +276,7 @@ launch (const gchar *name, ...)
   g_io_channel_unref (channel);
   */
 
-  g_child_watch_add (pid, child_quit, NULL);
+  g_child_watch_add (pid, child_quit, outstream);
 
   //g_main_context_unref (context);
   return pid;
@@ -729,15 +770,15 @@ test_random_connections (void)
 
   g_print ("\n");
 
-  server_pid = launch_server ();
-  g_assert_cmpint (server_pid, !=, 0);
-  sleep (2); /* give a second for server to be online */
+  //server_pid = launch_server ();
+  //g_assert_cmpint (server_pid, !=, 0);
+  //sleep (2); /* give a second for server to be online */
 
   ui_pid = launch_ui ();
   g_assert_cmpint (ui_pid, !=, 0);
   sleep (2); /* give a second for ui to be ready */
 
-  for (n = 0; n < 10; ++n) {
+  for (n = 0; n < 3; ++n) {
     video_source1.live_seconds = 5;
     video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
     g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
@@ -754,8 +795,25 @@ test_random_connections (void)
     testcase_join (&audio_source1);
   }
 
+  for (n = 0; n < 3; ++n) {
+    video_source1.live_seconds = 2;
+    video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
+    g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
+    g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
+    g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+    audio_source1.live_seconds = 2;
+    audio_source1.desc = g_string_new ("audiotestsrc ");
+    g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
+
+    testcase_run_thread (&video_source1);
+    testcase_run_thread (&audio_source1);
+    testcase_join (&video_source1);
+    testcase_join (&audio_source1);
+  }
+
   close_pid (ui_pid);
-  close_pid (server_pid);
+  //close_pid (server_pid);
 }
 
 static void
@@ -838,6 +896,7 @@ int main (int argc, char**argv)
 {
   gst_init (&argc, &argv);
   g_test_init (&argc, &argv, NULL);
+  /*
   g_test_add_func ("/gst-switch/controller", test_controller);
   g_test_add_func ("/gst-switch/video", test_video);
   g_test_add_func ("/gst-switch/video-recording-result", test_video_recording_result);
@@ -845,8 +904,9 @@ int main (int argc, char**argv)
   g_test_add_func ("/gst-switch/audio-recording-result", test_audio_recording_result);
   g_test_add_func ("/gst-switch/ui-integrated", test_ui_integrated);
   g_test_add_func ("/gst-switch/recording-result", test_recording_result);
+  */
   g_test_add_func ("/gst-switch/random-connections", test_random_connections);
-  g_test_add_func ("/gst-switch/recording-result", test_recording_result);
+  //g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   /*
   g_test_add_func ("/gst-switch/fuzz-ui-integrated", test_fuzz_ui_integrated);
   g_test_add_func ("/gst-switch/recording-result", test_recording_result);

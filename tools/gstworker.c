@@ -189,6 +189,20 @@ gst_worker_start (GstWorker *worker)
   worker->timer_id = g_timeout_add (1000, gst_worker_onesecond_timer, worker);
 }
 
+GstStateChangeReturn
+gst_worker_restart (GstWorker *worker)
+{
+  GstStateChangeReturn statechange;
+  /*
+  GstState state, pending;
+
+  statechange = gst_element_get_state (worker->pipeline, &state, &pending,
+      GST_CLOCK_TIME_NONE);
+  */
+  statechange = gst_element_set_state (worker->pipeline, GST_STATE_READY);
+  return statechange;
+}
+
 void
 gst_worker_stop (GstWorker *worker)
 {

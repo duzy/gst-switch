@@ -248,9 +248,12 @@ gst_composite_null (GstComposite *composite)
 {
   GstWorker *worker = GST_WORKER (composite);
 
-  INFO ("null: %s (%p)", worker->name, composite);
+  INFO ("%s: null", worker->name);
 
   g_signal_emit (composite, gst_composite_signals[SIGNAL_END_COMPOSITE], 0);
+
+  INFO ("%s: restart..", worker->name);
+  gst_worker_restart (worker);
 }
 
 static void

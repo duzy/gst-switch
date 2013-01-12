@@ -126,6 +126,7 @@ static void
 gst_switch_ui_init (GstSwitchUI * ui)
 {
   GtkWidget *main_box;
+  GtkWidget *scrollwin;
 
   ui->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size (GTK_WINDOW (ui->window), 640, 480);
@@ -147,7 +148,15 @@ gst_switch_ui_init (GstSwitchUI * ui)
       //| GDK_POINTER_MOTION_HINT_MASK
       );
 
-  gtk_container_add (GTK_CONTAINER (main_box), ui->preview_box);
+  scrollwin = gtk_scrolled_window_new (NULL, NULL);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollwin),
+      GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_widget_set_size_request (scrollwin, 130, -1);
+  gtk_widget_set_vexpand (scrollwin, TRUE);
+  gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollwin),
+      ui->preview_box);
+
+  gtk_container_add (GTK_CONTAINER (main_box), scrollwin);
   gtk_container_add (GTK_CONTAINER (main_box), ui->compose_view);
   gtk_container_add (GTK_CONTAINER (ui->window), main_box);
   gtk_container_set_border_width (GTK_CONTAINER (ui->window), 5);
