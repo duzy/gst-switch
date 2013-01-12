@@ -1,3 +1,8 @@
 #!/bin/bash
-./tests/test-switch-server -v \
-    --gst-debug-no-color \
+./tests/test-switch-server \
+    --disable-test-controller \
+    --disable-test-video \
+    --disable-test-audio \
+    --disable-test-ui-integration \
+    --disable-test-fuzz-ui \
+    --test-external-server
