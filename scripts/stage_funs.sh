@@ -1,5 +1,15 @@
 #!/bin/bash
 
+function gst-root()
+{
+    echo $HOME/gst
+}
+
+function gst-stage()
+{
+    echo $(gst-root)/stage
+}
+
 function get-pkg-info()
 {
     dpkg -l $1 | grep $1 | awk '{ print $2 " " $3; }'
@@ -31,7 +41,7 @@ function prepare-prerequisites()
 
 function goto-gst-root()
 {
-    local gstroot=$HOME/gst
+    local gstroot=$(gst-root)
     mkdir -p $gstroot
     cd $gstroot
 }
@@ -74,8 +84,7 @@ function clone-gst-project()
 function build-project()
 {
     local project=$1
-    local gstroot=$HOME/gst
-    local stage=$gstroot/stage
+    local stage=$(gst-stage)
     local backdir=$PWD
     cd $project
     printf "Building $project...\n" 
@@ -116,19 +125,23 @@ function prepare-gst-projects()
 
 function main()
 {
-    prepare-prerequisites
+    local back=$PWD
+    local stage=$(gst-stage)
 
-    goto-gst-root
+    if [[ ! -f $stage/bin/gst-launch-1.0 ]]; then
+	prepare-prerequisites
+	goto-gst-root
+	prepare-gst-projects \
+	    gstreamer \
+	    gst-plugins-base \
+	    gst-plugins-good \
+	    gst-plugins-bad \
+	    gst-plugins-ugly
+    fi
 
-    prepare-gst-projects \
-	gstreamer \
-	gst-plugins-base \
-	gst-plugins-good \
-	gst-plugins-bad \
-	gst-plugins-ugly \
-
-    if [[ -f ../gst-switch/scripts/stage.sh ]]; then
-	build-project .
+    if  [[ -f $back/../gst-switch/scripts/stage_funs.sh ]] &&
+	[[ -s $back/../gst-switch/scripts/stage ]]; then
+	cd $back && build-project .
     else
 	clone-duzy-project gst-switch
 	build-project gst-switch
