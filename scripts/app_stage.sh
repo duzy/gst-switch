@@ -27,16 +27,37 @@ function install-prerequisite()
     fi
 }
 
+function install-git-libvpx()
+{
+    local back=$PWD
+    local stage=$(gst-stage)
+    
+    clone-project http://git.chromium.org/webm libvpx .git
+
+    cd libvpx && ./configure --prefix="$stage"
+
+    make && make install
+
+    cd $back
+
+    if [[ "x$USER" != "xduzy" ]]; then
+	sudo ln -svf $stage/lib/pkgconfig/vpx.pc /usr/lib/pkgconfig
+    fi
+}
+
 function prepare-prerequisites()
 {
     for name in \
 	libmjpegtools-dev \
 	libvpx-dev \
 	libgtk-3-dev \
+	yasm \
 	;
     do
 	install-prerequisite $name
     done
+
+    install-git-libvpx
 }
 
 function goto-gst-root()
@@ -109,6 +130,7 @@ function build-project()
 function build-gst-project()
 {
     local project=$1
+    local stage=$(gst-stage)
     build-project $project
     for i in stage/lib/pkgconfig/gstreamer-*; do
 	sudo ln -svf $PWD/$i /usr/lib/pkgconfig
