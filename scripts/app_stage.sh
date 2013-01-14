@@ -34,7 +34,8 @@ function install-git-libvpx()
     
     clone-project http://git.chromium.org/webm libvpx .git
 
-    cd libvpx && ./configure --prefix="$stage"
+    cd libvpx && git checkout v1.2.0 && \
+	./configure --prefix="$stage"
 
     make && make install
 
