@@ -35,7 +35,8 @@ function install-git-libvpx()
     clone-project http://git.chromium.org/webm libvpx .git
 
     cd libvpx && git checkout v1.2.0 && \
-	./configure --prefix="$stage"
+	./configure --prefix="$stage" \
+	--enable-shared --enable-vp8
 
     make && make install
 
@@ -49,6 +50,14 @@ function install-git-libvpx()
 function prepare-prerequisites()
 {
     for name in \
+	autoconf \
+	automake \
+	autopoint \
+	libtoolize \
+	pkg-config \
+	zlib1g-dev \
+	libtag1-dev \
+	libbz2-dev \
 	libmjpegtools-dev \
 	libvpx-dev \
 	libgtk-3-dev \
