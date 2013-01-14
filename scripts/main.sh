@@ -1,6 +1,6 @@
 #!/bin/bash
 applet=$(basename $0)
-script=./scripts/"$applet"_funs.sh
+script=./scripts/app_$applet.sh
 if [[ -f $script ]]; then
     . $script && main $@
 else

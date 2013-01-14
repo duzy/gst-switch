@@ -123,12 +123,30 @@ function prepare-gst-projects()
     done
 }
 
+function parse-options()
+{
+    declare -A options
+    for arg in $@; do
+	case $arg in
+	    --force|-f)
+		options[force]="yes"
+		;;
+	esac
+    done
+    for k in ${!options[@]}; do
+	printf "[$k]=\"${options[$k]}\" "
+    done
+}
+
 function main()
 {
+    declare -A options="( $(parse-options $@) )"
     local back=$PWD
     local stage=$(gst-stage)
+    local force=no
 
-    if [[ ! -f $stage/bin/gst-launch-1.0 ]]; then
+    if  [[ ! -f $stage/bin/gst-launch-1.0 ]] ||
+	[[ "x${options[force]}" == "xyes" ]]; then
 	prepare-prerequisites
 	goto-gst-root
 	prepare-gst-projects \
@@ -139,7 +157,7 @@ function main()
 	    gst-plugins-ugly
     fi
 
-    if  [[ -f $back/../gst-switch/scripts/stage_funs.sh ]] &&
+    if  [[ -f $back/../gst-switch/scripts/app_stage.sh ]] &&
 	[[ -s $back/../gst-switch/scripts/stage ]]; then
 	cd $back && build-project .
     else
