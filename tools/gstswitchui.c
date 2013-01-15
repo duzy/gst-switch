@@ -38,31 +38,7 @@
 #define GST_SWITCH_UI_LOCK_AUDIO(ui) (g_mutex_lock (&(ui)->audio_lock))
 #define GST_SWITCH_UI_UNLOCK_AUDIO(ui) (g_mutex_unlock (&(ui)->audio_lock))
 
-G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, G_TYPE_OBJECT);
-
-static GDBusNodeInfo *introspection_data = NULL;
-static const gchar introspection_xml[] =
-  "<node>"
-  "  <interface name='" SWITCH_UI_OBJECT_NAME "'>"
-#if ENABLE_TEST
-  "    <method name='test'>"
-  "      <arg type='s' name='name' direction='in'/>"
-  "      <arg type='s' name='result' direction='out'/>"
-  "    </method>"
-#endif//ENABLE_TEST
-  "    <method name='set_audio_port'>"
-  "      <arg type='i' name='port' direction='in'/>"
-  "    </method>"
-  "    <method name='set_compose_port'>"
-  "      <arg type='i' name='port' direction='in'/>"
-  "    </method>"
-  "    <method name='add_preview_port'>"
-  "      <arg type='i' name='port' direction='in'/>"
-  "      <arg type='i' name='type' direction='in'/>"
-  "    </method>"
-  "  </interface>"
-  "</node>"
-  ;
+G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, GST_TYPE_SWITCH_CLIENT);
 
 gboolean verbose;
 
@@ -191,285 +167,15 @@ gst_switch_ui_finalize (GstSwitchUI * ui)
     (*G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize) (G_OBJECT (ui));
 }
 
-static GVariant *
-gst_switch_ui_call_controller (GstSwitchUI * ui, const gchar *method_name,
-    GVariant *parameters, const GVariantType *reply_type)
-{
-  GVariant *value = NULL;
-  GError *error = NULL;
-
-  if (!ui->controller)
-    goto error_no_controller_connection;
-
-  //INFO ("calling: %s/%s", SWITCH_CONTROLLER_OBJECT_NAME, method_name);
-
-  value = g_dbus_connection_call_sync (ui->controller, NULL, /* bus_name */
-      SWITCH_CONTROLLER_OBJECT_PATH,
-      SWITCH_CONTROLLER_OBJECT_NAME,
-      method_name, parameters, reply_type,
-      G_DBUS_CALL_FLAGS_NONE,
-      5000, /* timeout_msec */
-      NULL /* TODO: cancellable */,
-      &error);
-
-  if (!value)
-    goto error_call_sync;
-
-  return value;
-
-  /* ERRORS */
- error_no_controller_connection:
-  {
-    ERROR ("No controller connection");
-    return NULL;
-  }
-
- error_call_sync:
-  {
-    ERROR ("%s", error->message);
-    g_error_free (error);
-    return NULL;
-  }
-}
-
-#if ENABLE_TEST
-static gchar *
-gst_switch_ui_controller_test (GstSwitchUI * ui, const gchar *s)
-{
-  gchar *result = NULL;
-  GVariant *value = gst_switch_ui_call_controller (ui, "test",
-      g_variant_new ("(s)", s), G_VARIANT_TYPE ("(s)"));
-
-  if (value) {
-    g_variant_get (value, "(&s)", &result);
-    if (result) result = g_strdup (result);
-    g_variant_unref (value);
-  }
-
-  return result;
-}
-#endif//ENABLE_TEST
-
-static gint
-gst_switch_ui_controller_get_compose_port (GstSwitchUI * ui)
-{
-  gint port = 0;
-  GVariant *value = gst_switch_ui_call_controller (ui, "get_compose_port",
-      NULL, G_VARIANT_TYPE ("(i)"));
-  if (value) {
-    g_variant_get (value, "(i)", &port);
-  }
-  return port;
-}
-
-static gint
-gst_switch_ui_controller_get_encode_port (GstSwitchUI * ui)
-{
-  gint port = 0;
-  GVariant *value = gst_switch_ui_call_controller (ui, "get_encode_port",
-      NULL, G_VARIANT_TYPE ("(i)"));
-  if (value) {
-    g_variant_get (value, "(i)", &port);
-  }
-  return port;
-}
-
-static gint
-gst_switch_ui_controller_get_audio_port (GstSwitchUI * ui)
-{
-  gint port = 0;
-  GVariant *value = gst_switch_ui_call_controller (ui, "get_audio_port",
-      NULL, G_VARIANT_TYPE ("(i)"));
-  if (value) {
-    g_variant_get (value, "(i)", &port);
-  }
-  return port;
-}
-
-static GVariant *
-gst_switch_ui_controller_get_preview_ports (GstSwitchUI * ui)
-{
-  return gst_switch_ui_call_controller (ui, "get_preview_ports",
-      NULL, G_VARIANT_TYPE ("(s)"));
-}
-
-static gboolean
-gst_switch_ui_method_match (const gchar *key,
-    MethodTableEntry *entry, const gchar *match)
-{
-  if (g_strcmp0 (key, match) == 0)
-    return TRUE;
-  return FALSE;
-}
-
 static void
-gst_switch_ui_do_method_call (
-    GDBusConnection       *connection,
-    const gchar           *sender,
-    const gchar           *object_path,
-    const gchar           *interface_name,
-    const gchar           *method_name,
-    GVariant              *parameters,
-    GDBusMethodInvocation *invocation,
-    gpointer               user_data)
+gst_switch_ui_on_controller_closed (GstSwitchUI * ui, GError *error)
 {
-  GstSwitchUI *ui = GST_SWITCH_UI (user_data);
-  GstSwitchUIClass *klass = GST_SWITCH_UI_CLASS (G_OBJECT_GET_CLASS (ui));
-  MethodFunc entry = (MethodFunc) g_hash_table_find (klass->methods,
-      (GHRFunc) gst_switch_ui_method_match, (gpointer) method_name);
-  GVariant *results;
-
-  if (!entry)
-    goto error_no_method;
-
-  /*
-  INFO ("calling: %s/%s", interface_name, method_name);
-  */
-
-  results = (*entry) (G_OBJECT (ui), connection, parameters);
-  g_dbus_method_invocation_return_value (invocation, results);
-  return;
-
- error_no_method:
-  {
-    ERROR ("unsupported method: %s", method_name);
-    g_dbus_method_invocation_return_error (invocation, 0, -1,
-	"Unsupported call %s", method_name);
-  }
-}
-
-static GVariant *
-gst_switch_ui_do_get_property (
-    GDBusConnection  *connection,
-    const gchar      *sender,
-    const gchar      *object_path,
-    const gchar      *interface_name,
-    const gchar      *property_name,
-    GError          **error,
-    gpointer          user_data)
-{
-  GVariant *ret = NULL;
-  INFO ("get: %s", property_name);
-  return ret;
-}
-
-static gboolean
-gst_switch_ui_do_set_property (
-    GDBusConnection  *connection,
-    const gchar      *sender,
-    const gchar      *object_path,
-    const gchar      *interface_name,
-    const gchar      *property_name,
-    GVariant         *value,
-    GError          **error,
-    gpointer          user_data)
-{
-  INFO ("set: %s", property_name);
-  return FALSE;
-}
-
-static const GDBusInterfaceVTable gst_switch_ui_interface_vtable = {
-  gst_switch_ui_do_method_call,
-  gst_switch_ui_do_get_property,
-  gst_switch_ui_do_set_property
-};
-
-static void
-gst_switch_ui_on_signal_received (
-    GDBusConnection *connection,
-    const gchar     *sender_name,
-    const gchar     *object_path,
-    const gchar     *interface_name,
-    const gchar     *signal_name,
-    GVariant        *parameters,
-    gpointer         user_data)
-{
-  GstSwitchUI *ui = GST_SWITCH_UI (user_data);
-
-  (void) ui;
-
-  INFO ("signal: %s, %s", sender_name, signal_name);
-}
-
-static void
-gst_switch_ui_on_controller_closed (GDBusConnection *connection,
-    gboolean vanished, GError *error, gpointer user_data)
-{
-  GstSwitchUI * ui = GST_SWITCH_UI (user_data);
   GtkWidget * msg = gtk_message_dialog_new (GTK_WINDOW (ui->window),
       GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
       "Switch server closed.\n"
       "%s", error->message);
   gtk_widget_show_now (msg);
   gtk_main_quit ();
-}
-
-static void
-gst_switch_ui_connect_controller (GstSwitchUI * ui)
-{
-  GError *error = NULL;
-  guint id;
-
-  ui->controller = g_dbus_connection_new_for_address_sync (
-      SWITCH_CONTROLLER_ADDRESS,
-      G_DBUS_SERVER_FLAGS_RUN_IN_THREAD |
-      G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
-      NULL, /* GDBusAuthObserver */
-      NULL, /* GCancellable */
-      &error);
-
-  if (ui->controller == NULL)
-    goto error_new_connection;
-
-  g_signal_connect (ui->controller, "closed",
-      G_CALLBACK (gst_switch_ui_on_controller_closed), ui);
-
-  /* Register Object */
-  id = g_dbus_connection_register_object (ui->controller,
-      SWITCH_UI_OBJECT_PATH,
-      introspection_data->interfaces[0],
-      &gst_switch_ui_interface_vtable,
-      ui, /* user_data */
-      NULL, /* user_data_free_func */
-      &error);
-
-  if (id <= 0)
-    goto error_register_object;
-
-  id = g_dbus_connection_signal_subscribe (ui->controller,
-      NULL, /* sender */
-      SWITCH_CONTROLLER_OBJECT_NAME,
-      NULL, /* member */
-      SWITCH_CONTROLLER_OBJECT_PATH,
-      NULL, /* arg0 */
-      G_DBUS_SIGNAL_FLAGS_NONE,
-      gst_switch_ui_on_signal_received,
-      ui, NULL/* user_data, user_data_free_func */);
-
-  if (id <= 0)
-    goto error_subscribe;
-  
-  return;
-
- error_new_connection:
-  {
-    ERROR ("%s", error->message);
-    g_error_free (error);
-    return;
-  }
-
- error_register_object:
-  {
-    ERROR ("%s", error->message);
-    g_error_free (error);
-    return;
-  }
-
- error_subscribe:
-  {
-    ERROR ("failed to subscribe signals");
-    return;
-  }
 }
 
 static void gst_switch_ui_set_audio_port (GstSwitchUI *, gint);
@@ -483,16 +189,16 @@ gst_switch_ui_prepare_videos (GstSwitchUI * ui)
   gsize n, num_previews = 0;
   gint port;
 
-  port = gst_switch_ui_controller_get_compose_port (ui);
+  port = gst_switch_client_get_compose_port (GST_SWITCH_CLIENT (ui));
   gst_switch_ui_set_compose_port (ui, port);
 
-  port = gst_switch_ui_controller_get_audio_port (ui);
+  port = gst_switch_client_get_audio_port (GST_SWITCH_CLIENT (ui));
   gst_switch_ui_set_audio_port (ui, port);
 
-  port = gst_switch_ui_controller_get_encode_port (ui);
+  port = gst_switch_client_get_encode_port (GST_SWITCH_CLIENT (ui));
   INFO ("Encoded output port: %d", port);
 
-  preview_ports = gst_switch_ui_controller_get_preview_ports (ui);
+  preview_ports = gst_switch_client_get_preview_ports (GST_SWITCH_CLIENT (ui));
   if (preview_ports) {
     GVariant *ports = NULL;
     GError *error = NULL;
@@ -514,17 +220,7 @@ gst_switch_ui_prepare_videos (GstSwitchUI * ui)
 static void
 gst_switch_ui_run (GstSwitchUI * ui)
 {
-  gst_switch_ui_connect_controller (ui);
-#if ENABLE_TEST
-  {
-    gchar *test_result = NULL;
-    test_result = gst_switch_ui_controller_test (ui, "hello, controller");
-    if (test_result) {
-      INFO ("%s", test_result);
-      g_free (test_result);
-    }
-  }
-#endif
+  gst_switch_client_connect (GST_SWITCH_CLIENT (ui));
 
   gtk_widget_show_all (ui->window);
   gtk_widget_realize (ui->window);
@@ -666,79 +362,22 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
   (void) visu;
 }
 
-#if ENABLE_TEST
-static GVariant *
-gst_switch_ui__test (GstSwitchUI *ui, GDBusConnection *connection,
-    GVariant *parameters)
-{
-  gchar *s = NULL;
-  g_variant_get (parameters, "(&s)", &s);
-  INFO ("%s", s);
-  return g_variant_new ("(s)", "hello, controller");
-}
-#endif//ENABLE_TEST
-
-static GVariant *
-gst_switch_ui__set_audio_port (GstSwitchUI *ui,
-    GDBusConnection *connection, GVariant *parameters)
-{
-  gint port = 0;
-  g_variant_get (parameters, "(i)", &port);
-  INFO ("audio: %d", port);
-  gst_switch_ui_set_audio_port (ui, port);
-  return NULL;
-}
-
-static GVariant *
-gst_switch_ui__set_compose_port (GstSwitchUI *ui,
-    GDBusConnection *connection, GVariant *parameters)
-{
-  gint port = 0;
-  g_variant_get (parameters, "(i)", &port);
-  INFO ("compose: %d", port);
-  gst_switch_ui_set_compose_port (ui, port);
-  return NULL;
-}
-
-static GVariant *
-gst_switch_ui__add_preview_port (GstSwitchUI *ui,
-    GDBusConnection *connection, GVariant *parameters)
-{
-  gint port = 0;
-  gint type = 0;
-  g_variant_get (parameters, "(ii)", &port, &type);
-  INFO ("preview: %d, %d", port, type);
-  gst_switch_ui_add_preview_port (ui, port, type);
-  return NULL;
-}
-
-static MethodTableEntry gst_switch_ui_method_table[] = {
-#if ENABLE_TEST
-  { "test", (MethodFunc) gst_switch_ui__test },
-#endif//ENABLE_TEST
-  { "set_audio_port", (MethodFunc) gst_switch_ui__set_audio_port },
-  { "set_compose_port", (MethodFunc) gst_switch_ui__set_compose_port },
-  { "add_preview_port", (MethodFunc) gst_switch_ui__add_preview_port },
-  { NULL, NULL }
-};
-
 static void
 gst_switch_ui_class_init (GstSwitchUIClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GstSwitchClientClass * client_class = GST_SWITCH_CLIENT_CLASS (klass);
 
   object_class->finalize = (GObjectFinalizeFunc) gst_switch_ui_finalize;
 
-  klass->methods = g_hash_table_new (g_str_hash, g_str_equal);
-
-  MethodTableEntry *entry = &gst_switch_ui_method_table[0];
-  for (; entry->name && entry->func; ++entry) {
-    g_hash_table_insert (klass->methods, (gpointer) entry->name,
-	(gpointer) entry->func);
-  }
-
-  introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
-  g_assert (introspection_data != NULL);
+  client_class->connection_closed = (GstSwitchClientConnectionClosedFunc)
+    gst_switch_ui_on_controller_closed;
+  client_class->set_compose_port = (GstSwitchClientSetComposePortFunc)
+    gst_switch_ui_set_compose_port;
+  client_class->set_audio_port = (GstSwitchClientSetAudioPortFunc)
+    gst_switch_ui_set_audio_port;
+  client_class->add_preview_port = (GstSwitchClientAddPreviewPortFunc)
+    gst_switch_ui_add_preview_port;
 }
 
 int

@@ -34,11 +34,11 @@
 #define GST_IS_SWITCH_CONTROLLER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_CONTROLLER, GstSwitchController))
 #define GST_IS_SWITCH_CONTROLLER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_CONTROLLER, GstSwitchControllerClass))
 
-#define SWITCH_CONTROLLER_ADDRESS	"unix:abstract=switch"
-#define SWITCH_CONTROLLER_OBJECT_NAME	"info.duzy.gst_switch.SwitchControllerInterface"
+#define SWITCH_CONTROLLER_ADDRESS	"unix:abstract=gstswitch"
+#define SWITCH_CONTROLLER_OBJECT_NAME	 "info.duzy.gst_switch.SwitchControllerInterface"
 #define SWITCH_CONTROLLER_OBJECT_PATH	"/info/duzy/gst_switch/SwitchController"
-#define SWITCH_UI_OBJECT_NAME		"info.duzy.gst_switch.SwitchUIInterface"
-#define SWITCH_UI_OBJECT_PATH		"/info/duzy/gst_switch/SwitchUI"
+#define SWITCH_CLIENT_OBJECT_NAME	 "info.duzy.gst_switch.SwitchClientInterface"
+#define SWITCH_CLIENT_OBJECT_PATH	"/info/duzy/gst_switch/SwitchClient"
 
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;

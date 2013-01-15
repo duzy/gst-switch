@@ -46,7 +46,7 @@ enum
   SIGNAL__LAST,
 };
 
-static guint gst_recorder_signals[SIGNAL__LAST] = { 0 };
+//static guint gst_recorder_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
 #define parent_class gst_recorder_parent_class

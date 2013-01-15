@@ -248,7 +248,7 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
     error = NULL;
     res = g_dbus_connection_emit_signal (G_DBUS_CONNECTION (ui->data),
 	NULL, /* destination_bus_name */
-	SWITCH_UI_OBJECT_PATH, SWITCH_UI_OBJECT_NAME,
+	SWITCH_CLIENT_OBJECT_PATH, SWITCH_CLIENT_OBJECT_NAME,
 	signame, parameters, &error);
 
     if (!res) {
@@ -428,7 +428,7 @@ gst_switch_controller_call_ui (GstSwitchController * controller,
   INFO ("calling: %s/%s", SWITCH_CONTROLLER_OBJECT_NAME, method_name);
 
   value = g_dbus_connection_call_sync (connection, NULL, /* bus_name */
-      SWITCH_UI_OBJECT_PATH, SWITCH_UI_OBJECT_NAME,
+      SWITCH_CLIENT_OBJECT_PATH, SWITCH_CLIENT_OBJECT_NAME,
       method_name, parameters, reply_type,
       G_DBUS_CALL_FLAGS_NONE,
       5000, /* timeout_msec */

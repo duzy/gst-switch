@@ -52,7 +52,7 @@ enum
   SIGNAL__LAST,
 };
 
-static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
+//static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
 G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);

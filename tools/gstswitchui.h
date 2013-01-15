@@ -27,6 +27,7 @@
 #define __GST_SWITCH_UI_H__by_Duzy_Chan__ 1
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#include "gstswitchclient.h"
 #include "gstworker.h"
 
 #define GST_TYPE_SWITCH_UI (gst_switch_ui_get_type ())
@@ -42,7 +43,7 @@ typedef struct _GstAudioPlay GstAudioPlay;
 
 struct _GstSwitchUI
 {
-  GObject base;
+  GstSwitchClient base;
 
   GDBusConnection *controller;
 
@@ -59,9 +60,7 @@ struct _GstSwitchUI
 
 struct _GstSwitchUIClass
 {
-  GObjectClass base_class;
-
-  GHashTable *methods;
+  GstSwitchClientClass base_class;
 };
 
 GType gst_switch_ui_get_type (void);

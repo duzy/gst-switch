@@ -47,11 +47,10 @@ enum
 
 enum
 {
-  SIGNAL_END_CASE,
   SIGNAL__LAST,
 };
 
-static guint gst_case_signals[SIGNAL__LAST] = { 0 };
+//static guint gst_case_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
 G_DEFINE_TYPE (GstCase, gst_case, GST_TYPE_WORKER);
