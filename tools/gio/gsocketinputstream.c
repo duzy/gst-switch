@@ -92,8 +92,14 @@ g_socket_input_stream_finalize (GObject *object)
 {
   GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
 
-  if (stream->priv->socket)
+  if (stream->priv->socket) {
+    GError *error = NULL;
+    g_socket_close (stream->priv->socket, &error);
+    if (error) {
+      //ERROR ("%s", error->message);
+    }
     g_object_unref (stream->priv->socket);
+  }
 
   if (G_OBJECT_CLASS (g_socket_input_stream_parent_class)->finalize)
     (*G_OBJECT_CLASS (g_socket_input_stream_parent_class)->finalize) (object);

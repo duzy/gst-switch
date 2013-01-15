@@ -412,7 +412,7 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   if (!gst_worker_prepare (GST_WORKER (workcase)))
     goto error_prepare_workcase;
 
-  g_signal_connect (workcase, "end-case",
+  g_signal_connect (workcase, "end-worker",
       G_CALLBACK (gst_switch_server_end_case), srv);
 
   gst_worker_start (GST_WORKER (workcase));
@@ -790,7 +790,7 @@ gst_switch_server_launch_composite (GstSwitchServer * srv)
   if (!gst_worker_prepare (GST_WORKER (srv->composite)))
     return FALSE;
 
-  g_signal_connect (srv->composite, "end-composite",
+  g_signal_connect (srv->composite, "end-worker",
       G_CALLBACK (gst_switch_server_end_composite), srv);
 
   gst_worker_start (GST_WORKER (srv->composite));

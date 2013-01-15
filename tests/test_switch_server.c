@@ -791,17 +791,56 @@ test_recording_result (void)
   }
 }
 
-static void
-test_random_connections (void)
+static gpointer
+test_random_connection_1 (gpointer d)
 {
-  GPid server_pid = 0;
-  GPid ui_pid = 0;
   TestCase video_source1 = { "test_video_source1", 0 };
-  //TestCase video_source2 = { "test_video_source2", 0 };
-  //TestCase video_source3 = { "test_video_source3", 0 };
+  TestCase audio_source0 = { "test_audio_source0", 0 };
   TestCase audio_source1 = { "test_audio_source1", 0 };
-  //TestCase audio_source2 = { "test_audio_source2", 0 };
-  //TestCase audio_source3 = { "test_audio_source3", 0 };
+  const gchar *textoverlay = "textoverlay "
+    "font-desc=\"Sans 80\" "
+    "auto-resize=true "
+    "shaded-background=true "
+    ;
+  gint n, m;
+
+  audio_source0.live_seconds = 52;
+  audio_source0.desc = g_string_new ("");
+  g_string_append_printf (audio_source0.desc, "audiotestsrc ");
+  g_string_append_printf (audio_source0.desc, "! gdppay ! tcpclientsink port=4000");
+  testcase_run_thread (&audio_source0);
+  sleep (2);
+
+  for (m = 0; m < 3; ++n) {
+    for (n = 0; n < 3; ++n) {
+      video_source1.live_seconds = 5;
+      video_source1.desc = g_string_new ("");
+      g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
+      g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
+      g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
+      g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+      audio_source1.live_seconds = 5;
+      audio_source1.desc = g_string_new ("");
+      g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", rand() % 12);
+      g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
+
+      testcase_run_thread (&video_source1);
+      testcase_run_thread (&audio_source1);
+      testcase_join (&video_source1);
+      testcase_join (&audio_source1);
+    }
+  }
+
+  testcase_join (&audio_source0);
+  return NULL;
+}
+
+static gpointer
+test_random_connection_2 (gpointer d)
+{
+  TestCase video_source1 = { "test_video_source1", 0 };
+  TestCase audio_source1 = { "test_audio_source1", 0 };
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
@@ -811,57 +850,60 @@ test_random_connections (void)
 
   g_print ("\n");
 
+  for (m = 0; m < 3; ++n) {
+    for (n = 0; n < 3; ++n) {
+      video_source1.live_seconds = 2;
+      video_source1.desc = g_string_new ("");
+      g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
+      g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
+      g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
+      g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+      audio_source1.live_seconds = 2;
+      audio_source1.desc = g_string_new ("");
+      g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", rand () % 12);
+      g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
+
+      testcase_run_thread (&video_source1);
+      testcase_run_thread (&audio_source1);
+      testcase_join (&video_source1);
+      testcase_join (&audio_source1);
+    }
+  }
+  return NULL;
+}
+
+static void
+test_random_connections (void)
+{
+  GPid server_pid = 0;
+  GPid ui_pid = 0;
+  GThread *t1, *t2;
+
+  g_print ("\n");
+
   if (!opts.test_external_server) {
     server_pid = launch_server ();
     g_assert_cmpint (server_pid, !=, 0);
     sleep (2); /* give a second for server to be online */
   }
 
-  for (m = 0; m < 3; ++n) {
-    if (!opts.test_external_ui) {
-      ui_pid = launch_ui ();
-      g_assert_cmpint (ui_pid, !=, 0);
-      sleep (1); /* give a second for ui to be ready */
-    }
-
-    for (n = 0; n < 3; ++n) {
-      video_source1.live_seconds = 5;
-      video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
-      g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
-      g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
-      g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
-
-      audio_source1.live_seconds = 5;
-      audio_source1.desc = g_string_new ("audiotestsrc ");
-      g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
-
-      testcase_run_thread (&video_source1);
-      testcase_run_thread (&audio_source1);
-      testcase_join (&video_source1);
-      testcase_join (&audio_source1);
-    }
-
-    for (n = 0; n < 3; ++n) {
-      video_source1.live_seconds = 2;
-      video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
-      g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
-      g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
-      g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
-
-      audio_source1.live_seconds = 2;
-      audio_source1.desc = g_string_new ("audiotestsrc ");
-      g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
-
-      testcase_run_thread (&video_source1);
-      testcase_run_thread (&audio_source1);
-      testcase_join (&video_source1);
-      testcase_join (&audio_source1);
-    }
-
-    if (!opts.test_external_ui)
-      close_pid (ui_pid);
+  if (!opts.test_external_ui) {
+    ui_pid = launch_ui ();
+    g_assert_cmpint (ui_pid, !=, 0);
+    sleep (1); /* give a second for ui to be ready */
   }
 
+  t1 = g_thread_new ("random-1", test_random_connection_1, NULL);
+  t2 = g_thread_new ("random-2", test_random_connection_2, NULL);
+
+  g_thread_join (t1);
+  g_thread_join (t2);
+  g_thread_unref(t1);
+  g_thread_unref(t2);
+
+  if (!opts.test_external_ui)
+      close_pid (ui_pid);
   if (!opts.test_external_server)
     close_pid (server_pid);
 }

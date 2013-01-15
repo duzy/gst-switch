@@ -75,6 +75,11 @@ static void
 gst_case_finalize (GstCase * cas)
 {
   if (cas->stream) {
+    GError *error = NULL;
+    g_input_stream_close (cas->stream, NULL, &error);
+    if (error) {
+      ERROR ("%s", error->message);
+    }
     g_object_unref (cas->stream);
     cas->stream = NULL;
   }
@@ -276,8 +281,6 @@ gst_case_null (GstCase *cas)
   GstWorker *worker = GST_WORKER (cas);
 
   INFO ("%s: null (%p)", worker->name, cas);
-
-  g_signal_emit (cas, gst_case_signals[SIGNAL_END_CASE], 0);
 }
 
 static void
@@ -289,11 +292,6 @@ gst_case_class_init (GstCaseClass * klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_case_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_case_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_case_get_property;
-
-  gst_case_signals[SIGNAL_END_CASE] =
-    g_signal_new ("end-case", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCaseClass, end_case),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
   g_object_class_install_property (object_class, PROP_TYPE,
       g_param_spec_uint ("type", "Type", "Case type",

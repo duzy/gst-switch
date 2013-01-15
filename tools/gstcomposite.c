@@ -49,7 +49,6 @@ enum
 
 enum
 {
-  SIGNAL_END_COMPOSITE,
   SIGNAL__LAST,
 };
 
@@ -247,11 +246,6 @@ static void
 gst_composite_null (GstComposite *composite)
 {
   GstWorker *worker = GST_WORKER (composite);
-
-  INFO ("%s: null", worker->name);
-
-  g_signal_emit (composite, gst_composite_signals[SIGNAL_END_COMPOSITE], 0);
-
   INFO ("%s: restart..", worker->name);
   gst_worker_restart (worker);
 }
@@ -265,11 +259,6 @@ gst_composite_class_init (GstCompositeClass * klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_composite_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_composite_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_composite_get_property;
-
-  gst_composite_signals[SIGNAL_END_COMPOSITE] =
-    g_signal_new ("end-composite", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_composite),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",

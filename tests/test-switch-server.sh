@@ -5,6 +5,5 @@
     --disable-test-audio \
     --disable-test-ui-integration \
     --disable-test-fuzz-ui \
-
-#    --test-external-server \
-#    --test-external-ui \
+    --test-external-server \
+    --test-external-ui \

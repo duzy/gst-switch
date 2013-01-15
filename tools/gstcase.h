@@ -70,8 +70,6 @@ struct _GstCase
 struct _GstCaseClass
 {
   GstWorkerClass base_class;
-
-  void (*end_case) (GstCase *cas);
 };
 
 GType gst_case_get_type (void);

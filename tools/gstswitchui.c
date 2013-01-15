@@ -553,15 +553,14 @@ gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
 {
   gchar *name = g_strdup_printf ("visual-%d", port);
   GdkWindow *xview = gtk_widget_get_window (view);
-  GstAudioVisual *visu = GST_AUDIO_VISUAL (g_object_new (GST_TYPE_AUDIO_VISUAL,
-	  "name", name, "port", port,
-	  "handle", (gulong) GDK_WINDOW_XID (xview),
-	  NULL));
-  g_object_set_data (G_OBJECT (view), "audio-visual", visu);
-  gst_worker_prepare (GST_WORKER (visu));
-  gst_worker_start (GST_WORKER (visu));
+  GstAudioVisual *visual = GST_AUDIO_VISUAL (
+      g_object_new (GST_TYPE_AUDIO_VISUAL, "name", name, "port", port,
+	  "handle", (gulong) GDK_WINDOW_XID (xview), NULL));
+  g_object_set_data (G_OBJECT (view), "audio-visual", visual);
+  gst_worker_prepare (GST_WORKER (visual));
+  gst_worker_start (GST_WORKER (visual));
   g_free (name);
-  return visu;
+  return visual;
 }
 
 static void
@@ -592,8 +591,8 @@ gst_switch_ui_end_video_disp (GstWorker *worker, GstSwitchUI *ui)
 static void
 gst_switch_ui_end_audio_visual (GstWorker *worker, GstSwitchUI *ui)
 {
-  GstAudioVisual *visu = GST_AUDIO_VISUAL (worker);
-  INFO ("audio ended: %s, %d", worker->name, visu->port);
+  GstAudioVisual *visual = GST_AUDIO_VISUAL (worker);
+  INFO ("audio ended: %s, %d", worker->name, visual->port);
   gst_switch_ui_remove_preview (ui, worker, "audio-visual");
 }
 
@@ -601,8 +600,8 @@ static GstAudioPlay *
 gst_switch_ui_new_audio (GstSwitchUI *ui, gint port)
 {
   gchar *name = g_strdup_printf ("audio-%d", port);
-  GstAudioPlay *audio = GST_AUDIO_PLAY (g_object_new (GST_TYPE_AUDIO_PLAY,
-	  "name", name, "port", port, NULL));
+  GstAudioPlay *audio = GST_AUDIO_PLAY (
+      g_object_new (GST_TYPE_AUDIO_PLAY, "name", name, "port", port, NULL));
   gst_worker_prepare (GST_WORKER (audio));
   gst_worker_start (GST_WORKER (audio));
   g_free (name);
@@ -629,6 +628,8 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
   GST_SWITCH_UI_LOCK_AUDIO (ui);
   if (ui->audio)
     g_object_unref (ui->audio);
+
+  INFO ("active audio %d", port);
 
   ui->audio = gst_switch_ui_new_audio (ui, port);
   GST_SWITCH_UI_UNLOCK_AUDIO (ui);
