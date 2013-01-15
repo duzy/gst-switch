@@ -36,6 +36,13 @@ enum
   PROP_NAME,
 };
 
+enum
+{
+  SIGNAL_END_WORKER,
+  SIGNAL__LAST,
+};
+
+static guint gst_worker_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
 G_DEFINE_TYPE (GstWorker, gst_worker, G_TYPE_OBJECT);
@@ -169,6 +176,11 @@ gst_worker_class_init (GstWorkerClass *klass)
   object_class->set_property = (GObjectSetPropertyFunc) gst_worker_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_worker_get_property;
 
+  gst_worker_signals[SIGNAL_END_WORKER] =
+    g_signal_new ("end-worker", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, end_worker),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
   g_object_class_install_property (object_class, PROP_NAME,
       g_param_spec_string ("name", "Name", "Name of the case",
           "", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
@@ -273,6 +285,8 @@ gst_worker_handle_ready_to_null (GstWorker *worker)
 {
   GstWorkerClass *workerclass = GST_WORKER_CLASS (
       G_OBJECT_GET_CLASS (worker));
+
+  g_signal_emit (worker, gst_worker_signals[SIGNAL_END_WORKER], 0);
 
   if (workerclass->null_state)
     (*workerclass->null_state) (worker);

@@ -232,34 +232,49 @@ static void
 gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
 {
   gint caseport = 0;
+  GList *item;
 
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   caseport = cas->sink_port;
   g_object_unref (cas);
   srv->cases = g_list_remove (srv->cases, cas);
+  for (item = srv->cases; item;) {
+    GstCase *c = GST_CASE (item->data);
+    switch (c->type) {
+    case GST_CASE_COMPOSITE_A:
+    case GST_CASE_COMPOSITE_B:
+    case GST_CASE_COMPOSITE_a:
+    case GST_CASE_BRANCH_A:
+    case GST_CASE_BRANCH_B:
+    case GST_CASE_BRANCH_a:
+    case GST_CASE_PREVIEW:
+      if (c->sink_port == caseport) {
+	gst_worker_stop (GST_WORKER (c));
+	g_object_unref (G_OBJECT (c));
+	item = g_list_next (item);
+	srv->cases = g_list_remove (srv->cases, c);
+      } else {
+	item = g_list_next (item);
+      }
+      break;
+    default:
+      item = g_list_next (item);
+      break;
+    }
+  }
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
 
   if (caseport)
     gst_switch_server_revoke_port (srv, caseport);
 
-  INFO ("removed case %p (%d cases left)", cas, g_list_length (srv->cases));
+  INFO ("removed %s %p (%d cases left)", GST_WORKER (cas)->name, cas,
+      g_list_length (srv->cases));
 }
 
 static void
 gst_switch_server_end_composite (GstComposite *composite, GstSwitchServer *srv)
 {
   INFO ("the composite has ended");
-
-#if 0
-  GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
-  g_object_unref (srv->composite);
-  srv->composite = NULL;
-  GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
-#else
-
-  // the composte will restart automaticly
-
-#endif
 }
 
 static void

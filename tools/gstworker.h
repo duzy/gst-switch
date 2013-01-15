@@ -67,6 +67,8 @@ struct _GstWorkerClass
 {
   GObjectClass base_class;
 
+  void (*end_worker) (GstWorker *worker);
+
   GString *(*get_pipeline_string) (GstWorker *worker);
   GstElement *(*create_pipeline) (GstWorker *worker);
   gboolean (*prepare) (GstWorker *worker);

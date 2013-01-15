@@ -57,6 +57,7 @@ struct _GstSwitchController
 
   GstSwitchServer *server;
   GDBusServer *bus_server;
+  GMutex uis_lock;
   GList *uis;
 };
 

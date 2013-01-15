@@ -114,6 +114,8 @@ gst_video_disp_get_pipeline_string (GstVideoDisp *disp)
 static void
 gst_video_disp_null (GstVideoDisp *disp)
 {
+  GstWorker *worker = GST_WORKER (disp);
+  INFO ("%s: end %d", worker->name, disp->port);
 }
 
 static gboolean

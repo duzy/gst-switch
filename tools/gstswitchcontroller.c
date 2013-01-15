@@ -30,6 +30,9 @@
 #include "gstswitchcontroller.h"
 #include "gstswitchserver.h"
 
+#define GST_SWITCH_CONTROLLER_LOCK_UIS(c) (g_mutex_lock (&(c)->uis_lock))
+#define GST_SWITCH_CONTROLLER_UNLOCK_UIS(c) (g_mutex_unlock (&(c)->uis_lock))
+
 enum
 {
   PROP_0,
@@ -41,10 +44,12 @@ static GDBusNodeInfo *introspection_data = NULL;
 static const gchar introspection_xml[] =
   "<node>"
   "  <interface name='" SWITCH_CONTROLLER_OBJECT_NAME "'>"
+#if ENABLE_TEST
   "    <method name='test'>"
   "      <arg type='s' name='name' direction='in'/>"
   "      <arg type='s' name='result' direction='out'/>"
   "    </method>"
+#endif//ENABLE_TEST
   "    <method name='get_compose_port'>"
   "      <arg type='i' name='port' direction='out'/>"
   "    </method>"
@@ -57,9 +62,11 @@ static const gchar introspection_xml[] =
   "    <method name='get_preview_ports'>"
   "      <arg type='s' name='ports' direction='out'/>"
   "    </method>"
+#if ENABLE_TEST
   "    <signal name='testsignal'>"
   "      <arg type='s' name='str'/>"
   "    </signal>"
+#endif//ENABLE_TEST
   "    <signal name='audio_port'>"
   "      <arg type='i' name='port'/>"
   "    </signal>"
@@ -236,6 +243,7 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
   GList *ui;
   gint num;
 
+  GST_SWITCH_CONTROLLER_LOCK_UIS (controller);
   for (ui = controller->uis, num = 0; ui; ui = g_list_next (ui)) {
     error = NULL;
     res = g_dbus_connection_emit_signal (G_DBUS_CONNECTION (ui->data),
@@ -249,8 +257,9 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
       ++num;
     }
   }
-
   INFO ("emit: %s (%d/%d)", signame, num, g_list_length (controller->uis));
+
+  GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 }
 
 static void
@@ -266,15 +275,13 @@ gst_switch_controller_on_connection_closed (GDBusConnection *connection,
     g_error_free (error);
   }
 
-  if (vanished) {
-    g_object_unref (connection);
-    controller->uis = g_list_remove (controller->uis, connection);
-  }
+  g_object_unref (connection);
+  GST_SWITCH_CONTROLLER_LOCK_UIS (controller);
+  controller->uis = g_list_remove (controller->uis, connection);
+  GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 
-  /*
   INFO ("closed: %p, %d (%d uis)", connection, vanished,
       g_list_length (controller->uis));
-  */
 }
 
 static gboolean
@@ -285,8 +292,14 @@ gst_switch_controller_on_new_connection (GDBusServer *server,
   guint register_id = 0;
   GError *error = NULL;
 
+  GST_SWITCH_CONTROLLER_LOCK_UIS (controller);
   controller->uis = g_list_append (controller->uis, connection);
   g_object_ref (connection);
+
+  g_signal_connect (connection, "closed",
+      G_CALLBACK (gst_switch_controller_on_connection_closed),
+      controller);
+  GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 
   register_id = g_dbus_connection_register_object (connection,
       SWITCH_CONTROLLER_OBJECT_PATH,
@@ -304,12 +317,10 @@ gst_switch_controller_on_new_connection (GDBusServer *server,
       introspection_data->interfaces[0]->name);
   */
 
-  g_signal_connect (connection, "closed",
-      G_CALLBACK (gst_switch_controller_on_connection_closed),
-      controller);
-
+#if ENABLE_TEST
   gst_switch_controller_emit_ui_signal (controller, "testsignal",
       g_variant_new ("(s)", "test signal"));
+#endif//ENABLE_TEST
 
   return TRUE;
 
@@ -317,8 +328,10 @@ gst_switch_controller_on_new_connection (GDBusServer *server,
 error_register_object:
   {
     ERROR ("register: %s", error->message);
+    GST_SWITCH_CONTROLLER_LOCK_UIS (controller);
     controller->uis = g_list_remove (controller->uis, connection);
     g_object_unref (connection);
+    GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
     return FALSE;
   }
 }
@@ -342,6 +355,7 @@ gst_switch_controller_init (GstSwitchController * controller)
   GDBusAuthObserver *auth_observer;
   GError * error = NULL;
 
+  g_mutex_init (&controller->uis_lock);
   controller->uis = NULL;
 
   flags |= G_DBUS_SERVER_FLAGS_RUN_IN_THREAD;
@@ -393,6 +407,8 @@ gst_switch_controller_finalize (GstSwitchController * controller)
     controller->bus_server = NULL;
   }
 
+  g_mutex_clear (&controller->uis_lock);
+
   if (G_OBJECT_CLASS (gst_switch_controller_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_switch_controller_parent_class)->finalize)
       (G_OBJECT (controller));
@@ -438,17 +454,30 @@ gst_switch_controller_call_uis (GstSwitchController * controller,
     const gchar *method_name, GVariant *parameters,
     const GVariantType *reply_type)
 {
+  GDBusConnection *connection;
   GVariant *value;
   GList *ui;
-  for (ui = controller->uis; ui; ui = g_list_next (ui)) {
+  GST_SWITCH_CONTROLLER_LOCK_UIS (controller);
+  for (ui = controller->uis; ui; ) {
+    connection = G_DBUS_CONNECTION (ui->data);
+    if (g_dbus_connection_is_closed (connection)) {
+      INFO ("UI closed: %p", connection);
+      ui = g_list_next (ui);
+      g_object_unref (connection);
+      controller->uis = g_list_remove (controller->uis, connection);
+      continue;
+    }
     value = gst_switch_controller_call_ui (controller,
-	G_DBUS_CONNECTION (ui->data), method_name, parameters, reply_type);
+	connection, method_name, parameters, reply_type);
     if (value) {
       // ...
     }
+    ui = g_list_next (ui);
   }
+  GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 }
 
+#if ENABLE_TEST
 static gchar *
 gst_switch_controller_test_ui (GstSwitchController * controller,
     GDBusConnection *connection, gchar *s)
@@ -463,6 +492,7 @@ gst_switch_controller_test_ui (GstSwitchController * controller,
   }
   return result;
 }
+#endif
 
 static void
 gst_switch_controller_set_ui_audio_port (GstSwitchController * controller,
@@ -537,6 +567,7 @@ gst_switch_controller_tell_preview_port (GstSwitchController *controller,
   gst_switch_controller_add_ui_preview_port (controller, port, type);
 }
 
+#if ENABLE_TEST
 static GVariant *
 gst_switch_controller__test (GstSwitchController *controller,
     GDBusConnection *connection, GVariant *parameters)
@@ -546,6 +577,7 @@ gst_switch_controller__test (GstSwitchController *controller,
   INFO ("%s", s);
   return g_variant_new ("(s)", "hello, ui");
 }
+#endif//ENABLE_TEST
 
 static GVariant *
 gst_switch_controller__get_compose_port (GstSwitchController *controller,
@@ -619,7 +651,9 @@ gst_switch_controller__get_preview_ports (GstSwitchController *controller,
 }
 
 static MethodTableEntry gst_switch_controller_method_table[] = {
+#if ENABLE_TEST
   { "test", (MethodFunc) gst_switch_controller__test },
+#endif//ENABLE_TEST
   { "get_compose_port", (MethodFunc) gst_switch_controller__get_compose_port },
   { "get_encode_port", (MethodFunc) gst_switch_controller__get_encode_port },
   { "get_audio_port", (MethodFunc) gst_switch_controller__get_audio_port },

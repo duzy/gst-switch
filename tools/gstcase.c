@@ -275,7 +275,7 @@ gst_case_null (GstCase *cas)
 {
   GstWorker *worker = GST_WORKER (cas);
 
-  INFO ("null: %s (%p)", worker->name, cas);
+  INFO ("%s: null (%p)", worker->name, cas);
 
   g_signal_emit (cas, gst_case_signals[SIGNAL_END_CASE], 0);
 }

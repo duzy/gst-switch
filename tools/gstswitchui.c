@@ -35,16 +35,21 @@
 #include "gstaudioplay.h"
 #include "gstcase.h"
 
+#define GST_SWITCH_UI_LOCK_AUDIO(ui) (g_mutex_lock (&(ui)->audio_lock))
+#define GST_SWITCH_UI_UNLOCK_AUDIO(ui) (g_mutex_unlock (&(ui)->audio_lock))
+
 G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, G_TYPE_OBJECT);
 
 static GDBusNodeInfo *introspection_data = NULL;
 static const gchar introspection_xml[] =
   "<node>"
   "  <interface name='" SWITCH_UI_OBJECT_NAME "'>"
+#if ENABLE_TEST
   "    <method name='test'>"
   "      <arg type='s' name='name' direction='in'/>"
   "      <arg type='s' name='result' direction='out'/>"
   "    </method>"
+#endif//ENABLE_TEST
   "    <method name='set_audio_port'>"
   "      <arg type='i' name='port' direction='in'/>"
   "    </method>"
@@ -128,6 +133,8 @@ gst_switch_ui_init (GstSwitchUI * ui)
   GtkWidget *main_box;
   GtkWidget *scrollwin;
 
+  g_mutex_init (&ui->audio_lock);
+
   ui->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size (GTK_WINDOW (ui->window), 640, 480);
   gtk_window_set_title (GTK_WINDOW (ui->window), "GstSwitch");
@@ -178,6 +185,8 @@ gst_switch_ui_finalize (GstSwitchUI * ui)
   gtk_widget_destroy (GTK_WIDGET (ui->window));
   ui->window = NULL;
 
+  g_mutex_clear (&ui->audio_lock);
+
   if (G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize) (G_OBJECT (ui));
 }
@@ -223,6 +232,7 @@ gst_switch_ui_call_controller (GstSwitchUI * ui, const gchar *method_name,
   }
 }
 
+#if ENABLE_TEST
 static gchar *
 gst_switch_ui_controller_test (GstSwitchUI * ui, const gchar *s)
 {
@@ -238,6 +248,7 @@ gst_switch_ui_controller_test (GstSwitchUI * ui, const gchar *s)
 
   return result;
 }
+#endif//ENABLE_TEST
 
 static gint
 gst_switch_ui_controller_get_compose_port (GstSwitchUI * ui)
@@ -504,6 +515,7 @@ static void
 gst_switch_ui_run (GstSwitchUI * ui)
 {
   gst_switch_ui_connect_controller (ui);
+#if ENABLE_TEST
   {
     gchar *test_result = NULL;
     test_result = gst_switch_ui_controller_test (ui, "hello, controller");
@@ -512,6 +524,7 @@ gst_switch_ui_run (GstSwitchUI * ui)
       g_free (test_result);
     }
   }
+#endif
 
   gtk_widget_show_all (ui->window);
   gtk_widget_realize (ui->window);
@@ -522,14 +535,16 @@ gst_switch_ui_run (GstSwitchUI * ui)
 static GstVideoDisp *
 gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
 {
+  gchar *name = g_strdup_printf ("video-%d", port);
   GdkWindow *xview = gtk_widget_get_window (view);
   GstVideoDisp *disp = GST_VIDEO_DISP (g_object_new (GST_TYPE_VIDEO_DISP,
-	  "name", "compose", "port", port,
+	  "name", name, "port", port,
 	  "handle", (gulong) GDK_WINDOW_XID (xview),
 	  NULL));
   g_object_set_data (G_OBJECT (view), "video-display", disp);
   gst_worker_prepare (GST_WORKER (disp));
   gst_worker_start (GST_WORKER (disp));
+  g_free (name);
   return disp;
 }
 
@@ -542,11 +557,44 @@ gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
 	  "name", name, "port", port,
 	  "handle", (gulong) GDK_WINDOW_XID (xview),
 	  NULL));
-  g_object_set_data (G_OBJECT (view), "video-display", visu);
+  g_object_set_data (G_OBJECT (view), "audio-visual", visu);
   gst_worker_prepare (GST_WORKER (visu));
   gst_worker_start (GST_WORKER (visu));
   g_free (name);
   return visu;
+}
+
+static void
+gst_switch_ui_remove_preview (GstSwitchUI *ui, GstWorker *worker,
+    const gchar *name)
+{
+  GList *v = gtk_container_get_children (GTK_CONTAINER (ui->preview_box));
+  for (; v; v = g_list_next (v)) {
+    GtkWidget *view = GTK_WIDGET (v->data);
+    gpointer data = g_object_get_data (G_OBJECT (view), name);
+    if (data) {
+      GstWorker *w = GST_WORKER (data);
+      if (w == worker) {
+	gtk_widget_destroy (view);
+      }
+    }
+  }
+}
+
+static void
+gst_switch_ui_end_video_disp (GstWorker *worker, GstSwitchUI *ui)
+{
+  GstVideoDisp *disp = GST_VIDEO_DISP (worker);
+  INFO ("video ended: %s, %d", worker->name, disp->port);
+  gst_switch_ui_remove_preview (ui, worker, "video-display");
+}
+
+static void
+gst_switch_ui_end_audio_visual (GstWorker *worker, GstSwitchUI *ui)
+{
+  GstAudioVisual *visu = GST_AUDIO_VISUAL (worker);
+  INFO ("audio ended: %s, %d", worker->name, visu->port);
+  gst_switch_ui_remove_preview (ui, worker, "audio-visual");
 }
 
 static GstAudioPlay *
@@ -578,14 +626,12 @@ gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
 static void
 gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
 {
-  if (ui->audio_port == port)
-    return;
-
+  GST_SWITCH_UI_LOCK_AUDIO (ui);
   if (ui->audio)
     g_object_unref (ui->audio);
 
-  ui->audio_port = port;
   ui->audio = gst_switch_ui_new_audio (ui, port);
+  GST_SWITCH_UI_UNLOCK_AUDIO (ui);
 }
 
 static void
@@ -602,9 +648,13 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
   switch (type) {
   case GST_SERVE_VIDEO_STREAM:
     disp = gst_switch_ui_new_video_disp (ui, preview, port);
+    g_signal_connect (G_OBJECT(disp), "end-worker",
+	G_CALLBACK (gst_switch_ui_end_video_disp), ui);
     break;
   case GST_SERVE_AUDIO_STREAM:
     visu = gst_switch_ui_new_audio_visual (ui, preview, port);
+    g_signal_connect (G_OBJECT(visu), "end-worker",
+	G_CALLBACK (gst_switch_ui_end_audio_visual), ui);
     break;
   default:
     gtk_widget_destroy (preview);
@@ -615,6 +665,7 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
   (void) visu;
 }
 
+#if ENABLE_TEST
 static GVariant *
 gst_switch_ui__test (GstSwitchUI *ui, GDBusConnection *connection,
     GVariant *parameters)
@@ -624,6 +675,7 @@ gst_switch_ui__test (GstSwitchUI *ui, GDBusConnection *connection,
   INFO ("%s", s);
   return g_variant_new ("(s)", "hello, controller");
 }
+#endif//ENABLE_TEST
 
 static GVariant *
 gst_switch_ui__set_audio_port (GstSwitchUI *ui,
@@ -660,7 +712,9 @@ gst_switch_ui__add_preview_port (GstSwitchUI *ui,
 }
 
 static MethodTableEntry gst_switch_ui_method_table[] = {
+#if ENABLE_TEST
   { "test", (MethodFunc) gst_switch_ui__test },
+#endif//ENABLE_TEST
   { "set_audio_port", (MethodFunc) gst_switch_ui__set_audio_port },
   { "set_compose_port", (MethodFunc) gst_switch_ui__set_compose_port },
   { "add_preview_port", (MethodFunc) gst_switch_ui__add_preview_port },
