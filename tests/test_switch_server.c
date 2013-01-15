@@ -37,7 +37,7 @@ static struct {
   gboolean disable_test_audio;
   gboolean disable_test_ui_integration;
   gboolean disable_test_random_connection;
-  gboolean disable_test_fuzz_ui;
+  gboolean disable_test_fuzz;
   gboolean test_external_server;
   gboolean test_external_ui;
 } opts = {
@@ -46,7 +46,7 @@ static struct {
  .disable_test_audio		= FALSE,
  .disable_test_ui_integration	= FALSE,
  .disable_test_random_connection= FALSE,
- .disable_test_fuzz_ui		= FALSE,
+ .disable_test_fuzz		= FALSE,
  .test_external_server		= FALSE,
  .test_external_ui		= FALSE,
 };
@@ -57,7 +57,7 @@ static GOptionEntry option_entries[] = {
   {"disable-test-audio",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_audio,		"Disable testing audio", NULL},
   {"disable-test-ui-integration",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_ui_integration,	"Disable testing UI integration", NULL},
   {"disable-test-random-connection",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_random_connection,	"Disable testing random connection", NULL},
-  {"disable-test-fuzz-ui",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_fuzz_ui,		"Disable testing fuzz input", NULL},
+  {"disable-test-fuzz-ui",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_fuzz,		"Disable testing fuzz input", NULL},
   {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server", NULL},
   {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui", NULL},
   {NULL}
@@ -909,82 +909,9 @@ test_random_connections (void)
 }
 
 static void
-test_fuzz_ui_integrated (void)
+test_fuzz (void)
 {
-  const gint seconds = 10;
-  GPid server_pid = 0;
-  GPid ui_pid;
-  TestCase video_source1 = { "test_video_source1", 0 };
-  TestCase video_source2 = { "test_video_source2", 0 };
-  TestCase video_source3 = { "test_video_source3", 0 };
-  TestCase audio_source1 = { "test_audio_source1", 0 };
-  TestCase audio_source2 = { "test_audio_source2", 0 };
-  TestCase audio_source3 = { "test_audio_source3", 0 };
-  const gchar *textoverlay = "textoverlay "
-    "font-desc=\"Sans 80\" "
-    "auto-resize=true "
-    "shaded-background=true "
-    ;
-
-  g_print ("\n");
-
-  video_source1.live_seconds = seconds;
-  video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
-  g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
-  g_string_append_printf (video_source1.desc, "! %s text=video1 ", textoverlay);
-  g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
-
-  video_source2.live_seconds = seconds;
-  video_source2.desc = g_string_new ("videotestsrc pattern=1 ");
-  g_string_append_printf (video_source2.desc, "! video/x-raw,width=1280,height=720 ");
-  g_string_append_printf (video_source2.desc, "! %s text=video2 ", textoverlay);
-  g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
-
-  video_source3.live_seconds = seconds;
-  video_source3.desc = g_string_new ("videotestsrc pattern=15 ");
-  g_string_append_printf (video_source3.desc, "! video/x-raw,width=1280,height=720 ");
-  g_string_append_printf (video_source3.desc, "! %s text=video3 ", textoverlay);
-  g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
-
-  audio_source1.live_seconds = seconds;
-  audio_source1.desc = g_string_new ("audiotestsrc ");
-  //g_string_append_printf (audio_source1.desc, "! audio/x-raw ");
-  g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
-
-  audio_source2.live_seconds = seconds;
-  audio_source2.desc = g_string_new ("audiotestsrc ");
-  g_string_append_printf (audio_source2.desc, "! gdppay ! tcpclientsink port=4000");
-
-  audio_source3.live_seconds = seconds;
-  audio_source3.desc = g_string_new ("audiotestsrc ");
-  g_string_append_printf (audio_source3.desc, "! gdppay ! tcpclientsink port=4000");
-
-  if (!opts.test_external_server) {
-    server_pid = launch_server ();
-    g_assert_cmpint (server_pid, !=, 0);
-    sleep (3); /* give a second for server to be online */
-  }
-
-  ui_pid = launch_ui ();
-  g_assert_cmpint (ui_pid, !=, 0);
-  sleep (2); /* give a second for ui to be ready */
-
-  testcase_run_thread (&video_source1); //sleep (1);
-  testcase_run_thread (&video_source2); //sleep (1);
-  testcase_run_thread (&video_source3); //sleep (1);
-  testcase_run_thread (&audio_source1); //sleep (1);
-  testcase_run_thread (&audio_source2); //sleep (1);
-  testcase_run_thread (&audio_source3); //sleep (1);
-  testcase_join (&video_source1);
-  testcase_join (&video_source2);
-  testcase_join (&video_source3);
-  testcase_join (&audio_source1);
-  testcase_join (&audio_source2);
-  testcase_join (&audio_source3);
-
-  close_pid (ui_pid);
-  if (!opts.test_external_server)
-    close_pid (server_pid);
+  WARN ("TODO: fuzz");
 }
 
 int main (int argc, char**argv)
@@ -1029,8 +956,8 @@ int main (int argc, char**argv)
     g_test_add_func ("/gst-switch/random-connections", test_random_connections);
     g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   }
-  if (!opts.disable_test_fuzz_ui) {
-    g_test_add_func ("/gst-switch/fuzz-ui-integrated", test_fuzz_ui_integrated);
+  if (!opts.disable_test_fuzz) {
+    g_test_add_func ("/gst-switch/fuzz", test_fuzz);
     g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   }
   return g_test_run ();

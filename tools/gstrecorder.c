@@ -43,7 +43,6 @@ enum
 
 enum
 {
-  SIGNAL_END_RECORDER,
   SIGNAL__LAST,
 };
 
@@ -223,8 +222,6 @@ gst_recorder_null (GstRecorder *rec)
   GstWorker *worker = GST_WORKER (rec);
 
   INFO ("null: %s (%p)", worker->name, rec);
-
-  g_signal_emit (rec, gst_recorder_signals[SIGNAL_END_RECORDER], 0);
 }
 
 static void
@@ -236,11 +233,6 @@ gst_recorder_class_init (GstRecorderClass * klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_recorder_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_recorder_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_recorder_get_property;
-
-  gst_recorder_signals[SIGNAL_END_RECORDER] =
-    g_signal_new ("end-recorder", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstRecorderClass, end_recorder),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",

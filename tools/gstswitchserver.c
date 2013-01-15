@@ -777,7 +777,7 @@ gst_switch_server_launch_recorder (GstSwitchServer * srv)
   if (!gst_worker_prepare (GST_WORKER (srv->recorder)))
     return FALSE;
 
-  g_signal_connect (srv->recorder, "end-recorder",
+  g_signal_connect (srv->recorder, "end-worker",
       G_CALLBACK (gst_switch_server_end_recorder), srv);
 
   gst_worker_start (GST_WORKER (srv->recorder));
