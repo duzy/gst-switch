@@ -353,6 +353,11 @@ gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
 static void
 gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
 {
+  if (!port) {
+    WARN ("invalid active audio port");
+    return;
+  }
+
   GST_SWITCH_UI_LOCK_AUDIO (ui);
   if (ui->audio)
     g_object_unref (ui->audio);
