@@ -37,6 +37,8 @@
 
 #define GST_SWITCH_UI_LOCK_AUDIO(ui) (g_mutex_lock (&(ui)->audio_lock))
 #define GST_SWITCH_UI_UNLOCK_AUDIO(ui) (g_mutex_unlock (&(ui)->audio_lock))
+#define GST_SWITCH_UI_LOCK_COMPOSE(ui) (g_mutex_lock (&(ui)->compose_lock))
+#define GST_SWITCH_UI_UNLOCK_COMPOSE(ui) (g_mutex_unlock (&(ui)->compose_lock))
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, GST_TYPE_SWITCH_CLIENT);
 
@@ -110,6 +112,7 @@ gst_switch_ui_init (GstSwitchUI * ui)
   GtkWidget *scrollwin;
 
   g_mutex_init (&ui->audio_lock);
+  g_mutex_init (&ui->compose_lock);
 
   ui->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size (GTK_WINDOW (ui->window), 640, 480);
@@ -162,6 +165,7 @@ gst_switch_ui_finalize (GstSwitchUI * ui)
   ui->window = NULL;
 
   g_mutex_clear (&ui->audio_lock);
+  g_mutex_clear (&ui->compose_lock);
 
   if (G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize) (G_OBJECT (ui));
@@ -333,15 +337,17 @@ gst_switch_ui_new_audio (GstSwitchUI *ui, gint port)
 static void
 gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
 {
-  if (ui->compose_port == port)
-    return;
+  GST_SWITCH_UI_LOCK_COMPOSE (ui);
+  if (ui->compose && ui->compose->port == port) {
+    INFO ("compose already displayed", port);
+  } else {
+    if (ui->compose)
+      g_object_unref (ui->compose);
 
-  if (ui->compose_video)
-    g_object_unref (ui->compose_video);
-
-  ui->compose_port = port;
-  ui->compose_video = gst_switch_ui_new_video_disp (ui, ui->compose_view,
-      port);
+    ui->compose = gst_switch_ui_new_video_disp (ui,
+	ui->compose_view, port);
+  }
+  GST_SWITCH_UI_UNLOCK_COMPOSE (ui);
 }
 
 static void

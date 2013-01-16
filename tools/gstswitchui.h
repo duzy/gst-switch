@@ -51,11 +51,10 @@ struct _GstSwitchUI
   GtkWidget *compose_view;
   GtkWidget *preview_box;
 
-  gint compose_port;
-
   GMutex audio_lock;
   GstAudioPlay *audio;
-  GstVideoDisp *compose_video;
+  GMutex compose_lock;
+  GstVideoDisp *compose;
 };
 
 struct _GstSwitchUIClass
