@@ -302,12 +302,28 @@ gst_switch_ui_end_audio_visual (GstWorker *worker, GstSwitchUI *ui)
   gst_switch_ui_remove_preview (ui, worker, "audio-visual");
 }
 
+static void
+gst_switch_ui_end_audio (GstAudioPlay *audio, GstSwitchUI *ui)
+{
+  if (audio != ui->audio) {
+    INFO ("unknown audio ended");
+    g_object_unref (audio);
+  } else if (ui->audio) {
+    GST_SWITCH_UI_LOCK_AUDIO (ui);
+    g_object_unref (ui->audio);
+    ui->audio = NULL;
+    GST_SWITCH_UI_UNLOCK_AUDIO (ui);
+  }
+}
+
 static GstAudioPlay *
 gst_switch_ui_new_audio (GstSwitchUI *ui, gint port)
 {
   gchar *name = g_strdup_printf ("audio-%d", port);
   GstAudioPlay *audio = GST_AUDIO_PLAY (
       g_object_new (GST_TYPE_AUDIO_PLAY, "name", name, "port", port, NULL));
+  g_signal_connect (G_OBJECT (audio), "end-worker",
+      G_CALLBACK (gst_switch_ui_end_audio), ui);
   gst_worker_prepare (GST_WORKER (audio));
   gst_worker_start (GST_WORKER (audio));
   g_free (name);
