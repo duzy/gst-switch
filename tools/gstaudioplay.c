@@ -105,7 +105,8 @@ gst_audio_play_get_pipeline_string (GstAudioPlay *audio_play)
   g_string_append_printf (desc, "tcpclientsrc name=source "
       "port=%d ", audio_play->port);
   g_string_append_printf (desc, "! gdpdepay ! faad ");
-  g_string_append_printf (desc, "! autoaudiosink name=sink ");
+  //g_string_append_printf (desc, "! autoaudiosink name=sink ");
+  g_string_append_printf (desc, "! alsasink name=sink ");
 
   return desc;
 }

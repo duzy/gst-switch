@@ -804,7 +804,7 @@ test_random_connection_1 (gpointer d)
     ;
   gint n, m;
 
-  audio_source0.live_seconds = 52;
+  audio_source0.live_seconds = 102;
   audio_source0.desc = g_string_new ("");
   g_string_append_printf (audio_source0.desc, "audiotestsrc ");
   g_string_append_printf (audio_source0.desc, "! gdppay ! tcpclientsink port=4000");
@@ -894,7 +894,7 @@ test_random_connections (void)
     sleep (1); /* give a second for ui to be ready */
   }
 
-  t1 = g_thread_new ("random-1", test_random_connection_1, NULL);
+  t1 = g_thread_new ("random-1", test_random_connection_1, NULL); sleep (1);
   t2 = g_thread_new ("random-2", test_random_connection_2, NULL);
 
   g_thread_join (t1);

@@ -249,9 +249,19 @@ gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
 {
   gchar *name = g_strdup_printf ("visual-%d", port);
   GdkWindow *xview = gtk_widget_get_window (view);
-  GstAudioVisual *visual = GST_AUDIO_VISUAL (
+  GstAudioVisual *visual;
+  gint audio_port = 0;
+
+  if (ui->audio) {
+    GST_SWITCH_UI_LOCK_AUDIO (ui);
+    if (ui->audio) audio_port = ui->audio->port;
+    GST_SWITCH_UI_UNLOCK_AUDIO (ui);
+  }
+
+  visual = GST_AUDIO_VISUAL (
       g_object_new (GST_TYPE_AUDIO_VISUAL, "name", name, "port", port,
-	  "handle", (gulong) GDK_WINDOW_XID (xview), NULL));
+	  "handle", (gulong) GDK_WINDOW_XID (xview),
+	  "active", (audio_port == port), NULL));
   g_object_set_data (G_OBJECT (view), "audio-visual", visual);
   gst_worker_prepare (GST_WORKER (visual));
   gst_worker_start (GST_WORKER (visual));
@@ -325,7 +335,7 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
   if (ui->audio)
     g_object_unref (ui->audio);
 
-  INFO ("active audio %d", port);
+  INFO ("active audio: %d", port);
 
   ui->audio = gst_switch_ui_new_audio (ui, port);
   GST_SWITCH_UI_UNLOCK_AUDIO (ui);

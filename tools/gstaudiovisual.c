@@ -38,6 +38,7 @@ enum
   PROP_0,
   PROP_PORT,
   PROP_HANDLE,
+  PROP_ACTIVE,
 };
 
 extern gboolean verbose;
@@ -70,6 +71,9 @@ gst_audio_visual_set_property (GstAudioVisual *disp, guint property_id,
   case PROP_HANDLE:
     disp->handle = g_value_get_ulong (value);
     break;
+  case PROP_ACTIVE:
+    disp->active = g_value_get_boolean (value);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
     break;
@@ -87,6 +91,9 @@ gst_audio_visual_get_property (GstAudioVisual *disp, guint property_id,
   case PROP_HANDLE:
     g_value_set_ulong (value, disp->handle);
     break;
+  case PROP_ACTIVE:
+    g_value_set_boolean (value, disp->active);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
     break;
@@ -98,7 +105,7 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual *disp)
 {
   GString *desc;
 
-  INFO ("display video %d", disp->port);
+  INFO ("display audio %d", disp->port);
 
   desc = g_string_new ("");
 
@@ -106,6 +113,18 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual *disp)
       "port=%d ", disp->port);
   g_string_append_printf (desc, "! gdpdepay ! faad ");
   g_string_append_printf (desc, "! goom2k1 ");
+  //g_string_append_printf (desc, "! monoscope ");
+  if (disp->active) {
+    INFO ("active audio: %d", disp->port);
+    g_string_append_printf (desc, "! videobox autocrop=true "
+	"fill=red left=20 top=20 right=20 bottom=20 ! "
+	"video/x-raw,width=100,height=100 "
+	"");
+    g_string_append_printf (desc, "! textoverlay text=\"active\" "
+	"font-desc=\"Sans 50\" "
+	"shaded-background=true "
+	"auto-resize=true ");
+  }
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! xvimagesink name=sink ");
 
@@ -148,6 +167,10 @@ gst_audio_visual_class_init (GstAudioVisualClass *klass)
   g_object_class_install_property (object_class, PROP_HANDLE,
       g_param_spec_ulong ("handle", "Handle", "Window Handle",
           0, ((gulong)-1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_ACTIVE,
+      g_param_spec_boolean ("active", "Active", "Activated audio",
+          FALSE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_visual_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_visual_prepare;
