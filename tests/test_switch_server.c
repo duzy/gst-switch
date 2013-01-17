@@ -29,7 +29,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <signal.h>
+#include "../tools/gstswitchclient.h"
 #include "../logutils.h"
+
+gboolean verbose = FALSE;
 
 static struct {
   gboolean disable_test_controller;
@@ -41,25 +44,25 @@ static struct {
   gboolean test_external_server;
   gboolean test_external_ui;
 } opts = {
- .disable_test_controller	= FALSE,
- .disable_test_video		= FALSE,
- .disable_test_audio		= FALSE,
- .disable_test_ui_integration	= FALSE,
- .disable_test_random_connection= FALSE,
- .disable_test_fuzz		= FALSE,
- .test_external_server		= FALSE,
- .test_external_ui		= FALSE,
+  .disable_test_controller		= FALSE,
+  .disable_test_video			= FALSE,
+  .disable_test_audio			= FALSE,
+  .disable_test_ui_integration		= FALSE,
+  .disable_test_random_connection	= FALSE,
+  .disable_test_fuzz			= FALSE,
+  .test_external_server			= FALSE,
+  .test_external_ui			= FALSE,
 };
 
 static GOptionEntry option_entries[] = {
-  {"disable-test-controller",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_controller,		"Disable testing controller", NULL},
-  {"disable-test-video",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_video,		"Disable testing video", NULL},
-  {"disable-test-audio",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_audio,		"Disable testing audio", NULL},
-  {"disable-test-ui-integration",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_ui_integration,	"Disable testing UI integration", NULL},
+  {"disable-test-controller",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_controller,		"Disable testing controller",        NULL},
+  {"disable-test-video",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_video,		"Disable testing video",             NULL},
+  {"disable-test-audio",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_audio,		"Disable testing audio",             NULL},
+  {"disable-test-ui-integration",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_ui_integration,	"Disable testing UI integration",    NULL},
   {"disable-test-random-connection",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_random_connection,	"Disable testing random connection", NULL},
-  {"disable-test-fuzz-ui",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_fuzz,		"Disable testing fuzz input", NULL},
-  {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server", NULL},
-  {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui", NULL},
+  {"disable-test-fuzz-ui",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_fuzz,		"Disable testing fuzz input",        NULL},
+  {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server",           NULL},
+  {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui",               NULL},
   {NULL}
 };
 
@@ -374,7 +377,7 @@ testcase_run (TestCase *t)
     ERROR ("launch failed");
     g_test_fail ();
   }
-  g_main_loop_unref (t->mainloop);
+  //g_main_loop_unref (t->mainloop);
   g_string_free (t->desc, FALSE);
   g_source_remove (t->timer);
   t->mainloop = NULL;
@@ -411,12 +414,169 @@ testcase_join (TestCase *t)
   if (thread) g_thread_join (thread);
 }
 
+typedef struct _testclient {
+  GstSwitchClient base;
+  GMainLoop *mainloop;
+  gint audio_port;
+  gint audio_port_count;
+  gint compose_port;
+  gint compose_port_count;
+  gint preview_port_1;
+  gint preview_port_2;
+  gint preview_port_count;
+} testclient;
+
+typedef struct _testclientClass {
+  GstSwitchClientClass baseclass;
+} testclientClass;
+
+GType testclient_get_type (void);
+
+#define TYPE_TESTCLIENT (testclient_get_type ())
+#define TESTCLIENT(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), TYPE_TESTCLIENT, testclient))
+#define TESTCLIENTCLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), TYPE_TESTCLIENT, testclientClass))
+G_DEFINE_TYPE (testclient, testclient, GST_TYPE_SWITCH_CLIENT);
+
+static gint clientcount = 0;
+static void
+testclient_init (testclient *client)
+{
+  ++clientcount;
+  client->mainloop = NULL;
+  INFO ("client init");
+}
+
+static void
+testclient_finalize (testclient *client)
+{
+  --clientcount;
+  INFO ("client finalize");
+}
+
+static void
+testclient_connection_closed (testclient *client, GError *error)
+{
+  INFO ("closed: %s", error ? error->message : "");
+  g_main_loop_quit (client->mainloop);
+}
+
+static void
+testclient_set_compose_port (testclient *client, gint port)
+{
+  INFO ("set-compose-port: %d", port);
+  client->compose_port = port;
+  client->compose_port_count += 1;
+}
+
+static void
+testclient_set_audio_port (testclient *client, gint port)
+{
+  INFO ("set-audio-port: %d", port);
+  client->audio_port = port;
+  client->audio_port_count += 1;
+}
+
+static void
+testclient_add_preview_port (testclient *client, gint port, gint type)
+{
+  INFO ("add-preview-port: %d, %d", port, type);
+  client->preview_port_count += 1;
+  switch (client->preview_port_count) {
+  case 1: client->preview_port_1 = port; break;
+  case 2: client->preview_port_2 = port; break;
+  }
+}
+
+static void
+testclient_class_init (testclientClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GstSwitchClientClass * client_class = GST_SWITCH_CLIENT_CLASS (klass);
+  object_class->finalize = (GObjectFinalizeFunc) testclient_finalize;
+  client_class->connection_closed = (GstSwitchClientConnectionClosedFunc)
+    testclient_connection_closed;
+  client_class->set_compose_port = (GstSwitchClientSetComposePortFunc)
+    testclient_set_compose_port;
+  client_class->set_audio_port = (GstSwitchClientSetAudioPortFunc)
+    testclient_set_audio_port;
+  client_class->add_preview_port = (GstSwitchClientAddPreviewPortFunc)
+    testclient_add_preview_port;
+}
+
+static gpointer
+testclient_run (gpointer data)
+{
+  testclient *client = (testclient *) data;
+  gboolean connect_ok = FALSE;
+  client->mainloop = g_main_loop_new (NULL, TRUE);
+
+  connect_ok = gst_switch_client_connect (GST_SWITCH_CLIENT (client));
+  g_assert (connect_ok);
+
+  g_main_loop_run (client->mainloop);
+  //g_main_loop_unref (client->mainloop);
+  return NULL;
+}
+
 static void
 test_controller (void)
 {
+  GPid server_pid = 0;
+  GThread *client_thread = NULL;
+  testclient *client;
+  TestCase video_source1 = { "test_video_source1", 0 };
+  TestCase audio_source1 = { "test_audio_source1", 0 };
+
   g_print ("\n");
 
-  WARN ("TODO: test controller");
+  if (!opts.test_external_server) {
+    server_pid = launch_server ();
+    g_assert_cmpint (server_pid, !=, 0);
+    sleep (1); /* give a second for server to be online */
+  }
+
+  client = TESTCLIENT (g_object_new (TYPE_TESTCLIENT, NULL));
+  client_thread = g_thread_new ("testclient", testclient_run, client);
+  g_assert_cmpint (clientcount, ==, 1);
+
+  {
+    {
+      video_source1.live_seconds = 5;
+      video_source1.desc = g_string_new ("");
+      g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
+      g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
+      g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+      audio_source1.live_seconds = 5;
+      audio_source1.desc = g_string_new ("");
+      g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", rand() % 12);
+      g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
+
+      testcase_run_thread (&video_source1); sleep (1);
+      testcase_run_thread (&audio_source1);
+      testcase_join (&video_source1);
+      testcase_join (&audio_source1);
+
+      if (video_source1.error_count || audio_source1.error_count) {
+	g_test_fail ();
+      }
+
+      g_assert_cmpint (client->compose_port, ==, 3001);
+      g_assert_cmpint (client->compose_port_count, ==, 1);
+      g_assert_cmpint (client->audio_port, ==, 3004);
+      g_assert_cmpint (client->audio_port_count, ==, 1);
+      g_assert_cmpint (client->preview_port_1, ==, 3003);
+      g_assert_cmpint (client->preview_port_2, ==, 3004);
+      g_assert_cmpint (client->preview_port_count, ==, 2);
+    }
+  }
+
+  if (!opts.test_external_server)
+    close_pid (server_pid);
+
+  g_thread_join (client_thread);
+  g_object_unref (client);
+  g_assert_cmpint (clientcount, ==, 0);
 }
 
 static void
