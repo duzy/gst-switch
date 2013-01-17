@@ -379,14 +379,15 @@ testcase_run (TestCase *t)
   }
   //g_main_loop_unref (t->mainloop);
   g_string_free (t->desc, FALSE);
-  g_source_remove (t->timer);
+  if (t->timer) g_source_remove (t->timer);
   t->mainloop = NULL;
   t->pipeline = NULL;
   t->desc = NULL;
   t->timer = 0;
 
-  if (t->error_count)
+  if (t->error_count) {
     ERROR ("%s: %d errors", t->name, t->error_count);
+  }
 
   g_mutex_lock (&t->lock);
   g_thread_unref (t->thread);
