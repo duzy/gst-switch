@@ -541,15 +541,15 @@ test_controller (void)
 
   {
     {
-      video_source1.live_seconds = 5;
+      video_source1.live_seconds = 10;
       video_source1.desc = g_string_new ("");
-      g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
+      g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", 0);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
-      audio_source1.live_seconds = 5;
+      audio_source1.live_seconds = 10;
       audio_source1.desc = g_string_new ("");
-      g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", rand() % 12);
+      g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", 2);
       g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
 
       testcase_run_thread (&video_source1); sleep (1);
@@ -571,8 +571,22 @@ test_controller (void)
     }
   }
 
-  if (!opts.test_external_server)
+  if (!opts.test_external_server) {
     close_pid (server_pid);
+    {
+      TestCase play = { "play-test-record", 0 };
+      GFile *file = g_file_new_for_path ("test-recording.data");
+      g_assert (g_file_query_exists (file, NULL));
+      play.desc = g_string_new ("filesrc location=test-recording.data ");
+      g_string_append_printf (play.desc, "! avidemux name=dm ");
+      g_string_append_printf (play.desc, "dm.audio_0 ! queue ! faad ! audioconvert ! alsasink ");
+      g_string_append_printf (play.desc, "dm.video_0 ! queue ! vp8dec ! videoconvert ! xvimagesink ");
+      testcase_run_thread (&play);
+      testcase_join (&play);
+      g_assert_cmpint (play.error_count, ==, 0);
+      g_object_unref (file);
+    }
+  }
 
   g_thread_join (client_thread);
   g_object_unref (client);
