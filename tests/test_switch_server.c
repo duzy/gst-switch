@@ -524,8 +524,8 @@ test_controller (void)
   GPid server_pid = 0;
   GThread *client_thread = NULL;
   testclient *client;
-  TestCase video_source1 = { "test_video_source1", 0 };
-  TestCase audio_source1 = { "test_audio_source1", 0 };
+  TestCase video_source1 = { "test-video-source1", 0 };
+  TestCase audio_source1 = { "test-audio-source1", 0 };
 
   g_print ("\n");
 
@@ -598,9 +598,9 @@ test_video (void)
 {
   const gint seconds = 10;
   GPid server_pid = 0;
-  TestCase source1 = { "test_video_source1", 0 };
-  TestCase source2 = { "test_video_source2", 0 };
-  TestCase source3 = { "test_video_source3", 0 };
+  TestCase source1 = { "test-video-source1", 0 };
+  TestCase source2 = { "test-video-source2", 0 };
+  TestCase source3 = { "test-video-source3", 0 };
   TestCase sink0 = { "test_video_compose_sink", 0 };
   TestCase sink1 = { "test_video_preview_sink1", 0 };
   TestCase sink2 = { "test_video_preview_sink2", 0 };
@@ -688,19 +688,19 @@ test_video (void)
   if (!opts.test_external_server)
     close_pid (server_pid);
 
-  g_assert_cmpstr (source1.name, ==, "test_video_source1");
+  g_assert_cmpstr (source1.name, ==, "test-video-source1");
   g_assert_cmpint (source1.timer, ==, 0);
   g_assert (source1.desc == NULL);
   g_assert (source1.mainloop == NULL);
   g_assert (source1.pipeline == NULL);
 
-  g_assert_cmpstr (source2.name, ==, "test_video_source2");
+  g_assert_cmpstr (source2.name, ==, "test-video-source2");
   g_assert_cmpint (source2.timer, ==, 0);
   g_assert (source2.desc == NULL);
   g_assert (source2.mainloop == NULL);
   g_assert (source2.pipeline == NULL);
 
-  g_assert_cmpstr (source3.name, ==, "test_video_source3");
+  g_assert_cmpstr (source3.name, ==, "test-video-source3");
   g_assert_cmpint (source3.timer, ==, 0);
   g_assert (source3.desc == NULL);
   g_assert (source3.mainloop == NULL);
@@ -756,9 +756,9 @@ static void
 test_audio (void)
 {
   const gint seconds = 10;
-  TestCase source1 = { "test_audio_source1", 0 };
-  TestCase source2 = { "test_audio_source2", 0 };
-  TestCase source3 = { "test_audio_source3", 0 };
+  TestCase source1 = { "test-audio-source1", 0 };
+  TestCase source2 = { "test-audio-source2", 0 };
+  TestCase source3 = { "test-audio-source3", 0 };
   TestCase sink1 = { "test_audio_preview_sink1", 0 };
   TestCase sink2 = { "test_audio_preview_sink2", 0 };
   TestCase sink3 = { "test_audio_preview_sink3", 0 };
@@ -877,12 +877,12 @@ test_ui_integrated (void)
   const gint seconds = 10;
   GPid server_pid = 0;
   GPid ui_pid;
-  TestCase video_source1 = { "test_video_source1", 0 };
-  TestCase video_source2 = { "test_video_source2", 0 };
-  TestCase video_source3 = { "test_video_source3", 0 };
-  TestCase audio_source1 = { "test_audio_source1", 0 };
-  TestCase audio_source2 = { "test_audio_source2", 0 };
-  TestCase audio_source3 = { "test_audio_source3", 0 };
+  TestCase video_source1 = { "test-video-source1", 0 };
+  TestCase video_source2 = { "test-video-source2", 0 };
+  TestCase video_source3 = { "test-video-source3", 0 };
+  TestCase audio_source1 = { "test-audio-source1", 0 };
+  TestCase audio_source2 = { "test-audio-source2", 0 };
+  TestCase audio_source3 = { "test-audio-source3", 0 };
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
@@ -968,9 +968,9 @@ test_recording_result (void)
 static gpointer
 test_random_connection_1 (gpointer d)
 {
-  TestCase video_source1 = { "test_video_source1", 0 };
-  TestCase audio_source0 = { "test_audio_source0", 0 };
-  TestCase audio_source1 = { "test_audio_source1", 0 };
+  TestCase video_source1 = { "test-video-source1", 0 };
+  TestCase audio_source0 = { "test-audio-source0", 0 };
+  TestCase audio_source1 = { "test-audio-source1", 0 };
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
@@ -1013,8 +1013,8 @@ test_random_connection_1 (gpointer d)
 static gpointer
 test_random_connection_2 (gpointer d)
 {
-  TestCase video_source1 = { "test_video_source1", 0 };
-  TestCase audio_source1 = { "test_audio_source1", 0 };
+  TestCase video_source1 = { "test-video-source1", 0 };
+  TestCase audio_source1 = { "test-audio-source1", 0 };
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
