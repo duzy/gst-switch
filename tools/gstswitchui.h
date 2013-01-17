@@ -47,6 +47,8 @@ struct _GstSwitchUI
 
   GDBusConnection *controller;
 
+  GtkCssProvider *css;
+
   GtkWidget *window;
   GtkWidget *compose_view;
   GtkWidget *preview_box;

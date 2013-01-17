@@ -116,10 +116,12 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual *disp)
   //g_string_append_printf (desc, "! monoscope ");
   if (disp->active) {
     INFO ("active audio: %d", disp->port);
+    /*
     g_string_append_printf (desc, "! videobox autocrop=true "
 	"fill=red left=20 top=20 right=20 bottom=20 ! "
 	"video/x-raw,width=100,height=100 "
 	"");
+    */
     g_string_append_printf (desc, "! textoverlay text=\"active\" "
 	"font-desc=\"Sans 50\" "
 	"shaded-background=true "
