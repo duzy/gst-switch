@@ -1011,12 +1011,12 @@ test_random_connection_1 (gpointer d)
 
   audio_source0.live_seconds = 102;
   audio_source0.desc = g_string_new ("");
-  g_string_append_printf (audio_source0.desc, "audiotestsrc ");
+  g_string_append_printf (audio_source0.desc, "audiotestsrc wave=2 ");
   g_string_append_printf (audio_source0.desc, "! gdppay ! tcpclientsink port=4000");
   testcase_run_thread (&audio_source0);
   sleep (2);
 
-  for (m = 0; m < 3; ++n) {
+  for (m = 0; m < 3; ++m) {
     for (n = 0; n < 3; ++n) {
       video_source1.live_seconds = 5;
       video_source1.desc = g_string_new ("");
@@ -1055,7 +1055,7 @@ test_random_connection_2 (gpointer d)
 
   g_print ("\n");
 
-  for (m = 0; m < 3; ++n) {
+  for (m = 0; m < 3; ++m) {
     for (n = 0; n < 3; ++n) {
       video_source1.live_seconds = 2;
       video_source1.desc = g_string_new ("");
