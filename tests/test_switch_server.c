@@ -66,8 +66,8 @@ static GOptionEntry option_entries[] = {
   {NULL}
 };
 
-typedef struct _TestCase TestCase;
-struct _TestCase
+typedef struct _testcase testcase;
+struct _testcase
 {
   const gchar *name;
   GMainLoop *mainloop;
@@ -81,27 +81,27 @@ struct _TestCase
 };
 
 static void
-testcase_quit (TestCase *t)
+testcase_quit (testcase *t)
 {
   gst_element_set_state (t->pipeline, GST_STATE_NULL);
   g_main_loop_quit (t->mainloop);
 }
 
 static void
-testcase_fail (TestCase *t)
+testcase_fail (testcase *t)
 {
   testcase_quit (t);
   g_test_fail ();
 }
 
 static void
-testcase_ok (TestCase *t)
+testcase_ok (testcase *t)
 {
   testcase_quit (t);
 }
 
 static void
-testcase_state_change (TestCase *t, GstState oldstate, GstState newstate, GstState pending)
+testcase_state_change (testcase *t, GstState oldstate, GstState newstate, GstState pending)
 {
   GstStateChange statechange = GST_STATE_TRANSITION (oldstate, newstate);
   switch (statechange) {
@@ -129,7 +129,7 @@ testcase_state_change (TestCase *t, GstState oldstate, GstState newstate, GstSta
 }
 
 static void
-testcase_error_message (TestCase *t, GError *error, const gchar *info)
+testcase_error_message (testcase *t, GError *error, const gchar *info)
 {
   /*
   ERROR ("%s: %s", t->name, error->message);
@@ -145,7 +145,7 @@ testcase_error_message (TestCase *t, GError *error, const gchar *info)
 static gboolean
 testcase_pipeline_message (GstBus * bus, GstMessage * message, gpointer data)
 {
-  TestCase *t = (TestCase *) data;
+  testcase *t = (testcase *) data;
   switch (GST_MESSAGE_TYPE (message)) {
   case GST_MESSAGE_STATE_CHANGED:
   {
@@ -180,7 +180,7 @@ testcase_pipeline_message (GstBus * bus, GstMessage * message, gpointer data)
 }
 
 static gboolean
-testcase_launch_pipeline (TestCase *t)
+testcase_launch_pipeline (testcase *t)
 {
   GError *error = NULL;
   GstBus *bus;
@@ -349,7 +349,7 @@ close_pid (GPid pid)
 }
 
 static gboolean
-testcase_second_timer (TestCase *t)
+testcase_second_timer (testcase *t)
 {
   t->live_seconds -= 1;
 
@@ -361,7 +361,7 @@ testcase_second_timer (TestCase *t)
 }
 
 static gpointer
-testcase_run (TestCase *t)
+testcase_run (testcase *t)
 {
   g_mutex_init (&t->lock);
 
@@ -380,7 +380,7 @@ testcase_run (TestCase *t)
   //g_main_loop_unref (t->mainloop);
   g_string_free (t->desc, FALSE);
   if (t->timer) g_source_remove (t->timer);
-  t->mainloop = NULL;
+  //t->mainloop = NULL;
   t->pipeline = NULL;
   t->desc = NULL;
   t->timer = 0;
@@ -397,13 +397,13 @@ testcase_run (TestCase *t)
 }
 
 static void
-testcase_run_thread (TestCase *t)
+testcase_run_thread (testcase *t)
 {
   t->thread = g_thread_new (t->name, (GThreadFunc) testcase_run, t);
 }
 
 static void
-testcase_join (TestCase *t)
+testcase_join (testcase *t)
 {
   GThread *thread = NULL;
   g_mutex_lock (&t->lock);
@@ -551,8 +551,8 @@ test_controller (void)
 {
   GPid server_pid = 0;
   testclient *client;
-  TestCase video_source1 = { "test-video-source1", 0 };
-  TestCase audio_source1 = { "test-audio-source1", 0 };
+  testcase video_source1 = { "test-video-source1", 0 };
+  testcase audio_source1 = { "test-audio-source1", 0 };
 
   g_print ("\n");
 
@@ -605,7 +605,7 @@ test_controller (void)
   if (!opts.test_external_server) {
     close_pid (server_pid);
     {
-      TestCase play = { "play-test-record", 0 };
+      testcase play = { "play-test-record", 0 };
       GFile *file = g_file_new_for_path ("test-recording.data");
       g_assert (g_file_query_exists (file, NULL));
       play.desc = g_string_new ("filesrc location=test-recording.data ");
@@ -629,13 +629,13 @@ test_video (void)
 {
   const gint seconds = 10;
   GPid server_pid = 0;
-  TestCase source1 = { "test-video-source1", 0 };
-  TestCase source2 = { "test-video-source2", 0 };
-  TestCase source3 = { "test-video-source3", 0 };
-  TestCase sink0 = { "test_video_compose_sink", 0 };
-  TestCase sink1 = { "test_video_preview_sink1", 0 };
-  TestCase sink2 = { "test_video_preview_sink2", 0 };
-  TestCase sink3 = { "test_video_preview_sink3", 0 };
+  testcase source1 = { "test-video-source1", 0 };
+  testcase source2 = { "test-video-source2", 0 };
+  testcase source3 = { "test-video-source3", 0 };
+  testcase sink0 = { "test_video_compose_sink", 0 };
+  testcase sink1 = { "test_video_preview_sink1", 0 };
+  testcase sink2 = { "test_video_preview_sink2", 0 };
+  testcase sink3 = { "test_video_preview_sink3", 0 };
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
@@ -787,12 +787,12 @@ static void
 test_audio (void)
 {
   const gint seconds = 10;
-  TestCase source1 = { "test-audio-source1", 0 };
-  TestCase source2 = { "test-audio-source2", 0 };
-  TestCase source3 = { "test-audio-source3", 0 };
-  TestCase sink1 = { "test_audio_preview_sink1", 0 };
-  TestCase sink2 = { "test_audio_preview_sink2", 0 };
-  TestCase sink3 = { "test_audio_preview_sink3", 0 };
+  testcase source1 = { "test-audio-source1", 0 };
+  testcase source2 = { "test-audio-source2", 0 };
+  testcase source3 = { "test-audio-source3", 0 };
+  testcase sink1 = { "test_audio_preview_sink1", 0 };
+  testcase sink2 = { "test_audio_preview_sink2", 0 };
+  testcase sink3 = { "test_audio_preview_sink3", 0 };
   GPid server_pid = 0;
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
@@ -908,12 +908,12 @@ test_ui_integrated (void)
   const gint seconds = 10;
   GPid server_pid = 0;
   GPid ui_pid;
-  TestCase video_source1 = { "test-video-source1", 0 };
-  TestCase video_source2 = { "test-video-source2", 0 };
-  TestCase video_source3 = { "test-video-source3", 0 };
-  TestCase audio_source1 = { "test-audio-source1", 0 };
-  TestCase audio_source2 = { "test-audio-source2", 0 };
-  TestCase audio_source3 = { "test-audio-source3", 0 };
+  testcase video_source1 = { "test-video-source1", 0 };
+  testcase video_source2 = { "test-video-source2", 0 };
+  testcase video_source3 = { "test-video-source3", 0 };
+  testcase audio_source1 = { "test-audio-source1", 0 };
+  testcase audio_source2 = { "test-audio-source2", 0 };
+  testcase audio_source3 = { "test-audio-source3", 0 };
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
@@ -999,15 +999,15 @@ test_recording_result (void)
 static gpointer
 test_random_connection_1 (gpointer d)
 {
-  TestCase video_source1 = { "test-video-source1", 0 };
-  TestCase audio_source0 = { "test-audio-source0", 0 };
-  TestCase audio_source1 = { "test-audio-source1", 0 };
+  testcase video_source1 = { "test-video-source1", 0 };
+  testcase audio_source0 = { "test-audio-source0", 0 };
+  testcase audio_source1 = { "test-audio-source1", 0 };
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
     "shaded-background=true "
     ;
-  gint n, m;
+  gint n, m, i;
 
   audio_source0.live_seconds = 102;
   audio_source0.desc = g_string_new ("");
@@ -1016,16 +1016,18 @@ test_random_connection_1 (gpointer d)
   testcase_run_thread (&audio_source0);
   sleep (2);
 
-  for (m = 0; m < 3; ++m) {
-    for (n = 0; n < 3; ++n) {
+  for (i = m = 0; m < 3; ++m) {
+    for (n = 0; n < 3; ++n, ++i) {
       video_source1.live_seconds = 5;
+      video_source1.name = g_strdup_printf ("test-video-source1-%d", i);
       video_source1.desc = g_string_new ("");
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
       g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
-      audio_source1.live_seconds = 5;
+      audio_source1.live_seconds = 7;
+      audio_source1.name = g_strdup_printf ("test-audio-source1-%d", i);
       audio_source1.desc = g_string_new ("");
       g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", rand() % 12);
       g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
@@ -1034,6 +1036,9 @@ test_random_connection_1 (gpointer d)
       testcase_run_thread (&audio_source1);
       testcase_join (&video_source1);
       testcase_join (&audio_source1);
+
+      g_free ((void*) video_source1.name);
+      g_free ((void*) audio_source1.name);
     }
   }
 
@@ -1044,27 +1049,29 @@ test_random_connection_1 (gpointer d)
 static gpointer
 test_random_connection_2 (gpointer d)
 {
-  TestCase video_source1 = { "test-video-source1", 0 };
-  TestCase audio_source1 = { "test-audio-source1", 0 };
+  testcase video_source1 = { "test-video-source1", 0 };
+  testcase audio_source1 = { "test-audio-source1", 0 };
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
     "shaded-background=true "
     ;
-  gint n, m;
+  gint n, m, i;
 
   g_print ("\n");
 
-  for (m = 0; m < 3; ++m) {
-    for (n = 0; n < 3; ++n) {
+  for (i = m = 0; m < 3; ++m) {
+    for (n = 0; n < 3; ++n, ++i) {
       video_source1.live_seconds = 2;
+      video_source1.name = g_strdup_printf ("test-video-source2-%d", i);
       video_source1.desc = g_string_new ("");
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
       g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
-      audio_source1.live_seconds = 2;
+      audio_source1.live_seconds = 3;
+      audio_source1.name = g_strdup_printf ("test-audio-source2-%d", i);
       audio_source1.desc = g_string_new ("");
       g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", rand () % 12);
       g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
@@ -1073,6 +1080,9 @@ test_random_connection_2 (gpointer d)
       testcase_run_thread (&audio_source1);
       testcase_join (&video_source1);
       testcase_join (&audio_source1);
+
+      g_free ((void*) video_source1.name);
+      g_free ((void*) audio_source1.name);
     }
   }
   return NULL;

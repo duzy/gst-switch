@@ -112,11 +112,6 @@ gst_audio_play_get_pipeline_string (GstAudioPlay *audio_play)
 }
 
 static void
-gst_audio_play_null (GstAudioPlay *audio_play)
-{
-}
-
-static void
 gst_audio_play_prepare (GstAudioPlay *audio_play)
 {
   GstWorker *worker = GST_WORKER (audio_play);
@@ -143,7 +138,6 @@ gst_audio_play_class_init (GstAudioPlayClass *klass)
       g_param_spec_ulong ("handle", "Handle", "Window Handle",
           0, ((gulong)-1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_play_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_play_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
     gst_audio_play_get_pipeline_string;

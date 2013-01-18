@@ -53,6 +53,9 @@ struct _GstSwitchUI
   GtkWidget *compose_view;
   GtkWidget *preview_box;
 
+  GMutex select_lock;
+  GtkWidget *selected;
+
   GMutex audio_lock;
   GstAudioPlay *audio;
   GMutex compose_lock;

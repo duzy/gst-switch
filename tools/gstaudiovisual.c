@@ -57,7 +57,7 @@ gst_audio_visual_finalize (GstAudioVisual *disp)
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (disp));
 
-  INFO ("Audia visual finalized");
+  INFO ("Audio visual finalized");
 }
 
 static void
