@@ -417,11 +417,17 @@ testcase_join (TestCase *t)
 
 typedef struct _testclient {
   GstSwitchClient base;
+  GThread *thread;
   GMainLoop *mainloop;
+  gint audio_port0;
   gint audio_port;
   gint audio_port_count;
+  gint compose_port0;
   gint compose_port;
   gint compose_port_count;
+  gint encode_port0;
+  gint encode_port;
+  gint encode_port_count;
   gint preview_port_1;
   gint preview_port_2;
   gint preview_port_count;
@@ -444,14 +450,14 @@ testclient_init (testclient *client)
 {
   ++clientcount;
   client->mainloop = NULL;
-  INFO ("client init");
+  //INFO ("client init");
 }
 
 static void
 testclient_finalize (testclient *client)
 {
   --clientcount;
-  INFO ("client finalize");
+  //INFO ("client finalize");
 }
 
 static void
@@ -514,16 +520,36 @@ testclient_run (gpointer data)
   connect_ok = gst_switch_client_connect (GST_SWITCH_CLIENT (client));
   g_assert (connect_ok);
 
+  client->compose_port0 = gst_switch_client_get_compose_port (GST_SWITCH_CLIENT (client));
+  client->encode_port0 = gst_switch_client_get_encode_port (GST_SWITCH_CLIENT (client));
+  client->audio_port0 = gst_switch_client_get_audio_port (GST_SWITCH_CLIENT (client));
+  g_assert_cmpint (client->compose_port0, ==, 3001);
+  g_assert_cmpint (client->encode_port0, ==, 3002);
+  //g_assert_cmpint (client->audio_port0, ==, 3004);
+
   g_main_loop_run (client->mainloop);
   //g_main_loop_unref (client->mainloop);
   return NULL;
 }
 
 static void
+testclient_run_thread (testclient *client)
+{
+  client->thread = g_thread_new ("testclient", testclient_run, client);
+}
+
+static void
+testclient_join (testclient *client)
+{
+  g_thread_join (client->thread);
+  g_thread_unref (client->thread);
+  client->thread = NULL;
+}
+
+static void
 test_controller (void)
 {
   GPid server_pid = 0;
-  GThread *client_thread = NULL;
   testclient *client;
   TestCase video_source1 = { "test-video-source1", 0 };
   TestCase audio_source1 = { "test-audio-source1", 0 };
@@ -537,7 +563,7 @@ test_controller (void)
   }
 
   client = TESTCLIENT (g_object_new (TYPE_TESTCLIENT, NULL));
-  client_thread = g_thread_new ("testclient", testclient_run, client);
+  testclient_run_thread (client);
   g_assert_cmpint (clientcount, ==, 1);
 
   {
@@ -563,8 +589,12 @@ test_controller (void)
       }
 
       g_assert_cmpint (client->compose_port, ==, 3001);
+      g_assert_cmpint (client->compose_port, ==, client->compose_port0);
       g_assert_cmpint (client->compose_port_count, ==, 1);
+      //g_assert_cmpint (client->encode_port0, ==, 3002);
+      //g_assert_cmpint (client->encode_port, ==, client->encode_port0);
       g_assert_cmpint (client->audio_port, ==, 3004);
+      //g_assert_cmpint (client->audio_port, ==, client->audio_port0);
       g_assert_cmpint (client->audio_port_count, ==, 1);
       g_assert_cmpint (client->preview_port_1, ==, 3003);
       g_assert_cmpint (client->preview_port_2, ==, 3004);
@@ -589,7 +619,7 @@ test_controller (void)
     }
   }
 
-  g_thread_join (client_thread);
+  testclient_join (client);
   g_object_unref (client);
   g_assert_cmpint (clientcount, ==, 0);
 }
