@@ -40,6 +40,7 @@ static struct {
   gboolean disable_test_audio;
   gboolean disable_test_ui_integration;
   gboolean disable_test_random_connection;
+  gboolean disable_test_switching;
   gboolean disable_test_fuzz;
   gboolean test_external_server;
   gboolean test_external_ui;
@@ -49,6 +50,7 @@ static struct {
   .disable_test_audio			= FALSE,
   .disable_test_ui_integration		= FALSE,
   .disable_test_random_connection	= FALSE,
+  .disable_test_switching		= FALSE,
   .disable_test_fuzz			= FALSE,
   .test_external_server			= FALSE,
   .test_external_ui			= FALSE,
@@ -60,6 +62,7 @@ static GOptionEntry option_entries[] = {
   {"disable-test-audio",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_audio,		"Disable testing audio",             NULL},
   {"disable-test-ui-integration",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_ui_integration,	"Disable testing UI integration",    NULL},
   {"disable-test-random-connection",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_random_connection,	"Disable testing random connection", NULL},
+  {"disable-test-switching",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_switching,		"Disable testing switching",         NULL},
   {"disable-test-fuzz-ui",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_fuzz,		"Disable testing fuzz input",        NULL},
   {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server",           NULL},
   {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui",               NULL},
@@ -959,9 +962,11 @@ test_ui_integrated (void)
     sleep (3); /* give a second for server to be online */
   }
 
-  ui_pid = launch_ui ();
-  g_assert_cmpint (ui_pid, !=, 0);
-  sleep (2); /* give a second for ui to be ready */
+  if (!opts.test_external_ui) {
+    ui_pid = launch_ui ();
+    g_assert_cmpint (ui_pid, !=, 0);
+    sleep (2); /* give a second for ui to be ready */
+  }
 
   testcase_run_thread (&video_source1); //sleep (1);
   testcase_run_thread (&video_source2); //sleep (1);
@@ -976,7 +981,8 @@ test_ui_integrated (void)
   testcase_join (&audio_source2);
   testcase_join (&audio_source3);
 
-  close_pid (ui_pid);
+  if (!opts.test_external_ui)
+    close_pid (ui_pid);
   if (!opts.test_external_server)
     close_pid (server_pid);
 }
@@ -1118,7 +1124,89 @@ test_random_connections (void)
   g_thread_unref(t2);
 
   if (!opts.test_external_ui)
-      close_pid (ui_pid);
+    close_pid (ui_pid);
+  if (!opts.test_external_server)
+    close_pid (server_pid);
+}
+
+static void
+test_switching (void)
+{
+  const gint seconds = 60;
+  GPid server_pid = 0;
+  GPid ui_pid;
+  testcase video_source1 = { "test-video-source1", 0 };
+  testcase video_source2 = { "test-video-source2", 0 };
+  testcase video_source3 = { "test-video-source3", 0 };
+  testcase audio_source1 = { "test-audio-source1", 0 };
+  testcase audio_source2 = { "test-audio-source2", 0 };
+  testcase audio_source3 = { "test-audio-source3", 0 };
+  const gchar *textoverlay = "textoverlay "
+    "font-desc=\"Sans 80\" "
+    "auto-resize=true "
+    "shaded-background=true "
+    ;
+
+  g_print ("\n");
+
+  video_source1.live_seconds = seconds;
+  video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
+  g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
+  g_string_append_printf (video_source1.desc, "! %s text=video1 ", textoverlay);
+  g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  video_source2.live_seconds = seconds;
+  video_source2.desc = g_string_new ("videotestsrc pattern=1 ");
+  g_string_append_printf (video_source2.desc, "! video/x-raw,width=1280,height=720 ");
+  g_string_append_printf (video_source2.desc, "! %s text=video2 ", textoverlay);
+  g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  video_source3.live_seconds = seconds;
+  video_source3.desc = g_string_new ("videotestsrc pattern=15 ");
+  g_string_append_printf (video_source3.desc, "! video/x-raw,width=1280,height=720 ");
+  g_string_append_printf (video_source3.desc, "! %s text=video3 ", textoverlay);
+  g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  audio_source1.live_seconds = seconds;
+  audio_source1.desc = g_string_new ("audiotestsrc wave=2 ");
+  //g_string_append_printf (audio_source1.desc, "! audio/x-raw ");
+  g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
+
+  audio_source2.live_seconds = seconds;
+  audio_source2.desc = g_string_new ("audiotestsrc ");
+  g_string_append_printf (audio_source2.desc, "! gdppay ! tcpclientsink port=4000");
+
+  audio_source3.live_seconds = seconds;
+  audio_source3.desc = g_string_new ("audiotestsrc ");
+  g_string_append_printf (audio_source3.desc, "! gdppay ! tcpclientsink port=4000");
+
+  if (!opts.test_external_server) {
+    server_pid = launch_server ();
+    g_assert_cmpint (server_pid, !=, 0);
+    sleep (3); /* give a second for server to be online */
+  }
+
+  if (!opts.test_external_ui) {
+    ui_pid = launch_ui ();
+    g_assert_cmpint (ui_pid, !=, 0);
+    sleep (2); /* give a second for ui to be ready */
+  }
+
+  testcase_run_thread (&video_source1); //sleep (1);
+  testcase_run_thread (&video_source2); //sleep (1);
+  testcase_run_thread (&video_source3); //sleep (1);
+  testcase_run_thread (&audio_source1); //sleep (1);
+  testcase_run_thread (&audio_source2); //sleep (1);
+  testcase_run_thread (&audio_source3); //sleep (1);
+  testcase_join (&video_source1);
+  testcase_join (&video_source2);
+  testcase_join (&video_source3);
+  testcase_join (&audio_source1);
+  testcase_join (&audio_source2);
+  testcase_join (&audio_source3);
+
+  if (!opts.test_external_ui)
+    close_pid (ui_pid);
   if (!opts.test_external_server)
     close_pid (server_pid);
 }
@@ -1165,6 +1253,10 @@ int main (int argc, char**argv)
   }
   if (!opts.disable_test_ui_integration) {
     g_test_add_func ("/gst-switch/ui-integrated", test_ui_integrated);
+    g_test_add_func ("/gst-switch/recording-result", test_recording_result);
+  }
+  if (!opts.disable_test_switching) {
+    g_test_add_func ("/gst-switch/switching", test_switching);
     g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   }
   if (!opts.disable_test_random_connection) {

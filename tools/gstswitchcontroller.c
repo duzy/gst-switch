@@ -62,6 +62,11 @@ static const gchar introspection_xml[] =
   "    <method name='get_preview_ports'>"
   "      <arg type='s' name='ports' direction='out'/>"
   "    </method>"
+  "    <method name='switch'>"
+  "      <arg type='i' name='channel' direction='in'/>"
+  "      <arg type='i' name='port' direction='in'/>"
+  "      <arg type='b' name='result' direction='out'/>"
+  "    </method>"
 #if ENABLE_TEST
   "    <signal name='testsignal'>"
   "      <arg type='s' name='str'/>"
@@ -650,6 +655,19 @@ gst_switch_controller__get_preview_ports (GstSwitchController *controller,
   return result;
 }
 
+static GVariant *
+gst_switch_controller__switch (GstSwitchController *controller,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  GVariant *result = NULL;
+  gint channel, port;
+  gboolean ok = FALSE;
+  g_variant_get (parameters, "(ii)", &channel, &port);
+  INFO ("switch: %c, %d", (gchar)channel, port);
+  result = g_variant_new ("(b)", ok);
+  return result;
+}
+
 static MethodTableEntry gst_switch_controller_method_table[] = {
 #if ENABLE_TEST
   { "test", (MethodFunc) gst_switch_controller__test },
@@ -658,6 +676,7 @@ static MethodTableEntry gst_switch_controller_method_table[] = {
   { "get_encode_port", (MethodFunc) gst_switch_controller__get_encode_port },
   { "get_audio_port", (MethodFunc) gst_switch_controller__get_audio_port },
   { "get_preview_ports", (MethodFunc) gst_switch_controller__get_preview_ports },
+  { "switch", (MethodFunc) gst_switch_controller__switch },
   { NULL, NULL }
 };
 

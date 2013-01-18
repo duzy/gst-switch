@@ -185,6 +185,7 @@ gst_switch_ui_init (GstSwitchUI * ui)
   gtk_widget_set_events (ui->compose_view, GDK_EXPOSURE_MASK
       //| GDK_LEAVE_NOTIFY_MASK
       | GDK_BUTTON_PRESS_MASK
+      | GDK_BUTTON_RELEASE_MASK
       //| GDK_POINTER_MOTION_MASK
       //| GDK_POINTER_MOTION_HINT_MASK
       );
@@ -353,8 +354,8 @@ gst_switch_ui_remove_preview (GstSwitchUI *ui, GstWorker *worker,
       if (GST_WORKER (data) == worker) {
 	if (ui->selected == frame) {
 	  GList *nxt = g_list_next (v);
-	  if (!nxt) nxt = g_list_previous (v);
-	  if (nxt) ui->selected = GTK_WIDGET (nxt->data);
+	  if (nxt == NULL) nxt = g_list_previous (v);
+	  ui->selected = nxt ? GTK_WIDGET (nxt->data) : NULL;
 	}
 	//gtk_widget_destroy (view);
 	gtk_widget_destroy (frame);
@@ -454,6 +455,19 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
   GST_SWITCH_UI_UNLOCK_AUDIO (ui);
 }
 
+static gboolean
+gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
+{
+  INFO ("event: %d", event->type);
+  switch (event->type) {
+  case GDK_BUTTON_RELEASE: {
+    
+  } break;
+  default: break;
+  }
+  return TRUE;
+}
+
 static void
 gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
 {
@@ -474,6 +488,10 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
 
   style = gtk_widget_get_style_context (preview);
   gtk_style_context_add_class (style, "preview_drawing_area");
+
+  gtk_widget_set_events (preview, GDK_BUTTON_RELEASE_MASK);
+  g_signal_connect (preview, "button-release-event",
+      G_CALLBACK (gst_switch_ui_preview_click), ui);
 
   switch (type) {
   case GST_SERVE_VIDEO_STREAM:
@@ -545,6 +563,34 @@ gst_switch_ui_select_preview (GstSwitchUI *ui, guint key)
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
 }
 
+static void
+gst_switch_ui_switch (GstSwitchUI *ui, gint key)
+{
+  gint port;
+  gboolean ok = FALSE;
+  GST_SWITCH_UI_LOCK_SELECT (ui);
+  if (ui->selected) {
+    gpointer data = g_object_get_data (G_OBJECT (ui->selected),
+	"video-display");
+    if (data) {
+      port = GST_VIDEO_DISP (data)->port;
+      switch (key) {
+      case GDK_KEY_A:
+      case GDK_KEY_a:
+	ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'A', port);
+	INFO ("switch-a: %d, %d", port, ok);
+	break;
+      case GDK_KEY_B:
+      case GDK_KEY_b:
+	ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'B', port);
+	INFO ("switch-b: %d, %d", port, ok);
+	break;
+      }
+    }
+  }
+  GST_SWITCH_UI_UNLOCK_SELECT (ui);
+}
+
 static gboolean
 gst_switch_ui_key_release (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
 {
@@ -555,6 +601,12 @@ gst_switch_ui_key_release (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
     case GDK_KEY_Up:
     case GDK_KEY_Down:
       gst_switch_ui_select_preview (ui, ke->keyval);
+      break;
+    case GDK_KEY_A:
+    case GDK_KEY_a:
+    case GDK_KEY_B:
+    case GDK_KEY_b:
+      gst_switch_ui_switch (ui, ke->keyval);
       break;
     }
   } break;

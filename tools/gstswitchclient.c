@@ -174,6 +174,18 @@ gst_switch_client_get_preview_ports (GstSwitchClient * client)
       NULL, G_VARIANT_TYPE ("(s)"));
 }
 
+gboolean
+gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
+{
+  gboolean result = FALSE;
+  GVariant *value = gst_switch_client_call_controller (client, "switch",
+      g_variant_new ("(ii)", channel, port), G_VARIANT_TYPE ("(b)"));
+  if (value) {
+    g_variant_get (value, "(b)", &result);
+  }
+  return result;
+}
+
 static gboolean
 gst_switch_client_method_match (const gchar *key,
     MethodTableEntry *entry, const gchar *match)

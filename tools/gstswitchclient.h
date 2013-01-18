@@ -70,4 +70,6 @@ gint gst_switch_client_get_audio_port (GstSwitchClient * client);
 gint gst_switch_client_get_encode_port (GstSwitchClient * client);
 GVariant *gst_switch_client_get_preview_ports (GstSwitchClient * client);
 
+gboolean gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port);
+
 #endif//__GST_SWITCH_CLIENT_H__by_Duzy_Chan__
