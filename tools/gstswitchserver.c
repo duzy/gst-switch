@@ -233,33 +233,38 @@ gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
 {
   gint caseport = 0;
   GList *item;
+  GstState state = GST_STATE_VOID_PENDING;
 
   GST_SWITCH_SERVER_LOCK_CASES (srv);
-  caseport = cas->sink_port;
-  g_object_unref (cas);
-  srv->cases = g_list_remove (srv->cases, cas);
-  for (item = srv->cases; item;) {
-    GstCase *c = GST_CASE (item->data);
-    switch (c->type) {
-    case GST_CASE_COMPOSITE_A:
-    case GST_CASE_COMPOSITE_B:
-    case GST_CASE_COMPOSITE_a:
-    case GST_CASE_BRANCH_A:
-    case GST_CASE_BRANCH_B:
-    case GST_CASE_BRANCH_a:
-    case GST_CASE_PREVIEW:
-      if (c->sink_port == caseport) {
-	gst_worker_stop (GST_WORKER (c));
-	g_object_unref (G_OBJECT (c));
+  gst_element_get_state (GST_WORKER (cas)->pipeline, &state, NULL,
+      GST_CLOCK_TIME_NONE);
+  if (state == GST_STATE_NULL) {
+    caseport = cas->sink_port;
+    g_object_unref (cas);
+    srv->cases = g_list_remove (srv->cases, cas);
+    for (item = srv->cases; item;) {
+      GstCase *c = GST_CASE (item->data);
+      switch (c->type) {
+      case GST_CASE_COMPOSITE_A:
+      case GST_CASE_COMPOSITE_B:
+      case GST_CASE_COMPOSITE_a:
+      case GST_CASE_BRANCH_A:
+      case GST_CASE_BRANCH_B:
+      case GST_CASE_BRANCH_a:
+      case GST_CASE_PREVIEW:
+	if (c->sink_port == caseport) {
+	  gst_worker_stop (GST_WORKER (c));
+	  g_object_unref (G_OBJECT (c));
+	  item = g_list_next (item);
+	  srv->cases = g_list_remove (srv->cases, c);
+	} else {
+	  item = g_list_next (item);
+	}
+	break;
+      default:
 	item = g_list_next (item);
-	srv->cases = g_list_remove (srv->cases, c);
-      } else {
-	item = g_list_next (item);
+	break;
       }
-      break;
-    default:
-      item = g_list_next (item);
-      break;
     }
   }
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
@@ -297,10 +302,11 @@ gst_switch_server_suggest_case_type (GstSwitchServer *srv,
   GList *item = srv->cases;
 
   for (; item; item = g_list_next (item)) {
-    switch (GST_CASE (item->data)->serve_type) {
+    GstCase *cas = GST_CASE (item->data);
+    switch (cas->serve_type) {
     case GST_SERVE_VIDEO_STREAM:
     {
-      switch (GST_CASE (item->data)->type) {
+      switch (cas->type) {
       case GST_CASE_COMPOSITE_A: has_composite_A = TRUE; break;
       case GST_CASE_COMPOSITE_B: has_composite_B = TRUE; break;
       default: break;
@@ -308,7 +314,7 @@ gst_switch_server_suggest_case_type (GstSwitchServer *srv,
     } break;
     case GST_SERVE_AUDIO_STREAM:
     {
-      if (GST_CASE (item->data)->type == GST_CASE_COMPOSITE_a)
+      if (cas->type == GST_CASE_COMPOSITE_a)
 	has_composite_a = TRUE;
     } break;
     case GST_SERVE_NOTHING: break;
@@ -342,7 +348,7 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   GstCaseType type = gst_switch_server_suggest_case_type (srv, serve_type);
   GstCaseType branchtype = GST_CASE_UNKNOWN;
   gint num_cases = g_list_length (srv->cases);
-  GstCase *branch, *workcase;
+  GstCase *branch = NULL, *workcase;
   gchar *name;
   gint port = 0;
 
@@ -740,6 +746,103 @@ gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
   }
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
   return a;
+}
+
+gboolean
+gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
+{
+  GList *item;
+  GInputStream *target_stream, *candidate_stream;
+  GstCase *target_case, *candidate_case;
+  gboolean result = FALSE;
+
+  target_case = NULL;
+  candidate_case = NULL;
+  target_stream = NULL;
+  candidate_stream = NULL;
+
+  INFO ("switch: %c, %d", (gchar)channel, port);
+
+  GST_SWITCH_SERVER_LOCK_CASES (srv);
+
+  for (item = srv->cases; item; item = g_list_next (item)) {
+    GstCase *cas = GST_CASE (item->data);
+    switch (channel) {
+    case 'A':
+      if (cas->type == GST_CASE_COMPOSITE_A) goto get_target_stream;
+      break;      
+    case 'B':
+      if (cas->type == GST_CASE_COMPOSITE_B) goto get_target_stream;
+      break;
+    case 'a':
+      if (cas->type == GST_CASE_COMPOSITE_a) goto get_target_stream;
+      break;
+    default:
+      WARN ("unknown channel %c", (gchar) channel);
+      break;
+    get_target_stream:
+      if (target_stream == NULL) {
+	target_case = cas;
+	target_stream = cas->stream;
+	g_object_ref (target_stream);
+      }
+    }
+    if (cas->sink_port == port /*&& cas->type == GST_CASE_PREVIEW*/) {
+      candidate_case = cas;
+      candidate_stream = cas->stream;
+      g_object_ref (candidate_stream);
+    }
+  }
+
+  if (candidate_stream) {
+    if (candidate_stream != target_stream) {
+      /*
+      for (item = srv->cases; item; item = g_list_next (item)) {
+	GstCase *cas = GST_CASE (item->data);
+	if (cas->stream == candidate_stream) {
+	  gst_worker_stop (GST_WORKER (cas));
+	} else if (cas->stream == target_stream) {
+	  gst_worker_stop (GST_WORKER (cas));
+	}
+      }
+
+      for (item = srv->cases; item; item = g_list_next (item)) {
+	GstCase *cas = GST_CASE (item->data);
+	if (cas->stream == candidate_stream) {
+	  g_object_set (G_OBJECT (cas), "stream", target_stream, NULL);
+	  gst_worker_restart (GST_WORKER (cas));
+	} else if (cas->stream == target_stream) {
+	  g_object_set (G_OBJECT (cas), "stream", candidate_stream, NULL);
+	  gst_worker_restart (GST_WORKER (cas));
+	}
+      }
+      */
+      GSocket *input1 = NULL, *input2 = NULL;
+      gst_worker_pause (GST_WORKER (target_case));
+      gst_worker_pause (GST_WORKER (candidate_case));
+      g_object_get (G_OBJECT (target_stream), "socket", &input1, NULL);
+      g_object_get (G_OBJECT (candidate_stream), "socket", &input2, NULL);
+      g_object_set (G_OBJECT (target_stream), "socket", input2, NULL);
+      g_object_set (G_OBJECT (candidate_stream), "socket", input1, NULL);
+      g_object_unref (input1);
+      g_object_unref (input2);
+      gst_worker_resume (GST_WORKER (target_case));
+      gst_worker_resume (GST_WORKER (candidate_case));
+      result = TRUE;
+      INFO ("switched: %s, %s", GST_WORKER (target_case)->name,
+	  GST_WORKER (candidate_case)->name);
+    } else {
+      ERROR ("stream on %d already at %c", port, (gchar) channel);
+    }
+  } else {
+    ERROR ("no stream for port %d", port);
+  }
+
+  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+
+  if (target_stream)   g_object_unref (target_stream);
+  if (candidate_stream) g_object_unref (candidate_stream);
+  return result;
 }
 
 static void

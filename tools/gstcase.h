@@ -60,6 +60,7 @@ struct _GstCase
   GstCaseType type;
   GInputStream *stream;
   GstSwitchServeStreamType serve_type;
+  gboolean switching;
   gint sink_port;
   guint a_width;
   guint a_height;

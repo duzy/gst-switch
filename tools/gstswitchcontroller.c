@@ -663,8 +663,10 @@ gst_switch_controller__switch (GstSwitchController *controller,
   gint channel, port;
   gboolean ok = FALSE;
   g_variant_get (parameters, "(ii)", &channel, &port);
-  INFO ("switch: %c, %d", (gchar)channel, port);
-  result = g_variant_new ("(b)", ok);
+  if (controller->server) {
+    ok = gst_switch_server_switch (controller->server, channel, port);
+    result = g_variant_new ("(b)", ok);
+  }
   return result;
 }
 

@@ -74,11 +74,13 @@ static void
 gst_case_finalize (GstCase * cas)
 {
   if (cas->stream) {
+#if 0
     GError *error = NULL;
     g_input_stream_close (cas->stream, NULL, &error);
     if (error) {
       ERROR ("%s", error->message);
     }
+#endif
     g_object_unref (cas->stream);
     cas->stream = NULL;
   }

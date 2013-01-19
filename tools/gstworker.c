@@ -205,13 +205,28 @@ GstStateChangeReturn
 gst_worker_restart (GstWorker *worker)
 {
   GstStateChangeReturn statechange;
-  /*
-  GstState state, pending;
-
-  statechange = gst_element_get_state (worker->pipeline, &state, &pending,
+  GstState state;
+  statechange = gst_element_get_state (worker->pipeline, &state, NULL,
       GST_CLOCK_TIME_NONE);
-  */
-  statechange = gst_element_set_state (worker->pipeline, GST_STATE_READY);
+  if (state != GST_STATE_PLAYING) {
+    statechange = gst_element_set_state (worker->pipeline, GST_STATE_READY);
+  }
+  return statechange;
+}
+
+GstStateChangeReturn
+gst_worker_pause (GstWorker *worker)
+{
+  GstStateChangeReturn statechange;
+  statechange = gst_element_set_state (worker->pipeline, GST_STATE_PAUSED);
+  return statechange;
+}
+
+GstStateChangeReturn
+gst_worker_resume (GstWorker *worker)
+{
+  GstStateChangeReturn statechange;
+  statechange = gst_element_set_state (worker->pipeline, GST_STATE_PLAYING);
   return statechange;
 }
 

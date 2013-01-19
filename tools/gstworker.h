@@ -79,6 +79,8 @@ GType gst_worker_get_type (void);
 
 gboolean gst_worker_prepare (GstWorker *worker);
 void gst_worker_start (GstWorker *worker);
+GstStateChangeReturn gst_worker_pause (GstWorker *worker);
+GstStateChangeReturn gst_worker_resume (GstWorker *worker);
 GstStateChangeReturn gst_worker_restart (GstWorker *worker);
 void gst_worker_stop (GstWorker *worker);
 
