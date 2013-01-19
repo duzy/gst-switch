@@ -761,8 +761,6 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   target_stream = NULL;
   candidate_stream = NULL;
 
-  INFO ("switch: %c, %d", (gchar)channel, port);
-
   GST_SWITCH_SERVER_LOCK_CASES (srv);
 
   for (item = srv->cases; item; item = g_list_next (item)) {
@@ -796,6 +794,9 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 
   if (candidate_stream) {
     if (candidate_stream != target_stream) {
+      INFO ("switched: %s (%d), %s (%d)",
+	  GST_WORKER (target_case)->name, target_case->type,
+	  GST_WORKER (candidate_case)->name, candidate_case->type);
       /*
       for (item = srv->cases; item; item = g_list_next (item)) {
 	GstCase *cas = GST_CASE (item->data);
