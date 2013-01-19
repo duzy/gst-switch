@@ -1132,7 +1132,7 @@ test_random_connections (void)
 static void
 test_switching (void)
 {
-  const gint seconds = 60;
+  const gint seconds = 180;
   GPid server_pid = 0;
   GPid ui_pid;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -1141,6 +1141,7 @@ test_switching (void)
   testcase audio_source1 = { "test-audio-source1", 0 };
   testcase audio_source2 = { "test-audio-source2", 0 };
   testcase audio_source3 = { "test-audio-source3", 0 };
+  
   const gchar *textoverlay = "textoverlay "
     "font-desc=\"Sans 80\" "
     "auto-resize=true "
@@ -1195,15 +1196,19 @@ test_switching (void)
   testcase_run_thread (&video_source1); //sleep (1);
   testcase_run_thread (&video_source2); //sleep (1);
   testcase_run_thread (&video_source3); //sleep (1);
+  /*
   testcase_run_thread (&audio_source1); //sleep (1);
   testcase_run_thread (&audio_source2); //sleep (1);
   testcase_run_thread (&audio_source3); //sleep (1);
+  */
   testcase_join (&video_source1);
   testcase_join (&video_source2);
   testcase_join (&video_source3);
+  /*
   testcase_join (&audio_source1);
   testcase_join (&audio_source2);
   testcase_join (&audio_source3);
+  */
 
   if (!opts.test_external_ui)
     close_pid (ui_pid);
