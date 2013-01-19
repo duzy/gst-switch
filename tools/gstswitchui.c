@@ -53,8 +53,9 @@ static GOptionEntry entries[] = {
 
 static const gchar * gst_switch_ui_css = 
   ".preview_frame {\n"
-  "  border-style: none;\n"
+  "  border-style: solid;\n"
   "  border-width: 5px;\n"
+  "  border-color: rgba(0,0,0,0);\n"
   "  padding: 0px;\n"
   "}\n"
   ".audio_frame {\n"
