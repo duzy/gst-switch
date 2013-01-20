@@ -191,33 +191,26 @@ gst_composite_get_pipeline_string (GstComposite * composite)
   g_string_append_printf (desc, "tcpserversink name=sink sync=false "
       "port=%d ", composite->sink_port);
   g_string_append_printf (desc, "videomixer name=compose "
-      "sink_0::zorder=0 "
       "sink_0::xpos=%d "
       "sink_0::ypos=%d "
-      "sink_1::alpha=0.8 "
+      "sink_0::zorder=0 "
       "sink_1::xpos=%d "
       "sink_1::ypos=%d "
+      "sink_1::alpha=0.8 "
       "sink_1::zorder=1 ",
       ax, ay, bx, by);
   g_string_append_printf (desc, "source_b.!video/x-raw,width=%d,height=%d "
-      "! queue2 ! compose.sink_1 ",
-      composite->b_width, composite->b_height);
+      "! queue2 ! compose.sink_1 ", composite->b_width, composite->b_height);
   g_string_append_printf (desc, "source_a.!video/x-raw,width=%d,height=%d "
-      "! queue2 ! compose.sink_0 ",
-      composite->a_width, composite->a_height);
+      "! queue2 ! compose.sink_0 ", composite->a_width, composite->a_height);
   g_string_append_printf (desc, "compose. ! gdppay ! tee name=result ");
   g_string_append_printf (desc, "result. ! queue ! sink. ");
 
   if (opts.record_filename) {
     g_string_append_printf (desc, "result. ! queue ! record. ");
-#if 0
-    g_string_append_printf (desc, "filesink name=record location=%s ",
-	opts.record_filename);
-#else
     g_string_append_printf (desc, "gdpdepay name=record ");
     g_string_append_printf (desc, "record. ! intervideosink "
 	"channel=composite_video sync=false ");
-#endif
   }
 
   return desc;

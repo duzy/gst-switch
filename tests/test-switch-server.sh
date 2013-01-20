@@ -1,12 +1,14 @@
 #!/bin/bash
-./tests/test-switch-server \
+EXT=""
+EXT="$EXT --test-external-server"
+EXT="$EXT --test-external-ui"
+
+./tests/test-switch-server $EXT \
     --disable-test-controller \
     --disable-test-video \
     --disable-test-audio \
     --disable-test-ui-integration \
     --disable-test-fuzz-ui \
-    --test-external-server \
-    --test-external-ui \
-    --disable-test-switching \
+    --disable-test-random-connection \
 
-#    --disable-test-random-connection \
+#    --disable-test-switching \

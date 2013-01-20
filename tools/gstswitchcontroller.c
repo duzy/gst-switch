@@ -262,7 +262,9 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
       ++num;
     }
   }
+  /*
   INFO ("emit: %s (%d/%d)", signame, num, g_list_length (controller->uis));
+  */
 
   GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 }
@@ -430,7 +432,9 @@ gst_switch_controller_call_ui (GstSwitchController * controller,
   GVariant *value = NULL;
   GError *error = NULL;
 
+  /*
   INFO ("calling: %s/%s", SWITCH_CONTROLLER_OBJECT_NAME, method_name);
+  */
 
   value = g_dbus_connection_call_sync (connection, NULL, /* bus_name */
       SWITCH_CLIENT_OBJECT_PATH, SWITCH_CLIENT_OBJECT_NAME,

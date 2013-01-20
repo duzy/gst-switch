@@ -87,6 +87,11 @@ gst_case_finalize (GstCase * cas)
     cas->stream = NULL;
   }
 
+  if (cas->branch) {
+    g_object_unref (cas->branch);
+    cas->branch = NULL;
+  }
+
   if (G_OBJECT_CLASS (gst_case_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_case_parent_class)->finalize) (G_OBJECT (cas));
 
@@ -204,13 +209,15 @@ gst_case_get_pipeline_string (GstCase * cas)
 
   switch (cas->type) {
   case GST_CASE_COMPOSITE_A:
-    channel = "composite_a";
-    convert = g_strdup_printf ("identity "
-	"! videoscale ! video/x-raw,width=%d,height=%d "
-	, cas->a_width, cas->a_height);
+    if (channel == NULL && convert == NULL) {
+      channel = "a";
+      convert = g_strdup_printf ("identity "
+	  "! videoscale ! video/x-raw,width=%d,height=%d "
+	  , cas->a_width, cas->a_height);
+    }
   case GST_CASE_COMPOSITE_B:
-    if (channel == NULL) {
-      channel = "composite_b";
+    if (channel == NULL && convert == NULL) {
+      channel = "b";
       convert = g_strdup_printf ("identity "
 	  "! videoscale ! video/x-raw,width=%d,height=%d "
 	  , cas->b_width, cas->b_height);
@@ -218,7 +225,7 @@ gst_case_get_pipeline_string (GstCase * cas)
     g_string_append_printf (desc, "intervideosink name=sink1 "
 	"channel=branch_%d ", cas->sink_port);
     g_string_append_printf (desc, "intervideosink name=sink2 "
-	"channel=%s ", channel);
+	"channel=composite_%s ", channel);
     g_string_append_printf (desc, "source. ! gdpdepay ! tee name=vs ");
     g_string_append_printf (desc, "vs. ! queue2 ! videoscale "
 	"! video/x-raw,width=%d,height=%d ! sink1. "
@@ -232,31 +239,7 @@ gst_case_get_pipeline_string (GstCase * cas)
     g_string_append_printf (desc, "as. ! queue2 ! "
 	"interaudiosink name=sink2 channel=composite_audio ");
     break;
-  case GST_CASE_BRANCH_A:
-  case GST_CASE_BRANCH_B:
-  case GST_CASE_BRANCH_a:
-  case GST_CASE_BRANCH_p:
-    g_string_append_printf (desc, "tcpserversink name=sink "
-	"port=%d ", cas->sink_port);
-    g_string_append_printf (desc, "source. ");
-    if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-      g_string_append_printf (desc, "! faac ");
-    } else {
-      g_string_append_printf (desc, "! video/x-raw,width=%d,height=%d ",
-	  cas->a_width, cas->a_height);
-    }
-    g_string_append_printf (desc, "! gdppay ! sink. ");
-    break;
   case GST_CASE_PREVIEW:
-#if 0
-    g_string_append_printf (desc, "tcpserversink name=sink sync=false "
-	"port=%d ", cas->sink_port);
-    if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-      g_string_append_printf (desc, "source. ! gdpdepay ! faac ! gdppay ! sink. ");
-    } else {
-      g_string_append_printf (desc, "source. ! gdpdepay ! gdppay ! sink. ");
-    }
-#else
     if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
       g_string_append_printf (desc, "interaudiosink name=sink "
 	  "channel=branch_%d ", cas->sink_port);
@@ -265,7 +248,21 @@ gst_case_get_pipeline_string (GstCase * cas)
 	  "channel=branch_%d ", cas->sink_port);
     }
     g_string_append_printf (desc, "source. ! gdpdepay ! sink. ");
-#endif
+    break;
+  case GST_CASE_BRANCH_A:
+  case GST_CASE_BRANCH_B:
+  case GST_CASE_BRANCH_a:
+  case GST_CASE_BRANCH_p:
+    g_string_append_printf (desc, "tcpserversink name=sink port=%d ",
+	cas->sink_port);
+    g_string_append_printf (desc, "source. ");
+    if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
+      g_string_append_printf (desc, "! faac ");
+    } else {
+      g_string_append_printf (desc, "! video/x-raw,width=%d,height=%d ",
+	  cas->a_width, cas->a_height);
+    }
+    g_string_append_printf (desc, "! gdppay ! sink. ");
     break;
   case GST_CASE_UNKNOWN:
     ERROR ("unknown case");
@@ -298,6 +295,7 @@ gst_case_prepare (GstCase *cas)
   case GST_CASE_BRANCH_A:
   case GST_CASE_BRANCH_B:
   case GST_CASE_BRANCH_a:
+  case GST_CASE_BRANCH_p:
     break;
   }
  
@@ -336,9 +334,9 @@ gst_case_class_init (GstCaseClass * klass)
       g_param_spec_object ("stream", "Stream", "Stream to read from",
           G_TYPE_INPUT_STREAM, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  g_object_class_install_property (object_class, PROP_STREAM,
+  g_object_class_install_property (object_class, PROP_BRANCH,
       g_param_spec_object ("branch", "Branch", "The branch of the case",
-          G_TYPE_INPUT_STREAM, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          GST_TYPE_CASE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",
