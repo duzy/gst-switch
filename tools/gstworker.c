@@ -60,6 +60,8 @@ gst_worker_init (GstWorker *worker)
   worker->pipeline_string = NULL;
   worker->paused_for_buffering = FALSE;
   worker->timer_id = -1;
+
+  INFO ("Worker initialized (%p)", worker);
 }
 
 static void
@@ -91,7 +93,7 @@ gst_worker_finalize (GstWorker *worker)
     worker->pipeline_string = NULL;
   }
 
-  INFO ("Worker %s finalized", worker->name);
+  INFO ("Worker %s finalized (%p)", worker->name, worker);
   g_free (worker->name);
   worker->name = NULL;
 }
@@ -187,7 +189,7 @@ gst_worker_class_init (GstWorkerClass *klass)
   klass->get_pipeline_string = gst_worker_get_pipeline_string;
   klass->create_pipeline = gst_worker_create_pipeline;
 
-  INFO ("Worker initialized");
+  INFO ("Worker class initialized");
 }
 
 static gboolean gst_worker_onesecond_timer (gpointer priv);

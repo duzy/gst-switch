@@ -79,7 +79,6 @@ struct _GstSwitchServer
   gint controller_port;
   GstSwitchController * controller;
 
-  GMutex serve_lock;
   GMutex cases_lock;
   GList *cases;
 

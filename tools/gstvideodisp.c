@@ -93,7 +93,7 @@ gst_video_disp_get_property (GstVideoDisp *disp, guint property_id,
   }
 }
 
-static GstElement *
+static GString *
 gst_video_disp_get_pipeline_string (GstVideoDisp *disp)
 {
   GString *desc;

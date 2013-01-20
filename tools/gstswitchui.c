@@ -142,7 +142,7 @@ draw_cb (GtkWidget *widget, cairo_t *cr)
 }
 */
 
-static gboolean gst_switch_ui_key_release (GtkWidget *w, GdkEvent *event,
+static gboolean gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event,
     GstSwitchUI *ui);
 
 static void
@@ -170,8 +170,8 @@ gst_switch_ui_init (GstSwitchUI * ui)
   gtk_window_set_default_size (GTK_WINDOW (ui->window), 640, 480);
   gtk_window_set_title (GTK_WINDOW (ui->window), "GstSwitch");
 
-  g_signal_connect (G_OBJECT (ui->window), "key-release-event",
-      G_CALLBACK (gst_switch_ui_key_release), ui);
+  g_signal_connect (G_OBJECT (ui->window), "key-press-event",
+      G_CALLBACK (gst_switch_ui_key_event), ui);
 
   main_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
   ui->preview_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
@@ -443,7 +443,7 @@ static void
 gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
 {
   if (!port) {
-    WARN ("invalid active audio port");
+    ERROR ("Invalid audio port");
     return;
   }
 
@@ -594,9 +594,10 @@ gst_switch_ui_switch (GstSwitchUI *ui, gint key)
 }
 
 static gboolean
-gst_switch_ui_key_release (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
+gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
 {
   switch (event->type) {
+  case GDK_KEY_PRESS:
   case GDK_KEY_RELEASE: {
     GdkEventKey *ke = (GdkEventKey *) event;
     switch (ke->keyval) {

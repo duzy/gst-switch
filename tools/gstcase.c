@@ -71,7 +71,7 @@ gst_case_init (GstCase * cas)
   cas->b_width = 0;
   cas->b_height = 0;
 
-  INFO ("Case initialized");
+  INFO ("Case initialized (%p)", cas);
 }
 
 static void
@@ -102,7 +102,7 @@ gst_case_finalize (GstCase * cas)
   if (G_OBJECT_CLASS (gst_case_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_case_parent_class)->finalize) (G_OBJECT (cas));
 
-  INFO ("Case finalized");
+  INFO ("Case finalized (%p)", cas);
 }
 
 static void
@@ -345,14 +345,6 @@ gst_case_prepare (GstCase *cas)
 }
 
 static void
-gst_case_null (GstCase *cas)
-{
-  GstWorker *worker = GST_WORKER (cas);
-
-  INFO ("%s: null (%p)", worker->name, cas);
-}
-
-static void
 gst_case_class_init (GstCaseClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -410,7 +402,6 @@ gst_case_class_init (GstCaseClass * klass)
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_case_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
     gst_case_get_pipeline_string;
