@@ -42,11 +42,14 @@ typedef enum {
   GST_CASE_COMPOSITE_A,
   GST_CASE_COMPOSITE_B,
   GST_CASE_COMPOSITE_a, /* composite audio */
+  GST_CASE_PREVIEW,
+  GST_CASE_INPUT_a,  /* audio input */
+  GST_CASE_INPUT_v,  /* video input */
   GST_CASE_BRANCH_A, /* video branch */
   GST_CASE_BRANCH_B, /* video branch */
   GST_CASE_BRANCH_a, /* audio branch */
   GST_CASE_BRANCH_p, /* preview branch */
-  GST_CASE_PREVIEW,
+  GST_CASE__LAST_TYPE = GST_CASE_BRANCH_p
 } GstCaseType;
 
 typedef enum {
@@ -60,6 +63,7 @@ struct _GstCase
   GstWorker base;
   GstCaseType type;
   GInputStream *stream;
+  GstCase *input;
   GstCase *branch;
   GstSwitchServeStreamType serve_type;
   gboolean switching;

@@ -238,14 +238,21 @@ gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
   gint caseport = 0;
   GList *item;
   GstState state = GST_STATE_VOID_PENDING;
+  GstCase *branch;
 
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   gst_element_get_state (GST_WORKER (cas)->pipeline, &state, NULL,
       GST_CLOCK_TIME_NONE);
   if (state == GST_STATE_NULL && !cas->switching) {
     caseport = cas->sink_port;
+    branch = cas->branch;
     g_object_unref (cas);
     srv->cases = g_list_remove (srv->cases, cas);
+    if (branch) {
+      g_object_unref (branch);
+      srv->cases = g_list_remove (srv->cases, branch);
+    }
+
     for (item = srv->cases; item;) {
       GstCase *c = GST_CASE (item->data);
       switch (c->type) {
@@ -359,16 +366,22 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
 {
   GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (g_object_new (
 	  G_TYPE_SOCKET_INPUT_STREAM, "socket", client, NULL));
-  GstCaseType branchtype = GST_CASE_UNKNOWN;
   GstCaseType type = GST_CASE_UNKNOWN;
+  GstCaseType inputtype = GST_CASE_UNKNOWN;
+  GstCaseType branchtype = GST_CASE_UNKNOWN;
   gint num_cases = g_list_length (srv->cases);
-  GstCase *branch = NULL, *workcase;
+  GstCase *input = NULL, *branch = NULL, *workcase = NULL;
   gchar *name;
   gint port = 0;
 
   GST_SWITCH_SERVER_LOCK_CASES (srv);
-  type = gst_switch_server_suggest_case_type (srv, serve_type);
+  switch (serve_type) {
+  case GST_SERVE_AUDIO_STREAM: inputtype = GST_CASE_INPUT_a; break;
+  case GST_SERVE_VIDEO_STREAM: inputtype = GST_CASE_INPUT_v; break;
+  default: goto error_unknown_serve_type;
+  }
 
+  type = gst_switch_server_suggest_case_type (srv, serve_type);
   switch (type) {
   case GST_CASE_COMPOSITE_A: branchtype = GST_CASE_BRANCH_A; break;
   case GST_CASE_COMPOSITE_B: branchtype = GST_CASE_BRANCH_B; break;
@@ -381,6 +394,14 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
 
   INFO ("case-type: %d, %d, %d", type, branchtype, port);
 
+  name = g_strdup_printf ("input_%d", port);
+  input = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
+	  "type", inputtype, "port", port, "serve", serve_type,
+	  "stream", stream, NULL));
+  g_object_unref (stream);
+  g_object_unref (client);
+  g_free (name);
+
   name = g_strdup_printf ("branch_%d", port);
   branch = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
 	  "type", branchtype, "port", port, "serve", serve_type, NULL));
@@ -388,17 +409,22 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
 
   name = g_strdup_printf ("case-%d", num_cases);
   workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
-	  "type", type, "port", port, "stream", stream, "branch", branch,
-	  "serve", serve_type, NULL));
-  g_object_unref (client);
-  g_object_unref (stream);
+	  "type", type, "port", port, "serve", serve_type,
+	  "input", input, "branch", branch, NULL));
   g_free (name);
 
+  srv->cases = g_list_append (srv->cases, input);
   srv->cases = g_list_append (srv->cases, branch);
   srv->cases = g_list_append (srv->cases, workcase);
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);
 
   if (serve_type == GST_SERVE_VIDEO_STREAM) {
+    g_object_set (input,
+	"awidth",  srv->composite->a_width,
+	"aheight", srv->composite->a_height,
+	"bwidth",  srv->composite->b_width,
+	"bheight", srv->composite->b_height,
+	NULL);
     g_object_set (branch,
 	"awidth",  srv->composite->a_width,
 	"aheight", srv->composite->a_height,
@@ -413,6 +439,8 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
 	NULL);
   }
 
+  if (!gst_worker_prepare (GST_WORKER (input)))
+    goto error_prepare_branch;
   if (!gst_worker_prepare (GST_WORKER (branch)))
     goto error_prepare_branch;
   if (!gst_worker_prepare (GST_WORKER (workcase)))
@@ -421,6 +449,7 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   g_signal_connect (workcase, "end-worker",
       G_CALLBACK (gst_switch_server_end_case), srv);
 
+  gst_worker_start (GST_WORKER (input));
   gst_worker_start (GST_WORKER (branch));
   gst_worker_start (GST_WORKER (workcase));
 
@@ -445,6 +474,12 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   return;
 
   /* Errors Handling */
+ error_unknown_serve_type:
+  {
+    ERROR ("unknown serve type %d", serve_type);
+    g_object_unref (stream);
+    return;
+  }
 
  error_unknown_case_type:
   {
@@ -456,7 +491,7 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
  error_prepare_branch:
  error_prepare_workcase:
   {
-    ERROR ("can't serve new client");
+    ERROR ("failed serving new client");
     GST_SWITCH_SERVER_LOCK_CASES (srv);
     srv->cases = g_list_remove (srv->cases, branch);
     srv->cases = g_list_remove (srv->cases, workcase);
@@ -849,6 +884,10 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   gint compose_port = compose_case->sink_port;
   gint compose_type = compose_case->type;
   gint compose_serve_type = compose_case->serve_type;
+  gint compose_a_width = compose_case->a_width;
+  gint compose_a_height = compose_case->a_height;
+  gint compose_b_width = compose_case->b_width;
+  gint compose_b_height = compose_case->b_height;
   gint candidate_port = candidate_case->sink_port;
   gint candidate_type = candidate_case->type;
   gint candidate_serve_type = candidate_case->serve_type;
@@ -864,10 +903,14 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   gchar *name2 = g_strdup_printf ("case-%d", num_cases + 1);
   GstCase *work1 = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name1,
 	  "type", compose_type, "port", compose_port, "stream", stream2,
-	  "serve", compose_serve_type, NULL));
+	  "serve", compose_serve_type,
+	  "awidth",  compose_a_width, "aheight", compose_a_height,
+	  "bwidth",  compose_b_width, "bheight", compose_b_height,
+	  NULL));
   GstCase *work2 = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name2,
 	  "type", candidate_type, "port", candidate_port,
-	  "stream", stream2, "serve", candidate_serve_type, NULL));
+	  "stream", stream2, "serve", candidate_serve_type,
+	  NULL));
   g_free (name1);
   g_free (name2);
   g_object_unref (stream1);
@@ -876,10 +919,9 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   gst_worker_prepare (GST_WORKER (work1));
   gst_worker_prepare (GST_WORKER (work2));
 
-  g_signal_connect (work1, "end-worker",
-      G_CALLBACK (gst_switch_server_end_case), srv);
-  g_signal_connect (work2, "end-worker",
-      G_CALLBACK (gst_switch_server_end_case), srv);
+  GCallback callback = G_CALLBACK (gst_switch_server_end_case);
+  g_signal_connect (work1, "end-worker", callback, srv);
+  g_signal_connect (work2, "end-worker", callback, srv);
 
   gst_worker_start (GST_WORKER (work1));
   gst_worker_start (GST_WORKER (work2));
