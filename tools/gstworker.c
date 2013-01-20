@@ -65,9 +65,6 @@ gst_worker_init (GstWorker *worker)
 static void
 gst_worker_finalize (GstWorker *worker)
 {
-  g_free (worker->name);
-  worker->name = NULL;
-
   if (worker->server) {
     g_object_unref (worker->server);
     worker->server = NULL;
@@ -94,7 +91,9 @@ gst_worker_finalize (GstWorker *worker)
     worker->pipeline_string = NULL;
   }
 
-  INFO ("Worker finalized");
+  INFO ("Worker %s finalized", worker->name);
+  g_free (worker->name);
+  worker->name = NULL;
 }
 
 static void

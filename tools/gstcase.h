@@ -45,6 +45,7 @@ typedef enum {
   GST_CASE_BRANCH_A, /* video branch */
   GST_CASE_BRANCH_B, /* video branch */
   GST_CASE_BRANCH_a, /* audio branch */
+  GST_CASE_BRANCH_p, /* preview branch */
   GST_CASE_PREVIEW,
 } GstCaseType;
 
@@ -59,6 +60,7 @@ struct _GstCase
   GstWorker base;
   GstCaseType type;
   GInputStream *stream;
+  GstCase *branch;
   GstSwitchServeStreamType serve_type;
   gboolean switching;
   gint sink_port;
