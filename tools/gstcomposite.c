@@ -196,7 +196,7 @@ gst_composite_get_pipeline_string (GstComposite * composite)
       "sink_0::zorder=0 "
       "sink_1::xpos=%d "
       "sink_1::ypos=%d "
-      "sink_1::alpha=0.8 "
+      //"sink_1::alpha=0.8 "
       "sink_1::zorder=1 ",
       ax, ay, bx, by);
   g_string_append_printf (desc, "source_b.!video/x-raw,width=%d,height=%d "

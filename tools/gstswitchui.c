@@ -388,15 +388,15 @@ static void
 gst_switch_ui_end_audio (GstAudioPlay *audio, GstSwitchUI *ui)
 {
   if (audio != ui->audio) {
-    INFO ("unknown audio ended");
+    INFO ("audio %d ended", audio->port);
     g_object_unref (audio);
   } else if (ui->audio) {
     /*
     GList *v = gtk_container_get_children (GTK_CONTAINER (ui->preview_box));
-    */
     gint audio_port = 0;
+    */
     GST_SWITCH_UI_LOCK_AUDIO (ui);
-    audio_port = ui->audio->port;
+    //audio_port = ui->audio->port;
     g_object_unref (ui->audio);
     ui->audio = NULL;
     /*
@@ -448,8 +448,9 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
   }
 
   GST_SWITCH_UI_LOCK_AUDIO (ui);
-  if (ui->audio)
-    g_object_unref (ui->audio);
+  if (ui->audio) {
+    gst_worker_stop (GST_WORKER (ui->audio));
+  }
 
   INFO ("active audio: %d", port);
 

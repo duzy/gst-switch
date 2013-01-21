@@ -12,3 +12,4 @@ EXT="$EXT --test-external-ui"
 
 #    --disable-test-audio \
 #    --disable-test-switching \
+#    --disable-test-checking-timestamps \

@@ -50,6 +50,7 @@ static struct {
   gboolean disable_test_random_connection;
   gboolean disable_test_switching;
   gboolean disable_test_fuzz;
+  gboolean disable_test_checking_timestamps;
   gboolean test_external_server;
   gboolean test_external_ui;
 } opts = {
@@ -60,6 +61,7 @@ static struct {
   .disable_test_random_connection	= FALSE,
   .disable_test_switching		= FALSE,
   .disable_test_fuzz			= FALSE,
+  .disable_test_checking_timestamps	= FALSE,
   .test_external_server			= FALSE,
   .test_external_ui			= FALSE,
 };
@@ -72,6 +74,7 @@ static GOptionEntry option_entries[] = {
   {"disable-test-random-connection",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_random_connection,	"Disable testing random connection", NULL},
   {"disable-test-switching",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_switching,		"Disable testing switching",         NULL},
   {"disable-test-fuzz-ui",		0, 0, G_OPTION_ARG_NONE, &opts.disable_test_fuzz,		"Disable testing fuzz input",        NULL},
+  {"disable-test-checking-timestamps",	0, 0, G_OPTION_ARG_NONE, &opts.disable_test_checking_timestamps,"Disable testing checking timestamps", NULL},
   {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server",           NULL},
   {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui",               NULL},
   {NULL}
@@ -583,7 +586,7 @@ test_controller (void)
       video_source1.desc = g_string_new ("");
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", 0);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=%d,height=%d ", W, H);
-      g_string_append_printf (video_source1.desc, "! timeoverlay ");
+      g_string_append_printf (video_source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
       audio_source1.live_seconds = 10;
@@ -667,21 +670,21 @@ test_video (void)
   source1.desc = g_string_new ("videotestsrc pattern=0 ");
   g_string_append_printf (source1.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (source1.desc, "! %s text=source1 ", textoverlay);
-  g_string_append_printf (source1.desc, "! timeoverlay ");
+  g_string_append_printf (source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   source2.live_seconds = seconds;
   source2.desc = g_string_new ("videotestsrc pattern=1 ");
   g_string_append_printf (source2.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (source2.desc, "! %s text=source2 ", textoverlay);
-  g_string_append_printf (source2.desc, "! timeoverlay ");
+  g_string_append_printf (source2.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (source2.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   source3.live_seconds = seconds;
   source3.desc = g_string_new ("videotestsrc pattern=15 ");
   g_string_append_printf (source3.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (source3.desc, "! %s text=source3 ", textoverlay);
-  g_string_append_printf (source3.desc, "! timeoverlay ");
+  g_string_append_printf (source3.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   sink0.live_seconds = seconds;
@@ -941,21 +944,21 @@ test_ui_integrated (void)
   video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
   g_string_append_printf (video_source1.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (video_source1.desc, "! %s text=video1 ", textoverlay);
-  g_string_append_printf (video_source1.desc, "! timeoverlay ");
+  g_string_append_printf (video_source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source2.live_seconds = seconds;
   video_source2.desc = g_string_new ("videotestsrc pattern=1 ");
   g_string_append_printf (video_source2.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (video_source2.desc, "! %s text=video2 ", textoverlay);
-  g_string_append_printf (video_source2.desc, "! timeoverlay ");
+  g_string_append_printf (video_source2.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source3.live_seconds = seconds;
   video_source3.desc = g_string_new ("videotestsrc pattern=15 ");
   g_string_append_printf (video_source3.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (video_source3.desc, "! %s text=video3 ", textoverlay);
-  g_string_append_printf (video_source3.desc, "! timeoverlay ");
+  g_string_append_printf (video_source3.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   audio_source1.live_seconds = seconds;
@@ -1045,7 +1048,7 @@ test_random_connection_1 (gpointer d)
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=%d,height=%d ", W, H);
       g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
-      g_string_append_printf (video_source1.desc, "! timeoverlay ");
+      g_string_append_printf (video_source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
       audio_source1.live_seconds = 7;
@@ -1090,7 +1093,7 @@ test_random_connection_2 (gpointer d)
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=%d,height=%d ", W, H);
       g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
-      g_string_append_printf (video_source1.desc, "! timeoverlay ");
+      g_string_append_printf (video_source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
       audio_source1.live_seconds = 3;
@@ -1171,21 +1174,21 @@ test_switching (void)
   video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
   g_string_append_printf (video_source1.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (video_source1.desc, "! %s text=video1 ", textoverlay);
-  g_string_append_printf (video_source1.desc, "! timeoverlay ");
+  g_string_append_printf (video_source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source2.live_seconds = seconds;
   video_source2.desc = g_string_new ("videotestsrc pattern=1 ");
   g_string_append_printf (video_source2.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (video_source2.desc, "! %s text=video2 ", textoverlay);
-  g_string_append_printf (video_source2.desc, "! timeoverlay ");
+  g_string_append_printf (video_source2.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source3.live_seconds = seconds;
   video_source3.desc = g_string_new ("videotestsrc pattern=15 ");
   g_string_append_printf (video_source3.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (video_source3.desc, "! %s text=video3 ", textoverlay);
-  g_string_append_printf (video_source3.desc, "! timeoverlay ");
+  g_string_append_printf (video_source3.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
   g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   audio_source1.live_seconds = seconds;
@@ -1238,6 +1241,44 @@ test_fuzz (void)
   WARN ("TODO: fuzz");
 }
 
+static void
+test_checking_timestamps (void)
+{
+  const gint seconds = 60 * 5;
+  GPid server_pid = 0;
+  GPid ui_pid = 0;
+  testcase video_source = { "test-video-source", 0 };
+  
+  g_print ("\n");
+
+  video_source.live_seconds = seconds;
+  video_source.desc = g_string_new ("videotestsrc pattern=0 ");
+  g_string_append_printf (video_source.desc, "! video/x-raw,width=%d,height=%d ", W, H);
+  g_string_append_printf (video_source.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ! tee name=v ");
+  g_string_append_printf (video_source.desc, "v. ! queue ! gdppay ! tcpclientsink port=3000 ");
+  g_string_append_printf (video_source.desc, "v. ! queue ! gdppay ! tcpclientsink port=3000 ");
+
+  if (!opts.test_external_server) {
+    server_pid = launch_server ();
+    g_assert_cmpint (server_pid, !=, 0);
+    sleep (3); /* give a second for server to be online */
+  }
+
+  if (!opts.test_external_ui) {
+    ui_pid = launch_ui ();
+    g_assert_cmpint (ui_pid, !=, 0);
+    sleep (2); /* give a second for ui to be ready */
+  }
+
+  testcase_run_thread (&video_source);
+  testcase_join (&video_source);
+
+  if (!opts.test_external_ui)
+    close_pid (ui_pid);
+  if (!opts.test_external_server)
+    close_pid (server_pid);
+}
+
 int main (int argc, char**argv)
 {
   {
@@ -1286,6 +1327,10 @@ int main (int argc, char**argv)
   }
   if (!opts.disable_test_fuzz) {
     g_test_add_func ("/gst-switch/fuzz", test_fuzz);
+    g_test_add_func ("/gst-switch/recording-result", test_recording_result);
+  }
+  if (!opts.disable_test_checking_timestamps) {
+    g_test_add_func ("/gst-switch/checking-timestamps", test_checking_timestamps);
     g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   }
   return g_test_run ();
