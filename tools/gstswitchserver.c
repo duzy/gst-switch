@@ -784,6 +784,13 @@ gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
   return FALSE;
 }
 
+static void
+gst_switch_server_start_audio (GstCase *cas, GstSwitchServer *srv)
+{
+  INFO ("audio %d started", cas->sink_port);
+  gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
+}
+
 gboolean
 gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 {
@@ -884,6 +891,9 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 	"bwidth",  candidate_case->b_width,
 	"bheight", candidate_case->b_height,
 	NULL);
+  } else {
+    g_signal_connect (G_OBJECT (work1), "start-worker",
+	G_CALLBACK (gst_switch_server_start_audio), srv);
   }
 
   compose_case->switching = TRUE;
@@ -901,8 +911,6 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 
   srv->cases = g_list_append (srv->cases, work1);
   srv->cases = g_list_append (srv->cases, work2);
-
-  gst_switch_controller_tell_audio_port (srv->controller, work1->sink_port);
 
   result = TRUE;
 
