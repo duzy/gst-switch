@@ -1255,8 +1255,12 @@ test_checking_timestamps (void)
   video_source.desc = g_string_new ("videotestsrc pattern=0 ");
   g_string_append_printf (video_source.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (video_source.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ! tee name=v ");
-  g_string_append_printf (video_source.desc, "v. ! queue ! gdppay ! tcpclientsink port=3000 ");
-  g_string_append_printf (video_source.desc, "v. ! queue ! gdppay ! tcpclientsink port=3000 ");
+  g_string_append_printf (video_source.desc, "v. ! queue "
+      "! textoverlay font-desc=\"Sans 120\" text=111 "
+      "! gdppay ! tcpclientsink port=3000 ");
+  g_string_append_printf (video_source.desc, "v. ! queue "
+      "! textoverlay font-desc=\"Sans 120\" text=222 "
+      "! gdppay ! tcpclientsink port=3000 ");
 
   if (!opts.test_external_server) {
     server_pid = launch_server ();
@@ -1299,6 +1303,8 @@ int main (int argc, char**argv)
       return 1;
     }
   }
+
+  srand (time (NULL));
 
   gst_init (&argc, &argv);
   g_test_init (&argc, &argv, NULL);
