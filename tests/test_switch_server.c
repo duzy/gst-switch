@@ -575,6 +575,7 @@ test_controller (void)
       video_source1.desc = g_string_new ("");
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", 0);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
+      g_string_append_printf (video_source1.desc, "! timeoverlay ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
       audio_source1.live_seconds = 10;
@@ -658,18 +659,21 @@ test_video (void)
   source1.desc = g_string_new ("videotestsrc pattern=0 ");
   g_string_append_printf (source1.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (source1.desc, "! %s text=source1 ", textoverlay);
+  g_string_append_printf (source1.desc, "! timeoverlay ");
   g_string_append_printf (source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   source2.live_seconds = seconds;
   source2.desc = g_string_new ("videotestsrc pattern=1 ");
   g_string_append_printf (source2.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (source2.desc, "! %s text=source2 ", textoverlay);
+  g_string_append_printf (source2.desc, "! timeoverlay ");
   g_string_append_printf (source2.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   source3.live_seconds = seconds;
   source3.desc = g_string_new ("videotestsrc pattern=15 ");
   g_string_append_printf (source3.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (source3.desc, "! %s text=source3 ", textoverlay);
+  g_string_append_printf (source3.desc, "! timeoverlay ");
   g_string_append_printf (source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   sink0.live_seconds = seconds;
@@ -925,18 +929,21 @@ test_ui_integrated (void)
   video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
   g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (video_source1.desc, "! %s text=video1 ", textoverlay);
+  g_string_append_printf (video_source1.desc, "! timeoverlay ");
   g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source2.live_seconds = seconds;
   video_source2.desc = g_string_new ("videotestsrc pattern=1 ");
   g_string_append_printf (video_source2.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (video_source2.desc, "! %s text=video2 ", textoverlay);
+  g_string_append_printf (video_source2.desc, "! timeoverlay ");
   g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source3.live_seconds = seconds;
   video_source3.desc = g_string_new ("videotestsrc pattern=15 ");
   g_string_append_printf (video_source3.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (video_source3.desc, "! %s text=video3 ", textoverlay);
+  g_string_append_printf (video_source3.desc, "! timeoverlay ");
   g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   audio_source1.live_seconds = seconds;
@@ -1026,6 +1033,7 @@ test_random_connection_1 (gpointer d)
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
       g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
+      g_string_append_printf (video_source1.desc, "! timeoverlay ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
       audio_source1.live_seconds = 7;
@@ -1070,6 +1078,7 @@ test_random_connection_2 (gpointer d)
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
       g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
       g_string_append_printf (video_source1.desc, "! %s text=video1-%d ", textoverlay, n);
+      g_string_append_printf (video_source1.desc, "! timeoverlay ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
       audio_source1.live_seconds = 3;
@@ -1150,18 +1159,21 @@ test_switching (void)
   video_source1.desc = g_string_new ("videotestsrc pattern=0 ");
   g_string_append_printf (video_source1.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (video_source1.desc, "! %s text=video1 ", textoverlay);
+  g_string_append_printf (video_source1.desc, "! timeoverlay ");
   g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source2.live_seconds = seconds;
   video_source2.desc = g_string_new ("videotestsrc pattern=1 ");
   g_string_append_printf (video_source2.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (video_source2.desc, "! %s text=video2 ", textoverlay);
+  g_string_append_printf (video_source2.desc, "! timeoverlay ");
   g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   video_source3.live_seconds = seconds;
   video_source3.desc = g_string_new ("videotestsrc pattern=15 ");
   g_string_append_printf (video_source3.desc, "! video/x-raw,width=1280,height=720 ");
   g_string_append_printf (video_source3.desc, "! %s text=video3 ", textoverlay);
+  g_string_append_printf (video_source3.desc, "! timeoverlay ");
   g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   audio_source1.live_seconds = seconds;

@@ -56,12 +56,13 @@ G_DEFINE_TYPE (GstRecorder, gst_recorder, GST_TYPE_WORKER);
 static void
 gst_recorder_init (GstRecorder * rec)
 {
-  INFO ("Recorder initialized");
   rec->sink_port = 0;
   rec->width = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
   rec->height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
   rec->write_disk = GST_WORKER (g_object_new (GST_TYPE_WORKER, "name", "writedisk", NULL));
   rec->write_tcp = GST_WORKER (g_object_new (GST_TYPE_WORKER, "name", "writetcp", NULL));
+
+  INFO ("Recorder initialized (%p)", rec);
 }
 
 static void
@@ -80,7 +81,7 @@ gst_recorder_finalize (GstRecorder * rec)
     rec->write_tcp = NULL;
   }
 
-  INFO ("Recorder finalized");
+  INFO ("Recorder finalized (%p)", rec);
 }
 
 static void
@@ -156,10 +157,10 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
       "channel=composite_audio ");
   g_string_append_printf (desc, "source_video. "
       "! video/x-raw,width=%d,height=%d "
-      "! queue ! vp8enc " //! mpeg2enc
+      "! queue2 ! vp8enc " //! mpeg2enc
       "! mux. ", rec->width, rec->height);
   g_string_append_printf (desc, "source_audio. "
-      "! queue ! faac "
+      "! queue2 ! faac "
       "! mux. ");
   g_string_append_printf (desc, "avimux name=mux ! tee name=result ");
   g_string_append_printf (desc, "filesink name=disk_sink sync=false "
