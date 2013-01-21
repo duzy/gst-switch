@@ -250,6 +250,7 @@ gst_worker_handle_error (GstWorker *worker, GError * error,
     const char *debug)
 {
   ERROR ("%s: %s", worker->name, error->message);
+  ERROR ("%s", debug);
   gst_worker_stop (worker);
 }
 

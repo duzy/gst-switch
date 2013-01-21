@@ -6,9 +6,9 @@ EXT="$EXT --test-external-ui"
 ./tests/test-switch-server $EXT \
     --disable-test-controller \
     --disable-test-video \
-    --disable-test-audio \
     --disable-test-ui-integration \
     --disable-test-fuzz-ui \
     --disable-test-random-connection \
 
 #    --disable-test-switching \
+#    --disable-test-audio \

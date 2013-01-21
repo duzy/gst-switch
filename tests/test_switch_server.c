@@ -789,7 +789,7 @@ test_video_recording_result (void)
 static void
 test_audio (void)
 {
-  const gint seconds = 10;
+  const gint seconds = 20;
   testcase source1 = { "test-audio-source1", 0 };
   testcase source2 = { "test-audio-source2", 0 };
   testcase source3 = { "test-audio-source3", 0 };
@@ -812,16 +812,15 @@ test_audio (void)
   g_assert (!sink3.thread);
 
   source1.live_seconds = seconds;
-  source1.desc = g_string_new ("audiotestsrc ");
-  //g_string_append_printf (source1.desc, "! audio/x-raw ");
+  source1.desc = g_string_new ("audiotestsrc wave=2 ");
   g_string_append_printf (source1.desc, "! gdppay ! tcpclientsink port=4000");
 
   source2.live_seconds = seconds;
-  source2.desc = g_string_new ("audiotestsrc ");
+  source2.desc = g_string_new ("audiotestsrc wave=2 ");
   g_string_append_printf (source2.desc, "! gdppay ! tcpclientsink port=4000");
 
   source3.live_seconds = seconds;
-  source3.desc = g_string_new ("audiotestsrc ");
+  source3.desc = g_string_new ("audiotestsrc wave=2 ");
   g_string_append_printf (source3.desc, "! gdppay ! tcpclientsink port=4000");
 
   sink1.live_seconds = seconds;
@@ -870,17 +869,14 @@ test_audio (void)
 
   g_assert_cmpint (source1.timer, ==, 0);
   g_assert (source1.desc == NULL);
-  g_assert (source1.mainloop == NULL);
   g_assert (source1.pipeline == NULL);
 
   g_assert_cmpint (source2.timer, ==, 0);
   g_assert (source2.desc == NULL);
-  g_assert (source2.mainloop == NULL);
   g_assert (source2.pipeline == NULL);
 
   g_assert_cmpint (source3.timer, ==, 0);
   g_assert (source3.desc == NULL);
-  g_assert (source3.mainloop == NULL);
   g_assert (source3.pipeline == NULL);
 
   if (!opts.test_external_server) {
@@ -910,7 +906,7 @@ test_ui_integrated (void)
 {
   const gint seconds = 10;
   GPid server_pid = 0;
-  GPid ui_pid;
+  GPid ui_pid = 0;
   testcase video_source1 = { "test-video-source1", 0 };
   testcase video_source2 = { "test-video-source2", 0 };
   testcase video_source3 = { "test-video-source3", 0 };
@@ -1134,7 +1130,7 @@ test_switching (void)
 {
   const gint seconds = 180;
   GPid server_pid = 0;
-  GPid ui_pid;
+  GPid ui_pid = 0;
   testcase video_source1 = { "test-video-source1", 0 };
   testcase video_source2 = { "test-video-source2", 0 };
   testcase video_source3 = { "test-video-source3", 0 };

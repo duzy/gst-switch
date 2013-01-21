@@ -239,7 +239,7 @@ static void
 gst_composite_null (GstComposite *composite)
 {
   GstWorker *worker = GST_WORKER (composite);
-  INFO ("%s: restart..", worker->name);
+  INFO ("%s restart..", worker->name);
   gst_worker_restart (worker);
 }
 

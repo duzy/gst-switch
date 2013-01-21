@@ -281,12 +281,17 @@ gst_case_get_pipeline_string (GstCase * cas)
     }
     g_string_append_printf (desc, " name=sink channel=%s_%d ",
 	srctype, cas->sink_port);
-    if (cas->type == GST_CASE_PREVIEW) {
-      g_string_append_printf (desc, "source. "
-	  "! video/x-raw,width=%d,height=%d ! sink. ",
-	  cas->a_width, cas->a_height);
+    if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
+      //g_string_append_printf (desc, "source. ! gdpdepay ! sink. ");
+      g_string_append_printf (desc, "source. ! sink. ");
     } else {
-      g_string_append_printf (desc, "source. ! gdpdepay ! sink. ");
+      if (cas->type == GST_CASE_PREVIEW) {
+	g_string_append_printf (desc, "source. "
+	    "! video/x-raw,width=%d,height=%d ! sink. ",
+	    cas->a_width, cas->a_height);
+      } else {
+	g_string_append_printf (desc, "source. ! gdpdepay ! sink. ");
+      }
     }
     break;
   case GST_CASE_BRANCH_A:
