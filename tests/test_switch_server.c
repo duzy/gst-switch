@@ -35,8 +35,8 @@
 gboolean verbose = FALSE;
 
 enum {
-#if TEST_LOW_RESOLUTION
-  W = 356, H = 200,
+#if ENABLE_LOW_RESOLUTION
+  W = LOW_RES_AW, H = LOW_RES_AH,
 #else
   W = 1280, H = 720,
 #endif
