@@ -652,7 +652,7 @@ test_video (void)
   testcase sink2 = { "test_video_preview_sink2", 0 };
   testcase sink3 = { "test_video_preview_sink3", 0 };
   const gchar *textoverlay = "textoverlay "
-    "font-desc=\"Sans 80\" "
+    "font-desc=\"Sans 60\" "
     "auto-resize=true "
     "shaded-background=true "
     ;
@@ -813,7 +813,7 @@ test_audio (void)
   testcase sink3 = { "test_audio_preview_sink3", 0 };
   GPid server_pid = 0;
   const gchar *textoverlay = "textoverlay "
-    "font-desc=\"Sans 80\" "
+    "font-desc=\"Sans 60\" "
     "auto-resize=true "
     "shaded-background=true "
     ;
@@ -933,7 +933,7 @@ test_ui_integrated (void)
   testcase audio_source2 = { "test-audio-source2", 0 };
   testcase audio_source3 = { "test-audio-source3", 0 };
   const gchar *textoverlay = "textoverlay "
-    "font-desc=\"Sans 80\" "
+    "font-desc=\"Sans 60\" "
     "auto-resize=true "
     "shaded-background=true "
     ;
@@ -1027,7 +1027,7 @@ test_random_connection_1 (gpointer d)
   testcase audio_source0 = { "test-audio-source0", 0 };
   testcase audio_source1 = { "test-audio-source1", 0 };
   const gchar *textoverlay = "textoverlay "
-    "font-desc=\"Sans 80\" "
+    "font-desc=\"Sans 60\" "
     "auto-resize=true "
     "shaded-background=true "
     ;
@@ -1077,7 +1077,7 @@ test_random_connection_2 (gpointer d)
   testcase video_source1 = { "test-video-source1", 0 };
   testcase audio_source1 = { "test-audio-source1", 0 };
   const gchar *textoverlay = "textoverlay "
-    "font-desc=\"Sans 80\" "
+    "font-desc=\"Sans 60\" "
     "auto-resize=true "
     "shaded-background=true "
     ;
@@ -1163,7 +1163,7 @@ test_switching (void)
   testcase audio_source3 = { "test-audio-source3", 0 };
   
   const gchar *textoverlay = "textoverlay "
-    "font-desc=\"Sans 80\" "
+    "font-desc=\"Sans 60\" "
     "auto-resize=true "
     "shaded-background=true "
     ;
