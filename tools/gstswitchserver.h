@@ -103,6 +103,7 @@ gint gst_switch_server_get_encode_sink_port (GstSwitchServer * srv);
 gint gst_switch_server_get_audio_sink_port (GstSwitchServer * srv);
 GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **types);
 
+gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode);
 gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port);
 
 extern GstSwitchServerOpts opts;

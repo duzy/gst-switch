@@ -186,9 +186,22 @@ gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
   return result;
 }
 
+gboolean
+gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
+{
+  gboolean result = FALSE;
+  GVariant *value = gst_switch_client_call_controller (client,
+      "set_composite_mode", g_variant_new ("(i)", mode),
+      G_VARIANT_TYPE ("(b)"));
+  if (value) {
+    g_variant_get (value, "(b)", &result);
+  }
+  return result;
+}
+
 static gboolean
-gst_switch_client_method_match (const gchar *key,
-    MethodTableEntry *entry, const gchar *match)
+gst_switch_client_method_match (const gchar *key, MethodTableEntry *entry,
+    const gchar *match)
 {
   if (g_strcmp0 (key, match) == 0)
     return TRUE;

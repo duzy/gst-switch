@@ -866,15 +866,19 @@ test_audio (void)
   testcase_run_thread (&source2);
   testcase_run_thread (&source3);
   sleep (2); /* give a second for audios to be online */
-  testcase_run_thread (&sink1);
-  testcase_run_thread (&sink2);
-  testcase_run_thread (&sink3);
+  if (!opts.test_external_ui) {
+    testcase_run_thread (&sink1);
+    testcase_run_thread (&sink2);
+    testcase_run_thread (&sink3);
+  }
   testcase_join (&source1);
   testcase_join (&source2);
   testcase_join (&source3);
-  testcase_join (&sink1);
-  testcase_join (&sink2);
-  testcase_join (&sink3);
+  if (!opts.test_external_ui) {
+    testcase_join (&sink1);
+    testcase_join (&sink2);
+    testcase_join (&sink3);
+  }
 
   if (!opts.test_external_server)
     close_pid (server_pid);
@@ -1212,19 +1216,15 @@ test_switching (void)
   testcase_run_thread (&video_source1); //sleep (1);
   testcase_run_thread (&video_source2); //sleep (1);
   testcase_run_thread (&video_source3); //sleep (1);
-  /*
   testcase_run_thread (&audio_source1); //sleep (1);
   testcase_run_thread (&audio_source2); //sleep (1);
   testcase_run_thread (&audio_source3); //sleep (1);
-  */
   testcase_join (&video_source1);
   testcase_join (&video_source2);
   testcase_join (&video_source3);
-  /*
   testcase_join (&audio_source1);
   testcase_join (&audio_source2);
   testcase_join (&audio_source3);
-  */
 
   if (!opts.test_external_ui)
     close_pid (ui_pid);

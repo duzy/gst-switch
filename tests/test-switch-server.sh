@@ -10,5 +10,5 @@ EXT="$EXT --test-external-ui"
     --disable-test-fuzz-ui \
     --disable-test-random-connection \
 
-#    --disable-test-switching \
 #    --disable-test-audio \
+#    --disable-test-switching \

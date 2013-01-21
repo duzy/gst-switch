@@ -60,6 +60,8 @@ struct _GstSwitchUI
   GstAudioPlay *audio;
   GMutex compose_lock;
   GstVideoDisp *compose;
+
+  gint compose_mode;
 };
 
 struct _GstSwitchUIClass

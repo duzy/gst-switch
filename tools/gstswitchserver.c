@@ -778,6 +778,13 @@ gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
 }
 
 gboolean
+gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
+{
+  INFO ("TODO: set composite mode: %d", mode);
+  return FALSE;
+}
+
+gboolean
 gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 {
   GList *item;
@@ -848,10 +855,6 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   work1 = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
 	  "type",    compose_case->type,
 	  "serve",   compose_case->serve_type,
-	  "awidth",  compose_case->a_width,
-	  "aheight", compose_case->a_height,
-	  "bwidth",  compose_case->b_width,
-	  "bheight", compose_case->b_height,
 	  "port",    candidate_case->sink_port,
 	  "input",   candidate_case->input,
 	  "branch",  candidate_case->branch,
@@ -862,15 +865,26 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   work2 = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
 	  "type",    candidate_case->type,
 	  "serve",   candidate_case->serve_type,
-	  "awidth",  candidate_case->a_width,
-	  "aheight", candidate_case->a_height,
-	  "bwidth",  candidate_case->b_width,
-	  "bheight", candidate_case->b_height,
 	  "port",    compose_case->sink_port,
 	  "input",   compose_case->input,
 	  "branch",  compose_case->branch,
 	  NULL));
   g_free (name);
+
+  if (compose_case->serve_type == GST_SERVE_VIDEO_STREAM) {
+    g_object_set (work1,
+	"awidth",  compose_case->a_width,
+	"aheight", compose_case->a_height,
+	"bwidth",  compose_case->b_width,
+	"bheight", compose_case->b_height,
+	NULL);
+    g_object_set (work2,
+	"awidth",  candidate_case->a_width,
+	"aheight", candidate_case->a_height,
+	"bwidth",  candidate_case->b_width,
+	"bheight", candidate_case->b_height,
+	NULL);
+  }
 
   compose_case->switching = TRUE;
   candidate_case->switching = TRUE;
@@ -888,7 +902,10 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   srv->cases = g_list_append (srv->cases, work1);
   srv->cases = g_list_append (srv->cases, work2);
 
+  gst_switch_controller_tell_audio_port (srv->controller, work1->sink_port);
+
   result = TRUE;
+
   INFO ("switched: %s <-> %s",
       GST_WORKER (work1)->name, GST_WORKER (work2)->name);
 

@@ -569,28 +569,59 @@ static void
 gst_switch_ui_switch (GstSwitchUI *ui, gint key)
 {
   gint port;
+  gpointer data;
   gboolean ok = FALSE;
   GST_SWITCH_UI_LOCK_SELECT (ui);
-  if (ui->selected) {
-    gpointer data = g_object_get_data (G_OBJECT (ui->selected),
-	"video-display");
-    if (data) {
-      port = GST_VIDEO_DISP (data)->port;
-      switch (key) {
-      case GDK_KEY_A:
-      case GDK_KEY_a:
-	ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'A', port);
-	INFO ("switch-a: %d, %d", port, ok);
-	break;
-      case GDK_KEY_B:
-      case GDK_KEY_b:
-	ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'B', port);
-	INFO ("switch-b: %d, %d", port, ok);
-	break;
-      }
-    }
+  if (!ui->selected) {
+    goto end;
   }
+
+  data = g_object_get_data (G_OBJECT (ui->selected), "video-display");
+  if (data) {
+    port = GST_VIDEO_DISP (data)->port;
+    switch (key) {
+    case GDK_KEY_A:
+    case GDK_KEY_a:
+      ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'A', port);
+      INFO ("switch-a: %d, %d", port, ok);
+      break;
+    case GDK_KEY_B:
+    case GDK_KEY_b:
+      ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'B', port);
+      INFO ("switch-b: %d, %d", port, ok);
+      break;
+    }
+    goto end;
+  }
+
+  data = g_object_get_data (G_OBJECT (ui->selected), "audio-visual");
+  if (data) {
+    port = GST_VIDEO_DISP (data)->port;
+    switch (key) {
+    case GDK_KEY_A:
+    case GDK_KEY_a:
+      ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'a', port);
+      INFO ("switch-audio: %d, %d", port, ok);
+      break;
+    }
+    goto end;
+  }
+
+ end:
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
+}
+
+static void
+gst_switch_ui_next_compose_mode (GstSwitchUI *ui)
+{
+  gboolean ok = FALSE;
+  ui->compose_mode += 1;
+  if (3 < ui->compose_mode) {
+    ui->compose_mode = 1;
+  }
+  ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
+      ui->compose_mode);
+  INFO ("set composite mode: %d (%d)", ui->compose_mode, ok);
 }
 
 static gboolean
@@ -610,6 +641,9 @@ gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
     case GDK_KEY_B:
     case GDK_KEY_b:
       gst_switch_ui_switch (ui, ke->keyval);
+      break;
+    case GDK_KEY_Tab:
+      gst_switch_ui_next_compose_mode (ui);
       break;
     }
   } break;

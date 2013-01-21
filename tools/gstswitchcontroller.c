@@ -62,6 +62,10 @@ static const gchar introspection_xml[] =
   "    <method name='get_preview_ports'>"
   "      <arg type='s' name='ports' direction='out'/>"
   "    </method>"
+  "    <method name='set_composite_mode'>"
+  "      <arg type='i' name='channel' direction='in'/>"
+  "      <arg type='b' name='result' direction='out'/>"
+  "    </method>"
   "    <method name='switch'>"
   "      <arg type='i' name='channel' direction='in'/>"
   "      <arg type='i' name='port' direction='in'/>"
@@ -660,6 +664,21 @@ gst_switch_controller__get_preview_ports (GstSwitchController *controller,
 }
 
 static GVariant *
+gst_switch_controller__set_composite_mode (GstSwitchController *controller,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  GVariant *result = NULL;
+  gboolean ok = FALSE;
+  gint mode;
+  g_variant_get (parameters, "(i)", &mode);
+  if (controller->server) {
+    ok = gst_switch_server_set_composite_mode (controller->server, mode);
+    result = g_variant_new ("(b)", ok);
+  }
+  return result;
+}
+
+static GVariant *
 gst_switch_controller__switch (GstSwitchController *controller,
     GDBusConnection *connection, GVariant *parameters)
 {
@@ -676,13 +695,14 @@ gst_switch_controller__switch (GstSwitchController *controller,
 
 static MethodTableEntry gst_switch_controller_method_table[] = {
 #if ENABLE_TEST
-  { "test", (MethodFunc) gst_switch_controller__test },
+  { "test",		  (MethodFunc) gst_switch_controller__test },
 #endif//ENABLE_TEST
-  { "get_compose_port", (MethodFunc) gst_switch_controller__get_compose_port },
-  { "get_encode_port", (MethodFunc) gst_switch_controller__get_encode_port },
-  { "get_audio_port", (MethodFunc) gst_switch_controller__get_audio_port },
-  { "get_preview_ports", (MethodFunc) gst_switch_controller__get_preview_ports },
-  { "switch", (MethodFunc) gst_switch_controller__switch },
+  { "get_compose_port",   (MethodFunc) gst_switch_controller__get_compose_port },
+  { "get_encode_port",	  (MethodFunc) gst_switch_controller__get_encode_port },
+  { "get_audio_port",	  (MethodFunc) gst_switch_controller__get_audio_port },
+  { "get_preview_ports",  (MethodFunc) gst_switch_controller__get_preview_ports },
+  { "set_composite_mode", (MethodFunc) gst_switch_controller__set_composite_mode },
+  { "switch",		  (MethodFunc) gst_switch_controller__switch },
   { NULL, NULL }
 };
 
