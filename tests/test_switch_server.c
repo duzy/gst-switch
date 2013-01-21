@@ -1256,10 +1256,16 @@ test_checking_timestamps (void)
   g_string_append_printf (video_source.desc, "! video/x-raw,width=%d,height=%d ", W, H);
   g_string_append_printf (video_source.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ! tee name=v ");
   g_string_append_printf (video_source.desc, "v. ! queue "
-      "! textoverlay font-desc=\"Sans 120\" text=111 "
+      "! textoverlay font-desc=\"Sans 100\" text=111 "
       "! gdppay ! tcpclientsink port=3000 ");
   g_string_append_printf (video_source.desc, "v. ! queue "
-      "! textoverlay font-desc=\"Sans 120\" text=222 "
+      "! textoverlay font-desc=\"Sans 100\" text=222 "
+      "! gdppay ! tcpclientsink port=3000 ");
+  g_string_append_printf (video_source.desc, "v. ! queue "
+      "! textoverlay font-desc=\"Sans 100\" text=333 "
+      "! gdppay ! tcpclientsink port=3000 ");
+  g_string_append_printf (video_source.desc, "v. ! queue "
+      "! textoverlay font-desc=\"Sans 100\" text=444 "
       "! gdppay ! tcpclientsink port=3000 ");
 
   if (!opts.test_external_server) {
