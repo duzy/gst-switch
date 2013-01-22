@@ -31,8 +31,6 @@
 #include <string.h>
 #include "gstswitchserver.h"
 
-#define DEFAULT_COMPOSE_MODE COMPOSE_MODE_2
-
 enum
 {
   PROP_0,
