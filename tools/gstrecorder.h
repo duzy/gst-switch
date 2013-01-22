@@ -26,6 +26,7 @@
 #ifndef __GST_RECORDER_H__by_Duzy_Chan__
 #define __GST_RECORDER_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
+#include "gstcomposite.h"
 #include <gio/gio.h>
 
 #define GST_TYPE_RECORDER (gst_recorder_get_type ())
@@ -43,6 +44,9 @@ struct _GstRecorder
   gint sink_port;
   guint width;
   guint height;
+
+  GstCompositeMode mode;
+  gboolean deprecated;
 
   GstWorker *write_disk;
   GstWorker *write_tcp;

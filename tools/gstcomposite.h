@@ -84,6 +84,8 @@ struct _GstComposite
 
   guint width;
   guint height;
+
+  gboolean deprecated;
 };
 
 struct _GstCompositeClass

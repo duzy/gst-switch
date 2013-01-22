@@ -67,6 +67,7 @@ static void
 gst_composite_init (GstComposite * composite)
 {
   composite->type = COMPOSE_TYPE_WORK;
+  composite->deprecated = FALSE;
 
   gst_composite_set_mode (composite, DEFAULT_COMPOSE_MODE);
 
@@ -313,8 +314,10 @@ static void
 gst_composite_null (GstComposite *composite)
 {
   GstWorker *worker = GST_WORKER (composite);
-  INFO ("%s restart..", worker->name);
-  gst_worker_restart (worker);
+  if (!composite->deprecated) {
+    INFO ("%s restart..", worker->name);
+    gst_worker_restart (worker);
+  }
 }
 
 static void

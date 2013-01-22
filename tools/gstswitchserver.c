@@ -280,24 +280,71 @@ gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
     gst_switch_server_revoke_port (srv, caseport);
 }
 
+static gboolean
+gst_switch_server_prepare_composite (GstSwitchServer * srv);
+
 static void
-gst_switch_server_end_composite (GstComposite *composite, GstSwitchServer *srv)
+gst_switch_server_end_composite (GstComposite *composite,
+    GstSwitchServer *srv)
 {
-  WARN ("%s ended", GST_WORKER (composite)->name);
+  GstCompositeMode mode = composite->mode;
+
+  INFO ("%s (%d) ended", GST_WORKER (composite)->name, mode);
+
+  if (composite->deprecated) {
+    g_object_unref (composite);
+
+    if (composite != srv->composite) {
+      return;
+    }
+
+    GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+    srv->composite = NULL;
+
+    if (mode != srv->composite_out->mode) {
+      GstComposite *out = srv->composite_out;
+      srv->composite_out = NULL;
+      out->deprecated = TRUE;
+      gst_worker_stop (GST_WORKER (out));
+    }
+
+    if (mode != srv->recorder->mode) {
+      GstRecorder *rec = srv->recorder;
+      srv->recorder = NULL;
+      rec->deprecated = TRUE;
+      gst_worker_stop (GST_WORKER (rec));
+    }
+    
+    GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+
+    gst_switch_server_prepare_composite (srv);
+  }
 }
 
 static void
 gst_switch_server_end_recorder (GstRecorder *recorder, GstSwitchServer *srv)
 {
-  WARN ("%s ended", GST_WORKER (recorder)->name);
+  INFO ("%s ended", GST_WORKER (recorder)->name);
+  GST_SWITCH_SERVER_LOCK_RECORDER (srv);
+  if (recorder->deprecated || recorder != srv->recorder) {
+    g_object_unref (recorder);
+  }
+  GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
 }
 
 static void
-gst_switch_server_start_composite (GstComposite *composite,
+gst_switch_server_end_composite_out (GstComposite *composite,
     GstSwitchServer *srv)
 {
-  gint port;
+  if (composite->deprecated || composite != srv->composite_out) {
+    g_object_unref (composite);
+  }
+}
 
+static void
+gst_switch_server_prepare_composite_out (GstSwitchServer *srv,
+    GstComposite *composite)
+{
   if (srv->composite_out == NULL) {
     GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
     srv->composite_out = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
@@ -307,11 +354,30 @@ gst_switch_server_start_composite (GstComposite *composite,
     if (!gst_worker_prepare (GST_WORKER (srv->composite_out)))
       goto error_prepare_composite_out;
 
-    //g_signal_connect (srv->composite_out, "end-worker", callback, srv);
+    g_signal_connect (srv->composite_out, "end-worker",
+	G_CALLBACK (gst_switch_server_end_composite_out), srv);
 
     gst_worker_start (GST_WORKER (srv->composite_out));
     GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
   }
+
+  return;
+
+ error_prepare_composite_out:
+  {
+    ERROR ("Failed to prepare composite out");
+    g_object_unref (srv->composite_out);
+    srv->composite_out = NULL;
+    GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+    return;
+  }
+}
+
+static void
+gst_switch_server_prepare_recorder (GstSwitchServer *srv,
+    GstComposite *composite)
+{
+  gint port;
 
   if (srv->recorder == NULL) {
     GST_SWITCH_SERVER_LOCK_RECORDER (srv);
@@ -321,8 +387,8 @@ gst_switch_server_start_composite (GstComposite *composite,
 	composite->width, composite->height);
 
     srv->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
-	    "name", "recorder", "port", port, "width", composite->width,
-	    "height", composite->height, NULL));
+	    "name", "recorder", "port", port, "mode", composite->mode,
+	    "width", composite->width, "height", composite->height, NULL));
 
     if (!gst_worker_prepare (GST_WORKER (srv->recorder)))
       goto error_prepare_recorder;
@@ -334,6 +400,7 @@ gst_switch_server_start_composite (GstComposite *composite,
     
     GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
   }
+
   return;
 
  error_prepare_recorder:
@@ -344,15 +411,14 @@ gst_switch_server_start_composite (GstComposite *composite,
     GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
     return;
   }
+}
 
- error_prepare_composite_out:
-  {
-    ERROR ("Failed to prepare composite out");
-    g_object_unref (srv->composite_out);
-    srv->composite_out = NULL;
-    GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
-    return;
-  }
+static void
+gst_switch_server_start_composite (GstComposite *composite,
+    GstSwitchServer *srv)
+{
+  gst_switch_server_prepare_composite_out (srv, composite);
+  gst_switch_server_prepare_recorder (srv, composite);
 }
 
 static GstCaseType
@@ -840,20 +906,26 @@ gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
 gboolean
 gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
 {
+  GstComposite *composite;
+  gboolean result = FALSE;
+
   mode -= 1;
 
   INFO ("set composite mode: %d", mode);
 
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
-  if (mode == srv->composite->mode)
+  if (mode == (composite = srv->composite)->mode)
     goto end;
 
-  srv->composite->mode = mode;
-  gst_worker_stop (GST_WORKER (srv->composite));
+  composite->mode = mode;
+  composite->deprecated = TRUE;
+  gst_worker_stop (GST_WORKER (composite));
+
+  result = TRUE;
 
  end:
   GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
-  return FALSE;
+  return result;
 }
 
 static void

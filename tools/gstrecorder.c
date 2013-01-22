@@ -36,6 +36,7 @@
 enum
 {
   PROP_0,
+  PROP_MODE,
   PROP_PORT,
   PROP_WIDTH,
   PROP_HEIGHT,
@@ -57,10 +58,12 @@ static void
 gst_recorder_init (GstRecorder * rec)
 {
   rec->sink_port = 0;
-  rec->width = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
-  rec->height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
+  rec->mode = 0;
+  rec->width = 0;
+  rec->height = 0;
   rec->write_disk = GST_WORKER (g_object_new (GST_TYPE_WORKER, "name", "writedisk", NULL));
   rec->write_tcp = GST_WORKER (g_object_new (GST_TYPE_WORKER, "name", "writetcp", NULL));
+  rec->deprecated = FALSE;
 
   INFO ("Recorder initialized (%p)", rec);
 }
@@ -89,6 +92,9 @@ gst_recorder_get_property (GstRecorder *rec, guint property_id,
     GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
+  case PROP_MODE:
+    g_value_set_uint (value, rec->mode);
+    break;
   case PROP_PORT:
     g_value_set_uint (value, rec->sink_port);
     break;
@@ -109,6 +115,9 @@ gst_recorder_set_property (GstRecorder *rec, guint property_id,
     const GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
+  case PROP_MODE:
+    rec->mode = (GstCompositeMode) (g_value_get_uint (value));
+    break;
   case PROP_PORT:
     rec->sink_port = g_value_get_uint (value);
     break;
@@ -124,6 +133,7 @@ gst_recorder_set_property (GstRecorder *rec, guint property_id,
   }
 }
 
+#if 0
 static GString *
 gst_recorder_get_write_disk_string (GstRecorder *rec)
 {
@@ -137,6 +147,7 @@ gst_recorder_get_write_tcp_string (GstRecorder *rec)
   GString *desc = g_string_new ("");
   return desc;
 }
+#endif
 
 static GString *
 gst_recorder_get_pipeline_string (GstRecorder * rec)
@@ -221,8 +232,10 @@ static void
 gst_recorder_null (GstRecorder *rec)
 {
   GstWorker *worker = GST_WORKER (rec);
-  INFO ("%s restart..", worker->name);
-  gst_worker_restart (worker);
+  if (!rec->deprecated) {
+    INFO ("%s restart..", worker->name);
+    gst_worker_restart (worker);
+  }
 }
 
 static void
@@ -234,6 +247,11 @@ gst_recorder_class_init (GstRecorderClass * klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_recorder_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_recorder_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_recorder_get_property;
+
+  g_object_class_install_property (object_class, PROP_MODE,
+      g_param_spec_uint ("mode", "Mode", "Composite Mode",
+          COMPOSE_MODE_0, COMPOSE_MODE_2, COMPOSE_MODE_0,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",
