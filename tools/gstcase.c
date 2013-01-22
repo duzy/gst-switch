@@ -268,6 +268,10 @@ gst_case_get_pipeline_string (GstCase * cas)
 	"interaudiosink name=sink1 channel=branch_%d ", cas->sink_port);
     g_string_append_printf (desc, "as. ! queue2 ! "
 	"interaudiosink name=sink2 channel=composite_audio ");
+    /*
+    g_string_append_printf (desc, "as. ! queue2 ! "
+    	"interaudiosink name=sink3 channel=audio_out ");
+    */
     break;
   case GST_CASE_PREVIEW:
     if (srctype == NULL) srctype = "branch";
@@ -408,6 +412,6 @@ gst_case_class_init (GstCaseClass * klass)
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;
-  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_case_get_pipeline_string;
 }

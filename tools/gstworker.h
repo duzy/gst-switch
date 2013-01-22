@@ -38,7 +38,8 @@ typedef struct _GstWorker GstWorker;
 typedef struct _GstWorkerClass GstWorkerClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
-typedef GString *(*GstWorkerGetPipelineString) (GstWorker *worker);
+typedef GString *(*GstWorkerGetPipelineString) (GstWorker *worker, gpointer data);
+typedef GString *(*GstWorkerGetPipelineStringFunc) (GstWorker *worker);
 typedef GstElement *(*GstWorkerCreatePipelineFunc) (GstWorker *worker);
 typedef gboolean (*GstWorkerPrepareFunc) (GstWorker *worker);
 typedef void (*GstWorkerNullStateFunc) (GstWorker *worker);
@@ -57,6 +58,7 @@ struct _GstWorker
   GstElement *sink;
 
   GstWorkerGetPipelineString pipeline_func;
+  gpointer pipeline_func_data;
   GString *pipeline_string;
 
   gboolean paused_for_buffering;

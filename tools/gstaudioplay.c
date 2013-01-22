@@ -138,6 +138,6 @@ gst_audio_play_class_init (GstAudioPlayClass *klass)
           0, ((gulong)-1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_play_prepare;
-  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_audio_play_get_pipeline_string;
 }

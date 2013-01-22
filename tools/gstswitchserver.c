@@ -118,6 +118,8 @@ gst_switch_server_init (GstSwitchServer *srv)
   srv->main_loop = NULL;
   srv->cases = NULL;
   srv->composite = NULL;
+  srv->composite_out = NULL;
+  srv->audio_out = NULL;
   srv->recorder = NULL;
   srv->alloc_port_count = 0;
 
@@ -280,6 +282,30 @@ gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
     gst_switch_server_revoke_port (srv, caseport);
 }
 
+static void
+gst_switch_server_start_case (GstCase *cas, GstSwitchServer *srv)
+{
+  gboolean is_branch = FALSE;
+  switch (cas->type) {
+  case GST_CASE_BRANCH_A:
+  case GST_CASE_BRANCH_B:
+  case GST_CASE_BRANCH_a:
+  case GST_CASE_BRANCH_p:
+    is_branch = TRUE;
+  default:
+    break;
+  }
+  
+  if (srv->controller && is_branch) {
+    gst_switch_controller_tell_preview_port (srv->controller,
+	cas->sink_port, cas->serve_type);
+
+    if (cas->type == GST_CASE_BRANCH_a && srv->audio_out == NULL) {
+      gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
+    }
+  }
+}
+
 static gboolean
 gst_switch_server_prepare_composite (GstSwitchServer *, GstCompositeMode);
 
@@ -355,6 +381,27 @@ gst_switch_server_start_composite_out (GstComposite *composite,
   }
 }
 
+/*
+static void
+gst_switch_server_start_audio_out (GstComposite *composite,
+    GstSwitchServer *srv)
+{
+  if (srv->controller) {
+    gst_switch_controller_tell_audio_port (srv->controller,
+	composite->sink_port);
+  }
+}
+
+static void
+gst_switch_server_end_audio_out (GstComposite *composite,
+    GstSwitchServer *srv)
+{
+  if (srv->controller) {
+    gst_switch_controller_tell_audio_port (srv->controller, 0);
+  }
+}
+*/
+
 static void
 gst_switch_server_prepare_composite_out (GstSwitchServer *srv,
     GstComposite *composite)
@@ -363,7 +410,7 @@ gst_switch_server_prepare_composite_out (GstSwitchServer *srv,
     GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
     srv->composite_out = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
 	    "name", "composite-out", "port", composite->sink_port,
-	    "mode", composite->mode, "type", COMPOSE_TYPE_OUT, NULL));
+	    "mode", composite->mode, "type", COMPOSE_TYPE_OUT_VIDEO, NULL));
 
     if (!gst_worker_prepare (GST_WORKER (srv->composite_out)))
       goto error_prepare_composite_out;
@@ -509,7 +556,8 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   GstCase *input = NULL, *branch = NULL, *workcase = NULL;
   gchar *name;
   gint port = 0;
-  GCallback callback = G_CALLBACK (gst_switch_server_end_case);
+  GCallback start_callback = G_CALLBACK (gst_switch_server_start_case);
+  GCallback end_callback = G_CALLBACK (gst_switch_server_end_case);
 
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   switch (serve_type) {
@@ -583,34 +631,23 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   if (!gst_worker_prepare (GST_WORKER (workcase)))
     goto error_prepare_workcase;
 
-  g_signal_connect (input, "end-worker", callback, srv);
-  g_signal_connect (branch, "end-worker", callback, srv);
-  g_signal_connect (workcase, "end-worker", callback, srv);
+  g_signal_connect (branch, "start-worker", start_callback, srv);
+  g_signal_connect (input, "end-worker", end_callback, srv);
+  g_signal_connect (branch, "end-worker", end_callback, srv);
+  g_signal_connect (workcase, "end-worker", end_callback, srv);
 
   gst_worker_start (GST_WORKER (input));
   gst_worker_start (GST_WORKER (branch));
   gst_worker_start (GST_WORKER (workcase));
 
-  switch (type) {
-  case GST_CASE_COMPOSITE_A:
-  case GST_CASE_COMPOSITE_B:
-    /*
-    gst_switch_controller_tell_compose_port (srv->controller,
-	srv->composite->sink_port);
-    */
-    goto tell_preview;
-  case GST_CASE_COMPOSITE_a:
+  /*
+  gst_switch_controller_tell_preview_port (srv->controller,
+      port, serve_type);
+
+  if (type == GST_CASE_COMPOSITE_a && srv->audio_out == NULL) {
     gst_switch_controller_tell_audio_port (srv->controller, port);
-    /* fallthrough */
-  case GST_CASE_PREVIEW:
-  tell_preview:
-    gst_switch_controller_tell_preview_port (srv->controller,
-	port, serve_type);
-    break;
-  default:
-    ERROR ("unknown case");
-    break;
   }
+  */
   return;
 
   /* Errors Handling */
@@ -1110,17 +1147,43 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv,
 
   gst_worker_start (GST_WORKER (srv->composite));
 
+  /*
+  port = gst_switch_server_alloc_port (srv);
+  srv->audio_out = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
+	  "name", "audio-out", "port", port, "type", COMPOSE_TYPE_OUT_AUDIO,
+	  NULL));
+
+  if (!gst_worker_prepare (GST_WORKER (srv->audio_out)))
+    goto error_prepare_audio_out;
+
+  g_signal_connect (srv->audio_out, "start-worker",
+      G_CALLBACK (gst_switch_server_start_audio_out), srv);
+
+  g_signal_connect (srv->audio_out, "end-worker",
+      G_CALLBACK (gst_switch_server_end_audio_out), srv);
+
+  gst_worker_start (GST_WORKER (srv->audio_out));
+  */
+
   GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
   return TRUE;
 
  error_prepare_composite:
   {
-    GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
     g_object_unref (srv->composite);
     srv->composite = NULL;
     GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
     return FALSE;
   }
+  /*
+ error_prepare_audio_out:
+  {
+    g_object_unref (srv->audio_out);
+    srv->audio_out = NULL;
+    GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+    return FALSE;
+  }
+  */
 }
 
 static void

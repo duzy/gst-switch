@@ -151,6 +151,6 @@ gst_video_disp_class_init (GstVideoDispClass *klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_video_disp_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_video_disp_prepare;
-  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_video_disp_get_pipeline_string;
 }

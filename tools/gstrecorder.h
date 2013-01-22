@@ -41,6 +41,7 @@ typedef struct _GstRecorderClass GstRecorderClass;
 struct _GstRecorder
 {
   GstWorker base;
+  
   gint sink_port;
   guint width;
   guint height;

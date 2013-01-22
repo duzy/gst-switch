@@ -53,7 +53,8 @@
 
 typedef enum {
   COMPOSE_TYPE_WORK,
-  COMPOSE_TYPE_OUT,
+  COMPOSE_TYPE_OUT_VIDEO,
+  COMPOSE_TYPE_OUT_AUDIO,
 } GstCompositeType;
 
 typedef enum {

@@ -84,7 +84,7 @@ gst_composite_finalize (GstComposite * composite)
 static void
 gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
 {
-  guint h1, h2;
+  guint h;
   composite->a_x = 0;
   composite->a_y = 0;
   composite->a_width  = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
@@ -110,11 +110,10 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
     composite->b_width  = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
     composite->b_height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
   compute_side_by_side_size:
-    composite->width = composite->a_x + composite->a_width
-      + composite->b_x + composite->b_width;
-    h1 = composite->a_y + composite->a_height;
-    h2 = composite->b_y + composite->b_height;
-    composite->height = h1 < h2 ? h2 : h1;
+    composite->width = composite->b_x + composite->b_width;
+    composite->height = composite->a_y + composite->a_height;
+    if (composite->height < (h = composite->b_y + composite->b_height))
+      composite->height = h;
     break;
   }
 }
@@ -261,7 +260,7 @@ gst_composite_get_pipeline_string_w (GstComposite * composite)
 }
 
 static GString *
-gst_composite_get_pipeline_string_o (GstComposite * composite)
+gst_composite_get_pipeline_string_ov (GstComposite * composite)
 {
   GString *desc;
 
@@ -278,13 +277,31 @@ gst_composite_get_pipeline_string_o (GstComposite * composite)
 }
 
 static GString *
+gst_composite_get_pipeline_string_oa (GstComposite * composite)
+{
+  GString *desc;
+
+  desc = g_string_new ("");
+
+  g_string_append_printf (desc, "interaudiosrc name=source "
+      "channel=audio_out ");
+  g_string_append_printf (desc, "tcpserversink name=sink "
+      "port=%d ", composite->sink_port);
+  g_string_append_printf (desc, "source. ! gdppay ! sink. ");
+
+  return desc;
+}
+
+static GString *
 gst_composite_get_pipeline_string (GstComposite * composite)
 {
   switch (composite->type) {
   case COMPOSE_TYPE_WORK:
     return gst_composite_get_pipeline_string_w (composite);
-  case COMPOSE_TYPE_OUT:
-    return gst_composite_get_pipeline_string_o (composite);
+  case COMPOSE_TYPE_OUT_VIDEO:
+    return gst_composite_get_pipeline_string_ov (composite);
+  case COMPOSE_TYPE_OUT_AUDIO:
+    return gst_composite_get_pipeline_string_oa (composite);
   }
   return NULL;
 }
@@ -330,7 +347,7 @@ gst_composite_class_init (GstCompositeClass * klass)
 
   g_object_class_install_property (object_class, PROP_TYPE,
       g_param_spec_uint ("type", "Type", "Composite Type",
-          COMPOSE_TYPE_WORK, COMPOSE_TYPE_OUT, COMPOSE_TYPE_WORK,
+          COMPOSE_TYPE_WORK, COMPOSE_TYPE_OUT_AUDIO, COMPOSE_TYPE_WORK,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_MODE,
@@ -396,6 +413,6 @@ gst_composite_class_init (GstCompositeClass * klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_composite_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
-  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_composite_get_pipeline_string;
 }

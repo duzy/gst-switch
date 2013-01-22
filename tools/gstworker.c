@@ -59,6 +59,7 @@ gst_worker_init (GstWorker *worker)
   worker->source = NULL;
   worker->sink = NULL;
   worker->pipeline_func = NULL;
+  worker->pipeline_func_data = NULL;
   worker->pipeline_string = NULL;
   worker->paused_for_buffering = FALSE;
   worker->timer_id = -1;
@@ -136,7 +137,7 @@ gst_worker_get_pipeline_string (GstWorker *worker)
 {
   GString *desc = NULL;
   if (worker->pipeline_func)
-    desc = worker->pipeline_func (worker);
+    desc = worker->pipeline_func (worker, worker->pipeline_func_data);
   if (!desc && worker->pipeline_string)
     desc = g_string_new (worker->pipeline_string->str);
   if (!desc)

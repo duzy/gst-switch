@@ -271,6 +271,6 @@ gst_recorder_class_init (GstRecorderClass * klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_recorder_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;
-  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_recorder_get_pipeline_string;
 }

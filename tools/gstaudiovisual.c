@@ -176,6 +176,6 @@ gst_audio_visual_class_init (GstAudioVisualClass *klass)
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_visual_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_visual_prepare;
-  worker_class->get_pipeline_string = (GstWorkerGetPipelineString)
+  worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_audio_visual_get_pipeline_string;
 }
