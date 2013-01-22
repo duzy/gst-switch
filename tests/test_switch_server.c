@@ -591,7 +591,7 @@ test_controller (void)
 
       audio_source1.live_seconds = 10;
       audio_source1.desc = g_string_new ("");
-      g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", 2);
+      g_string_append_printf (audio_source1.desc, "audiotestsrc freq=110 wave=%d ", 2);
       g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
 
       testcase_run_thread (&video_source1); sleep (1);
@@ -827,15 +827,15 @@ test_audio (void)
   g_assert (!sink3.thread);
 
   source1.live_seconds = seconds;
-  source1.desc = g_string_new ("audiotestsrc wave=2 ");
+  source1.desc = g_string_new ("audiotestsrc freq=110 wave=2 ");
   g_string_append_printf (source1.desc, "! gdppay ! tcpclientsink port=4000");
 
   source2.live_seconds = seconds;
-  source2.desc = g_string_new ("audiotestsrc wave=2 ");
+  source2.desc = g_string_new ("audiotestsrc freq=110 wave=2 ");
   g_string_append_printf (source2.desc, "! gdppay ! tcpclientsink port=4000");
 
   source3.live_seconds = seconds;
-  source3.desc = g_string_new ("audiotestsrc wave=2 ");
+  source3.desc = g_string_new ("audiotestsrc freq=110 wave=2 ");
   g_string_append_printf (source3.desc, "! gdppay ! tcpclientsink port=4000");
 
   sink1.live_seconds = seconds;
@@ -962,16 +962,16 @@ test_ui_integrated (void)
   g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   audio_source1.live_seconds = seconds;
-  audio_source1.desc = g_string_new ("audiotestsrc ");
+  audio_source1.desc = g_string_new ("audiotestsrc freq=110 ");
   //g_string_append_printf (audio_source1.desc, "! audio/x-raw ");
   g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
 
   audio_source2.live_seconds = seconds;
-  audio_source2.desc = g_string_new ("audiotestsrc ");
+  audio_source2.desc = g_string_new ("audiotestsrc freq=110 ");
   g_string_append_printf (audio_source2.desc, "! gdppay ! tcpclientsink port=4000");
 
   audio_source3.live_seconds = seconds;
-  audio_source3.desc = g_string_new ("audiotestsrc ");
+  audio_source3.desc = g_string_new ("audiotestsrc freq=110 ");
   g_string_append_printf (audio_source3.desc, "! gdppay ! tcpclientsink port=4000");
 
   if (!opts.test_external_server) {
@@ -1035,7 +1035,7 @@ test_random_connection_1 (gpointer d)
 
   audio_source0.live_seconds = 102;
   audio_source0.desc = g_string_new ("");
-  g_string_append_printf (audio_source0.desc, "audiotestsrc wave=2 ");
+  g_string_append_printf (audio_source0.desc, "audiotestsrc freq=110 wave=2 ");
   g_string_append_printf (audio_source0.desc, "! gdppay ! tcpclientsink port=4000");
   testcase_run_thread (&audio_source0);
   sleep (2);
@@ -1054,7 +1054,7 @@ test_random_connection_1 (gpointer d)
       audio_source1.live_seconds = 7;
       audio_source1.name = g_strdup_printf ("test-audio-source1-%d", i);
       audio_source1.desc = g_string_new ("");
-      g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", rand() % 12);
+      g_string_append_printf (audio_source1.desc, "audiotestsrc freq=110 wave=%d ", rand() % 12);
       g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
 
       testcase_run_thread (&video_source1);
@@ -1099,7 +1099,7 @@ test_random_connection_2 (gpointer d)
       audio_source1.live_seconds = 3;
       audio_source1.name = g_strdup_printf ("test-audio-source2-%d", i);
       audio_source1.desc = g_string_new ("");
-      g_string_append_printf (audio_source1.desc, "audiotestsrc wave=%d ", rand () % 12);
+      g_string_append_printf (audio_source1.desc, "audiotestsrc freq=110 wave=%d ", rand () % 12);
       g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
 
       testcase_run_thread (&video_source1);
@@ -1192,16 +1192,16 @@ test_switching (void)
   g_string_append_printf (video_source3.desc, "! gdppay ! tcpclientsink port=3000 ");
 
   audio_source1.live_seconds = seconds;
-  audio_source1.desc = g_string_new ("audiotestsrc wave=2 ");
+  audio_source1.desc = g_string_new ("audiotestsrc freq=110 wave=2 ");
   //g_string_append_printf (audio_source1.desc, "! audio/x-raw ");
   g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
 
   audio_source2.live_seconds = seconds;
-  audio_source2.desc = g_string_new ("audiotestsrc ");
+  audio_source2.desc = g_string_new ("audiotestsrc freq=110 ");
   g_string_append_printf (audio_source2.desc, "! gdppay ! tcpclientsink port=4000");
 
   audio_source3.live_seconds = seconds;
-  audio_source3.desc = g_string_new ("audiotestsrc ");
+  audio_source3.desc = g_string_new ("audiotestsrc freq=110 ");
   g_string_append_printf (audio_source3.desc, "! gdppay ! tcpclientsink port=4000");
 
   if (!opts.test_external_server) {

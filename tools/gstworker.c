@@ -38,6 +38,7 @@ enum
 
 enum
 {
+  SIGNAL_PREPARE_WORKER,
   SIGNAL_START_WORKER,
   SIGNAL_END_WORKER,
   SIGNAL__LAST,
@@ -177,6 +178,11 @@ gst_worker_class_init (GstWorkerClass *klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_worker_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_worker_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_worker_get_property;
+
+  gst_worker_signals[SIGNAL_PREPARE_WORKER] =
+    g_signal_new ("prepare-worker", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, prepare_worker),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
   gst_worker_signals[SIGNAL_START_WORKER] =
     g_signal_new ("start-worker", G_TYPE_FROM_CLASS (klass),
@@ -490,6 +496,8 @@ gst_worker_prepare (GstWorker *worker)
       return FALSE;
     }
   }
+
+  g_signal_emit (worker, gst_worker_signals[SIGNAL_PREPARE_WORKER], 0);
 
   return TRUE;
 

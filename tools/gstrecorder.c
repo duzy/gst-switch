@@ -221,8 +221,8 @@ static void
 gst_recorder_null (GstRecorder *rec)
 {
   GstWorker *worker = GST_WORKER (rec);
-
-  INFO ("null: %s (%p)", worker->name, rec);
+  INFO ("%s restart..", worker->name);
+  gst_worker_restart (worker);
 }
 
 static void

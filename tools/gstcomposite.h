@@ -35,8 +35,8 @@
 
 #define GST_SWITCH_COMPOSITE_DEFAULT_A_X	0
 #define GST_SWITCH_COMPOSITE_DEFAULT_A_Y	0
-#define GST_SWITCH_COMPOSITE_DEFAULT_B_X	10
-#define GST_SWITCH_COMPOSITE_DEFAULT_B_Y	50
+#define GST_SWITCH_COMPOSITE_DEFAULT_B_X	101
+#define GST_SWITCH_COMPOSITE_DEFAULT_B_Y	0
 #if ENABLE_LOW_RESOLUTION
 #define GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH	LOW_RES_AW /* 640 */
 #define GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT	LOW_RES_AH /* 480 */
@@ -49,11 +49,16 @@
 #define GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT	100
 #endif
 
-enum {
+typedef enum {
+  COMPOSE_TYPE_WORK,
+  COMPOSE_TYPE_OUT,
+} GstCompositeType;
+
+typedef enum {
   COMPOSE_MODE_0,
   COMPOSE_MODE_1,
   COMPOSE_MODE_2,
-};
+} GstCompositeMode;
 
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
@@ -62,6 +67,9 @@ typedef struct _GstSwitchServer GstSwitchServer;
 struct _GstComposite
 {
   GstWorker base;
+
+  GstCompositeType type;
+  GstCompositeMode mode;
 
   gint sink_port;
 

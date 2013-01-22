@@ -9,7 +9,7 @@ EXT="$EXT --test-external-ui"
     --disable-test-ui-integration \
     --disable-test-fuzz-ui \
     --disable-test-random-connection \
+    --disable-test-audio \
 
-#    --disable-test-audio \
 #    --disable-test-switching \
 #    --disable-test-checking-timestamps \

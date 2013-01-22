@@ -87,6 +87,7 @@ struct _GstSwitchServer
 
   GMutex composite_lock;
   GstComposite *composite;
+  GstComposite *composite_out;
 
   GMutex recorder_lock;
   GstRecorder *recorder;

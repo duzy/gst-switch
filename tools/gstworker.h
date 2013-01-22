@@ -67,6 +67,7 @@ struct _GstWorkerClass
 {
   GObjectClass base_class;
 
+  void (*prepare_worker) (GstWorker *worker);
   void (*start_worker) (GstWorker *worker);
   void (*end_worker) (GstWorker *worker);
 

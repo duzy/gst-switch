@@ -283,16 +283,76 @@ gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
 static void
 gst_switch_server_end_composite (GstComposite *composite, GstSwitchServer *srv)
 {
-  INFO ("%s ended", GST_WORKER (composite)->name);
+  WARN ("%s ended", GST_WORKER (composite)->name);
 }
 
 static void
 gst_switch_server_end_recorder (GstRecorder *recorder, GstSwitchServer *srv)
 {
-  GST_SWITCH_SERVER_LOCK_RECORDER (srv);
-  g_object_unref (srv->recorder);
-  srv->recorder = NULL;
-  GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+  WARN ("%s ended", GST_WORKER (recorder)->name);
+}
+
+static void
+gst_switch_server_start_composite (GstComposite *composite,
+    GstSwitchServer *srv)
+{
+  gint port;
+
+  if (srv->composite_out == NULL) {
+    GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+    srv->composite_out = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
+	    "name", "composite-out", "port", composite->sink_port,
+	    "mode", composite->mode, "type", COMPOSE_TYPE_OUT, NULL));
+
+    if (!gst_worker_prepare (GST_WORKER (srv->composite_out)))
+      goto error_prepare_composite_out;
+
+    //g_signal_connect (srv->composite_out, "end-worker", callback, srv);
+
+    gst_worker_start (GST_WORKER (srv->composite_out));
+    GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+  }
+
+  if (srv->recorder == NULL) {
+    GST_SWITCH_SERVER_LOCK_RECORDER (srv);
+    port = gst_switch_server_alloc_port (srv);
+
+    INFO ("Recorder sink to %d (%dx%d)", port,
+	composite->width, composite->height);
+
+    srv->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
+	    "name", "recorder", "port", port, "width", composite->width,
+	    "height", composite->height, NULL));
+
+    if (!gst_worker_prepare (GST_WORKER (srv->recorder)))
+      goto error_prepare_recorder;
+
+    g_signal_connect (srv->recorder, "end-worker",
+	G_CALLBACK (gst_switch_server_end_recorder), srv);
+
+    gst_worker_start (GST_WORKER (srv->recorder));
+    
+    GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+  }
+  return;
+
+ error_prepare_recorder:
+  {
+    ERROR ("Failed to prepare recorder");
+    g_object_unref (srv->recorder);
+    srv->recorder = NULL;
+    GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+    return;
+  }
+
+ error_prepare_composite_out:
+  {
+    ERROR ("Failed to prepare composite out");
+    g_object_unref (srv->composite_out);
+    srv->composite_out = NULL;
+    GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+    return;
+  }
 }
 
 static GstCaseType
@@ -780,7 +840,19 @@ gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
 gboolean
 gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
 {
-  INFO ("TODO: set composite mode: %d", mode);
+  mode -= 1;
+
+  INFO ("set composite mode: %d", mode);
+
+  GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+  if (mode == srv->composite->mode)
+    goto end;
+
+  srv->composite->mode = mode;
+  gst_worker_stop (GST_WORKER (srv->composite));
+
+ end:
+  GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
   return FALSE;
 }
 
@@ -922,8 +994,8 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   return result;
 }
 
-static void
-gst_switch_server_create_composite (GstSwitchServer * srv)
+static gboolean
+gst_switch_server_prepare_composite (GstSwitchServer * srv)
 {
   gint port = gst_switch_server_alloc_port (srv);
 
@@ -932,83 +1004,29 @@ gst_switch_server_create_composite (GstSwitchServer * srv)
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
   srv->composite = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
 	  "name", "composite", "port", port, NULL));
-  GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
-}
 
-static void
-gst_switch_server_create_recorder (GstSwitchServer * srv)
-{
-  gint port = gst_switch_server_alloc_port (srv);
-  guint w, h;
-
-  g_object_get (srv->composite, "width", &w, "height", &h, NULL);
-
-  INFO ("Recorder sink to %d (%dx%d)", port, w, h);
-
-  GST_SWITCH_SERVER_LOCK_RECORDER (srv);
-  srv->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
-	  "name", "recorder", "port", port, "width", w, "height", h, NULL));
-  GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
-}
-
-static gboolean
-gst_switch_server_launch_recorder (GstSwitchServer * srv)
-{
-  if (!gst_worker_prepare (GST_WORKER (srv->recorder)))
-    return FALSE;
-
-  g_signal_connect (srv->recorder, "end-worker",
-      G_CALLBACK (gst_switch_server_end_recorder), srv);
-
-  gst_worker_start (GST_WORKER (srv->recorder));
-  return TRUE;
-}
-
-static gboolean
-gst_switch_server_launch_composite (GstSwitchServer * srv)
-{
   if (!gst_worker_prepare (GST_WORKER (srv->composite)))
-    return FALSE;
+    goto error_prepare_composite;
+
+  g_signal_connect (srv->composite, "start-worker",
+      G_CALLBACK (gst_switch_server_start_composite), srv);
 
   g_signal_connect (srv->composite, "end-worker",
       G_CALLBACK (gst_switch_server_end_composite), srv);
 
   gst_worker_start (GST_WORKER (srv->composite));
-  return TRUE;
-}
 
-static gboolean
-gst_switch_server_prepare (GstSwitchServer * srv)
-{
-  gst_switch_server_create_composite (srv);
-  gst_switch_server_create_recorder (srv);
-
-  if (!gst_switch_server_launch_recorder (srv)) {
-    ERROR ("failed to prepare recorder");
-    goto error_launch;
-  }
-
-  if (!gst_switch_server_launch_composite (srv)) {
-    ERROR ("failed to prepare composite");
-    goto error_launch;
-  }
-
+  GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
   return TRUE;
 
- error_launch:
-  if (srv->recorder) {
-    GST_SWITCH_SERVER_LOCK_RECORDER (srv);
-    g_object_unref (srv->recorder);
-    srv->recorder = NULL;
-    GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
-  }
-  if (srv->composite) {
+ error_prepare_composite:
+  {
     GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
     g_object_unref (srv->composite);
     srv->composite = NULL;
     GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+    return FALSE;
   }
-  return FALSE;
 }
 
 static void
@@ -1016,7 +1034,7 @@ gst_switch_server_run (GstSwitchServer * srv)
 {
   srv->main_loop = g_main_loop_new (NULL, TRUE);
 
-  if (!gst_switch_server_prepare (srv))
+  if (!gst_switch_server_prepare_composite (srv))
     goto error_prepare;
 
   srv->video_acceptor = g_thread_new ("switch-server-video-acceptor",
