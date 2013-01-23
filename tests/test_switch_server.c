@@ -36,7 +36,7 @@ gboolean verbose = FALSE;
 
 enum {
 #if ENABLE_LOW_RESOLUTION
-  W = LOW_RES_AW, H = LOW_RES_AH,
+  W = LOW_RES_W, H = LOW_RES_H,
 #else
   W = 1280, H = 720,
 #endif

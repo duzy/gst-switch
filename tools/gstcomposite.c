@@ -87,8 +87,8 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   guint h;
   composite->a_x = 0;
   composite->a_y = 0;
-  composite->a_width  = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
-  composite->a_height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
+  composite->a_width  = GST_SWITCH_COMPOSITE_DEFAULT_WIDTH;
+  composite->a_height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
   switch ((composite->mode = mode)) {
   case COMPOSE_MODE_0:
     composite->b_x = (guint) ((double) composite->a_width * 0.08 + 0.5);
@@ -107,8 +107,8 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   case COMPOSE_MODE_2:
     composite->b_x = composite->a_x + composite->a_width + 1;
     composite->b_y = composite->a_y;
-    composite->b_width  = GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH;
-    composite->b_height = GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT;
+    composite->b_width  = GST_SWITCH_COMPOSITE_DEFAULT_WIDTH;
+    composite->b_height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
   compute_side_by_side_size:
     composite->width = composite->b_x + composite->b_width;
     composite->height = composite->a_y + composite->a_height;
@@ -363,52 +363,52 @@ gst_composite_class_init (GstCompositeClass * klass)
 
   g_object_class_install_property (object_class, PROP_A_X,
       g_param_spec_uint ("ax", "A xpos", "Channel A frame xpos",
-          0, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_X,
+          0, G_MAXINT, 0,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_Y,
       g_param_spec_uint ("ay", "A ypos", "Channel A frame ypos",
-          0, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_Y,
+          0, G_MAXINT, 0,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_WIDTH,
       g_param_spec_uint ("awidth", "A Width", "Channel A frame width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_HEIGHT,
       g_param_spec_uint ("aheight", "A Height", "Channel A frame height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_X,
       g_param_spec_uint ("bx", "B xpos", "Channel B frame xpos",
-          0, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_X,
+          0, G_MAXINT, 0,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_Y,
       g_param_spec_uint ("by", "B ypos", "Channel B frame ypos",
-          0, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_Y,
+          0, G_MAXINT, 0,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_WIDTH,
       g_param_spec_uint ("bwidth", "B Width", "Channel B frame width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_HEIGHT,
       g_param_spec_uint ("bheight", "B Height", "Channel B frame height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_WIDTH,
       g_param_spec_uint ("width", "Composite Width", "Output frame width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
 	  G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_HEIGHT,
       g_param_spec_uint ("height", "Composite Height", "Output frame height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_composite_null;

@@ -30,9 +30,7 @@
 #define INFO(S, ...) g_print (INFO_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
 #define WARN(S, ...) g_print (WARN_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
 #define ERROR(S, ...) g_print (ERROR_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
-#define LOW_RES_AW 100 /* 160 */ /* 320 */
-#define LOW_RES_AH 56  /* 120 */ /* 240 */
-#define LOW_RES_BW 100  /* 89 */
-#define LOW_RES_BH 56  /* 50 */
+#define LOW_RES_W 100 /* 160 */ /* 320 */
+#define LOW_RES_H 56  /* 120 */ /* 240 */
 #define ENABLE_LOW_RESOLUTION 1
 #endif//__LOG_UTILS_H__

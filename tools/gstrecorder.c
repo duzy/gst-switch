@@ -261,12 +261,12 @@ gst_recorder_class_init (GstRecorderClass * klass)
 
   g_object_class_install_property (object_class, PROP_WIDTH,
       g_param_spec_uint ("width", "Input Width", "Input video frame width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_HEIGHT,
       g_param_spec_uint ("height", "Input Height", "Input video frame height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->null_state = (GstWorkerNullStateFunc) gst_recorder_null;

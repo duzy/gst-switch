@@ -393,22 +393,22 @@ gst_case_class_init (GstCaseClass * klass)
 
   g_object_class_install_property (object_class, PROP_A_WIDTH,
       g_param_spec_uint ("awidth", "A Width", "Channel A width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_WIDTH,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_HEIGHT,
       g_param_spec_uint ("aheight", "A Height", "Channel A height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_A_HEIGHT,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_WIDTH,
       g_param_spec_uint ("bwidth", "B Width", "Channel B width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_WIDTH,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_HEIGHT,
       g_param_spec_uint ("bheight", "B Height", "Channel B height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_B_HEIGHT,
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;
