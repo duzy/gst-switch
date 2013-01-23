@@ -28,7 +28,9 @@
 #endif
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "gstswitchserver.h"
 #include "gstcomposite.h"
 #include "gstrecorder.h"
@@ -149,14 +151,44 @@ gst_recorder_get_write_tcp_string (GstRecorder *rec)
 }
 #endif
 
-static GString *
-gst_recorder_get_pipeline_string (GstRecorder * rec)
+static const gchar *
+gst_recorder_new_filename (GstRecorder * rec)
 {
-  GString *desc;
+  time_t t;
+  struct tm *tm;
+  gchar stamp[128];
+  const gchar *dot = NULL;
   const gchar *filename = opts.record_filename;
   if (!filename) {
     filename = "/dev/null";
   }
+
+  t = time (NULL);
+  tm = localtime (&t);
+
+  if (tm == NULL) {
+    static gint num = 0; num += 1;
+    snprintf (stamp, sizeof (stamp), "%d", num);
+  } else {
+    strftime (stamp, sizeof (stamp), "%F %H%M%S", tm);
+  }
+
+  if ((dot = g_strrstr (filename, "."))) {
+    const gchar *s = g_strndup (filename, dot-filename);
+    filename = g_strdup_printf ("%s %s%s", s, stamp, dot);
+    g_free ((gpointer) s);
+  } else {
+    filename = g_strdup_printf ("%s %s.dat", filename, stamp);
+  }
+
+  return filename;
+}
+
+static GString *
+gst_recorder_get_pipeline_string (GstRecorder * rec)
+{
+  const gchar *filename = gst_recorder_new_filename (rec);
+  GString *desc;
 
   INFO ("Recording to %s and port %d", filename, rec->sink_port);
 
@@ -175,12 +207,13 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
       "! mux. ");
   g_string_append_printf (desc, "avimux name=mux ! tee name=result ");
   g_string_append_printf (desc, "filesink name=disk_sink sync=false "
-      "location=%s ", filename);
+      "location=\"%s\" ", filename);
   g_string_append_printf (desc, "tcpserversink name=tcp_sink sync=false "
       "port=%d ", rec->sink_port);
   g_string_append_printf (desc, "result. ! queue2 ! disk_sink. ");
   g_string_append_printf (desc, "result. ! queue2 ! gdppay ! tcp_sink. ");
 
+  g_free ((gpointer) filename);
   return desc;
 }
 
@@ -233,7 +266,13 @@ gst_recorder_null (GstRecorder *rec)
 {
   GstWorker *worker = GST_WORKER (rec);
   if (!rec->deprecated) {
-    INFO ("%s restart..", worker->name);
+    GstElement *sink = gst_bin_get_by_name (GST_BIN (worker->pipeline),
+	"disk_sink");
+    const gchar *filename = gst_recorder_new_filename (rec);
+    INFO ("%s restart (%s)..", worker->name, filename);
+    g_object_set (G_OBJECT (sink), "location", filename, NULL);
+    g_object_unref (G_OBJECT (sink));
+    g_free ((gpointer) filename);
     gst_worker_restart (worker);
   }
 }

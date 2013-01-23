@@ -72,5 +72,6 @@ GVariant *gst_switch_client_get_preview_ports (GstSwitchClient * client);
 
 gboolean gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port);
 gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode);
+gboolean gst_switch_client_new_record (GstSwitchClient * client);
 
 #endif//__GST_SWITCH_CLIENT_H__by_Duzy_Chan__

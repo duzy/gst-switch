@@ -199,6 +199,18 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
   return result;
 }
 
+gboolean
+gst_switch_client_new_record (GstSwitchClient * client)
+{
+  gboolean result = FALSE;
+  GVariant *value = gst_switch_client_call_controller (client,
+      "new_record", g_variant_new ("()"), G_VARIANT_TYPE ("(b)"));
+  if (value) {
+    g_variant_get (value, "(b)", &result);
+  }
+  return result;
+}
+
 static gboolean
 gst_switch_client_method_match (const gchar *key, MethodTableEntry *entry,
     const gchar *match)

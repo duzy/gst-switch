@@ -994,6 +994,14 @@ gst_switch_server_start_audio (GstCase *cas, GstSwitchServer *srv)
 }
 
 gboolean
+gst_switch_server_new_record (GstSwitchServer * srv)
+{
+  gboolean result = FALSE;
+  gst_worker_stop (GST_WORKER (srv->recorder));
+  return result;
+}
+
+gboolean
 gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 {
   GList *item;

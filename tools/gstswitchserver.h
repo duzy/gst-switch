@@ -107,6 +107,7 @@ GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray 
 
 gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode);
 gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port);
+gboolean gst_switch_server_new_record (GstSwitchServer * srv);
 
 extern GstSwitchServerOpts opts;
 

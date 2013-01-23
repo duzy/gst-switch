@@ -66,6 +66,9 @@ static const gchar introspection_xml[] =
   "      <arg type='i' name='channel' direction='in'/>"
   "      <arg type='b' name='result' direction='out'/>"
   "    </method>"
+  "    <method name='new_record'>"
+  "      <arg type='b' name='result' direction='out'/>"
+  "    </method>"
   "    <method name='switch'>"
   "      <arg type='i' name='channel' direction='in'/>"
   "      <arg type='i' name='port' direction='in'/>"
@@ -679,6 +682,19 @@ gst_switch_controller__set_composite_mode (GstSwitchController *controller,
 }
 
 static GVariant *
+gst_switch_controller__new_record (GstSwitchController *controller,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  GVariant *result = NULL;
+  gboolean ok = FALSE;
+  if (controller->server) {
+    ok = gst_switch_server_new_record (controller->server);
+    result = g_variant_new ("(b)", ok);
+  }
+  return result;
+}
+
+static GVariant *
 gst_switch_controller__switch (GstSwitchController *controller,
     GDBusConnection *connection, GVariant *parameters)
 {
@@ -702,6 +718,7 @@ static MethodTableEntry gst_switch_controller_method_table[] = {
   { "get_audio_port",	  (MethodFunc) gst_switch_controller__get_audio_port },
   { "get_preview_ports",  (MethodFunc) gst_switch_controller__get_preview_ports },
   { "set_composite_mode", (MethodFunc) gst_switch_controller__set_composite_mode },
+  { "new_record",	  (MethodFunc) gst_switch_controller__new_record },
   { "switch",		  (MethodFunc) gst_switch_controller__switch },
   { NULL, NULL }
 };
