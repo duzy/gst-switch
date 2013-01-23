@@ -35,3 +35,4 @@
 /test-switch-srv.out
 /tests/test-switch-server
 test-server-*.log
+*.dat
