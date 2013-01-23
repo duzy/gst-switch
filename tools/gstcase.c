@@ -256,14 +256,6 @@ gst_case_get_pipeline_string (GstCase * cas)
 	"! %s name=sink2 channel=composite_%s ", sink, channel);
     g_free (convert), convert = NULL;
     break;
-    /*
-    g_string_append_printf (desc, "source. ! tee name=s ");
-    g_string_append_printf (desc, "s. ! queue2 ! "
-	"interaudiosink name=sink1 channel=branch_%d ", cas->sink_port);
-    g_string_append_printf (desc, "s. ! queue2 ! "
-	"interaudiosink name=sink2 channel=composite_audio ");
-    break;
-    */
   case GST_CASE_PREVIEW:
     if (srctype == NULL) srctype = "branch";
   case GST_CASE_INPUT_a:

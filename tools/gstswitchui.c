@@ -618,7 +618,7 @@ static void
 gst_switch_ui_next_compose_mode (GstSwitchUI *ui)
 {
   gboolean ok = FALSE;
-  if (4 < ui->compose_mode) ui->compose_mode = 0;
+  if (3 < ui->compose_mode) ui->compose_mode = 0;
   ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
       ui->compose_mode);
   INFO ("set composite mode: %d (%d)", ui->compose_mode, ok);
