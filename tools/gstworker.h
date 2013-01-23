@@ -42,6 +42,7 @@ typedef GString *(*GstWorkerGetPipelineString) (GstWorker *worker, gpointer data
 typedef GString *(*GstWorkerGetPipelineStringFunc) (GstWorker *worker);
 typedef GstElement *(*GstWorkerCreatePipelineFunc) (GstWorker *worker);
 typedef gboolean (*GstWorkerPrepareFunc) (GstWorker *worker);
+typedef gboolean (*GstWorkerMessageFunc) (GstWorker *worker, GstMessage *);
 typedef void (*GstWorkerNullStateFunc) (GstWorker *worker);
 
 struct _GstWorker
@@ -72,6 +73,8 @@ struct _GstWorkerClass
   void (*prepare_worker) (GstWorker *worker);
   void (*start_worker) (GstWorker *worker);
   void (*end_worker) (GstWorker *worker);
+
+  gboolean (*message)(GstWorker *worker, GstMessage * message);
 
   GString *(*get_pipeline_string) (GstWorker *worker);
   GstElement *(*create_pipeline) (GstWorker *worker);

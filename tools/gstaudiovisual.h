@@ -43,6 +43,7 @@ struct _GstAudioVisual
   gint port;
   gulong handle;
   gboolean active;
+  gboolean renewing;
 };
 
 struct _GstAudioVisualClass

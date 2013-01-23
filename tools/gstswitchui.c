@@ -32,7 +32,6 @@
 #include "gstswitchcontroller.h"
 #include "gstvideodisp.h"
 #include "gstaudiovisual.h"
-#include "gstaudioplay.h"
 #include "gstcase.h"
 
 #define GST_SWITCH_UI_LOCK_AUDIO(ui) (g_mutex_lock (&(ui)->audio_lock))
@@ -315,29 +314,34 @@ gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
 }
 
 static GstAudioVisual *
-gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
+gst_switch_ui_new_audio_visual_unlock (GstSwitchUI *ui, GtkWidget *view,
+    gulong handle, gint port)
 {
   gchar *name = g_strdup_printf ("visual-%d", port);
-  GdkWindow *xview = gtk_widget_get_window (view);
   GstAudioVisual *visual;
-  gboolean active = FALSE;
-  gint audio_port = 0;
 
-  if (ui->audio) {
-    GST_SWITCH_UI_LOCK_AUDIO (ui);
-    if (ui->audio) audio_port = ui->audio->port;
-    GST_SWITCH_UI_UNLOCK_AUDIO (ui);
-
-    active = (audio_port == port);
+  if (view && handle == 0) {
+    GdkWindow *xview = gtk_widget_get_window (view);
+    handle = GDK_WINDOW_XID (xview);
   }
 
   visual = GST_AUDIO_VISUAL (
       g_object_new (GST_TYPE_AUDIO_VISUAL, "name", name, "port", port,
-	  "handle", (gulong) GDK_WINDOW_XID (xview), "active", active, NULL));
-  g_object_set_data (G_OBJECT (view), "audio-visual", visual);
+	  "handle", handle, "active", (ui->audio_port == port), NULL));
   gst_worker_prepare (GST_WORKER (visual));
   gst_worker_start (GST_WORKER (visual));
   g_free (name);
+
+  return visual;
+}
+
+static GstAudioVisual *
+gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
+{
+  GstAudioVisual *visual = NULL;
+  GST_SWITCH_UI_LOCK_AUDIO (ui);
+  visual = gst_switch_ui_new_audio_visual_unlock (ui, view, 0, port);
+  GST_SWITCH_UI_UNLOCK_AUDIO (ui);
   return visual;
 }
 
@@ -350,21 +354,15 @@ gst_switch_ui_remove_preview (GstSwitchUI *ui, GstWorker *worker,
   v = gtk_container_get_children (GTK_CONTAINER (ui->preview_box));
   for (; v; v = g_list_next (v)) {
     GtkWidget *frame = GTK_WIDGET (v->data);
-    //GList *child = gtk_container_get_children (GTK_CONTAINER (frame));
-    //GtkWidget *view = GTK_WIDGET (child->data);
-    //gpointer data = g_object_get_data (G_OBJECT (view), name);
     gpointer data = g_object_get_data (G_OBJECT (frame), name);
-    if (data) {
-      if (GST_WORKER (data) == worker) {
-	if (ui->selected == frame) {
-	  GList *nxt = g_list_next (v);
-	  if (nxt == NULL) nxt = g_list_previous (v);
-	  ui->selected = nxt ? GTK_WIDGET (nxt->data) : NULL;
-	}
-	//gtk_widget_destroy (view);
-	gtk_widget_destroy (frame);
-	g_object_unref (worker);
+    if (data && GST_WORKER (data) == worker) {
+      if (ui->selected == frame) {
+	GList *nxt = g_list_next (v);
+	if (nxt == NULL) nxt = g_list_previous (v);
+	ui->selected = nxt ? GTK_WIDGET (nxt->data) : NULL;
       }
+      gtk_widget_destroy (frame);
+      g_object_unref (worker);
     }
   }
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
@@ -383,46 +381,11 @@ gst_switch_ui_end_audio_visual (GstWorker *worker, GstSwitchUI *ui)
 {
   GstAudioVisual *visual = GST_AUDIO_VISUAL (worker);
   INFO ("audio ended: %s, %d", worker->name, visual->port);
-  gst_switch_ui_remove_preview (ui, worker, "audio-visual");
-}
-
-static void
-gst_switch_ui_end_audio (GstAudioPlay *audio, GstSwitchUI *ui)
-{
-  if (audio != ui->audio) {
-    INFO ("audio %d ended", audio->port);
-    g_object_unref (audio);
-  } else if (ui->audio) {
-    /*
-    GList *v = gtk_container_get_children (GTK_CONTAINER (ui->preview_box));
-    gint audio_port = 0;
-    */
-    GST_SWITCH_UI_LOCK_AUDIO (ui);
-    //audio_port = ui->audio->port;
-    g_object_unref (ui->audio);
-    ui->audio = NULL;
-    /*
-    for (; v; v = g_list_next (v)) {
-      style = gtk_widget_get_style_context (GTK_WIDGET (v->data));
-      gtk_style_context_remove_class (style, "audio_frame");
-    }
-    */
-    GST_SWITCH_UI_UNLOCK_AUDIO (ui);
+  if (visual->renewing) {
+    g_object_unref (GST_WORKER (visual));
+  } else {
+    gst_switch_ui_remove_preview (ui, worker, "audio-visual");
   }
-}
-
-static GstAudioPlay *
-gst_switch_ui_new_audio (GstSwitchUI *ui, gint port)
-{
-  gchar *name = g_strdup_printf ("audio-%d", port);
-  GstAudioPlay *audio = GST_AUDIO_PLAY (
-      g_object_new (GST_TYPE_AUDIO_PLAY, "name", name, "port", port, NULL));
-  g_signal_connect (G_OBJECT (audio), "end-worker",
-      G_CALLBACK (gst_switch_ui_end_audio), ui);
-  gst_worker_prepare (GST_WORKER (audio));
-  gst_worker_start (GST_WORKER (audio));
-  g_free (name);
-  return audio;
 }
 
 static void
@@ -441,22 +404,42 @@ gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
   GST_SWITCH_UI_UNLOCK_COMPOSE (ui);
 }
 
+static GstAudioVisual *
+gst_switch_ui_renew_audio_visual (GstSwitchUI *ui, GtkWidget *frame,
+    GstAudioVisual *visual)
+{
+  gulong handle = visual->handle;
+  gint port = visual->port;
+
+  visual->renewing = TRUE;
+  gst_worker_stop (GST_WORKER (visual));
+
+  visual = gst_switch_ui_new_audio_visual_unlock (ui,
+      NULL, handle, port);
+
+  g_object_set_data (G_OBJECT (frame), "audio-visual", visual);
+  return visual;
+}
+
 static void
 gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
 {
-  if (!port) {
-    ERROR ("Invalid audio port");
-    return;
-  }
+  GList *v = NULL;
 
   GST_SWITCH_UI_LOCK_AUDIO (ui);
-  if (ui->audio) {
-    gst_worker_stop (GST_WORKER (ui->audio));
+  ui->audio_port = port;
+
+  v = gtk_container_get_children (GTK_CONTAINER (ui->preview_box));
+  for (; v; v = g_list_next (v)) {
+    GtkWidget *frame = GTK_WIDGET (v->data);
+    gpointer data = g_object_get_data (G_OBJECT (frame), "audio-visual");
+    if (data) {
+      GstAudioVisual *visual = GST_AUDIO_VISUAL (data);
+      if ((ui->audio_port == visual->port && !visual->active) ||
+	  (/*ui->audio_port != visual->port &&*/  visual->active))
+	visual = gst_switch_ui_renew_audio_visual (ui, frame, visual);
+    }
   }
-
-  INFO ("active audio: %d", port);
-
-  ui->audio = gst_switch_ui_new_audio (ui, port);
   GST_SWITCH_UI_UNLOCK_AUDIO (ui);
 }
 

@@ -39,7 +39,6 @@
 typedef struct _GstSwitchUI GstSwitchUI;
 typedef struct _GstSwitchUIClass GstSwitchUIClass;
 typedef struct _GstVideoDisp GstVideoDisp;
-typedef struct _GstAudioPlay GstAudioPlay;
 
 struct _GstSwitchUI
 {
@@ -57,7 +56,7 @@ struct _GstSwitchUI
   GtkWidget *selected;
 
   GMutex audio_lock;
-  GstAudioPlay *audio;
+  gint audio_port;
   GMutex compose_lock;
   GstVideoDisp *compose;
 

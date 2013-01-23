@@ -353,9 +353,10 @@ gst_worker_handle_pipeline_state_changed (GstWorker *worker,
 }
 
 static gboolean
-gst_worker_handle_message (GstBus * bus, GstMessage * message, gpointer data)
+gst_worker_message (GstBus * bus, GstMessage * message, gpointer data)
 {
   GstWorker *worker = GST_WORKER (data);
+  GstWorkerClass *klass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
 
   switch (GST_MESSAGE_TYPE (message)) {
     case GST_MESSAGE_EOS:
@@ -365,7 +366,6 @@ gst_worker_handle_message (GstBus * bus, GstMessage * message, gpointer data)
     {
       GError *error = NULL;
       gchar *debug;
-
       gst_message_parse_error (message, &error, &debug);
       gst_worker_handle_error (worker, error, debug);
     } break;
@@ -453,7 +453,7 @@ gst_worker_handle_message (GstBus * bus, GstMessage * message, gpointer data)
       break;
   }
 
-  return TRUE;
+  return klass->message ? klass->message (worker, message) : TRUE;
 }
 
 static gboolean
@@ -486,7 +486,7 @@ gst_worker_prepare (GstWorker *worker)
   gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
 
   worker->bus = gst_pipeline_get_bus (GST_PIPELINE (worker->pipeline));
-  gst_bus_add_watch (worker->bus, gst_worker_handle_message, worker);
+  gst_bus_add_watch (worker->bus, gst_worker_message, worker);
 
   worker->source = gst_bin_get_by_name (GST_BIN (worker->pipeline), "source");
   worker->sink = gst_bin_get_by_name (GST_BIN (worker->pipeline), "sink");

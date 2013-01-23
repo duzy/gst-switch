@@ -30,6 +30,7 @@
 #include "gstaudiovisual.h"
 #include "gstswitchserver.h"
 #include <gst/video/videooverlay.h>
+#include <math.h>
 
 #define parent_class gst_audio_visual_parent_class
 
@@ -46,107 +47,169 @@ extern gboolean verbose;
 G_DEFINE_TYPE (GstAudioVisual, gst_audio_visual, GST_TYPE_WORKER);
 
 static void
-gst_audio_visual_init (GstAudioVisual *disp)
+gst_audio_visual_init (GstAudioVisual *visual)
 {
+  visual->port = 0;
+  visual->handle = 0;
+  visual->active = FALSE;
+  visual->renewing = FALSE;
+
   INFO ("Audio visual initialized");
 }
 
 static void
-gst_audio_visual_finalize (GstAudioVisual *disp)
+gst_audio_visual_finalize (GstAudioVisual *visual)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
-    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (disp));
+    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (visual));
 
   INFO ("Audio visual finalized");
 }
 
 static void
-gst_audio_visual_set_property (GstAudioVisual *disp, guint property_id,
+gst_audio_visual_set_property (GstAudioVisual *visual, guint property_id,
     const GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   case PROP_PORT:
-    disp->port = g_value_get_uint (value);
+    visual->port = g_value_get_uint (value);
     break;
   case PROP_HANDLE:
-    disp->handle = g_value_get_ulong (value);
+    visual->handle = g_value_get_ulong (value);
     break;
   case PROP_ACTIVE:
-    disp->active = g_value_get_boolean (value);
+    visual->active = g_value_get_boolean (value);
     break;
   default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (visual), property_id, pspec);
     break;
   }
 }
 
 static void
-gst_audio_visual_get_property (GstAudioVisual *disp, guint property_id,
+gst_audio_visual_get_property (GstAudioVisual *visual, guint property_id,
     GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   case PROP_PORT:
-    g_value_set_uint (value, disp->port);
+    g_value_set_uint (value, visual->port);
     break;
   case PROP_HANDLE:
-    g_value_set_ulong (value, disp->handle);
+    g_value_set_ulong (value, visual->handle);
     break;
   case PROP_ACTIVE:
-    g_value_set_boolean (value, disp->active);
+    g_value_set_boolean (value, visual->active);
     break;
   default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
+    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (visual), property_id, pspec);
     break;
   }
 }
 
 static GString *
-gst_audio_visual_get_pipeline_string (GstAudioVisual *disp)
+gst_audio_visual_get_pipeline_string (GstAudioVisual *visual)
 {
   GString *desc;
 
-  INFO ("display audio %d", disp->port);
+  INFO ("display audio %d", visual->port);
 
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "tcpclientsrc name=source "
-      "port=%d ", disp->port);
-  g_string_append_printf (desc, "! gdpdepay ! faad ");
-  g_string_append_printf (desc, "! goom2k1 ");
-  //g_string_append_printf (desc, "! monoscope ");
-  if (disp->active) {
-    INFO ("active audio: %d", disp->port);
-    /*
-    g_string_append_printf (desc, "! videobox autocrop=true "
-	"fill=red left=20 top=20 right=20 bottom=20 ! "
-	"video/x-raw,width=100,height=100 "
-	"");
-    */
+      "port=%d ", visual->port);
+  g_string_append_printf (desc, "! gdpdepay ! faad ! tee name=a ");
+
+  if (visual->active) {
+    g_string_append_printf (desc, "a. ! queue2 ! audioconvert "
+	"! level name=level message=true "
+	"! alsasink name=play ");
+  }
+
+  g_string_append_printf (desc, "a. ! queue2 ! goom2k1 ");
+  if (visual->active) {
     g_string_append_printf (desc, "! textoverlay text=\"active\" "
 	"font-desc=\"Sans 50\" "
 	"shaded-background=true "
 	"auto-resize=true ");
   }
   g_string_append_printf (desc, "! videoconvert ");
-  g_string_append_printf (desc, "! xvimagesink name=sink ");
+  g_string_append_printf (desc, "! xvimagesink name=visual ");
 
   return desc;
 }
 
-static void
-gst_audio_visual_null (GstAudioVisual *disp)
+static gboolean
+gst_audio_visual_prepare (GstAudioVisual *visual)
 {
-  //INFO ();
+  GstWorker *worker = GST_WORKER (visual);
+  GstElement *e = gst_bin_get_by_name (GST_BIN (worker->pipeline), "visual");
+  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (e),
+      visual->handle);
+
+  //INFO ("prepared audio visual display on %ld", visual->handle);
+  return TRUE;
 }
 
 static gboolean
-gst_audio_visual_prepare (GstAudioVisual *disp)
+gst_audio_visual_message (GstAudioVisual *visual, GstMessage * message)
 {
-  GstWorker *worker = GST_WORKER (disp);
-  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (worker->sink),
-      disp->handle);
+  //INFO ("message: %s", GST_MESSAGE_TYPE_NAME (message));
+  if (message->type == GST_MESSAGE_ELEMENT) {
+    const GstStructure *s = gst_message_get_structure (message);
+    const gchar *name = gst_structure_get_name (s);
+    if (g_strcmp0 (name, "level") == 0) {
+      gint channels;
+      GstClockTime endtime;
+      gdouble rms_dB, peak_dB, decay_dB;
+      gdouble rms;
+      const GValue *list_rms, *list_peak, *list_decay;
+      const GValue *value;
 
-  INFO ("prepared audio visual display on %ld", disp->handle);
+      gint i;
+
+      if (!gst_structure_get_clock_time (s, "endtime", &endtime))
+        g_warning ("Could not parse endtime");
+
+      /* we can get the number of channels as the length of any of the value
+       * lists */
+      list_rms = gst_structure_get_value (s, "rms");
+      list_peak = gst_structure_get_value (s, "peak");
+      list_decay = gst_structure_get_value (s, "decay");
+
+      if (GST_VALUE_HOLDS_LIST (list_rms)) {
+	channels = gst_value_list_get_size (list_rms);
+
+	INFO ("endtime: %" GST_TIME_FORMAT ", channels: %d",
+	    GST_TIME_ARGS (endtime), channels);
+
+	for (i = 0; i < channels; ++i) {
+	  value = gst_value_list_get_value (list_rms, i);
+	  rms_dB = g_value_get_double (value);
+
+	  value = gst_value_list_get_value (list_peak, i);
+	  peak_dB = g_value_get_double (value);
+
+	  value = gst_value_list_get_value (list_decay, i);
+	  decay_dB = g_value_get_double (value);
+
+	  /* converting from dB to normal gives us a value between 0.0 and 1.0
+	   */
+	  rms = pow (10, rms_dB / 20);
+
+	  INFO (" channel: %d, RMS=%f dB, peak=%f dB, decay=%f dB, "
+	      "normalized-RMS=%f", i, rms_dB, peak_dB, decay_dB, rms);
+	}
+      } else if (G_VALUE_HOLDS (list_rms, G_TYPE_VALUE_ARRAY)) {
+	GValueArray *va = (GValueArray *) g_value_get_boxed (list_rms);
+	channels = va->n_values;
+	INFO ("endtime: %" GST_TIME_FORMAT ", channels: %d",
+	    GST_TIME_ARGS (endtime), channels);
+      } else {
+	INFO ("endtime: %" GST_TIME_FORMAT ", (%s) ",
+	    GST_TIME_ARGS (endtime), G_VALUE_TYPE_NAME (list_rms));
+      }
+    }
+  }
   return TRUE;
 }
 
@@ -174,8 +237,8 @@ gst_audio_visual_class_init (GstAudioVisualClass *klass)
       g_param_spec_boolean ("active", "Active", "Activated audio",
           FALSE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_audio_visual_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_visual_prepare;
+  worker_class->message = (GstWorkerMessageFunc) gst_audio_visual_message;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_audio_visual_get_pipeline_string;
 }
