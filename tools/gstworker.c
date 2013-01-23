@@ -317,10 +317,10 @@ gst_worker_handle_ready_to_null (GstWorker *worker)
   GstWorkerClass *workerclass = GST_WORKER_CLASS (
       G_OBJECT_GET_CLASS (worker));
 
-  g_signal_emit (worker, gst_worker_signals[SIGNAL_END_WORKER], 0);
-
   if (workerclass->null_state)
     (*workerclass->null_state) (worker);
+
+  g_signal_emit (worker, gst_worker_signals[SIGNAL_END_WORKER], 0);
 }
 
 static gboolean

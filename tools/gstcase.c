@@ -203,6 +203,7 @@ gst_case_get_pipeline_string (GstCase * cas)
   gchar *channel = NULL;
   gchar *convert = NULL;
   gchar *srctype = NULL;
+  gchar *sink = NULL;
 
   desc = g_string_new ("");
 
@@ -238,41 +239,31 @@ gst_case_get_pipeline_string (GstCase * cas)
 
   switch (cas->type) {
   case GST_CASE_COMPOSITE_A:
-    if (channel == NULL && convert == NULL) {
-      channel = "a";
-      convert = g_strdup_printf ("identity "
-	  "! videoscale ! video/x-raw,width=%d,height=%d "
-	  , cas->a_width, cas->a_height);
-    }
+    if (channel == NULL) channel = "a";
   case GST_CASE_COMPOSITE_B:
-    if (channel == NULL && convert == NULL) {
-      channel = "b";
-      convert = g_strdup_printf ("identity "
-	  "! videoscale ! video/x-raw,width=%d,height=%d "
-	  , cas->b_width, cas->b_height);
-    }
-    g_string_append_printf (desc, "intervideosink name=sink1 "
-	"channel=branch_%d ", cas->sink_port);
-    g_string_append_printf (desc, "intervideosink name=sink2 "
-	"channel=composite_%s ", channel);
-    g_string_append_printf (desc, "source. ! video/x-raw,width=%d,height=%d "
-	"! tee name=vs ", cas->a_width, cas->a_height);
-    g_string_append_printf (desc, "vs. ! queue2 ! videoscale "
-	"! video/x-raw,width=%d,height=%d ! sink1. "
-	, cas->a_width, cas->a_height);
-    g_string_append_printf (desc, "vs. ! queue2 ! %s ! sink2. ", convert);
-    break;
+    if (channel == NULL) channel = "b";
+    sink = "intervideosink";
+    convert = g_strdup_printf ("video/x-raw,width=%d,height=%d",
+	cas->a_width, cas->a_height);
   case GST_CASE_COMPOSITE_a:
-    g_string_append_printf (desc, "source. ! tee name=as ");
-    g_string_append_printf (desc, "as. ! queue2 ! "
-	"interaudiosink name=sink1 channel=branch_%d ", cas->sink_port);
-    g_string_append_printf (desc, "as. ! queue2 ! "
-	"interaudiosink name=sink2 channel=composite_audio ");
-    /*
-    g_string_append_printf (desc, "as. ! queue2 ! "
-    	"interaudiosink name=sink3 channel=audio_out ");
-    */
+    if (channel == NULL) channel = "audio";
+    if (sink == NULL) sink = "interaudiosink";
+    if (convert == NULL) convert = g_strdup ("identity");
+    g_string_append_printf (desc, "source. ! %s ! tee name=s ", convert);
+    g_string_append_printf (desc, "s. ! queue2 "
+	"! %s name=sink1 channel=branch_%d ", sink, cas->sink_port);
+    g_string_append_printf (desc, "s. ! queue2 "
+	"! %s name=sink2 channel=composite_%s ", sink, channel);
+    g_free (convert), convert = NULL;
     break;
+    /*
+    g_string_append_printf (desc, "source. ! tee name=s ");
+    g_string_append_printf (desc, "s. ! queue2 ! "
+	"interaudiosink name=sink1 channel=branch_%d ", cas->sink_port);
+    g_string_append_printf (desc, "s. ! queue2 ! "
+	"interaudiosink name=sink2 channel=composite_audio ");
+    break;
+    */
   case GST_CASE_PREVIEW:
     if (srctype == NULL) srctype = "branch";
   case GST_CASE_INPUT_a:
@@ -317,9 +308,6 @@ gst_case_get_pipeline_string (GstCase * cas)
     ERROR ("unknown case (%d)", cas->type);
     break;
   }
-
-  g_free (convert);
-  convert = NULL;
 
   return desc;
 }

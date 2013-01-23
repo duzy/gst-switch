@@ -626,6 +626,15 @@ gst_switch_ui_next_compose_mode (GstSwitchUI *ui)
 }
 
 static void
+gst_switch_ui_next_compose_off (GstSwitchUI *ui)
+{
+  gboolean ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
+      0);
+  INFO ("set composite off (%d)", ok);
+  if (ok && ui->compose_mode == 0) ui->compose_mode = 1;
+}
+
+static void
 gst_switch_ui_new_record (GstSwitchUI *ui)
 {
   gboolean ok = gst_switch_client_new_record (GST_SWITCH_CLIENT (ui));
@@ -652,6 +661,9 @@ gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
       break;
     case GDK_KEY_Tab:
       gst_switch_ui_next_compose_mode (ui);
+      break;
+    case GDK_KEY_Escape:
+      gst_switch_ui_next_compose_off (ui);
       break;
     case GDK_KEY_R:
     case GDK_KEY_r:

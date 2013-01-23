@@ -160,7 +160,7 @@ gst_recorder_new_filename (GstRecorder * rec)
   const gchar *dot = NULL;
   const gchar *filename = opts.record_filename;
   if (!filename) {
-    filename = "/dev/null";
+    return NULL;
   }
 
   t = time (NULL);
@@ -206,14 +206,15 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
       "! queue2 ! faac "
       "! mux. ");
   g_string_append_printf (desc, "avimux name=mux ! tee name=result ");
-  g_string_append_printf (desc, "filesink name=disk_sink sync=false "
-      "location=\"%s\" ", filename);
+  if (filename) {
+    g_string_append_printf (desc, "filesink name=disk_sink sync=false "
+	"location=\"%s\" ", filename);
+    g_string_append_printf (desc, "result. ! queue2 ! disk_sink. ");
+    g_free ((gpointer) filename);
+  }
   g_string_append_printf (desc, "tcpserversink name=tcp_sink sync=false "
       "port=%d ", rec->sink_port);
-  g_string_append_printf (desc, "result. ! queue2 ! disk_sink. ");
   g_string_append_printf (desc, "result. ! queue2 ! gdppay ! tcp_sink. ");
-
-  g_free ((gpointer) filename);
   return desc;
 }
 
@@ -268,11 +269,15 @@ gst_recorder_null (GstRecorder *rec)
   if (!rec->deprecated) {
     GstElement *sink = gst_bin_get_by_name (GST_BIN (worker->pipeline),
 	"disk_sink");
-    const gchar *filename = gst_recorder_new_filename (rec);
-    INFO ("%s restart (%s)..", worker->name, filename);
-    g_object_set (G_OBJECT (sink), "location", filename, NULL);
-    g_object_unref (G_OBJECT (sink));
-    g_free ((gpointer) filename);
+    if (sink) {
+      const gchar *filename = gst_recorder_new_filename (rec);
+      if (filename) {
+	INFO ("%s restart (%s)..", worker->name, filename);
+	g_object_set (G_OBJECT (sink), "location", filename, NULL);
+	g_object_unref (G_OBJECT (sink));
+	g_free ((gpointer) filename);
+      }
+    }
     gst_worker_restart (worker);
   }
 }

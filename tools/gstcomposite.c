@@ -125,6 +125,10 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   default:
     break;
   }
+  INFO ("new composite %dx%d (%d, %dx%d, %dx%d)",
+      composite->width, composite->height, mode,
+      composite->a_width, composite->a_height,
+      composite->b_width, composite->b_height);
 }
 
 static void
@@ -235,9 +239,8 @@ gst_composite_get_pipeline_string_w (GstComposite * composite)
   g_string_append_printf (desc, "intervideosrc name=source_a "
       "channel=composite_a ");
   if (composite->mode == COMPOSE_MODE_0) {
-    g_string_append_printf (desc, "identity name=compose ");
     g_string_append_printf (desc, "source_a. "
-	"! video/x-raw,width=%d,height=%d ! queue2 ! compose. ",
+	"! video/x-raw,width=%d,height=%d ! queue2 ! identity name=compose ",
 	composite->a_width, composite->a_height);
   } else {
     g_string_append_printf (desc, "intervideosrc name=source_b "
@@ -251,10 +254,18 @@ gst_composite_get_pipeline_string_w (GstComposite * composite)
 	"sink_1::zorder=1 ",
 	composite->a_x, composite->a_y,
 	composite->b_x, composite->b_y);
-    g_string_append_printf (desc, "source_b. ! video/x-raw,width=%d,height=%d "
-	"! queue2 ! compose.sink_1 ", composite->b_width, composite->b_height);
-    g_string_append_printf (desc, "source_a. ! video/x-raw,width=%d,height=%d "
-	"! queue2 ! compose.sink_0 ", composite->a_width, composite->a_height);
+    g_string_append_printf (desc,"source_b.!video/x-raw,width=%d,height=%d ",
+	composite->a_width, composite->a_height);
+    if (composite->a_width  != composite->b_width ||
+	composite->a_height != composite->b_height) {
+      g_string_append_printf (desc, "! videoscale "
+	  "! video/x-raw,width=%d,height=%d ",
+	  composite->b_width, composite->b_height);
+    }
+    g_string_append_printf (desc, "! queue2 ! compose.sink_1 ");
+    g_string_append_printf (desc, "source_a. "
+	"! video/x-raw,width=%d,height=%d ! queue2 ! compose.sink_0 ",
+	composite->a_width, composite->a_height);
   }
   g_string_append_printf (desc, "compose. ! video/x-raw,width=%d,height=%d "
       "! tee name=result ", composite->width, composite->height);

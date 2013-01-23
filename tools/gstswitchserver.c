@@ -321,14 +321,14 @@ gst_switch_server_end_composite (GstComposite *composite,
     g_object_unref (composite);
 
     INFO ("composite %p deprecated", composite);
-
-    if (composite != srv->composite) {
-      return;
-    }
-
     INFO ("new composite mode %d", mode);
 
     GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+    if (composite != srv->composite) {
+      GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
+      return;
+    }
+
     srv->composite = NULL;
 
     if (mode != srv->composite_out->mode) {
@@ -994,9 +994,8 @@ gst_switch_server_start_audio (GstCase *cas, GstSwitchServer *srv)
 gboolean
 gst_switch_server_new_record (GstSwitchServer * srv)
 {
-  gboolean result = FALSE;
   gst_worker_stop (GST_WORKER (srv->recorder));
-  return result;
+  return TRUE;
 }
 
 gboolean
