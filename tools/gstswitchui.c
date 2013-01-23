@@ -238,11 +238,13 @@ gst_switch_ui_finalize (GstSwitchUI * ui)
 static void
 gst_switch_ui_on_controller_closed (GstSwitchUI * ui, GError *error)
 {
+#if 0
   GtkWidget * msg = gtk_message_dialog_new (GTK_WINDOW (ui->window),
       GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
       "Switch server closed.\n"
       "%s", error->message);
   gtk_widget_show_now (msg);
+#endif
   gtk_main_quit ();
 }
 
@@ -616,13 +618,11 @@ static void
 gst_switch_ui_next_compose_mode (GstSwitchUI *ui)
 {
   gboolean ok = FALSE;
-  ui->compose_mode += 1;
-  if (3 < ui->compose_mode) {
-    ui->compose_mode = 1;
-  }
+  if (4 < ui->compose_mode) ui->compose_mode = 0;
   ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
       ui->compose_mode);
   INFO ("set composite mode: %d (%d)", ui->compose_mode, ok);
+  if (ok) ui->compose_mode += 1;
 }
 
 static void

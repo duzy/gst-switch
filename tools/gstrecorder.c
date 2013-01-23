@@ -289,7 +289,7 @@ gst_recorder_class_init (GstRecorderClass * klass)
 
   g_object_class_install_property (object_class, PROP_MODE,
       g_param_spec_uint ("mode", "Mode", "Composite Mode",
-          COMPOSE_MODE_0, COMPOSE_MODE_2, COMPOSE_MODE_0,
+          COMPOSE_MODE_0, COMPOSE_MODE__LAST, COMPOSE_MODE_0,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_PORT,

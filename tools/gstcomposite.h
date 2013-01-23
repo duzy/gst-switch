@@ -50,9 +50,11 @@ typedef enum {
 } GstCompositeType;
 
 typedef enum {
-  COMPOSE_MODE_0,
-  COMPOSE_MODE_1,
-  COMPOSE_MODE_2,
+  COMPOSE_MODE_0, /* none */
+  COMPOSE_MODE_1, /* picture-in-picture */
+  COMPOSE_MODE_2, /* side-by-side (preview) */
+  COMPOSE_MODE_3, /* side-by-side (equal) */
+  COMPOSE_MODE__LAST
 } GstCompositeMode;
 
 typedef struct _GstComposite GstComposite;

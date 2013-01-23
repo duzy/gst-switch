@@ -91,6 +91,14 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   composite->a_height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
   switch ((composite->mode = mode)) {
   case COMPOSE_MODE_0:
+    composite->b_x = 0;
+    composite->b_y = 0;
+    composite->b_width  = 0;
+    composite->b_height = 0;
+    composite->width = composite->a_x + composite->a_width;
+    composite->height = composite->a_y + composite->a_height;
+    break;
+  case COMPOSE_MODE_1:
     composite->b_x = (guint) ((double) composite->a_width * 0.08 + 0.5);
     composite->b_y = (guint) ((double) composite->a_height * 0.08 + 0.5);
     composite->b_width  = (guint) ((double) composite->a_width * 0.3 + 0.5);
@@ -98,13 +106,13 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
     composite->width = composite->a_x + composite->a_width;
     composite->height = composite->a_y + composite->a_height;
     break;
-  case COMPOSE_MODE_1:
+  case COMPOSE_MODE_2:
     composite->b_x = composite->a_x + composite->a_width + 1;
     composite->b_y = composite->a_y;
     composite->b_width  = (guint) ((double) composite->a_width * 0.3 + 0.5);
     composite->b_height = (guint) ((double) composite->a_height * 0.3 + 0.5);
     goto compute_side_by_side_size;
-  case COMPOSE_MODE_2:
+  case COMPOSE_MODE_3:
     composite->b_x = composite->a_x + composite->a_width + 1;
     composite->b_y = composite->a_y;
     composite->b_width  = GST_SWITCH_COMPOSITE_DEFAULT_WIDTH;
@@ -114,6 +122,7 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
     composite->height = composite->a_y + composite->a_height;
     if (composite->height < (h = composite->b_y + composite->b_height))
       composite->height = h;
+  default:
     break;
   }
 }
@@ -225,27 +234,30 @@ gst_composite_get_pipeline_string_w (GstComposite * composite)
 
   g_string_append_printf (desc, "intervideosrc name=source_a "
       "channel=composite_a ");
-  g_string_append_printf (desc, "intervideosrc name=source_b "
-      "channel=composite_b ");
-  g_string_append_printf (desc, "videomixer name=compose "
-      "sink_0::xpos=%d "
-      "sink_0::ypos=%d "
-      "sink_0::zorder=0 "
-      "sink_1::xpos=%d "
-      "sink_1::ypos=%d "
-      "sink_1::zorder=1 ",
-      composite->a_x, composite->a_y,
-      composite->b_x, composite->b_y);
-  g_string_append_printf (desc, "source_b. ! video/x-raw,width=%d,height=%d "
-      "! queue2 ! compose.sink_1 ", composite->b_width, composite->b_height);
-  g_string_append_printf (desc, "source_a. ! video/x-raw,width=%d,height=%d "
-      "! queue2 ! compose.sink_0 ", composite->a_width, composite->a_height);
-#if 1
+  if (composite->mode == COMPOSE_MODE_0) {
+    g_string_append_printf (desc, "identity name=compose ");
+    g_string_append_printf (desc, "source_a. "
+	"! video/x-raw,width=%d,height=%d ! queue2 ! compose. ",
+	composite->a_width, composite->a_height);
+  } else {
+    g_string_append_printf (desc, "intervideosrc name=source_b "
+	"channel=composite_b ");
+    g_string_append_printf (desc, "videomixer name=compose "
+	"sink_0::xpos=%d "
+	"sink_0::ypos=%d "
+	"sink_0::zorder=0 "
+	"sink_1::xpos=%d "
+	"sink_1::ypos=%d "
+	"sink_1::zorder=1 ",
+	composite->a_x, composite->a_y,
+	composite->b_x, composite->b_y);
+    g_string_append_printf (desc, "source_b. ! video/x-raw,width=%d,height=%d "
+	"! queue2 ! compose.sink_1 ", composite->b_width, composite->b_height);
+    g_string_append_printf (desc, "source_a. ! video/x-raw,width=%d,height=%d "
+	"! queue2 ! compose.sink_0 ", composite->a_width, composite->a_height);
+  }
   g_string_append_printf (desc, "compose. ! video/x-raw,width=%d,height=%d "
       "! tee name=result ", composite->width, composite->height);
-#else
-  g_string_append_printf (desc, "compose. ! tee name=result ");
-#endif
   g_string_append_printf (desc, "result. ! queue2 ! out. ");
   g_string_append_printf (desc, "intervideosink name=out "
       "channel=composite_out ");
@@ -352,7 +364,7 @@ gst_composite_class_init (GstCompositeClass * klass)
 
   g_object_class_install_property (object_class, PROP_MODE,
       g_param_spec_uint ("mode", "Mode", "Composite Mode",
-          COMPOSE_MODE_0, COMPOSE_MODE_2, DEFAULT_COMPOSE_MODE,
+          COMPOSE_MODE_0, COMPOSE_MODE__LAST, DEFAULT_COMPOSE_MODE,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_PORT,

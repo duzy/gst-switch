@@ -965,8 +965,6 @@ gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
   GstComposite *composite;
   gboolean result = FALSE;
 
-  mode -= 1;
-
   INFO ("set composite mode: %d", mode);
 
   GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
