@@ -39,6 +39,7 @@
 typedef struct _GstSwitchUI GstSwitchUI;
 typedef struct _GstSwitchUIClass GstSwitchUIClass;
 typedef struct _GstVideoDisp GstVideoDisp;
+typedef struct _GstAudioVisual GstAudioVisual;
 
 struct _GstSwitchUI
 {
@@ -51,16 +52,21 @@ struct _GstSwitchUI
   GtkWidget *window;
   GtkWidget *compose_view;
   GtkWidget *preview_box;
+  GtkWidget *status;
 
   GMutex select_lock;
   GtkWidget *selected;
 
   GMutex audio_lock;
   gint audio_port;
+  GstAudioVisual *audio;
+  GstClockTime audio_endtime;
+  gdouble audio_value;
   GMutex compose_lock;
   GstVideoDisp *compose;
 
   gint compose_mode;
+  gint timer;
 };
 
 struct _GstSwitchUIClass

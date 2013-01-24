@@ -44,6 +44,11 @@ struct _GstAudioVisual
   gulong handle;
   gboolean active;
   gboolean renewing;
+
+  GMutex endtime_lock;
+  GstClockTime endtime;
+  GMutex value_lock;
+  gdouble value;
 };
 
 struct _GstAudioVisualClass
@@ -52,5 +57,8 @@ struct _GstAudioVisualClass
 };
 
 GType gst_audio_visual_get_type (void);
+
+GstClockTime gst_audio_visual_get_endtime (GstAudioVisual *visual);
+gdouble gst_audio_visual_get_value (GstAudioVisual *visual);
 
 #endif//__GST_AUDIO_VISUAL_H__by_Duzy_Chan__

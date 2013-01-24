@@ -53,6 +53,10 @@ gst_audio_visual_init (GstAudioVisual *visual)
   visual->handle = 0;
   visual->active = FALSE;
   visual->renewing = FALSE;
+  visual->endtime = 0;
+
+  g_mutex_init (&visual->endtime_lock);
+  g_mutex_init (&visual->value_lock);
 
   INFO ("Audio visual initialized");
 }
@@ -60,6 +64,9 @@ gst_audio_visual_init (GstAudioVisual *visual)
 static void
 gst_audio_visual_finalize (GstAudioVisual *visual)
 {
+  g_mutex_clear (&visual->endtime_lock);
+  g_mutex_clear (&visual->value_lock);
+
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (visual));
 
@@ -104,6 +111,26 @@ gst_audio_visual_get_property (GstAudioVisual *visual, guint property_id,
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (visual), property_id, pspec);
     break;
   }
+}
+
+GstClockTime
+gst_audio_visual_get_endtime (GstAudioVisual *visual)
+{
+  GstClockTime endtime;
+  g_mutex_lock (&visual->endtime_lock);
+  endtime = visual->endtime;
+  g_mutex_unlock (&visual->endtime_lock);
+  return endtime;
+}
+
+gdouble
+gst_audio_visual_get_value (GstAudioVisual *visual)
+{
+  gdouble value;
+  g_mutex_lock (&visual->value_lock);
+  value = visual->value;
+  g_mutex_unlock (&visual->value_lock);
+  return value;
 }
 
 static GString *
@@ -169,6 +196,11 @@ gst_audio_visual_message (GstAudioVisual *visual, GstMessage * message)
 
       if (!gst_structure_get_clock_time (s, "endtime", &endtime))
         g_warning ("Could not parse endtime");
+      else {
+	g_mutex_lock (&visual->endtime_lock);
+	visual->endtime = endtime;
+	g_mutex_unlock (&visual->endtime_lock);
+      }
 
       /* we can get the number of channels as the length of any of the value
        * lists */
@@ -201,9 +233,27 @@ gst_audio_visual_message (GstAudioVisual *visual, GstMessage * message)
 	}
       } else if (G_VALUE_HOLDS (list_rms, G_TYPE_VALUE_ARRAY)) {
 	GValueArray *va = (GValueArray *) g_value_get_boxed (list_rms);
+	gdouble v = 0.0;
 	channels = va->n_values;
+	for (i = 0; i < channels; ++i) {
+	  value = g_value_array_get_nth (va, i);
+	  rms_dB = g_value_get_double (value);
+
+	  /* converting from dB to normal gives us a value between 0.0 and 1.0
+	   */
+	  rms = pow (10, rms_dB / 20);
+
+	  v += rms;
+	}
+
+	g_mutex_lock (&visual->value_lock);
+	visual->value = v / (gdouble) channels;
+	g_mutex_unlock (&visual->value_lock);
+
+	/*
 	INFO ("endtime: %" GST_TIME_FORMAT ", channels: %d",
 	    GST_TIME_ARGS (endtime), channels);
+	*/
       } else {
 	INFO ("endtime: %" GST_TIME_FORMAT ", (%s) ",
 	    GST_TIME_ARGS (endtime), G_VALUE_TYPE_NAME (list_rms));

@@ -143,7 +143,7 @@ static gboolean gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event,
 static void
 gst_switch_ui_init (GstSwitchUI * ui)
 {
-  GtkWidget *main_box;
+  GtkWidget *main_box, *right_box;
   GtkWidget *scrollwin;
   GdkDisplay *display;
   GdkScreen *screen;
@@ -169,6 +169,10 @@ gst_switch_ui_init (GstSwitchUI * ui)
       G_CALLBACK (gst_switch_ui_key_event), ui);
 
   main_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+  right_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+  //gtk_widget_set_hexpand (right_box, TRUE);
+  //gtk_widget_set_vexpand (right_box, TRUE);
+
   ui->preview_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
   gtk_widget_set_name (ui->preview_box, "previews");
   gtk_widget_set_size_request (ui->preview_box, 120, -1);
@@ -187,6 +191,11 @@ gst_switch_ui_init (GstSwitchUI * ui)
       //| GDK_POINTER_MOTION_HINT_MASK
       );
 
+  ui->status = gtk_label_new (NULL);
+  gtk_widget_set_hexpand (ui->status, TRUE);
+  gtk_widget_set_size_request (ui->status, -1, 20);
+  gtk_misc_set_alignment (GTK_MISC (ui->status), 1.0, 0);
+
   scrollwin = gtk_scrolled_window_new (NULL, NULL);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollwin),
       GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -195,8 +204,10 @@ gst_switch_ui_init (GstSwitchUI * ui)
   gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollwin),
       ui->preview_box);
 
-  gtk_container_add (GTK_CONTAINER (main_box), scrollwin);
-  gtk_container_add (GTK_CONTAINER (main_box), ui->compose_view);
+  gtk_box_pack_start (GTK_BOX (right_box), ui->compose_view, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (right_box), ui->status, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (main_box), scrollwin, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (main_box), right_box, TRUE, TRUE, 0);
   gtk_container_add (GTK_CONTAINER (ui->window), main_box);
   gtk_container_set_border_width (GTK_CONTAINER (ui->window), 5);
 
@@ -283,9 +294,70 @@ gst_switch_ui_prepare_videos (GstSwitchUI * ui)
 }
 
 static void
+gst_switch_ui_warn_stucked (GstSwitchUI * ui, GstClockTime diff)
+{
+  const gchar *s = g_strdup_printf ("audio stucked at %ld (%f)",
+      diff/GST_MSECOND, ui->audio_value);
+
+  //INFO ("stucked: %ld (%f)", diff/GST_MSECOND, ui->audio_value);
+
+  gtk_label_set_text (GTK_LABEL (ui->status), s);
+  g_free ((gpointer) s);
+}
+
+static void
+gst_switch_ui_warn_silent (GstSwitchUI * ui, GstClockTime diff)
+{
+  const gchar *s = g_strdup_printf ("audio silent at %ld (%f)",
+      diff/GST_MSECOND, ui->audio_value);
+
+  //INFO ("silent: %f", ui->audio_value);
+
+  gtk_label_set_text (GTK_LABEL (ui->status), s);
+  g_free ((gpointer) s);
+}
+
+static gboolean
+gst_switch_ui_tick (GstSwitchUI * ui)
+{
+  if (ui->audio) {
+    gboolean stucked = FALSE;
+    gboolean silent = FALSE;
+    GstClockTime endtime, diff;
+    gdouble value = 0;
+    GST_SWITCH_UI_LOCK_AUDIO (ui);
+    endtime = gst_audio_visual_get_endtime (ui->audio);
+    diff = endtime - ui->audio_endtime;
+    value = gst_audio_visual_get_value (ui->audio);
+    stucked = ((GST_MSECOND * 700) <= diff);
+    if (!stucked)
+      silent = (value <= 0.01);
+    ui->audio_endtime = endtime;
+    ui->audio_value = value;
+    GST_SWITCH_UI_UNLOCK_AUDIO (ui);
+
+    if (!stucked && !silent) {
+      const gchar *s = g_strdup_printf ("audio: %f", ui->audio_value);
+      gtk_label_set_text (GTK_LABEL (ui->status), s);
+      g_free ((gpointer) s);
+    }
+
+    if (stucked)
+      gst_switch_ui_warn_stucked (ui, diff);
+    if (silent) 
+      gst_switch_ui_warn_silent (ui, diff);
+
+    //INFO ("audio: %f", ui->audio_value);
+  }
+  return TRUE;
+}
+
+static void
 gst_switch_ui_run (GstSwitchUI * ui)
 {
   gst_switch_client_connect (GST_SWITCH_CLIENT (ui));
+
+  ui->timer = g_timeout_add (200, (GSourceFunc) gst_switch_ui_tick, ui);
 
   gtk_widget_show_all (ui->window);
   gtk_widget_realize (ui->window);
@@ -436,8 +508,10 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
 	  (/*ui->audio_port != visual->port &&*/  visual->active)) {
 	gtk_style_context_remove_class (style, "audio_frame");
 	visual = gst_switch_ui_renew_audio_visual (ui, frame, visual);
-	if (visual->active)
+	if (visual->active) {
 	  gtk_style_context_add_class (style, "audio_frame");
+	  ui->audio = visual;
+	}
       }
     }
   }
