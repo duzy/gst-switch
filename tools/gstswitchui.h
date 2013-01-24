@@ -62,6 +62,8 @@ struct _GstSwitchUI
   GstAudioVisual *audio;
   GstClockTime audio_endtime;
   gdouble audio_value;
+  gint audio_stuck_count;
+
   GMutex compose_lock;
   GstVideoDisp *compose;
 

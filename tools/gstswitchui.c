@@ -193,7 +193,6 @@ gst_switch_ui_init (GstSwitchUI * ui)
 
   ui->status = gtk_label_new (NULL);
   gtk_widget_set_hexpand (ui->status, TRUE);
-  gtk_widget_set_size_request (ui->status, -1, 20);
   gtk_misc_set_alignment (GTK_MISC (ui->status), 1.0, 0);
 
   scrollwin = gtk_scrolled_window_new (NULL, NULL);
@@ -293,30 +292,6 @@ gst_switch_ui_prepare_videos (GstSwitchUI * ui)
   }
 }
 
-static void
-gst_switch_ui_warn_stucked (GstSwitchUI * ui, GstClockTime diff)
-{
-  const gchar *s = g_strdup_printf ("audio stucked at %ld (%f)",
-      diff/GST_MSECOND, ui->audio_value);
-
-  //INFO ("stucked: %ld (%f)", diff/GST_MSECOND, ui->audio_value);
-
-  gtk_label_set_text (GTK_LABEL (ui->status), s);
-  g_free ((gpointer) s);
-}
-
-static void
-gst_switch_ui_warn_silent (GstSwitchUI * ui, GstClockTime diff)
-{
-  const gchar *s = g_strdup_printf ("audio silent at %ld (%f)",
-      diff/GST_MSECOND, ui->audio_value);
-
-  //INFO ("silent: %f", ui->audio_value);
-
-  gtk_label_set_text (GTK_LABEL (ui->status), s);
-  g_free ((gpointer) s);
-}
-
 static gboolean
 gst_switch_ui_tick (GstSwitchUI * ui)
 {
@@ -330,10 +305,13 @@ gst_switch_ui_tick (GstSwitchUI * ui)
     diff = endtime - ui->audio_endtime;
     value = gst_audio_visual_get_value (ui->audio);
     stucked = ((GST_MSECOND * 700) <= diff);
-    if (!stucked)
-      silent = (value <= 0.01);
+    if (ui->audio_value == value) ui->audio_stuck_count += 1;
+    else ui->audio_stuck_count = 0;
+    if (!stucked && 3 < ui->audio_stuck_count) stucked = TRUE;
+    if (!stucked) silent = (value <= 0.01);
     ui->audio_endtime = endtime;
     ui->audio_value = value;
+
     GST_SWITCH_UI_UNLOCK_AUDIO (ui);
 
     if (!stucked && !silent) {
@@ -342,10 +320,19 @@ gst_switch_ui_tick (GstSwitchUI * ui)
       g_free ((gpointer) s);
     }
 
-    if (stucked)
-      gst_switch_ui_warn_stucked (ui, diff);
-    if (silent) 
-      gst_switch_ui_warn_silent (ui, diff);
+    if (stucked) {
+      const gchar *s = g_strdup_printf ("audio stucked at %ld (%f)",
+	  endtime/GST_MSECOND, ui->audio_value);
+      gtk_label_set_text (GTK_LABEL (ui->status), s);
+      g_free ((gpointer) s);
+    }
+
+    if (silent) {
+      const gchar *s = g_strdup_printf ("audio silent at %ld (%f)",
+	  endtime/GST_MSECOND, ui->audio_value);
+      gtk_label_set_text (GTK_LABEL (ui->status), s);
+      g_free ((gpointer) s);
+    }
 
     //INFO ("audio: %f", ui->audio_value);
   }
