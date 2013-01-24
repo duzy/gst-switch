@@ -51,6 +51,13 @@ static GOptionEntry entries[] = {
 };
 
 static const gchar * gst_switch_ui_css = 
+  ".compose {\n"
+  "  border-style: solid;\n"
+  "  border-width: 5px;\n"
+  "  border-radius: 5px;\n"
+  "  border-color: rgba(0,0,0,0.2);\n"
+  "  padding: 0px;\n"
+  "}\n"
   ".preview_frame {\n"
   "  border-style: solid;\n"
   "  border-width: 5px;\n"
@@ -137,14 +144,16 @@ draw_cb (GtkWidget *widget, cairo_t *cr)
 }
 */
 
-static gboolean gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event,
-    GstSwitchUI *ui);
+static gboolean gst_switch_ui_key_event (GtkWidget *, GdkEvent *, GstSwitchUI *);
+static gboolean gst_switch_ui_compose_key_event (GtkWidget *, GdkEvent *, GstSwitchUI *);
 
 static void
 gst_switch_ui_init (GstSwitchUI * ui)
 {
   GtkWidget *main_box, *right_box;
   GtkWidget *scrollwin;
+  GtkWidget *overlay;
+  GtkStyleContext *style;
   GdkDisplay *display;
   GdkScreen *screen;
   GError *error = NULL;
@@ -178,18 +187,47 @@ gst_switch_ui_init (GstSwitchUI * ui)
   gtk_widget_set_size_request (ui->preview_box, 120, -1);
   gtk_widget_set_vexpand (ui->preview_box, TRUE);
 
+  overlay = gtk_overlay_new ();
+  gtk_widget_set_hexpand (overlay, TRUE);
+  gtk_widget_set_vexpand (overlay, TRUE);
+
   ui->compose_view = gtk_drawing_area_new ();
   gtk_widget_set_name (ui->compose_view, "compose");
   gtk_widget_set_double_buffered (ui->compose_view, FALSE);
   gtk_widget_set_hexpand (ui->compose_view, TRUE);
   gtk_widget_set_vexpand (ui->compose_view, TRUE);
   gtk_widget_set_events (ui->compose_view, GDK_EXPOSURE_MASK
-      //| GDK_LEAVE_NOTIFY_MASK
+      | GDK_LEAVE_NOTIFY_MASK
       | GDK_BUTTON_PRESS_MASK
       | GDK_BUTTON_RELEASE_MASK
-      //| GDK_POINTER_MOTION_MASK
-      //| GDK_POINTER_MOTION_HINT_MASK
+      | GDK_POINTER_MOTION_MASK
+      | GDK_POINTER_MOTION_HINT_MASK
       );
+
+  g_signal_connect (G_OBJECT (ui->compose_view), "key-press-event",
+      G_CALLBACK (gst_switch_ui_compose_key_event), ui);
+
+  ui->compose_overlay = gtk_fixed_new ();
+  style = gtk_widget_get_style_context (ui->compose_overlay);
+  gtk_style_context_add_class (style, "compose");
+  gtk_widget_set_halign (ui->compose_overlay, GTK_ALIGN_START);
+  gtk_widget_set_valign (ui->compose_overlay, GTK_ALIGN_START);
+  /*
+  gtk_widget_set_events (ui->compose_overlay, GDK_EXPOSURE_MASK
+      | GDK_LEAVE_NOTIFY_MASK
+      | GDK_BUTTON_PRESS_MASK
+      | GDK_BUTTON_RELEASE_MASK
+      | GDK_POINTER_MOTION_MASK
+      | GDK_POINTER_MOTION_HINT_MASK
+      );
+  */
+
+  /*
+  GtkWidget *w = gtk_drawing_area_new ();
+  //GtkWidget *w = gtk_event_box_new ();
+  gtk_widget_set_size_request (w, 120, 80);
+  gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 10, 10);
+  */
 
   ui->status = gtk_label_new (NULL);
   gtk_widget_set_hexpand (ui->status, TRUE);
@@ -203,7 +241,10 @@ gst_switch_ui_init (GstSwitchUI * ui)
   gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollwin),
       ui->preview_box);
 
-  gtk_box_pack_start (GTK_BOX (right_box), ui->compose_view, TRUE, TRUE, 0);
+  gtk_container_add (GTK_CONTAINER (overlay), ui->compose_view);
+  gtk_overlay_add_overlay (GTK_OVERLAY (overlay), ui->compose_overlay);
+
+  gtk_box_pack_start (GTK_BOX (right_box), overlay, TRUE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (right_box), ui->status, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (main_box), scrollwin, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (main_box), right_box, TRUE, TRUE, 0);
@@ -686,6 +727,34 @@ gst_switch_ui_new_record (GstSwitchUI *ui)
   INFO ("new record: %d", ok);
 }
 
+static void
+gst_switch_ui_adjust_pip (GstSwitchUI *ui, gboolean resize, gint key)
+{
+  const gint step = 1;
+  gint dx = 0, dy = 0, dw = 0, dh = 0;
+  guint result;
+
+  if (resize) {
+    switch (key) {
+    case GDK_KEY_Left:  dw -= step; break;
+    case GDK_KEY_Right: dw += step; break;
+    case GDK_KEY_Up:    dh -= step; break;
+    case GDK_KEY_Down:  dh += step; break;
+    }
+  } else {
+    switch (key) {
+    case GDK_KEY_Left:  dx -= step; break;
+    case GDK_KEY_Right: dx += step; break;
+    case GDK_KEY_Up:    dy -= step; break;
+    case GDK_KEY_Down:  dy += step; break;
+    }
+  }
+
+  result = gst_switch_client_adjust_pip (GST_SWITCH_CLIENT (ui),
+      dx, dy, dw, dh);
+  INFO ("adjust-pip: (%d) %d", resize, result);
+}
+
 static gboolean
 gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
 {
@@ -693,10 +762,22 @@ gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
   case GDK_KEY_PRESS:
   case GDK_KEY_RELEASE: {
     GdkEventKey *ke = (GdkEventKey *) event;
+    gboolean mod = ke->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK);
     switch (ke->keyval) {
     case GDK_KEY_Up:
     case GDK_KEY_Down:
+      if (mod) goto adjust_pip;
       gst_switch_ui_select_preview (ui, ke->keyval);
+      break;
+    case GDK_KEY_Left:
+    case GDK_KEY_Right:
+      if (mod) {
+	gboolean resize;
+      adjust_pip:
+	resize = (ke->state & GDK_SHIFT_MASK) ? TRUE : FALSE;
+	gst_switch_ui_adjust_pip (ui, resize, ke->keyval);
+	return TRUE;
+      }
       break;
     case GDK_KEY_A:
     case GDK_KEY_a:
@@ -716,6 +797,20 @@ gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
       break;
     }
   } break;
+  default: break;
+  }
+  return FALSE;
+}
+
+static gboolean
+gst_switch_ui_compose_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
+{
+  switch (event->type) {
+  case GDK_KEY_PRESS:
+  case GDK_KEY_RELEASE: {
+    GdkEventKey *ke = (GdkEventKey *) event;
+    INFO ("compose-key: %d", ke->keyval);
+  }
   default: break;
   }
   return FALSE;

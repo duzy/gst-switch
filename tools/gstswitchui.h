@@ -51,6 +51,7 @@ struct _GstSwitchUI
 
   GtkWidget *window;
   GtkWidget *compose_view;
+  GtkWidget *compose_overlay;
   GtkWidget *preview_box;
   GtkWidget *status;
 

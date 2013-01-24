@@ -211,6 +211,20 @@ gst_switch_client_new_record (GstSwitchClient * client)
   return result;
 }
 
+guint
+gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx, gint dy,
+    gint dw, gint dh)
+{
+  guint result = 0;
+  GVariant *value = gst_switch_client_call_controller (client,
+      "adjust_pip", g_variant_new ("(iiii)", dx, dy, dw, dh),
+      G_VARIANT_TYPE ("(u)"));
+  if (value) {
+    g_variant_get (value, "(u)", &result);
+  }
+  return result;
+}
+
 static gboolean
 gst_switch_client_method_match (const gchar *key, MethodTableEntry *entry,
     const gchar *match)

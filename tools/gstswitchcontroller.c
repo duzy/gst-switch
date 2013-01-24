@@ -69,6 +69,13 @@ static const gchar introspection_xml[] =
   "    <method name='new_record'>"
   "      <arg type='b' name='result' direction='out'/>"
   "    </method>"
+  "    <method name='adjust_pip'>"
+  "      <arg type='i' name='dx' direction='in'/>"
+  "      <arg type='i' name='dy' direction='in'/>"
+  "      <arg type='i' name='dw' direction='in'/>"
+  "      <arg type='i' name='dh' direction='in'/>"
+  "      <arg type='u' name='result' direction='out'/>"
+  "    </method>"
   "    <method name='switch'>"
   "      <arg type='i' name='channel' direction='in'/>"
   "      <arg type='i' name='port' direction='in'/>"
@@ -695,6 +702,21 @@ gst_switch_controller__new_record (GstSwitchController *controller,
 }
 
 static GVariant *
+gst_switch_controller__adjust_pip (GstSwitchController *controller,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  GVariant *result = NULL;
+  gint dx, dy, dw, dh;
+  guint res = 0;
+  g_variant_get (parameters, "(iiii)", &dx, &dy, &dw, &dh);
+  if (controller->server) {
+    res = gst_switch_server_adjust_pip (controller->server, dx, dy, dw, dh);
+    result = g_variant_new ("(u)", res);
+  }
+  return result;
+}
+
+static GVariant *
 gst_switch_controller__switch (GstSwitchController *controller,
     GDBusConnection *connection, GVariant *parameters)
 {
@@ -719,6 +741,7 @@ static MethodTableEntry gst_switch_controller_method_table[] = {
   { "get_preview_ports",  (MethodFunc) gst_switch_controller__get_preview_ports },
   { "set_composite_mode", (MethodFunc) gst_switch_controller__set_composite_mode },
   { "new_record",	  (MethodFunc) gst_switch_controller__new_record },
+  { "adjust_pip",	  (MethodFunc) gst_switch_controller__adjust_pip },
   { "switch",		  (MethodFunc) gst_switch_controller__switch },
   { NULL, NULL }
 };

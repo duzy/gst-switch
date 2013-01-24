@@ -144,31 +144,31 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
     break;
   case PROP_A_X:
     composite->a_x = g_value_get_uint (value);
-    goto reset;
+    break; // goto reset;
   case PROP_A_Y:
     composite->a_y = g_value_get_uint (value);
-    goto reset;
+    break; // goto reset;
   case PROP_A_WIDTH:
     composite->a_width = g_value_get_uint (value);
-    goto reset;
+    break; // goto reset;
   case PROP_A_HEIGHT:
     composite->a_height = g_value_get_uint (value);
-    goto reset;
+    break; // goto reset;
   case PROP_B_X:
     composite->b_x = g_value_get_uint (value);
-    goto reset;
+    break; // goto reset;
   case PROP_B_Y:
     composite->b_y = g_value_get_uint (value);
-    goto reset;
+    break; // goto reset;
   case PROP_B_WIDTH:
     composite->b_width = g_value_get_uint (value);
-    goto reset;
+    break; // goto reset;
   case PROP_B_HEIGHT:
     composite->b_height = g_value_get_uint (value);
-    goto reset;
+    break; // goto reset;
   case PROP_MODE:
     composite->mode = (GstCompositeMode) (g_value_get_uint (value));
-  reset:
+    //reset:
     gst_composite_set_mode (composite, composite->mode);
     break;
   default:

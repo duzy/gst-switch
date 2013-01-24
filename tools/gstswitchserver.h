@@ -90,6 +90,9 @@ struct _GstSwitchServer
   GstComposite *composite_out;
   GstComposite *audio_out;
 
+  GMutex pip_lock;
+  gint pip_x, pip_y, pip_w, pip_h;
+
   GMutex recorder_lock;
   GstRecorder *recorder;
 };
@@ -107,6 +110,7 @@ GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray 
 
 gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode);
 gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port);
+guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy, gint dw, gint dh);
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);
 
 extern GstSwitchServerOpts opts;
