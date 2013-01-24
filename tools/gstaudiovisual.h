@@ -30,8 +30,8 @@
 #define GST_TYPE_AUDIO_VISUAL (gst_audio_visual_get_type ())
 #define GST_AUDIO_VISUAL(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_AUDIO_VISUAL, GstAudioVisual))
 #define GST_AUDIO_VISUAL_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_AUDIO_VISUAL, GstAudioVisualClass))
-#define GST_IS_AUDIO_VISUAL(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_AUDIO_VISUAL, GstAudioVisual))
-#define GST_IS_AUDIO_VISUAL_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_AUDIO_VISUAL, GstAudioVisualClass))
+#define GST_IS_AUDIO_VISUAL(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_AUDIO_VISUAL))
+#define GST_IS_AUDIO_VISUAL_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_AUDIO_VISUAL))
 
 typedef struct _GstAudioVisual GstAudioVisual;
 typedef struct _GstAudioVisualClass GstAudioVisualClass;

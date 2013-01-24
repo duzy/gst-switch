@@ -32,8 +32,8 @@
 #define GST_TYPE_RECORDER (gst_recorder_get_type ())
 #define GST_RECORDER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_RECORDER, GstRecorder))
 #define GST_RECORDER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_RECORDER, GstRecorderClass))
-#define GST_IS_RECORDER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_RECORDER, GstRecorder))
-#define GST_IS_RECORDER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_RECORDER, GstRecorderClass))
+#define GST_IS_RECORDER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_RECORDER))
+#define GST_IS_RECORDER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_RECORDER))
 
 typedef struct _GstRecorder GstRecorder;
 typedef struct _GstRecorderClass GstRecorderClass;

@@ -331,14 +331,14 @@ gst_switch_server_end_composite (GstComposite *composite,
 
     srv->composite = NULL;
 
-    if (mode != srv->composite_out->mode) {
+    if (srv->composite_out && mode != srv->composite_out->mode) {
       GstComposite *out = srv->composite_out;
       srv->composite_out = NULL;
       out->deprecated = TRUE;
       gst_worker_stop (GST_WORKER (out));
     }
 
-    if (mode != srv->recorder->mode) {
+    if (srv->recorder && mode != srv->recorder->mode) {
       GstRecorder *rec = srv->recorder;
       srv->recorder = NULL;
       rec->deprecated = TRUE;

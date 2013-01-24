@@ -33,8 +33,8 @@
 #define GST_TYPE_SWITCH_UI (gst_switch_ui_get_type ())
 #define GST_SWITCH_UI(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_UI, GstSwitchUI))
 #define GST_SWITCH_UI_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_UI, GstSwitchUIClass))
-#define GST_IS_SWITCH_UI(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_UI, GstSwitchUI))
-#define GST_IS_SWITCH_UI_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_UI, GstSwitchUIClass))
+#define GST_IS_SWITCH_UI(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_UI))
+#define GST_IS_SWITCH_UI_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_UI))
 
 typedef struct _GstSwitchUI GstSwitchUI;
 typedef struct _GstSwitchUIClass GstSwitchUIClass;

@@ -111,13 +111,6 @@ gst_video_disp_get_pipeline_string (GstVideoDisp *disp)
   return desc;
 }
 
-static void
-gst_video_disp_null (GstVideoDisp *disp)
-{
-  GstWorker *worker = GST_WORKER (disp);
-  INFO ("%s: end %d", worker->name, disp->port);
-}
-
 static gboolean
 gst_video_disp_prepare (GstVideoDisp *disp)
 {
@@ -149,7 +142,6 @@ gst_video_disp_class_init (GstVideoDispClass *klass)
       g_param_spec_ulong ("handle", "Handle", "Window Handle",
           0, ((gulong)-1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_video_disp_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_video_disp_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_video_disp_get_pipeline_string;

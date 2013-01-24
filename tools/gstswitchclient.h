@@ -31,8 +31,8 @@
 #define GST_TYPE_SWITCH_CLIENT (gst_switch_client_get_type ())
 #define GST_SWITCH_CLIENT(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_CLIENT, GstSwitchClient))
 #define GST_SWITCH_CLIENT_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_CLIENT, GstSwitchClientClass))
-#define GST_IS_SWITCH_CLIENT(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_CLIENT, GstSwitchClient))
-#define GST_IS_SWITCH_CLIENT_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_CLIENT, GstSwitchClientClass))
+#define GST_IS_SWITCH_CLIENT(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_CLIENT))
+#define GST_IS_SWITCH_CLIENT_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_CLIENT))
 
 typedef struct _GstSwitchClient GstSwitchClient;
 typedef struct _GstSwitchClientClass GstSwitchClientClass;

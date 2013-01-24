@@ -30,8 +30,8 @@
 #define GST_TYPE_VIDEO_DISP (gst_video_disp_get_type ())
 #define GST_VIDEO_DISP(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_VIDEO_DISP, GstVideoDisp))
 #define GST_VIDEO_DISP_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_VIDEO_DISP, GstVideoDispClass))
-#define GST_IS_VIDEO_DISP(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_VIDEO_DISP, GstVideoDisp))
-#define GST_IS_VIDEO_DISP_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_VIDEO_DISP, GstVideoDispClass))
+#define GST_IS_VIDEO_DISP(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_VIDEO_DISP))
+#define GST_IS_VIDEO_DISP_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_VIDEO_DISP))
 
 typedef struct _GstVideoDisp GstVideoDisp;
 typedef struct _GstVideoDispClass GstVideoDispClass;

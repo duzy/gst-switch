@@ -453,6 +453,8 @@ gst_worker_message (GstBus * bus, GstMessage * message, gpointer data)
       break;
   }
 
+  if (!G_IS_OBJECT (worker)) return TRUE;
+  if (!GST_IS_WORKER (worker)) return TRUE;
   return klass->message ? klass->message (worker, message) : TRUE;
 }
 
