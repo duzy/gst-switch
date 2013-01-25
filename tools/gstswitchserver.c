@@ -52,6 +52,8 @@
 #define GST_SWITCH_SERVER_UNLOCK_RECORDER(srv) (g_mutex_unlock (&(srv)->recorder_lock))
 #define GST_SWITCH_SERVER_LOCK_CASES(srv) (g_mutex_lock (&(srv)->cases_lock))
 #define GST_SWITCH_SERVER_UNLOCK_CASES(srv) (g_mutex_unlock (&(srv)->cases_lock))
+#define GST_SWITCH_SERVER_LOCK_SERVE(srv) (g_mutex_lock (&(srv)->serve_lock))
+#define GST_SWITCH_SERVER_UNLOCK_SERVE(srv) (g_mutex_unlock (&(srv)->serve_lock))
 #define GST_SWITCH_SERVER_LOCK_PIP(srv) (g_mutex_lock (&(srv)->pip_lock))
 #define GST_SWITCH_SERVER_UNLOCK_PIP(srv) (g_mutex_unlock (&(srv)->pip_lock))
 
@@ -124,6 +126,7 @@ gst_switch_server_init (GstSwitchServer *srv)
   srv->audio_out = NULL;
   srv->recorder = NULL;
   srv->alloc_port_count = 0;
+  srv->changing_composite = FALSE;
 
   srv->pip_x = 0;
   srv->pip_y = 0;
@@ -333,11 +336,12 @@ gst_switch_server_end_composite (GstComposite *composite,
     INFO ("new composite mode %d", mode);
 
     GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
-    if (composite != srv->composite) {
+    if (composite != srv->composite || !srv->changing_composite) {
       GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
       return;
     }
 
+    srv->changing_composite = FALSE;
     srv->composite = NULL;
 
     if (srv->composite_out && mode != srv->composite_out->mode) {
@@ -568,6 +572,7 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   GCallback start_callback = G_CALLBACK (gst_switch_server_start_case);
   GCallback end_callback = G_CALLBACK (gst_switch_server_end_case);
 
+  GST_SWITCH_SERVER_LOCK_SERVE (srv);
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   switch (serve_type) {
   case GST_SERVE_AUDIO_STREAM: inputtype = GST_CASE_INPUT_a; break;
@@ -648,6 +653,8 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   gst_worker_start (GST_WORKER (input));
   gst_worker_start (GST_WORKER (branch));
   gst_worker_start (GST_WORKER (workcase));
+
+  GST_SWITCH_SERVER_UNLOCK_SERVE (srv);
   return;
 
   /* Errors Handling */
@@ -655,6 +662,9 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   {
     ERROR ("unknown serve type %d", serve_type);
     g_object_unref (stream);
+    g_object_unref (client);
+    GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    GST_SWITCH_SERVER_UNLOCK_SERVE (srv);
     return;
   }
 
@@ -662,6 +672,9 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   {
     ERROR ("unknown case type (serve type %d)", serve_type);
     g_object_unref (stream);
+    g_object_unref (client);
+    GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    GST_SWITCH_SERVER_UNLOCK_SERVE (srv);
     return;
   }
 
@@ -677,6 +690,7 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
     g_object_unref (branch);
     g_object_unref (workcase);
     gst_switch_server_revoke_port (srv, port);
+    GST_SWITCH_SERVER_UNLOCK_SERVE (srv);
     return;
   }
 }
@@ -974,8 +988,14 @@ gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
     goto end;
   }
 
+  if (srv->changing_composite) {
+    INFO ("the last composite change request is still working");
+    goto end;
+  }
+
   srv->pip_x = 0, srv->pip_y = 0;
   srv->pip_w = 0, srv->pip_h = 0;
+  srv->changing_composite = TRUE;
 
   composite->mode = mode;
   composite->deprecated = TRUE;
@@ -1012,6 +1032,12 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
   INFO ("adjust-pip: %d, %d, %d, %d", dx, dy, dw, dh);
 
   GST_SWITCH_SERVER_LOCK_PIP (srv);
+  GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+  if (srv->changing_composite) {
+    INFO ("the last composite change request is still working");
+    goto end;
+  }
+
   srv->pip_x += dx, srv->pip_y += dy;
   srv->pip_w += dw, srv->pip_h += dh;
   if (srv->pip_x < 0) srv->pip_x = 0;
@@ -1021,7 +1047,7 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
   if (srv->pip_h < GST_SWITCH_COMPOSITE_MIN_PIP_H)
     srv->pip_h   = GST_SWITCH_COMPOSITE_MIN_PIP_H;
 
-  GST_SWITCH_SERVER_LOCK_COMPOSITE (srv);
+  srv->changing_composite = TRUE;
   srv->composite->deprecated = TRUE;
   gst_worker_stop (GST_WORKER (srv->composite));
 
@@ -1030,6 +1056,7 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
   if (dw != 0) result |= (1 << 2);
   if (dh != 0) result |= (1 << 3);
 
+ end:
   GST_SWITCH_SERVER_UNLOCK_COMPOSITE (srv);
   GST_SWITCH_SERVER_UNLOCK_PIP (srv);
   return result;

@@ -79,6 +79,7 @@ struct _GstSwitchServer
   gint controller_port;
   GstSwitchController * controller;
 
+  GMutex serve_lock;
   GMutex cases_lock;
   GList *cases;
 
@@ -89,6 +90,7 @@ struct _GstSwitchServer
   GstComposite *composite;
   GstComposite *composite_out;
   GstComposite *audio_out;
+  gboolean changing_composite;
 
   GMutex pip_lock;
   gint pip_x, pip_y, pip_w, pip_h;
