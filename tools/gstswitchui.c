@@ -708,7 +708,7 @@ gst_switch_ui_next_compose_mode (GstSwitchUI *ui)
   ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
       ui->compose_mode);
   INFO ("set composite mode: %d (%d)", ui->compose_mode, ok);
-  if (ok) ui->compose_mode += 1;
+  ui->compose_mode += 1;
 }
 
 static void

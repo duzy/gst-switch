@@ -62,7 +62,7 @@ gst_worker_init (GstWorker *worker)
   worker->pipeline_func_data = NULL;
   worker->pipeline_string = NULL;
   worker->paused_for_buffering = FALSE;
-  worker->timer_id = -1;
+  worker->watch = 0;
 
   INFO ("Worker initialized (%p)", worker);
 }
@@ -94,6 +94,10 @@ gst_worker_finalize (GstWorker *worker)
   if (worker->pipeline_string) {
     g_string_free (worker->pipeline_string, FALSE);
     worker->pipeline_string = NULL;
+  }
+
+  if (worker->watch) {
+    g_source_remove (worker->watch);
   }
 
   INFO ("Worker %s finalized (%p)", worker->name, worker);
@@ -205,14 +209,10 @@ gst_worker_class_init (GstWorkerClass *klass)
   INFO ("Worker class initialized");
 }
 
-static gboolean gst_worker_onesecond_timer (gpointer priv);
-
 void
 gst_worker_start (GstWorker *worker)
 {
   gst_element_set_state (worker->pipeline, GST_STATE_READY);
-
-  worker->timer_id = g_timeout_add (1000, gst_worker_onesecond_timer, worker);
 }
 
 GstStateChangeReturn
@@ -248,8 +248,6 @@ void
 gst_worker_stop (GstWorker *worker)
 {
   gst_element_set_state (worker->pipeline, GST_STATE_NULL);
-
-  g_source_remove (worker->timer_id);
 }
 
 static void
@@ -458,16 +456,6 @@ gst_worker_message (GstBus * bus, GstMessage * message, gpointer data)
   return klass->message ? klass->message (worker, message) : TRUE;
 }
 
-static gboolean
-gst_worker_onesecond_timer (gpointer priv)
-{
-  GstWorker *worker = (GstWorker *) priv;
-
-  (void) worker;
-
-  return TRUE;
-}
-
 gboolean
 gst_worker_prepare (GstWorker *worker)
 {
@@ -488,7 +476,7 @@ gst_worker_prepare (GstWorker *worker)
   gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
 
   worker->bus = gst_pipeline_get_bus (GST_PIPELINE (worker->pipeline));
-  gst_bus_add_watch (worker->bus, gst_worker_message, worker);
+  worker->watch = gst_bus_add_watch (worker->bus, gst_worker_message, worker);
 
   worker->source = gst_bin_get_by_name (GST_BIN (worker->pipeline), "source");
   worker->sink = gst_bin_get_by_name (GST_BIN (worker->pipeline), "sink");

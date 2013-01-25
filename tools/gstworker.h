@@ -63,7 +63,7 @@ struct _GstWorker
   GString *pipeline_string;
 
   gboolean paused_for_buffering;
-  guint timer_id;
+  guint watch;
 };
 
 struct _GstWorkerClass

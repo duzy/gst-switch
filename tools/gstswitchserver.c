@@ -648,15 +648,6 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
   gst_worker_start (GST_WORKER (input));
   gst_worker_start (GST_WORKER (branch));
   gst_worker_start (GST_WORKER (workcase));
-
-  /*
-  gst_switch_controller_tell_preview_port (srv->controller,
-      port, serve_type);
-
-  if (type == GST_CASE_COMPOSITE_a && srv->audio_out == NULL) {
-    gst_switch_controller_tell_audio_port (srv->controller, port);
-  }
-  */
   return;
 
   /* Errors Handling */
