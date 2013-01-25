@@ -1,15 +1,15 @@
 #!/bin/bash
-EXT=""
+#EXT="--gst-debug-no-color"
 EXT="$EXT --test-external-server"
 EXT="$EXT --test-external-ui"
 
 ./tests/test-switch-server $EXT \
-    --disable-test-controller \
-    --disable-test-video \
-    --disable-test-ui-integration \
-    --disable-test-fuzz-ui \
-    --disable-test-random-connection \
-    --disable-test-audio \
+    --enable-test-controller \
 
-#    --disable-test-switching \
-#    --disable-test-checking-timestamps \
+#    --enable-test-video \
+#    --enable-test-ui-integration \
+#    --enable-test-fuzz-ui \
+#    --enable-test-random-connection \
+#    --enable-test-audio \
+#    --enable-test-switching \
+#    --enable-test-checking-timestamps \

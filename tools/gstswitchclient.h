@@ -46,6 +46,7 @@ struct _GstSwitchClient
 {
   GObject base;
 
+  GMutex controller_lock;
   GDBusConnection *controller;
 };
 
@@ -63,6 +64,7 @@ struct _GstSwitchClientClass
 
 GType gst_switch_client_get_type (void);
 
+gboolean gst_switch_client_is_connected (GstSwitchClient * client);
 gboolean gst_switch_client_connect (GstSwitchClient * client);
 gint gst_switch_client_get_compose_port (GstSwitchClient * client);
 gint gst_switch_client_get_encode_port (GstSwitchClient * client);

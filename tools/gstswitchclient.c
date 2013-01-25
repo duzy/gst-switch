@@ -34,6 +34,9 @@
 #define parent_class gst_switch_client_parent_class
 G_DEFINE_TYPE (GstSwitchClient, gst_switch_client, G_TYPE_OBJECT);
 
+#define GST_SWITCH_CLIENT_LOCK_CONTROLLER(c) (g_mutex_lock (&(c)->controller_lock))
+#define GST_SWITCH_CLIENT_UNLOCK_CONTROLLER(c) (g_mutex_unlock (&(c)->controller_lock))
+
 static GDBusNodeInfo *introspection_data = NULL;
 static const gchar introspection_xml[] =
   "<node>"
@@ -63,11 +66,14 @@ extern gboolean verbose;
 static void
 gst_switch_client_init (GstSwitchClient * client)
 {
+  g_mutex_init (&client->controller_lock);
 }
 
 static void
 gst_switch_client_finalize (GstSwitchClient * client)
 {
+  g_mutex_clear (&client->controller_lock);
+
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (client));
 }
@@ -79,6 +85,7 @@ gst_switch_client_call_controller (GstSwitchClient * client, const gchar *method
   GVariant *value = NULL;
   GError *error = NULL;
 
+  GST_SWITCH_CLIENT_LOCK_CONTROLLER (client);
   if (!client->controller)
     goto error_no_controller_connection;
 
@@ -96,12 +103,14 @@ gst_switch_client_call_controller (GstSwitchClient * client, const gchar *method
   if (!value)
     goto error_call_sync;
 
+  GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
   return value;
 
   /* ERRORS */
  error_no_controller_connection:
   {
     ERROR ("No controller connection");
+    GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
     return NULL;
   }
 
@@ -109,6 +118,7 @@ gst_switch_client_call_controller (GstSwitchClient * client, const gchar *method
   {
     ERROR ("%s", error->message);
     g_error_free (error);
+    GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
     return NULL;
   }
 }
@@ -341,6 +351,8 @@ gst_switch_client_connect_controller (GstSwitchClient * client)
   GError *error = NULL;
   guint id;
 
+  GST_SWITCH_CLIENT_LOCK_CONTROLLER (client);
+
   client->controller = g_dbus_connection_new_for_address_sync (
       SWITCH_CONTROLLER_ADDRESS,
       G_DBUS_SERVER_FLAGS_RUN_IN_THREAD |
@@ -379,13 +391,15 @@ gst_switch_client_connect_controller (GstSwitchClient * client)
 
   if (id <= 0)
     goto error_subscribe;
-  
+
+  GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
   return;
 
  error_new_connection:
   {
     ERROR ("%s", error->message);
     g_error_free (error);
+    GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
     return;
   }
 
@@ -393,14 +407,26 @@ gst_switch_client_connect_controller (GstSwitchClient * client)
   {
     ERROR ("%s", error->message);
     g_error_free (error);
+    GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
     return;
   }
 
  error_subscribe:
   {
     ERROR ("failed to subscribe signals");
+    GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
     return;
   }
+}
+
+gboolean
+gst_switch_client_is_connected (GstSwitchClient * client)
+{
+  gboolean result = FALSE;
+  GST_SWITCH_CLIENT_LOCK_CONTROLLER (client);
+  if (client->controller) result = TRUE;
+  GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
+  return result;
 }
 
 gboolean
@@ -419,7 +445,7 @@ gst_switch_client_connect (GstSwitchClient * client)
   }
 #endif
 
-  return client->controller ? TRUE : FALSE;
+  return gst_switch_client_is_connected (client);
 }
 
 static void
@@ -467,7 +493,7 @@ gst_switch_client__set_audio_port (GstSwitchClient *client,
 {
   gint port = 0;
   g_variant_get (parameters, "(i)", &port);
-  INFO ("audio: %d", port);
+  //INFO ("audio: %d", port);
   gst_switch_client_set_audio_port (client, port);
   return NULL;
 }
@@ -478,7 +504,7 @@ gst_switch_client__set_compose_port (GstSwitchClient *client,
 {
   gint port = 0;
   g_variant_get (parameters, "(i)", &port);
-  INFO ("compose: %d", port);
+  //INFO ("compose: %d", port);
   gst_switch_client_set_compose_port (client, port);
   return NULL;
 }
@@ -490,7 +516,7 @@ gst_switch_client__add_preview_port (GstSwitchClient *client,
   gint port = 0;
   gint type = 0;
   g_variant_get (parameters, "(ii)", &port, &type);
-  INFO ("preview: %d, %d", port, type);
+  //INFO ("preview: %d, %d", port, type);
   gst_switch_client_add_preview_port (client, port, type);
   return NULL;
 }

@@ -476,6 +476,7 @@ gst_worker_prepare (GstWorker *worker)
   gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
 
   worker->bus = gst_pipeline_get_bus (GST_PIPELINE (worker->pipeline));
+  //g_object_set (worker->bus, "enable-async", TRUE, NULL);
   worker->watch = gst_bus_add_watch (worker->bus, gst_worker_message, worker);
 
   worker->source = gst_bin_get_by_name (GST_BIN (worker->pipeline), "source");

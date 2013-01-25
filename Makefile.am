@@ -4,8 +4,20 @@ EXTRA_DIST = autogen.sh
 
 ACLOCAL_AMFLAGS = -I m4
 
-test:
-	echo "TODO: run test suite"
+TESTS = test-controller
+# TESTS += test-video
+# TESTS += test-ui-integration
+# TESTS += test-fuzz-ui
+# TESTS += test-random-connection
+# TESTS += test-audio
+# TESTS += test-switching
+# TESTS += test-checking-timestamps
+
+test: $(TESTS)
+	@ls $(TESTS:%=%.log)
+
+test-%:
+	./tests/test-switch-server --enable-$@ #> $@.log
 
 perf:
 	echo "TODO: program profiling"
