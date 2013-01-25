@@ -348,14 +348,20 @@ gst_composite_prepare (GstComposite *composite)
   return TRUE;
 }
 
-static void
+static GstWorkerNullReturn
 gst_composite_null (GstComposite *composite)
 {
-  GstWorker *worker = GST_WORKER (composite);
-  if (!composite->deprecated) {
-    INFO ("%s restart..", worker->name);
-    gst_worker_restart (worker);
-  }
+  GstWorker *worker;
+
+  g_return_val_if_fail (GST_IS_WORKER (composite), GST_WORKER_NR_END);
+  g_return_val_if_fail (GST_IS_COMPOSITE (composite), GST_WORKER_NR_END);
+  
+  worker = GST_WORKER (composite);
+
+  (void) worker;
+
+  return composite->deprecated ? 
+    GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
 }
 
 static void
@@ -434,7 +440,7 @@ gst_composite_class_init (GstCompositeClass * klass)
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_composite_null;
+  worker_class->null = (GstWorkerNullFunc) gst_composite_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_composite_get_pipeline_string;

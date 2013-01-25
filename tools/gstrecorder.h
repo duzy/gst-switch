@@ -48,9 +48,6 @@ struct _GstRecorder
 
   GstCompositeMode mode;
   gboolean deprecated;
-
-  GstWorker *write_disk;
-  GstWorker *write_tcp;
 };
 
 struct _GstRecorderClass

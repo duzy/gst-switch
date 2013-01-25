@@ -824,13 +824,13 @@ test_controller (void)
       g_assert_cmpint (client->compose_port_count, >=, 1);
       //g_assert_cmpint (client->encode_port0, ==, 3002);
       //g_assert_cmpint (client->encode_port, ==, client->encode_port0);
-      g_assert_cmpint (client->audio_port, ==, 3004);
+      //g_assert_cmpint (client->audio_port, ==, 3004);
       //g_assert_cmpint (client->audio_port, ==, client->audio_port0);
-      g_assert_cmpint (client->audio_port_count, ==, 1);
-      g_assert_cmpint (client->preview_port_1, ==, 3003);
-      g_assert_cmpint (client->preview_port_2, ==, 3004);
-      g_assert_cmpint (client->preview_port_3, ==, 3005);
-      g_assert_cmpint (client->preview_port_4, ==, 3006);
+      g_assert_cmpint (client->audio_port_count, >=, 1);
+      g_assert_cmpint (client->preview_port_1, !=, 0);
+      g_assert_cmpint (client->preview_port_2, !=, 0);
+      g_assert_cmpint (client->preview_port_3, !=, 0);
+      g_assert_cmpint (client->preview_port_4, !=, 0);
       g_assert_cmpint (client->preview_port_count, ==, 4);
     }
   }

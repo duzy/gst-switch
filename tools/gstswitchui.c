@@ -402,10 +402,10 @@ gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
 	  "name", name, "port", port,
 	  "handle", (gulong) GDK_WINDOW_XID (xview),
 	  NULL));
-  g_object_set_data (G_OBJECT (view), "video-display", disp);
-  gst_worker_prepare (GST_WORKER (disp));
-  gst_worker_start (GST_WORKER (disp));
   g_free (name);
+  g_object_set_data (G_OBJECT (view), "video-display", disp);
+  if (!gst_worker_start (GST_WORKER (disp)))
+    ERROR ("failed to start video display");
   return disp;
 }
 
@@ -424,10 +424,9 @@ gst_switch_ui_new_audio_visual_unlock (GstSwitchUI *ui, GtkWidget *view,
   visual = GST_AUDIO_VISUAL (
       g_object_new (GST_TYPE_AUDIO_VISUAL, "name", name, "port", port,
 	  "handle", handle, "active", (ui->audio_port == port), NULL));
-  gst_worker_prepare (GST_WORKER (visual));
-  gst_worker_start (GST_WORKER (visual));
   g_free (name);
-
+  if (!gst_worker_start (GST_WORKER (visual)))
+    ERROR ("failed to start audio visual");
   return visual;
 }
 

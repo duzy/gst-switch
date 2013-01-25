@@ -30,6 +30,9 @@
 #include "gstworker.h"
 #include "gstswitchserver.h"
 
+#define GST_WORKER_LOCK(srv) (g_mutex_lock (&(srv)->pipeline_lock))
+#define GST_WORKER_UNLOCK(srv) (g_mutex_unlock (&(srv)->pipeline_lock))
+
 enum
 {
   PROP_0,
@@ -64,6 +67,8 @@ gst_worker_init (GstWorker *worker)
   worker->paused_for_buffering = FALSE;
   worker->watch = 0;
 
+  g_mutex_init (&worker->pipeline_lock);
+
   INFO ("Worker initialized (%p)", worker);
 }
 
@@ -86,7 +91,7 @@ gst_worker_finalize (GstWorker *worker)
   }
 
   if (worker->pipeline) {
-    gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+    //gst_element_set_state (worker->pipeline, GST_STATE_NULL);
     gst_object_unref (worker->pipeline);
     worker->pipeline = NULL;
   }
@@ -99,6 +104,8 @@ gst_worker_finalize (GstWorker *worker)
   if (worker->watch) {
     g_source_remove (worker->watch);
   }
+
+  g_mutex_clear (&worker->pipeline_lock);
 
   INFO ("Worker %s finalized (%p)", worker->name, worker);
   g_free (worker->name);
@@ -168,86 +175,79 @@ gst_worker_create_pipeline (GstWorker *worker)
 
   if (error) {
     ERROR ("%s: pipeline parsing error: %s", worker->name, error->message);
-    gst_object_unref (pipeline);
+    if (pipeline) gst_object_unref (pipeline);
     return NULL;
   }
 
   return pipeline;
 }
 
-static void
-gst_worker_class_init (GstWorkerClass *klass)
+static GstWorkerNullReturn
+gst_worker_null (GstWorker *worker)
 {
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-  object_class->finalize = (GObjectFinalizeFunc) gst_worker_finalize;
-  object_class->set_property = (GObjectSetPropertyFunc) gst_worker_set_property;
-  object_class->get_property = (GObjectGetPropertyFunc) gst_worker_get_property;
-
-  gst_worker_signals[SIGNAL_PREPARE_WORKER] =
-    g_signal_new ("prepare-worker", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, prepare_worker),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
-
-  gst_worker_signals[SIGNAL_START_WORKER] =
-    g_signal_new ("start-worker", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, start_worker),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
-
-  gst_worker_signals[SIGNAL_END_WORKER] =
-    g_signal_new ("end-worker", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, end_worker),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
-
-  g_object_class_install_property (object_class, PROP_NAME,
-      g_param_spec_string ("name", "Name", "Name of the case",
-          "", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
-  klass->get_pipeline_string = gst_worker_get_pipeline_string;
-  klass->create_pipeline = gst_worker_create_pipeline;
-
-  INFO ("Worker class initialized");
+  return GST_WORKER_NR_END;
 }
 
-void
+static gboolean gst_worker_prepare (GstWorker *);
+
+gboolean
 gst_worker_start (GstWorker *worker)
 {
-  gst_element_set_state (worker->pipeline, GST_STATE_READY);
-}
+  GstStateChangeReturn ret = GST_STATE_CHANGE_FAILURE;
 
-GstStateChangeReturn
-gst_worker_restart (GstWorker *worker)
-{
-  GstStateChangeReturn statechange;
-  GstState state;
-  statechange = gst_element_get_state (worker->pipeline, &state, NULL,
-      GST_CLOCK_TIME_NONE);
-  if (state != GST_STATE_PLAYING) {
-    statechange = gst_element_set_state (worker->pipeline, GST_STATE_READY);
+  g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
+
+  GST_WORKER_LOCK (worker);
+
+  if (gst_worker_prepare (worker)) {
+    ret = gst_element_set_state (worker->pipeline, GST_STATE_READY);
   }
-  return statechange;
+
+  GST_WORKER_UNLOCK (worker);
+
+  return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
 
-GstStateChangeReturn
-gst_worker_pause (GstWorker *worker)
+gboolean
+gst_worker_replay (GstWorker *worker)
 {
-  GstStateChangeReturn statechange;
-  statechange = gst_element_set_state (worker->pipeline, GST_STATE_PAUSED);
-  return statechange;
+  GstStateChangeReturn ret = GST_STATE_CHANGE_FAILURE;
+  GstState state;
+
+  g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
+
+  GST_WORKER_LOCK (worker);
+ 
+  if (worker->pipeline) {
+    ret = gst_element_get_state (worker->pipeline, &state, NULL,
+	GST_CLOCK_TIME_NONE);
+
+    if (state != GST_STATE_PLAYING) {
+      ret = gst_element_set_state (worker->pipeline, GST_STATE_READY);
+    }
+  }
+
+  GST_WORKER_UNLOCK (worker);
+
+  return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
 
-GstStateChangeReturn
-gst_worker_resume (GstWorker *worker)
-{
-  GstStateChangeReturn statechange;
-  statechange = gst_element_set_state (worker->pipeline, GST_STATE_PLAYING);
-  return statechange;
-}
-
-void
+gboolean
 gst_worker_stop (GstWorker *worker)
 {
-  gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+  GstStateChangeReturn ret = GST_STATE_CHANGE_FAILURE;
+
+  g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
+
+  GST_WORKER_LOCK (worker);
+
+  if (worker->pipeline) {
+    ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+  }
+
+  GST_WORKER_UNLOCK (worker);
+
+  return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
 
 static void
@@ -312,11 +312,22 @@ gst_worker_handle_paused_to_ready (GstWorker *worker)
 static void
 gst_worker_handle_ready_to_null (GstWorker *worker)
 {
-  GstWorkerClass *workerclass = GST_WORKER_CLASS (
-      G_OBJECT_GET_CLASS (worker));
+  GstWorkerClass *workerclass;
 
-  if (workerclass->null_state)
-    (*workerclass->null_state) (worker);
+  g_return_if_fail (GST_IS_WORKER (worker));
+
+  workerclass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
+
+  if (workerclass->null) {
+    GstWorkerNullReturn ret = (*workerclass->null) (worker);
+    switch (ret) {
+    case GST_WORKER_NR_REPLAY:
+      gst_worker_replay (worker);
+      break;
+    case GST_WORKER_NR_END:
+      break;
+    }
+  }
 
   g_signal_emit (worker, gst_worker_signals[SIGNAL_END_WORKER], 0);
 }
@@ -351,10 +362,14 @@ gst_worker_handle_pipeline_state_changed (GstWorker *worker,
 }
 
 static gboolean
-gst_worker_message (GstBus * bus, GstMessage * message, gpointer data)
+gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
 {
-  GstWorker *worker = GST_WORKER (data);
-  GstWorkerClass *klass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
+  GstWorkerClass *workerclass;
+
+  /* The event source should be removed if not worker ! */
+  g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
+
+  workerclass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
 
   switch (GST_MESSAGE_TYPE (message)) {
     case GST_MESSAGE_EOS:
@@ -451,21 +466,20 @@ gst_worker_message (GstBus * bus, GstMessage * message, gpointer data)
       break;
   }
 
-  if (!G_IS_OBJECT (worker)) return TRUE;
-  if (!GST_IS_WORKER (worker)) return TRUE;
-  return klass->message ? klass->message (worker, message) : TRUE;
+  return workerclass->message ?
+    workerclass->message (worker, message) : TRUE;
 }
 
-gboolean
+static gboolean
 gst_worker_prepare (GstWorker *worker)
 {
-  GstWorkerClass *workerclass = GST_WORKER_CLASS (
-      G_OBJECT_GET_CLASS (worker));
+  GstWorkerClass *workerclass;
 
   if (worker->pipeline) {
     return TRUE;
   }
 
+  workerclass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
   if (!workerclass->create_pipeline)
     goto error_create_pipeline_not_installed;
 
@@ -476,8 +490,8 @@ gst_worker_prepare (GstWorker *worker)
   gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
 
   worker->bus = gst_pipeline_get_bus (GST_PIPELINE (worker->pipeline));
-  //g_object_set (worker->bus, "enable-async", TRUE, NULL);
-  worker->watch = gst_bus_add_watch (worker->bus, gst_worker_message, worker);
+  worker->watch = gst_bus_add_watch (worker->bus,
+      (GstBusFunc) gst_worker_message, worker);
 
   worker->source = gst_bin_get_by_name (GST_BIN (worker->pipeline), "source");
   worker->sink = gst_bin_get_by_name (GST_BIN (worker->pipeline), "sink");
@@ -506,4 +520,39 @@ gst_worker_prepare (GstWorker *worker)
     ERROR ("%s: failed to create new pipeline", worker->name);
     return FALSE;
   }
+}
+
+static void
+gst_worker_class_init (GstWorkerClass *klass)
+{
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->finalize = (GObjectFinalizeFunc) gst_worker_finalize;
+  object_class->set_property = (GObjectSetPropertyFunc) gst_worker_set_property;
+  object_class->get_property = (GObjectGetPropertyFunc) gst_worker_get_property;
+
+  gst_worker_signals[SIGNAL_PREPARE_WORKER] =
+    g_signal_new ("prepare-worker", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, prepare_worker),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  gst_worker_signals[SIGNAL_START_WORKER] =
+    g_signal_new ("start-worker", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, start_worker),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  gst_worker_signals[SIGNAL_END_WORKER] =
+    g_signal_new ("end-worker", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, end_worker),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  g_object_class_install_property (object_class, PROP_NAME,
+      g_param_spec_string ("name", "Name", "Name of the case",
+          "", G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  klass->get_pipeline_string = gst_worker_get_pipeline_string;
+  klass->create_pipeline = gst_worker_create_pipeline;
+  klass->null = gst_worker_null;
+
+  INFO ("Worker class initialized");
 }

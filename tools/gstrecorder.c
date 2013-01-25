@@ -63,8 +63,6 @@ gst_recorder_init (GstRecorder * rec)
   rec->mode = 0;
   rec->width = 0;
   rec->height = 0;
-  rec->write_disk = GST_WORKER (g_object_new (GST_TYPE_WORKER, "name", "writedisk", NULL));
-  rec->write_tcp = GST_WORKER (g_object_new (GST_TYPE_WORKER, "name", "writetcp", NULL));
   rec->deprecated = FALSE;
 
   INFO ("Recorder initialized (%p)", rec);
@@ -75,16 +73,6 @@ gst_recorder_finalize (GstRecorder * rec)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (rec));
-
-  if (rec->write_disk) {
-    g_object_unref (rec->write_disk);
-    rec->write_disk = NULL;
-  }
-
-  if (rec->write_tcp) {
-    g_object_unref (rec->write_tcp);
-    rec->write_tcp = NULL;
-  }
 
   INFO ("Recorder finalized (%p)", rec);
 }
@@ -134,22 +122,6 @@ gst_recorder_set_property (GstRecorder *rec, guint property_id,
     break;
   }
 }
-
-#if 0
-static GString *
-gst_recorder_get_write_disk_string (GstRecorder *rec)
-{
-  GString *desc = g_string_new ("");
-  return desc;
-}
-
-static GString *
-gst_recorder_get_write_tcp_string (GstRecorder *rec)
-{
-  GString *desc = g_string_new ("");
-  return desc;
-}
-#endif
 
 static const gchar *
 gst_recorder_new_filename (GstRecorder * rec)
@@ -221,65 +193,37 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
 static gboolean
 gst_recorder_prepare (GstRecorder *rec)
 {
-#if 0
-  if (rec->write_disk->pipeline_string)
-    g_string_free (rec->write_disk->pipeline_string, FALSE);
-  if (rec->write_tcp->pipeline_string)
-    g_string_free (rec->write_tcp->pipeline_string, FALSE);
-
-  rec->write_disk->pipeline_string = gst_recorder_get_write_disk_string (rec);
-  rec->write_tcp->pipeline_string = gst_recorder_get_write_tcp_string (rec);
-
-  if (!gst_worker_prepare (rec->write_disk))
-    goto error_prepare_write_disk;
-
-  gst_worker_start (rec->write_disk);
-
-  if (!gst_worker_prepare (rec->write_tcp))
-    goto error_prepare_write_tcp;
-
-  gst_worker_start (rec->write_tcp);
-
   return TRUE;
-
- error_prepare_write_disk:
-  {
-    ERROR ("prepare writing to disk");
-    g_string_free (rec->write_disk->pipeline_string, FALSE);
-    rec->write_disk->pipeline_string = NULL;
-    return FALSE;
-  }
-
- error_prepare_write_tcp:
-  {
-    ERROR ("prepare writing to TCP");
-    g_string_free (rec->write_tcp->pipeline_string, FALSE);
-    rec->write_tcp->pipeline_string = NULL;
-    return FALSE;
-  }
-#else
-  return TRUE;
-#endif
 }
 
-static void
+static GstWorkerNullReturn
 gst_recorder_null (GstRecorder *rec)
 {
-  GstWorker *worker = GST_WORKER (rec);
-  if (!rec->deprecated) {
-    GstElement *sink = gst_bin_get_by_name (GST_BIN (worker->pipeline),
-	"disk_sink");
-    if (sink) {
-      const gchar *filename = gst_recorder_new_filename (rec);
-      if (filename) {
-	INFO ("%s restart (%s)..", worker->name, filename);
-	g_object_set (G_OBJECT (sink), "location", filename, NULL);
-	g_object_unref (G_OBJECT (sink));
-	g_free ((gpointer) filename);
-      }
-    }
-    gst_worker_restart (worker);
+  GstWorker *worker;
+  GstElement *sink;
+  const gchar *filename;
+
+  g_return_val_if_fail (GST_IS_WORKER (rec), GST_WORKER_NR_END);
+  g_return_val_if_fail (GST_IS_RECORDER (rec), GST_WORKER_NR_END);
+
+  worker = GST_WORKER (rec);
+
+  if (rec->deprecated) {
+    return GST_WORKER_NR_END;
   }
+
+  g_return_val_if_fail (GST_IS_BIN (worker->pipeline), GST_WORKER_NR_END);
+
+  sink = gst_bin_get_by_name (GST_BIN (worker->pipeline), "disk_sink");
+  g_return_val_if_fail (sink != NULL, GST_WORKER_NR_END);
+  
+  filename = gst_recorder_new_filename (rec);
+  g_return_val_if_fail (filename != NULL, GST_WORKER_NR_END);
+
+  g_object_set (G_OBJECT (sink), "location", filename, NULL);
+  g_object_unref (G_OBJECT (sink));
+  g_free ((gpointer) filename);
+  return GST_WORKER_NR_REPLAY;
 }
 
 static void
@@ -313,7 +257,7 @@ gst_recorder_class_init (GstRecorderClass * klass)
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null_state = (GstWorkerNullStateFunc) gst_recorder_null;
+  worker_class->null = (GstWorkerNullFunc) gst_recorder_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_recorder_get_pipeline_string;

@@ -38,12 +38,16 @@ typedef struct _GstWorker GstWorker;
 typedef struct _GstWorkerClass GstWorkerClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
+typedef enum {
+  GST_WORKER_NR_END,
+  GST_WORKER_NR_REPLAY,
+} GstWorkerNullReturn;
+
 typedef GString *(*GstWorkerGetPipelineString) (GstWorker *worker, gpointer data);
 typedef GString *(*GstWorkerGetPipelineStringFunc) (GstWorker *worker);
-typedef GstElement *(*GstWorkerCreatePipelineFunc) (GstWorker *worker);
 typedef gboolean (*GstWorkerPrepareFunc) (GstWorker *worker);
 typedef gboolean (*GstWorkerMessageFunc) (GstWorker *worker, GstMessage *);
-typedef void (*GstWorkerNullStateFunc) (GstWorker *worker);
+typedef GstWorkerNullReturn (*GstWorkerNullFunc) (GstWorker *worker);
 
 struct _GstWorker
 {
@@ -53,10 +57,11 @@ struct _GstWorker
 
   GstSwitchServer *server;
 
-  GstBus *bus;
+  GMutex pipeline_lock;
   GstElement *pipeline;
   GstElement *source;
   GstElement *sink;
+  GstBus *bus;
 
   GstWorkerGetPipelineString pipeline_func;
   gpointer pipeline_func_data;
@@ -79,16 +84,14 @@ struct _GstWorkerClass
   GString *(*get_pipeline_string) (GstWorker *worker);
   GstElement *(*create_pipeline) (GstWorker *worker);
   gboolean (*prepare) (GstWorker *worker);
-  void (*null_state) (GstWorker *worker);
+  GstWorkerNullReturn (*null) (GstWorker *worker);
 };
 
 GType gst_worker_get_type (void);
 
-gboolean gst_worker_prepare (GstWorker *worker);
-void gst_worker_start (GstWorker *worker);
-GstStateChangeReturn gst_worker_pause (GstWorker *worker);
-GstStateChangeReturn gst_worker_resume (GstWorker *worker);
-GstStateChangeReturn gst_worker_restart (GstWorker *worker);
-void gst_worker_stop (GstWorker *worker);
+gboolean gst_worker_start (GstWorker *worker);
+gboolean gst_worker_stop (GstWorker *worker);
+//gboolean gst_worker_restart (GstWorker *worker);
+gboolean gst_worker_replay (GstWorker *worker);
 
 #endif//__GST_WORKER_H__by_Duzy_Chan__
