@@ -196,6 +196,7 @@ gst_recorder_prepare (GstRecorder *rec)
   return TRUE;
 }
 
+#if 0
 static GstWorkerNullReturn
 gst_recorder_null (GstRecorder *rec)
 {
@@ -225,6 +226,7 @@ gst_recorder_null (GstRecorder *rec)
   g_free ((gpointer) filename);
   return GST_WORKER_NR_REPLAY;
 }
+#endif
 
 static void
 gst_recorder_class_init (GstRecorderClass * klass)
@@ -257,7 +259,7 @@ gst_recorder_class_init (GstRecorderClass * klass)
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  worker_class->null = (GstWorkerNullFunc) gst_recorder_null;
+  //worker_class->null = (GstWorkerNullFunc) gst_recorder_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_recorder_get_pipeline_string;

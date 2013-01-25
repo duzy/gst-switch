@@ -73,7 +73,7 @@ gst_worker_init (GstWorker *worker)
 }
 
 static void
-gst_worker_finalize (GstWorker *worker)
+gst_worker_dispose (GstWorker *worker)
 {
   if (worker->server) {
     g_object_unref (worker->server);
@@ -105,11 +105,19 @@ gst_worker_finalize (GstWorker *worker)
     g_source_remove (worker->watch);
   }
 
-  g_mutex_clear (&worker->pipeline_lock);
+  INFO ("%s disposed (%p)", worker->name, worker);
 
-  INFO ("Worker %s finalized (%p)", worker->name, worker);
   g_free (worker->name);
   worker->name = NULL;
+}
+
+static void
+gst_worker_finalize (GstWorker *worker)
+{
+  g_mutex_clear (&worker->pipeline_lock);
+
+  if (G_OBJECT_CLASS (gst_worker_parent_class)->finalize)
+    (*G_OBJECT_CLASS (gst_worker_parent_class)->finalize) (G_OBJECT (worker));
 }
 
 static void
@@ -208,7 +216,7 @@ gst_worker_start (GstWorker *worker)
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
 
-gboolean
+static gboolean
 gst_worker_replay (GstWorker *worker)
 {
   GstStateChangeReturn ret = GST_STATE_CHANGE_FAILURE;
@@ -280,13 +288,13 @@ gst_worker_handle_info (GstWorker *worker, GError * error,
 }
 
 static void
-gst_worker_handle_null_to_ready (GstWorker *worker)
+gst_worker_state_null_to_ready (GstWorker *worker)
 {
   gst_element_set_state (worker->pipeline, GST_STATE_PAUSED);
 }
 
 static void
-gst_worker_handle_ready_to_paused (GstWorker *worker)
+gst_worker_state_ready_to_paused (GstWorker *worker)
 {
   if (!worker->paused_for_buffering) {
     gst_element_set_state (worker->pipeline, GST_STATE_PLAYING);
@@ -294,33 +302,32 @@ gst_worker_handle_ready_to_paused (GstWorker *worker)
 }
 
 static void
-gst_worker_handle_paused_to_playing (GstWorker *worker)
+gst_worker_state_paused_to_playing (GstWorker *worker)
 {
   g_signal_emit (worker, gst_worker_signals[SIGNAL_START_WORKER], 0);
 }
 
 static void
-gst_worker_handle_playing_to_paused (GstWorker *worker)
+gst_worker_state_playing_to_paused (GstWorker *worker)
 {
 }
 
 static void
-gst_worker_handle_paused_to_ready (GstWorker *worker)
+gst_worker_state_paused_to_ready (GstWorker *worker)
 {
 }
 
 static void
-gst_worker_handle_ready_to_null (GstWorker *worker)
+gst_worker_state_ready_to_null (GstWorker *worker)
 {
   GstWorkerClass *workerclass;
+  GstWorkerNullReturn ret = GST_WORKER_NR_END;
 
   g_return_if_fail (GST_IS_WORKER (worker));
 
   workerclass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
-
   if (workerclass->null) {
-    GstWorkerNullReturn ret = (*workerclass->null) (worker);
-    switch (ret) {
+    switch ((ret = (*workerclass->null) (worker))) {
     case GST_WORKER_NR_REPLAY:
       gst_worker_replay (worker);
       break;
@@ -329,31 +336,32 @@ gst_worker_handle_ready_to_null (GstWorker *worker)
     }
   }
 
-  g_signal_emit (worker, gst_worker_signals[SIGNAL_END_WORKER], 0);
+  if (ret == GST_WORKER_NR_END)
+    g_signal_emit (worker, gst_worker_signals[SIGNAL_END_WORKER], 0);
 }
 
 static gboolean
-gst_worker_handle_pipeline_state_changed (GstWorker *worker,
+gst_worker_pipeline_state_changed (GstWorker *worker,
     GstStateChange statechange)
 {
   switch (statechange) {
   case GST_STATE_CHANGE_NULL_TO_READY:
-    gst_worker_handle_null_to_ready (worker);
+    gst_worker_state_null_to_ready (worker);
     break;
   case GST_STATE_CHANGE_READY_TO_PAUSED:
-    gst_worker_handle_ready_to_paused (worker);
+    gst_worker_state_ready_to_paused (worker);
     break;
   case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
-    gst_worker_handle_paused_to_playing (worker);
+    gst_worker_state_paused_to_playing (worker);
     break;
   case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
-    gst_worker_handle_playing_to_paused (worker);
+    gst_worker_state_playing_to_paused (worker);
     break;
   case GST_STATE_CHANGE_PAUSED_TO_READY:
-    gst_worker_handle_paused_to_ready (worker);
+    gst_worker_state_paused_to_ready (worker);
     break;
   case GST_STATE_CHANGE_READY_TO_NULL:
-    gst_worker_handle_ready_to_null (worker);
+    gst_worker_state_ready_to_null (worker);
     break;
   default:
     return FALSE;
@@ -417,7 +425,7 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
               gst_element_state_get_name (oldstate),
               gst_element_state_get_name (newstate));
 
-	ret = gst_worker_handle_pipeline_state_changed (worker,
+	ret = gst_worker_pipeline_state_changed (worker,
 	    GST_STATE_TRANSITION (oldstate, newstate));
 
 	if (!ret && verbose)
@@ -527,6 +535,7 @@ gst_worker_class_init (GstWorkerClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+  object_class->dispose = (GObjectFinalizeFunc) gst_worker_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_worker_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_worker_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_worker_get_property;

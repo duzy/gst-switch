@@ -92,6 +92,5 @@ GType gst_worker_get_type (void);
 gboolean gst_worker_start (GstWorker *worker);
 gboolean gst_worker_stop (GstWorker *worker);
 //gboolean gst_worker_restart (GstWorker *worker);
-gboolean gst_worker_replay (GstWorker *worker);
 
 #endif//__GST_WORKER_H__by_Duzy_Chan__
