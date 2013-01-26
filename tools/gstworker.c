@@ -91,7 +91,6 @@ gst_worker_dispose (GstWorker *worker)
   }
 
   if (worker->pipeline) {
-    //gst_element_set_state (worker->pipeline, GST_STATE_NULL);
     gst_object_unref (worker->pipeline);
     worker->pipeline = NULL;
   }
@@ -105,7 +104,7 @@ gst_worker_dispose (GstWorker *worker)
     g_source_remove (worker->watch);
   }
 
-  INFO ("%s disposed (%p)", worker->name, worker);
+  //INFO ("%s disposed (%p)", worker->name, worker);
 
   g_free (worker->name);
   worker->name = NULL;

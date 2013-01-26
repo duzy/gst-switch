@@ -74,7 +74,7 @@ static GOptionEntry option_entries[] = {
   {"enable-test-ui-integration",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_ui_integration,	"Enable testing UI integration",    NULL},
   {"enable-test-random-connection",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_random_connection,	"Enable testing random connection", NULL},
   {"enable-test-switching",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_switching,		"Enable testing switching",         NULL},
-  {"enable-test-fuzz-ui",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_fuzz,		"Enable testing fuzz input",        NULL},
+  {"enable-test-fuzz",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_fuzz,		"Enable testing fuzz input",        NULL},
   {"enable-test-checking-timestamps",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_checking_timestamps,	"Enable testing checking timestamps", NULL},
   {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server",           NULL},
   {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui",               NULL},
@@ -95,6 +95,7 @@ struct _testcase
   gint error_count;
   void (*null_func) (testcase *t, gpointer data);
   gpointer null_func_data;
+  gboolean errors_are_ok;
 };
 
 static void
@@ -407,7 +408,7 @@ testcase_run (testcase *t)
   t->desc = NULL;
   t->timer = 0;
 
-  if (t->error_count) {
+  if (!t->errors_are_ok && 0 < t->error_count) {
     ERROR ("%s: %d errors", t->name, t->error_count);
   }
 
@@ -500,7 +501,6 @@ testclient_init (testclient *client)
   client->sink2.name = "test_preview2";
   client->sink3.name = "test_preview3";
   client->sink4.name = "test_preview4";
-
   client->expected_compose_count = 0;
 }
 
@@ -845,6 +845,13 @@ test_controller (void)
     }
   }
 
+  g_assert_cmpint (g_list_length (client->sink0), <=, 1);
+
+  testclient_join (client);
+  g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
+  g_object_unref (client);
+  g_assert_cmpint (clientcount, ==, 0);
+
   if (!opts.test_external_server) {
     close_pid (server_pid);
     {
@@ -861,13 +868,6 @@ test_controller (void)
       g_object_unref (file);
     }
   }
-
-  g_assert_cmpint (g_list_length (client->sink0), <=, 1);
-
-  testclient_join (client);
-  g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
-  g_object_unref (client);
-  g_assert_cmpint (clientcount, ==, 0);
 }
 
 static void
@@ -1466,10 +1466,185 @@ test_switching (void)
     close_pid (server_pid);
 }
 
+static gpointer
+test_fuzz_feed (gpointer data)
+{
+  enum { seconds = 2 };
+  gboolean *quit = (gboolean *) data;
+  sleep (5);
+  const gchar *names[] = {
+    "/dev/zero",
+  };
+  const gint len = sizeof (names) / sizeof (names[0]);
+  srand (time (NULL));
+  while (!*quit) {
+    testcase source1 = { "test-video-fuzz-source", 0 };
+    testcase source2 = { "test-audio-fuzz-source", 0 };
+
+    source1.live_seconds = seconds;
+    source1.errors_are_ok = TRUE;
+    source1.desc = g_string_new ("");
+    g_string_append_printf (source1.desc, "filesrc location=%s ", names[rand () % len]);
+    g_string_append_printf (source1.desc, "! gdppay ");
+    g_string_append_printf (source1.desc, "! tcpclientsink port=3000 ");
+
+    source2.live_seconds = seconds;
+    source2.errors_are_ok = TRUE;
+    source2.desc = g_string_new ("");
+    g_string_append_printf (source2.desc, "filesrc location=%s ", names[rand () % len]);
+    g_string_append_printf (source2.desc, "! gdppay ");
+    g_string_append_printf (source2.desc, "! tcpclientsink port=4000 ");
+
+    testcase_run_thread (&source1);
+    testcase_run_thread (&source2);
+    testcase_join (&source1);
+    testcase_join (&source2);
+
+    usleep (5000);
+  }
+  return NULL;
+}
+
 static void
 test_fuzz (void)
 {
-  WARN ("TODO: fuzz");
+  const gint seconds = 60 * 2;
+  GPid server_pid = 0;
+  testcase source1 = { "test-video-good-source1", 0 };
+  testcase source2 = { "test-video-good-source2", 0 };
+  testcase source3 = { "test-video-good-source3", 0 };
+  testcase sink0 = { "test_video_compose_sink", 0 };
+  testcase sink1 = { "test_video_preview_sink1", 0 };
+  testcase sink2 = { "test_video_preview_sink2", 0 };
+  testcase sink3 = { "test_video_preview_sink3", 0 };
+  const gchar *textoverlay = "textoverlay "
+    "font-desc=\"Sans 60\" "
+    "auto-resize=true "
+    "shaded-background=true "
+    ;
+
+  GThread *feed;
+  gboolean feed_quit = FALSE;
+
+  g_print ("\n");
+  g_assert (!source1.thread);
+  g_assert (!source2.thread);
+  g_assert (!source3.thread);
+  g_assert (!sink0.thread);
+  g_assert (!sink1.thread);
+  g_assert (!sink2.thread);
+  g_assert (!sink3.thread);
+
+  source1.live_seconds = seconds;
+  source1.desc = g_string_new ("videotestsrc pattern=0 ");
+  g_string_append_printf (source1.desc, "! video/x-raw,width=%d,height=%d ", W, H);
+  g_string_append_printf (source1.desc, "! %s text=source1 ", textoverlay);
+  g_string_append_printf (source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
+  g_string_append_printf (source1.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  source2.live_seconds = seconds;
+  source2.desc = g_string_new ("videotestsrc pattern=1 ");
+  g_string_append_printf (source2.desc, "! video/x-raw,width=%d,height=%d ", W, H);
+  g_string_append_printf (source2.desc, "! %s text=source2 ", textoverlay);
+  g_string_append_printf (source2.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
+  g_string_append_printf (source2.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  source3.live_seconds = seconds;
+  source3.desc = g_string_new ("videotestsrc pattern=15 ");
+  g_string_append_printf (source3.desc, "! video/x-raw,width=%d,height=%d ", W, H);
+  g_string_append_printf (source3.desc, "! %s text=source3 ", textoverlay);
+  g_string_append_printf (source3.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
+  g_string_append_printf (source3.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+  sink0.live_seconds = seconds;
+  sink0.desc = g_string_new ("tcpclientsrc port=3001 ");
+  g_string_append_printf (sink0.desc, "! gdpdepay ");
+  g_string_append_printf (sink0.desc, "! videoconvert ");
+  g_string_append_printf (sink0.desc, "! xvimagesink");
+
+  sink1.live_seconds = seconds;
+  sink1.desc = g_string_new ("tcpclientsrc port=3003 ");
+  g_string_append_printf (sink1.desc, "! gdpdepay ");
+  g_string_append_printf (sink1.desc, "! videoconvert ");
+  g_string_append_printf (sink1.desc, "! xvimagesink");
+
+  sink2.live_seconds = seconds;
+  sink2.desc = g_string_new ("tcpclientsrc port=3004 ");
+  g_string_append_printf (sink2.desc, "! gdpdepay ");
+  g_string_append_printf (sink2.desc, "! videoconvert ");
+  g_string_append_printf (sink2.desc, "! xvimagesink");
+
+  sink3.live_seconds = seconds;
+  sink3.desc = g_string_new ("tcpclientsrc port=3005 ");
+  g_string_append_printf (sink3.desc, "! gdpdepay ");
+  g_string_append_printf (sink3.desc, "! videoconvert ");
+  g_string_append_printf (sink3.desc, "! xvimagesink");
+
+  if (!opts.test_external_server) {
+    server_pid = launch_server ();
+    g_assert_cmpint (server_pid, !=, 0);
+    sleep (2); /* give a second for server to be online */
+  }
+
+  feed = g_thread_new ("fuzz-feed", test_fuzz_feed, &feed_quit);
+
+  testcase_run_thread (&source1);
+  sleep (1); /* give a second for source1 to be online */
+  testcase_run_thread (&source2);
+  testcase_run_thread (&source3);
+  sleep (1); /* give a second for sources to be online */
+  testcase_run_thread (&sink0);
+  testcase_run_thread (&sink1);
+  testcase_run_thread (&sink2);
+  testcase_run_thread (&sink3);
+  testcase_join (&source1);
+  testcase_join (&source2);
+  testcase_join (&source3);
+  testcase_join (&sink0);
+  testcase_join (&sink1);
+  testcase_join (&sink2);
+  testcase_join (&sink3);
+
+  feed_quit = TRUE;
+  g_thread_join (feed);
+  g_thread_unref (feed);
+
+  if (!opts.test_external_server)
+    close_pid (server_pid);
+
+  g_assert (source1.desc == NULL);
+  g_assert (source1.mainloop == NULL);
+  g_assert (source1.pipeline == NULL);
+
+  g_assert (source2.desc == NULL);
+  g_assert (source2.mainloop == NULL);
+  g_assert (source2.pipeline == NULL);
+
+  g_assert (source3.desc == NULL);
+  g_assert (source3.mainloop == NULL);
+  g_assert (source3.pipeline == NULL);
+
+  g_assert (sink0.desc == NULL);
+  g_assert (sink0.mainloop == NULL);
+  g_assert (sink0.pipeline == NULL);
+
+  g_assert (sink1.desc == NULL);
+  g_assert (sink1.mainloop == NULL);
+  g_assert (sink1.pipeline == NULL);
+
+  g_assert (sink2.desc == NULL);
+  g_assert (sink2.mainloop == NULL);
+  g_assert (sink2.pipeline == NULL);
+
+  g_assert (sink3.desc == NULL);
+  g_assert (sink3.mainloop == NULL);
+  g_assert (sink3.pipeline == NULL);
+
+  if (!opts.test_external_server) {
+    GFile *file = g_file_new_for_path ("test-recording.data");
+    g_assert (g_file_query_exists (file, NULL));
+    g_object_unref (file);
+  }
 }
 
 static void
