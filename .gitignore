@@ -36,3 +36,5 @@
 /tests/test-switch-server
 test-server-*.log
 *.dat
+*.data
+*.log

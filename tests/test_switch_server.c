@@ -968,46 +968,25 @@ test_video (void)
   if (!opts.test_external_server)
     close_pid (server_pid);
 
-  g_assert_cmpstr (source1.name, ==, "test-video-source1");
-  g_assert_cmpint (source1.timer, ==, 0);
   g_assert (source1.desc == NULL);
-  g_assert (source1.mainloop == NULL);
   g_assert (source1.pipeline == NULL);
 
-  g_assert_cmpstr (source2.name, ==, "test-video-source2");
-  g_assert_cmpint (source2.timer, ==, 0);
   g_assert (source2.desc == NULL);
-  g_assert (source2.mainloop == NULL);
   g_assert (source2.pipeline == NULL);
 
-  g_assert_cmpstr (source3.name, ==, "test-video-source3");
-  g_assert_cmpint (source3.timer, ==, 0);
   g_assert (source3.desc == NULL);
-  g_assert (source3.mainloop == NULL);
   g_assert (source3.pipeline == NULL);
 
-  g_assert_cmpstr (sink0.name, ==, "test_video_compose_sink");
-  g_assert_cmpint (sink0.timer, ==, 0);
   g_assert (sink0.desc == NULL);
-  g_assert (sink0.mainloop == NULL);
   g_assert (sink0.pipeline == NULL);
 
-  g_assert_cmpstr (sink1.name, ==, "test_video_preview_sink1");
-  g_assert_cmpint (sink1.timer, ==, 0);
   g_assert (sink1.desc == NULL);
-  g_assert (sink1.mainloop == NULL);
   g_assert (sink1.pipeline == NULL);
 
-  g_assert_cmpstr (sink2.name, ==, "test_video_preview_sink2");
-  g_assert_cmpint (sink2.timer, ==, 0);
   g_assert (sink2.desc == NULL);
-  g_assert (sink2.mainloop == NULL);
   g_assert (sink2.pipeline == NULL);
 
-  g_assert_cmpstr (sink3.name, ==, "test_video_preview_sink3");
-  g_assert_cmpint (sink3.timer, ==, 0);
   g_assert (sink3.desc == NULL);
-  g_assert (sink3.mainloop == NULL);
   g_assert (sink3.pipeline == NULL);
 
   if (!opts.test_external_server) {
@@ -1508,7 +1487,7 @@ test_fuzz_feed (gpointer data)
 static void
 test_fuzz (void)
 {
-  const gint seconds = 60 * 2;
+  const gint seconds = 10 * 2;
   GPid server_pid = 0;
   testcase source1 = { "test-video-good-source1", 0 };
   testcase source2 = { "test-video-good-source2", 0 };
@@ -1609,42 +1588,37 @@ test_fuzz (void)
   g_thread_join (feed);
   g_thread_unref (feed);
 
-  if (!opts.test_external_server)
+  if (!opts.test_external_server) {
     close_pid (server_pid);
+#if 0
+    {
+      GFile *file = g_file_new_for_path ("test-recording.data");
+      g_assert (g_file_query_exists (file, NULL));
+      g_object_unref (file);
+    }
+#endif
+  }
 
   g_assert (source1.desc == NULL);
-  g_assert (source1.mainloop == NULL);
   g_assert (source1.pipeline == NULL);
 
   g_assert (source2.desc == NULL);
-  g_assert (source2.mainloop == NULL);
   g_assert (source2.pipeline == NULL);
 
   g_assert (source3.desc == NULL);
-  g_assert (source3.mainloop == NULL);
   g_assert (source3.pipeline == NULL);
 
   g_assert (sink0.desc == NULL);
-  g_assert (sink0.mainloop == NULL);
   g_assert (sink0.pipeline == NULL);
 
   g_assert (sink1.desc == NULL);
-  g_assert (sink1.mainloop == NULL);
   g_assert (sink1.pipeline == NULL);
 
   g_assert (sink2.desc == NULL);
-  g_assert (sink2.mainloop == NULL);
   g_assert (sink2.pipeline == NULL);
 
   g_assert (sink3.desc == NULL);
-  g_assert (sink3.mainloop == NULL);
   g_assert (sink3.pipeline == NULL);
-
-  if (!opts.test_external_server) {
-    GFile *file = g_file_new_for_path ("test-recording.data");
-    g_assert (g_file_query_exists (file, NULL));
-    g_object_unref (file);
-  }
 }
 
 static void

@@ -4,21 +4,18 @@ EXTRA_DIST = autogen.sh
 
 ACLOCAL_AMFLAGS = -I m4
 
-#TESTS = test-controller
-# TESTS += test-video
-# TESTS += test-ui-integration
-# TESTS += test-fuzz
-# TESTS += test-random-connection
-# TESTS += test-audio
-# TESTS += test-switching
-# TESTS += test-checking-timestamps
-TESTS = test-fuzz
+TESTS = test-controller \
+	test-video \
+	test-ui-integration \
+	test-fuzz \
+	test-random-connection \
+	test-audio \
+	test-switching \
+	test-checking-timestamps
 
 test: $(TESTS)
 	@ls $(TESTS:%=%.log)
 
-#test-%:
-#	./tests/test-switch-server --enable-$@ #> $@.log
 $(TESTS):
 	./tests/test-switch-server --enable-$@ #> $@.log
 
