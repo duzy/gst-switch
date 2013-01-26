@@ -33,6 +33,8 @@
 #include "../tools/gstcase.h"
 #include "../logutils.h"
 
+#define TEST_RECORDING_DATA 0
+
 gboolean verbose = FALSE;
 
 enum {
@@ -47,7 +49,7 @@ static struct {
   gboolean enable_test_controller;
   gboolean enable_test_video;
   gboolean enable_test_audio;
-  gboolean enable_test_ui_integration;
+  gboolean enable_test_ui;
   gboolean enable_test_random_connection;
   gboolean enable_test_switching;
   gboolean enable_test_fuzz;
@@ -58,7 +60,7 @@ static struct {
   .enable_test_controller		= FALSE,
   .enable_test_video			= FALSE,
   .enable_test_audio			= FALSE,
-  .enable_test_ui_integration		= FALSE,
+  .enable_test_ui			= FALSE,
   .enable_test_random_connection	= FALSE,
   .enable_test_switching		= FALSE,
   .enable_test_fuzz			= FALSE,
@@ -68,14 +70,14 @@ static struct {
 };
 
 static GOptionEntry option_entries[] = {
-  {"enable-test-controller",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_controller,		"Enable testing controller",        NULL},
-  {"enable-test-video",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_video,		"Enable testing video",             NULL},
-  {"enable-test-audio",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_audio,		"Enable testing audio",             NULL},
-  {"enable-test-ui-integration",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_ui_integration,	"Enable testing UI integration",    NULL},
-  {"enable-test-random-connection",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_random_connection,	"Enable testing random connection", NULL},
-  {"enable-test-switching",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_switching,		"Enable testing switching",         NULL},
-  {"enable-test-fuzz",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_fuzz,		"Enable testing fuzz input",        NULL},
-  {"enable-test-checking-timestamps",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_checking_timestamps,	"Enable testing checking timestamps", NULL},
+  {"enable-test-controller",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_controller,		"Enable testing controller",         NULL},
+  {"enable-test-video",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_video,		"Enable testing video",              NULL},
+  {"enable-test-audio",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_audio,		"Enable testing audio",              NULL},
+  {"enable-test-ui",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_ui,			"Enable testing UI",                 NULL},
+  {"enable-test-random-connection",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_random_connection,	"Enable testing random connection",  NULL},
+  {"enable-test-switching",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_switching,		"Enable testing switching",          NULL},
+  {"enable-test-fuzz",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_fuzz,		"Enable testing fuzz input",         NULL},
+  {"enable-test-checking-timestamps",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_checking_timestamps,	"Enable testing checking timestamps",NULL},
   {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server",           NULL},
   {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui",               NULL},
   {NULL}
@@ -854,6 +856,7 @@ test_controller (void)
 
   if (!opts.test_external_server) {
     close_pid (server_pid);
+#if TEST_RECORDING_DATA
     {
       testcase play = { "play-test-record", 0 };
       GFile *file = g_file_new_for_path ("test-recording.data");
@@ -867,6 +870,7 @@ test_controller (void)
       g_assert_cmpint (play.error_count, ==, 0);
       g_object_unref (file);
     }
+#endif
   }
 }
 
@@ -990,9 +994,11 @@ test_video (void)
   g_assert (sink3.pipeline == NULL);
 
   if (!opts.test_external_server) {
+#if TEST_RECORDING_DATA
     GFile *file = g_file_new_for_path ("test-recording.data");
     g_assert (g_file_query_exists (file, NULL));
     g_object_unref (file);
+#endif
   }
 }
 
@@ -1001,6 +1007,7 @@ test_video_recording_result (void)
 {
   g_print ("\n");
   if (!opts.test_external_server) {
+#if TEST_RECORDING_DATA
     GFile *file = g_file_new_for_path ("test-recording.data");
     GError *error = NULL;
     g_assert (g_file_query_exists (file, NULL));
@@ -1008,6 +1015,7 @@ test_video_recording_result (void)
     g_assert (error == NULL);
     g_assert (!g_file_query_exists (file, NULL));
     g_object_unref (file);
+#endif
   }
 }
 
@@ -1109,9 +1117,11 @@ test_audio (void)
   g_assert (source3.pipeline == NULL);
 
   if (!opts.test_external_server) {
+#if TEST_RECORDING_DATA
     GFile *file = g_file_new_for_path ("test-recording.data");
     g_assert (g_file_query_exists (file, NULL));
     g_object_unref (file);
+#endif
   }
 }
 
@@ -1120,6 +1130,7 @@ test_audio_recording_result (void)
 {
   g_print ("\n");
   if (!opts.test_external_server) {
+#if TEST_RECORDING_DATA
     GFile *file = g_file_new_for_path ("test-recording.data");
     GError *error = NULL;
     g_assert (g_file_query_exists (file, NULL));
@@ -1127,11 +1138,12 @@ test_audio_recording_result (void)
     g_assert (error == NULL);
     g_assert (!g_file_query_exists (file, NULL));
     g_object_unref (file);
+#endif
   }
 }
 
 static void
-test_ui_integrated (void)
+test_ui (void)
 {
   const gint seconds = 10;
   GPid server_pid = 0;
@@ -1220,6 +1232,7 @@ test_recording_result (void)
 {
   g_print ("\n");
   if (!opts.test_external_server) {
+#if TEST_RECORDING_DATA
     GFile *file = g_file_new_for_path ("test-recording.data");
     GError *error = NULL;
     g_assert (g_file_query_exists (file, NULL));
@@ -1227,6 +1240,7 @@ test_recording_result (void)
     g_assert (error == NULL);
     g_assert (!g_file_query_exists (file, NULL));
     g_object_unref (file);
+#endif
   }
 }
 
@@ -1487,7 +1501,7 @@ test_fuzz_feed (gpointer data)
 static void
 test_fuzz (void)
 {
-  const gint seconds = 10 * 2;
+  const gint seconds = 60 * 1;
   GPid server_pid = 0;
   testcase source1 = { "test-video-good-source1", 0 };
   testcase source2 = { "test-video-good-source2", 0 };
@@ -1590,7 +1604,7 @@ test_fuzz (void)
 
   if (!opts.test_external_server) {
     close_pid (server_pid);
-#if 0
+#if TEST_RECORDING_DATA
     {
       GFile *file = g_file_new_for_path ("test-recording.data");
       g_assert (g_file_query_exists (file, NULL));
@@ -1705,8 +1719,8 @@ int main (int argc, char**argv)
     g_test_add_func ("/gst-switch/audio", test_audio);
     g_test_add_func ("/gst-switch/audio-recording-result", test_audio_recording_result);
   }
-  if (opts.enable_test_ui_integration) {
-    g_test_add_func ("/gst-switch/ui-integrated", test_ui_integrated);
+  if (opts.enable_test_ui) {
+    g_test_add_func ("/gst-switch/ui", test_ui);
     g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   }
   if (opts.enable_test_switching) {

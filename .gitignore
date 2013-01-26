@@ -31,10 +31,10 @@
 /tools/Makefile.in
 /tools/gst-switch-srv
 /tools/gst-switch-ui
-
 /test-switch-srv.out
 /tests/test-switch-server
 test-server-*.log
 *.dat
 *.data
 *.log
+*.gcno

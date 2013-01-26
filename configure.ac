@@ -72,6 +72,27 @@ AC_SUBST(GTK_LIBS)
 AC_SUBST(GTK_CFLAGS)
 AM_CONDITIONAL(HAVE_GTK, test "x$HAVE_GTK" = "xyes")
 
+AC_ARG_ENABLE(gcov,
+  AS_HELP_STRING([--enable-gcov],[enable gcov building]),
+  [
+    case "${enableval}" in
+      yes) BUILD_GCOV=yes ;;
+      no)  BUILD_GCOV=no ;;
+    esac
+  ],
+  [BUILD_GCOV=yes])
+AC_ARG_ENABLE(gprof,
+  AS_HELP_STRING([--enable-gprof],[enable gprof building]),
+  [
+    case "${enableval}" in
+      yes) BUILD_GPROF=yes ;;
+      no)  BUILD_GPROF=no ;;
+    esac
+  ],
+  [BUILD_GPROF=yes])
+AM_CONDITIONAL(GCOV_ENABLED, test "x$BUILD_GCOV" = "xyes")
+AM_CONDITIONAL(GPROF_ENABLED, test "x$BUILD_GPROF" = "xyes")
+
 AC_CHECK_HEADER([gdk/gdkx.h], [AC_DEFINE([WITH_GDK_X11], 1, [GDK wraps X11])])
 
 dnl Check for the required version of GStreamer core (and gst-plugins-base)

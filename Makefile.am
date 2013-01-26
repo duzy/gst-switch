@@ -6,7 +6,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 TESTS = test-controller \
 	test-video \
-	test-ui-integration \
+	test-ui \
 	test-fuzz \
 	test-random-connection \
 	test-audio \
@@ -19,8 +19,13 @@ test: $(TESTS)
 $(TESTS):
 	./tests/test-switch-server --enable-$@ #> $@.log
 
+if GPROF_ENABLED
 perf:
 	echo "TODO: program profiling"
+endif
 
+if GCOV_ENABLED
 coverage:
-	echo "TODO: code coverage"
+	cd ./tools && gcov gst_switch_srv-*.o
+#	cd ./tools && gcov *.c
+endif
