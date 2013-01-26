@@ -69,6 +69,14 @@ gst_recorder_init (GstRecorder * rec)
 }
 
 static void
+gst_recorder_dispose (GstRecorder * rec)
+{
+  INFO ("dispose %p", rec);
+  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (rec));
+  INFO ("dispose %p", rec);
+}
+
+static void
 gst_recorder_finalize (GstRecorder * rec)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
@@ -234,6 +242,7 @@ gst_recorder_class_init (GstRecorderClass * klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
+  object_class->dispose = (GObjectFinalizeFunc) gst_recorder_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_recorder_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_recorder_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_recorder_get_property;

@@ -308,6 +308,7 @@ static gboolean
 gst_case_prepare (GstCase *cas)
 {
   GstWorker *worker = GST_WORKER (cas);
+  GstElement *source = NULL;
   switch (cas->type) {
   case GST_CASE_INPUT_a:
   case GST_CASE_INPUT_v:
@@ -315,11 +316,12 @@ gst_case_prepare (GstCase *cas)
       ERROR ("no stream for new case");
       return FALSE;
     }
-    if (!worker->source) {
+    source = gst_worker_get_element (worker, "source");
+    if (!source) {
       ERROR ("no source");
       return FALSE;
     }
-    g_object_set (worker->source, "stream", cas->stream, NULL);
+    g_object_set (source, "stream", cas->stream, NULL);
     break;
 
   case GST_CASE_BRANCH_A:

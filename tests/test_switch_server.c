@@ -47,6 +47,7 @@ enum {
 
 static struct {
   gboolean enable_test_controller;
+  gboolean enable_test_composite_mode;
   gboolean enable_test_video;
   gboolean enable_test_audio;
   gboolean enable_test_ui;
@@ -58,6 +59,7 @@ static struct {
   gboolean test_external_ui;
 } opts = {
   .enable_test_controller		= FALSE,
+  .enable_test_composite_mode		= FALSE,
   .enable_test_video			= FALSE,
   .enable_test_audio			= FALSE,
   .enable_test_ui			= FALSE,
@@ -71,6 +73,7 @@ static struct {
 
 static GOptionEntry option_entries[] = {
   {"enable-test-controller",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_controller,		"Enable testing controller",         NULL},
+  {"enable-test-composite-mode",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_composite_mode,	"Enable testing composite mode",     NULL},
   {"enable-test-video",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_video,		"Enable testing video",              NULL},
   {"enable-test-audio",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_audio,		"Enable testing audio",              NULL},
   {"enable-test-ui",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_ui,			"Enable testing UI",                 NULL},
@@ -445,6 +448,12 @@ typedef struct _testclient {
   GThread *thread;
   GThread *thread_test1;
   GThread *thread_test2;
+  GThread *thread_test3;
+  GThread *thread_test4;
+  gboolean enable_thread_test1;
+  gboolean enable_thread_test2;
+  gboolean enable_thread_test3;
+  gboolean enable_thread_test4;
   GMainLoop *mainloop;
   gint audio_port0;
   gint audio_port;
@@ -472,6 +481,7 @@ typedef struct _testclient {
   testcase sink2;
   testcase sink3;
   testcase sink4;
+  gboolean enable_test_sinks;
   GMutex expected_compose_count_lock;
   gint expected_compose_count;
 } testclient;
@@ -499,11 +509,13 @@ testclient_init (testclient *client)
   g_mutex_init (&client->expected_compose_count_lock);
 
   client->thread = NULL;
+  client->sink0 = NULL;
   client->sink1.name = "test_preview1";
   client->sink2.name = "test_preview2";
   client->sink3.name = "test_preview3";
   client->sink4.name = "test_preview4";
   client->expected_compose_count = 0;
+  client->enable_test_sinks = FALSE;
 }
 
 static void
@@ -516,6 +528,7 @@ testclient_finalize (testclient *client)
   g_mutex_clear (&client->expected_compose_count_lock);
 }
 
+/*
 static gboolean
 testclient_has_sink0 (testclient *client)
 {
@@ -525,14 +538,15 @@ testclient_has_sink0 (testclient *client)
   g_mutex_unlock (&client->sink0_lock);
   return b;
 }
+*/
 
 static gpointer
 testclient_test_pip (testclient *client)
 {
+  usleep (100000);
   while (client->thread) {
     usleep (50000);
-    if (gst_switch_client_is_connected (GST_SWITCH_CLIENT (client)) &&
-	testclient_has_sink0 (client)) {
+    if (gst_switch_client_is_connected (GST_SWITCH_CLIENT (client))) {
     }
   }
   return NULL;
@@ -543,11 +557,37 @@ testclient_test_mode (testclient *client)
 {
   gboolean ok;
   gint mode = 0;
+  usleep (100000);
   while (client->thread) {
     usleep (50000);
-    if (gst_switch_client_is_connected (GST_SWITCH_CLIENT (client)) &&
-	testclient_has_sink0 (client)) {
-      usleep (100000 * 1);
+    if (gst_switch_client_is_connected (GST_SWITCH_CLIENT (client))) {
+      usleep (1000000 * 1);
+      if (3 < mode) mode = 0;
+      ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (client), mode);
+      if (!ok) {
+	WARN ("failed changing mode: %d", mode);
+      } else {
+	g_mutex_lock (&client->expected_compose_count_lock);
+	client->expected_compose_count += 1;
+	g_mutex_unlock (&client->expected_compose_count_lock);
+      }
+      mode += 1;
+    } else {
+      usleep (50000);
+    }
+  }
+  return NULL;
+}
+
+static gpointer
+testclient_test_mode_2 (testclient *client)
+{
+  gboolean ok;
+  gint mode = 0;
+  usleep (100000);
+  while (client->thread) {
+    usleep (10000);
+    if (gst_switch_client_is_connected (GST_SWITCH_CLIENT (client))) {
       if (3 < mode) mode = 0;
       ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (client), mode);
       if (!ok) {
@@ -590,20 +630,22 @@ testclient_set_compose_port (testclient *client, gint port)
   client->compose_port_count += 1;
   //g_assert_cmpint (client->compose_port0, ==, client->compose_port);
   //g_assert (client->sink0.thread == NULL);
-  testcase *sink0 = g_new0 (testcase, 1);
-  sink0->live_seconds = client->sink1.live_seconds;
-  sink0->name = "test_compose";
-  sink0->desc = g_string_new ("");
-  g_string_append_printf (sink0->desc, "tcpclientsrc port=%d ", client->compose_port);
-  g_string_append_printf (sink0->desc, "! gdpdepay ");
-  g_string_append_printf (sink0->desc, "! videoconvert ");
-  g_string_append_printf (sink0->desc, "! xvimagesink");
-  testcase_run_thread (sink0);
-  g_mutex_lock (&client->sink0_lock);
-  sink0->null_func = testclient_remove_sink0;
-  sink0->null_func_data = client;
-  client->sink0 = g_list_append (client->sink0, sink0);
-  g_mutex_unlock (&client->sink0_lock);
+  if (client->enable_test_sinks) {
+    testcase *sink0 = g_new0 (testcase, 1);
+    sink0->live_seconds = client->sink1.live_seconds;
+    sink0->name = "test-compose-result";
+    sink0->desc = g_string_new ("");
+    g_string_append_printf (sink0->desc, "tcpclientsrc port=%d ", client->compose_port);
+    g_string_append_printf (sink0->desc, "! gdpdepay ");
+    g_string_append_printf (sink0->desc, "! videoconvert ");
+    g_string_append_printf (sink0->desc, "! xvimagesink");
+    testcase_run_thread (sink0);
+    g_mutex_lock (&client->sink0_lock);
+    sink0->null_func = testclient_remove_sink0;
+    sink0->null_func_data = client;
+    client->sink0 = g_list_append (client->sink0, sink0);
+    g_mutex_unlock (&client->sink0_lock);
+  }
 }
 
 static void
@@ -629,27 +671,31 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
     client->preview_port_1 = port;
     client->preview_type_1 = type;
     g_assert_cmpint (type, ==, GST_SERVE_VIDEO_STREAM);
-    g_assert (client->sink1.thread == NULL);
-    client->sink1.live_seconds = client->seconds;
-    client->sink1.desc = g_string_new ("");
-    g_string_append_printf (client->sink1.desc, "tcpclientsrc port=%d ", client->preview_port_1);
-    g_string_append_printf (client->sink1.desc, "! gdpdepay ");
-    g_string_append_printf (client->sink1.desc, "! videoconvert ");
-    g_string_append_printf (client->sink1.desc, "! xvimagesink");
-    testcase_run_thread (&client->sink1);
+    if (client->enable_test_sinks) {
+      g_assert (client->sink1.thread == NULL);
+      client->sink1.live_seconds = client->seconds;
+      client->sink1.desc = g_string_new ("");
+      g_string_append_printf (client->sink1.desc, "tcpclientsrc port=%d ", client->preview_port_1);
+      g_string_append_printf (client->sink1.desc, "! gdpdepay ");
+      g_string_append_printf (client->sink1.desc, "! videoconvert ");
+      g_string_append_printf (client->sink1.desc, "! xvimagesink");
+      testcase_run_thread (&client->sink1);
+    }
     break;
   case 2:
     client->preview_port_2 = port;
     client->preview_type_2 = type;
     g_assert_cmpint (type, ==,GST_SERVE_VIDEO_STREAM);
-    g_assert (client->sink2.thread == NULL);
-    client->sink2.live_seconds = client->seconds;
-    client->sink2.desc = g_string_new ("");
-    g_string_append_printf (client->sink2.desc, "tcpclientsrc port=%d ", client->preview_port_2);
-    g_string_append_printf (client->sink2.desc, "! gdpdepay ");
-    g_string_append_printf (client->sink2.desc, "! videoconvert ");
-    g_string_append_printf (client->sink2.desc, "! xvimagesink");
-    testcase_run_thread (&client->sink2);
+    if (client->enable_test_sinks) {
+      g_assert (client->sink2.thread == NULL);
+      client->sink2.live_seconds = client->seconds;
+      client->sink2.desc = g_string_new ("");
+      g_string_append_printf (client->sink2.desc, "tcpclientsrc port=%d ", client->preview_port_2);
+      g_string_append_printf (client->sink2.desc, "! gdpdepay ");
+      g_string_append_printf (client->sink2.desc, "! videoconvert ");
+      g_string_append_printf (client->sink2.desc, "! xvimagesink");
+      testcase_run_thread (&client->sink2);
+    }
     break;
   case 3:
     client->preview_port_3 = port;
@@ -660,29 +706,33 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
     }
     */
     g_assert_cmpint (type, ==, GST_SERVE_AUDIO_STREAM);
-    g_assert (client->sink3.thread == NULL);
-    client->sink3.live_seconds = client->seconds;
-    client->sink3.desc = g_string_new ("");
-    g_string_append_printf (client->sink3.desc, "tcpclientsrc port=%d ", client->preview_port_3);
-    g_string_append_printf (client->sink3.desc, "! gdpdepay ");
-    g_string_append_printf (client->sink3.desc, "! goom2k1 ");
-    g_string_append_printf (client->sink3.desc, "! videoconvert ");
-    g_string_append_printf (client->sink3.desc, "! xvimagesink");
-    testcase_run_thread (&client->sink3);
+    if (client->enable_test_sinks) {
+      g_assert (client->sink3.thread == NULL);
+      client->sink3.live_seconds = client->seconds;
+      client->sink3.desc = g_string_new ("");
+      g_string_append_printf (client->sink3.desc, "tcpclientsrc port=%d ", client->preview_port_3);
+      g_string_append_printf (client->sink3.desc, "! gdpdepay ");
+      g_string_append_printf (client->sink3.desc, "! goom2k1 ");
+      g_string_append_printf (client->sink3.desc, "! videoconvert ");
+      g_string_append_printf (client->sink3.desc, "! xvimagesink");
+      testcase_run_thread (&client->sink3);
+    }
     break;
   case 4:
     client->preview_port_4 = port;
     client->preview_type_4 = type;
     g_assert_cmpint (type, ==, GST_SERVE_AUDIO_STREAM);
-    g_assert (client->sink4.thread == NULL);
-    client->sink4.live_seconds = client->seconds;
-    client->sink4.desc = g_string_new ("");
-    g_string_append_printf (client->sink4.desc, "tcpclientsrc port=%d ", client->preview_port_4);
-    g_string_append_printf (client->sink4.desc, "! gdpdepay ");
-    g_string_append_printf (client->sink4.desc, "! goom2k1 ");
-    g_string_append_printf (client->sink4.desc, "! videoconvert ");
-    g_string_append_printf (client->sink4.desc, "! xvimagesink");
-    testcase_run_thread (&client->sink4);
+    if (client->enable_test_sinks) {
+      g_assert (client->sink4.thread == NULL);
+      client->sink4.live_seconds = client->seconds;
+      client->sink4.desc = g_string_new ("");
+      g_string_append_printf (client->sink4.desc, "tcpclientsrc port=%d ", client->preview_port_4);
+      g_string_append_printf (client->sink4.desc, "! gdpdepay ");
+      g_string_append_printf (client->sink4.desc, "! goom2k1 ");
+      g_string_append_printf (client->sink4.desc, "! videoconvert ");
+      g_string_append_printf (client->sink4.desc, "! xvimagesink");
+      testcase_run_thread (&client->sink4);
+    }
     break;
   }
 }
@@ -730,8 +780,14 @@ static void
 testclient_run_thread (testclient *client)
 {
   client->thread = g_thread_new ("testclient", testclient_run, client);
-  client->thread_test1 = g_thread_new ("testclient-pip", (GThreadFunc) testclient_test_pip, client);
-  client->thread_test2 = g_thread_new ("testclient-mode", (GThreadFunc) testclient_test_mode, client);
+  if (client->enable_thread_test1)
+    client->thread_test1 = g_thread_new ("testclient-pip", (GThreadFunc) testclient_test_pip, client);
+  if (client->enable_thread_test2)
+    client->thread_test2 = g_thread_new ("testclient-mode", (GThreadFunc) testclient_test_mode, client);
+  if (client->enable_thread_test3)
+    client->thread_test3 = g_thread_new ("testclient-mode_hight_1", (GThreadFunc) testclient_test_mode_2, client);
+  if (client->enable_thread_test4)
+    client->thread_test4 = g_thread_new ("testclient-mode_hight_2", (GThreadFunc) testclient_test_mode_2, client);
 }
 
 static void
@@ -743,12 +799,18 @@ testclient_join (testclient *client)
   g_thread_unref (client->thread);
   client->thread = NULL;
 
-  g_thread_join (client->thread_test1);
-  g_thread_join (client->thread_test2);
-  g_thread_unref (client->thread_test1);
-  g_thread_unref (client->thread_test2);
+  if (client->thread_test1) g_thread_join (client->thread_test1);
+  if (client->thread_test2) g_thread_join (client->thread_test2);
+  if (client->thread_test3) g_thread_join (client->thread_test3);
+  if (client->thread_test4) g_thread_join (client->thread_test4);
+  if (client->thread_test1) g_thread_unref (client->thread_test1);
+  if (client->thread_test2) g_thread_unref (client->thread_test2);
+  if (client->thread_test3) g_thread_unref (client->thread_test3);
+  if (client->thread_test4) g_thread_unref (client->thread_test4);
   client->thread_test1 = NULL;
   client->thread_test2 = NULL;
+  client->thread_test3 = NULL;
+  client->thread_test4 = NULL;
 
   g_mutex_lock (&client->sink0_lock);
   for (sink0 = client->sink0; sink0; sink0 = g_list_next (client->sink0)) {
@@ -765,6 +827,122 @@ testclient_join (testclient *client)
 
 static void
 test_controller (void)
+{
+  enum { seconds = 60 };
+  GPid server_pid = 0;
+  testclient *client;
+  testcase video_source1 = { "test-video-source1", 0 };
+  testcase video_source2 = { "test-video-source2", 0 };
+  testcase audio_source1 = { "test-audio-source1", 0 };
+  testcase audio_source2 = { "test-audio-source2", 0 };
+
+  g_print ("\n");
+
+  if (!opts.test_external_server) {
+    server_pid = launch_server ();
+    g_assert_cmpint (server_pid, !=, 0);
+    sleep (1); /* give a second for server to be online */
+  }
+
+  client = TESTCLIENT (g_object_new (TYPE_TESTCLIENT, NULL));
+  client->seconds = seconds;
+  client->enable_test_sinks = TRUE;
+  client->enable_thread_test1 = TRUE;
+  client->enable_thread_test2 = TRUE;
+  client->enable_thread_test3 = FALSE;
+  client->enable_thread_test4 = FALSE;
+  testclient_run_thread (client);
+  g_assert_cmpint (clientcount, ==, 1);
+
+  {
+    {
+      video_source1.live_seconds = seconds;
+      video_source1.desc = g_string_new ("");
+      g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", 0);
+      g_string_append_printf (video_source1.desc, "! video/x-raw,width=%d,height=%d ", W, H);
+      //g_string_append_printf (video_source1.desc, "! textoverlay font-desc=\"Sans 50\" text=\"v1\" ");
+      g_string_append_printf (video_source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
+      g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+      video_source2.live_seconds = seconds;
+      video_source2.desc = g_string_new ("");
+      g_string_append_printf (video_source2.desc,"videotestsrc pattern=%d ", 1);
+      g_string_append_printf (video_source2.desc, "! video/x-raw,width=%d,height=%d ", W, H);
+      //g_string_append_printf (video_source1.desc, "! textoverlay font-desc=\"Sans 50\" text=\"v2\" ");
+      g_string_append_printf (video_source2.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
+      g_string_append_printf (video_source2.desc, "! gdppay ! tcpclientsink port=3000 ");
+
+      audio_source1.live_seconds = seconds;
+      audio_source1.desc = g_string_new ("");
+      g_string_append_printf (audio_source1.desc, "audiotestsrc freq=110 wave=%d ", 2);
+      g_string_append_printf (audio_source1.desc, "! gdppay ! tcpclientsink port=4000");
+
+      audio_source2.live_seconds = seconds;
+      audio_source2.desc = g_string_new ("");
+      g_string_append_printf (audio_source2.desc, "audiotestsrc freq=110 wave=%d ", 4);
+      g_string_append_printf (audio_source2.desc, "! gdppay ! tcpclientsink port=4000");
+
+      testcase_run_thread (&video_source1); usleep (500);
+      testcase_run_thread (&video_source2); usleep (500);
+      testcase_run_thread (&audio_source1); usleep (500);
+      testcase_run_thread (&audio_source2);
+      testcase_join (&video_source1);
+      testcase_join (&video_source2);
+      testcase_join (&audio_source1);
+      testcase_join (&audio_source2);
+
+      if (0 < video_source1.error_count ||
+	  0 < video_source2.error_count ||
+	  0 < audio_source1.error_count ||
+	  0 < audio_source2.error_count) {
+	g_test_fail ();
+      }
+
+      //g_assert_cmpint (client->compose_port, ==, 3001);
+      //g_assert_cmpint (client->compose_port, ==, client->compose_port0);
+      g_assert_cmpint (client->compose_port_count, >=, 1);
+      //g_assert_cmpint (client->encode_port0, ==, 3002);
+      //g_assert_cmpint (client->encode_port, ==, client->encode_port0);
+      //g_assert_cmpint (client->audio_port, ==, 3004);
+      //g_assert_cmpint (client->audio_port, ==, client->audio_port0);
+      g_assert_cmpint (client->audio_port_count, >=, 1);
+      g_assert_cmpint (client->preview_port_1, !=, 0);
+      g_assert_cmpint (client->preview_port_2, !=, 0);
+      g_assert_cmpint (client->preview_port_3, !=, 0);
+      g_assert_cmpint (client->preview_port_4, !=, 0);
+      g_assert_cmpint (client->preview_port_count, ==, 4);
+    }
+  }
+
+  g_assert_cmpint (g_list_length (client->sink0), <=, 1);
+
+  testclient_join (client);
+  g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
+  g_object_unref (client);
+  g_assert_cmpint (clientcount, ==, 0);
+
+  if (!opts.test_external_server) {
+    close_pid (server_pid);
+#if TEST_RECORDING_DATA
+    {
+      testcase play = { "play-test-record", 0 };
+      GFile *file = g_file_new_for_path ("test-recording.data");
+      g_assert (g_file_query_exists (file, NULL));
+      play.desc = g_string_new ("filesrc location=test-recording.data ");
+      g_string_append_printf (play.desc, "! avidemux name=dm ");
+      g_string_append_printf (play.desc, "dm.audio_0 ! queue ! faad ! audioconvert ! alsasink ");
+      g_string_append_printf (play.desc, "dm.video_0 ! queue ! vp8dec ! videoconvert ! xvimagesink ");
+      testcase_run_thread (&play);
+      testcase_join (&play);
+      g_assert_cmpint (play.error_count, ==, 0);
+      g_object_unref (file);
+    }
+#endif
+  }
+}
+
+static void
+test_composite_mode (void)
 {
   enum { seconds = 60 * 5 };
   GPid server_pid = 0;
@@ -784,6 +962,11 @@ test_controller (void)
 
   client = TESTCLIENT (g_object_new (TYPE_TESTCLIENT, NULL));
   client->seconds = seconds;
+  client->enable_test_sinks = FALSE;
+  client->enable_thread_test1 = TRUE;
+  client->enable_thread_test2 = TRUE;
+  client->enable_thread_test3 = TRUE;
+  client->enable_thread_test4 = TRUE;
   testclient_run_thread (client);
   g_assert_cmpint (clientcount, ==, 1);
 
@@ -1710,6 +1893,9 @@ int main (int argc, char**argv)
   g_test_init (&argc, &argv, NULL);
   if (opts.enable_test_controller) {
     g_test_add_func ("/gst-switch/controller", test_controller);
+  }
+  if (opts.enable_test_composite_mode) {
+    g_test_add_func ("/gst-switch/composite-mode", test_composite_mode);
   }
   if (opts.enable_test_video) {
     g_test_add_func ("/gst-switch/video", test_video);

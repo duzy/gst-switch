@@ -115,7 +115,9 @@ static gboolean
 gst_video_disp_prepare (GstVideoDisp *disp)
 {
   GstWorker *worker = GST_WORKER (disp);
-  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (worker->sink),
+  GstElement *sink = gst_worker_get_element (worker, "sink");
+
+  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (sink),
       disp->handle);
 
   INFO ("prepared display video on %ld", disp->handle);

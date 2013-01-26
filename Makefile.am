@@ -13,6 +13,7 @@ TESTS = \
 	test-checking-timestamps \
 	test-switching \
 	test-controller \
+	test-composite-mode \
 	$(null)
 
 test: $(TESTS)

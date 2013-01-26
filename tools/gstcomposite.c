@@ -57,6 +57,7 @@ enum
 //static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
+#define gst_composite_parent_class parent_class
 G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 
 static void gst_composite_set_mode (GstComposite *, GstCompositeMode);
@@ -73,10 +74,18 @@ gst_composite_init (GstComposite * composite)
 }
 
 static void
+gst_composite_dispose (GstComposite * composite)
+{
+  INFO ("dispose %p", composite);
+  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (composite));
+  INFO ("dispose %p", composite);
+}
+
+static void
 gst_composite_finalize (GstComposite * composite)
 {
-  if (G_OBJECT_CLASS (gst_composite_parent_class)->finalize)
-    (*G_OBJECT_CLASS (gst_composite_parent_class)->finalize) (G_OBJECT (composite));
+  if (G_OBJECT_CLASS (parent_class)->finalize)
+    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (composite));
 
   INFO ("Composite finalized");
 }
@@ -341,8 +350,9 @@ static gboolean
 gst_composite_prepare (GstComposite *composite)
 {
   GstWorker *worker = GST_WORKER (composite);
-  if (worker->source) {
-    g_signal_connect (worker->source, "pad-added",
+  GstElement *source = gst_worker_get_element (worker, "source");
+  if (source) {
+    g_signal_connect (source, "pad-added",
 	G_CALLBACK (on_source_pad_added), worker);
   }
   return TRUE;
@@ -370,6 +380,7 @@ gst_composite_class_init (GstCompositeClass * klass)
   GObjectClass * object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass * worker_class = GST_WORKER_CLASS (klass);
 
+  object_class->dispose = (GObjectFinalizeFunc) gst_composite_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_composite_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_composite_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_composite_get_property;

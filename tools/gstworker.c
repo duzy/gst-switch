@@ -50,6 +50,7 @@ enum
 static guint gst_worker_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
+#define gst_worker_parent_class parent_class
 G_DEFINE_TYPE (GstWorker, gst_worker, G_TYPE_OBJECT);
 
 static void
@@ -59,8 +60,6 @@ gst_worker_init (GstWorker *worker)
   worker->server = NULL;
   worker->bus = NULL;
   worker->pipeline = NULL;
-  worker->source = NULL;
-  worker->sink = NULL;
   worker->pipeline_func = NULL;
   worker->pipeline_func_data = NULL;
   worker->pipeline_string = NULL;
@@ -80,16 +79,6 @@ gst_worker_dispose (GstWorker *worker)
     worker->server = NULL;
   }
 
-  if (worker->source) {
-    gst_object_unref (worker->source);
-    worker->source = NULL;
-  }
-
-  if (worker->sink) {
-    gst_object_unref (worker->sink);
-    worker->sink = NULL;
-  }
-
   if (worker->pipeline) {
     gst_object_unref (worker->pipeline);
     worker->pipeline = NULL;
@@ -106,8 +95,9 @@ gst_worker_dispose (GstWorker *worker)
 
   //INFO ("%s disposed (%p)", worker->name, worker);
 
-  g_free (worker->name);
-  worker->name = NULL;
+  INFO ("dispose %p", worker);
+  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (worker));
+  INFO ("dispose %p", worker);
 }
 
 static void
@@ -115,8 +105,11 @@ gst_worker_finalize (GstWorker *worker)
 {
   g_mutex_clear (&worker->pipeline_lock);
 
-  if (G_OBJECT_CLASS (gst_worker_parent_class)->finalize)
-    (*G_OBJECT_CLASS (gst_worker_parent_class)->finalize) (G_OBJECT (worker));
+  g_free (worker->name);
+  worker->name = NULL;
+
+  if (G_OBJECT_CLASS (parent_class)->finalize)
+    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (worker));
 }
 
 static void
@@ -255,6 +248,19 @@ gst_worker_stop (GstWorker *worker)
   GST_WORKER_UNLOCK (worker);
 
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
+}
+
+GstElement *
+gst_worker_get_element (GstWorker *worker, const gchar *name)
+{
+  GstElement *element = NULL;
+
+  g_return_val_if_fail (GST_IS_WORKER (worker), element);
+
+  //GST_WORKER_LOCK (worker);
+  element = gst_bin_get_by_name (GST_BIN (worker->pipeline), name);
+  //GST_WORKER_UNLOCK (worker);
+  return element;
 }
 
 static void
@@ -499,9 +505,6 @@ gst_worker_prepare (GstWorker *worker)
   worker->bus = gst_pipeline_get_bus (GST_PIPELINE (worker->pipeline));
   worker->watch = gst_bus_add_watch (worker->bus,
       (GstBusFunc) gst_worker_message, worker);
-
-  worker->source = gst_bin_get_by_name (GST_BIN (worker->pipeline), "source");
-  worker->sink = gst_bin_get_by_name (GST_BIN (worker->pipeline), "sink");
 
   if (workerclass->prepare) {
     if (!workerclass->prepare (worker)) {

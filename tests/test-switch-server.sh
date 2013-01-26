@@ -4,8 +4,9 @@
 #EXT="$EXT --test-external-ui"
 
 ./tests/test-switch-server $EXT \
-    --enable-test-controller \
+    --enable-test-composite-mode \
 
+#    --enable-test-controller \
 #    --enable-test-video \
 #    --enable-test-ui-integration \
 #    --enable-test-fuzz-ui \
