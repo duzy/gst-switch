@@ -469,6 +469,8 @@ typedef struct _testclient {
   testcase sink2;
   testcase sink3;
   testcase sink4;
+  GMutex expected_compose_count_lock;
+  gint expected_compose_count;
 } testclient;
 
 typedef struct _testclientClass {
@@ -491,12 +493,15 @@ testclient_init (testclient *client)
   //INFO ("client init");
 
   g_mutex_init (&client->sink0_lock);
+  g_mutex_init (&client->expected_compose_count_lock);
 
   client->thread = NULL;
   client->sink1.name = "test_preview1";
   client->sink2.name = "test_preview2";
   client->sink3.name = "test_preview3";
   client->sink4.name = "test_preview4";
+
+  client->expected_compose_count = 0;
 }
 
 static void
@@ -506,6 +511,7 @@ testclient_finalize (testclient *client)
   //INFO ("client finalize");
 
   g_mutex_clear (&client->sink0_lock);
+  g_mutex_clear (&client->expected_compose_count_lock);
 }
 
 static gboolean
@@ -544,6 +550,10 @@ testclient_test_mode (testclient *client)
       ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (client), mode);
       if (!ok) {
 	WARN ("failed changing mode: %d", mode);
+      } else {
+	g_mutex_lock (&client->expected_compose_count_lock);
+	client->expected_compose_count += 1;
+	g_mutex_unlock (&client->expected_compose_count_lock);
       }
       mode += 1;
     } else {
@@ -754,7 +764,7 @@ testclient_join (testclient *client)
 static void
 test_controller (void)
 {
-  enum { seconds = 60 * 3 };
+  enum { seconds = 60 * 5 };
   GPid server_pid = 0;
   testclient *client;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -855,6 +865,7 @@ test_controller (void)
   g_assert_cmpint (g_list_length (client->sink0), <=, 1);
 
   testclient_join (client);
+  g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
   g_object_unref (client);
   g_assert_cmpint (clientcount, ==, 0);
 }
@@ -862,7 +873,7 @@ test_controller (void)
 static void
 test_video (void)
 {
-  const gint seconds = 10;
+  const gint seconds = 60;
   GPid server_pid = 0;
   testcase source1 = { "test-video-source1", 0 };
   testcase source2 = { "test-video-source2", 0 };
