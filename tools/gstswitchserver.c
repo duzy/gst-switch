@@ -150,7 +150,6 @@ gst_switch_server_finalize (GstSwitchServer *srv)
   srv->host = NULL;
 
   g_main_loop_quit (srv->main_loop);
-  g_main_loop_unref (srv->main_loop);
   srv->main_loop = NULL;
 
   if (srv->cancellable) {
@@ -279,13 +278,6 @@ gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
       }
     }
     break;
-    /*
-  case GST_CASE_BRANCH_A:
-  case GST_CASE_BRANCH_B:
-  case GST_CASE_BRANCH_a:
-  case GST_CASE_BRANCH_p:
-    break;
-    */
   }
 
   GST_SWITCH_SERVER_UNLOCK_CASES (srv);

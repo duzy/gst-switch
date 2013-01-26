@@ -59,8 +59,6 @@ struct _GstWorker
 
   GMutex pipeline_lock;
   GstElement *pipeline;
-  //GstElement *source;
-  //GstElement *sink;
   GstBus *bus;
 
   GstWorkerGetPipelineString pipeline_func;
@@ -91,7 +89,6 @@ GType gst_worker_get_type (void);
 
 gboolean gst_worker_start (GstWorker *worker);
 gboolean gst_worker_stop (GstWorker *worker);
-//gboolean gst_worker_restart (GstWorker *worker);
 
 GstElement *gst_worker_get_element (GstWorker *worker, const gchar *name);
 

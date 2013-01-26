@@ -2,10 +2,13 @@ bin_PROGRAMS = gst-switch-srv gst-switch-ui
 
 if GCOV_ENABLED
 # --coverage
-#GCOV_CFLAGS = -fprofile-arcs -ftest-coverage
-#GCOV_LFLAGS = -fprofile-arcs -ftest-coverage
-GCOV_CFLAGS = --coverage
-GCOV_LFLAGS = --coverage
+GCOV_CFLAGS = -fprofile-arcs -ftest-coverage
+GCOV_LFLAGS = -fprofile-arcs -ftest-coverage
+#GCOV_CFLAGS = --coverage
+#GCOV_LFLAGS = --coverage
+else
+GCOV_CFLAGS =
+GCOV_LFLAGS =
 endif
 
 gst_switch_srv_SOURCES = gstworker.c gstswitchserver.c gstcase.c \

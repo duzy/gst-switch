@@ -30,8 +30,8 @@
 #include "gstworker.h"
 #include "gstswitchserver.h"
 
-#define GST_WORKER_LOCK(srv) (g_mutex_lock (&(srv)->pipeline_lock))
-#define GST_WORKER_UNLOCK(srv) (g_mutex_unlock (&(srv)->pipeline_lock))
+#define GST_WORKER_LOCK_PIPELINE(srv) (g_mutex_lock (&(srv)->pipeline_lock))
+#define GST_WORKER_UNLOCK_PIPELINE(srv) (g_mutex_unlock (&(srv)->pipeline_lock))
 
 enum
 {
@@ -197,13 +197,13 @@ gst_worker_start (GstWorker *worker)
 
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
-  GST_WORKER_LOCK (worker);
+  GST_WORKER_LOCK_PIPELINE (worker);
 
   if (gst_worker_prepare (worker)) {
     ret = gst_element_set_state (worker->pipeline, GST_STATE_READY);
   }
 
-  GST_WORKER_UNLOCK (worker);
+  GST_WORKER_UNLOCK_PIPELINE (worker);
 
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
@@ -216,7 +216,7 @@ gst_worker_replay (GstWorker *worker)
 
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
-  GST_WORKER_LOCK (worker);
+  GST_WORKER_LOCK_PIPELINE (worker);
  
   if (worker->pipeline) {
     ret = gst_element_get_state (worker->pipeline, &state, NULL,
@@ -227,7 +227,7 @@ gst_worker_replay (GstWorker *worker)
     }
   }
 
-  GST_WORKER_UNLOCK (worker);
+  GST_WORKER_UNLOCK_PIPELINE (worker);
 
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
@@ -239,13 +239,13 @@ gst_worker_stop (GstWorker *worker)
 
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
-  GST_WORKER_LOCK (worker);
+  GST_WORKER_LOCK_PIPELINE (worker);
 
   if (worker->pipeline) {
     ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
   }
 
-  GST_WORKER_UNLOCK (worker);
+  GST_WORKER_UNLOCK_PIPELINE (worker);
 
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
@@ -257,9 +257,9 @@ gst_worker_get_element (GstWorker *worker, const gchar *name)
 
   g_return_val_if_fail (GST_IS_WORKER (worker), element);
 
-  //GST_WORKER_LOCK (worker);
+  //GST_WORKER_LOCK_PIPELINE (worker);
   element = gst_bin_get_by_name (GST_BIN (worker->pipeline), name);
-  //GST_WORKER_UNLOCK (worker);
+  //GST_WORKER_UNLOCK_PIPELINE (worker);
   return element;
 }
 
