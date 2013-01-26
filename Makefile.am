@@ -4,20 +4,22 @@ EXTRA_DIST = autogen.sh
 
 ACLOCAL_AMFLAGS = -I m4
 
-TESTS = test-controller \
+TESTS = \
 	test-video \
-	test-ui \
-	test-fuzz \
-	test-random-connection \
 	test-audio \
+	test-fuzz \
+	test-random \
+	test-ui \
+	test-checking-timestamps \
 	test-switching \
-	test-checking-timestamps
+	test-controller \
+	$(null)
 
 test: $(TESTS)
 	@ls $(TESTS:%=%.log)
 
 $(TESTS):
-	./tests/test-switch-server --enable-$@ #> $@.log
+	./tests/test-switch-server --enable-$@ || true
 
 if GPROF_ENABLED
 perf:
@@ -26,6 +28,5 @@ endif
 
 if GCOV_ENABLED
 coverage:
-	cd ./tools && gcov gst_switch_srv-*.o
-#	cd ./tools && gcov *.c
+	$(MAKE) -C tools coverage
 endif

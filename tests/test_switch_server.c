@@ -50,7 +50,7 @@ static struct {
   gboolean enable_test_video;
   gboolean enable_test_audio;
   gboolean enable_test_ui;
-  gboolean enable_test_random_connection;
+  gboolean enable_test_random;
   gboolean enable_test_switching;
   gboolean enable_test_fuzz;
   gboolean enable_test_checking_timestamps;
@@ -61,7 +61,7 @@ static struct {
   .enable_test_video			= FALSE,
   .enable_test_audio			= FALSE,
   .enable_test_ui			= FALSE,
-  .enable_test_random_connection	= FALSE,
+  .enable_test_random			= FALSE,
   .enable_test_switching		= FALSE,
   .enable_test_fuzz			= FALSE,
   .enable_test_checking_timestamps	= FALSE,
@@ -74,7 +74,7 @@ static GOptionEntry option_entries[] = {
   {"enable-test-video",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_video,		"Enable testing video",              NULL},
   {"enable-test-audio",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_audio,		"Enable testing audio",              NULL},
   {"enable-test-ui",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_ui,			"Enable testing UI",                 NULL},
-  {"enable-test-random-connection",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_random_connection,	"Enable testing random connection",  NULL},
+  {"enable-test-random",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_random,		"Enable testing random input streams",  NULL},
   {"enable-test-switching",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_switching,		"Enable testing switching",          NULL},
   {"enable-test-fuzz",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_fuzz,		"Enable testing fuzz input",         NULL},
   {"enable-test-checking-timestamps",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_checking_timestamps,	"Enable testing checking timestamps",NULL},
@@ -1145,7 +1145,7 @@ test_audio_recording_result (void)
 static void
 test_ui (void)
 {
-  const gint seconds = 10;
+  const gint seconds = 30;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -1245,7 +1245,7 @@ test_recording_result (void)
 }
 
 static gpointer
-test_random_connection_1 (gpointer d)
+test_random_1 (gpointer d)
 {
   testcase video_source1 = { "test-video-source1", 0 };
   testcase audio_source0 = { "test-audio-source0", 0 };
@@ -1275,7 +1275,7 @@ test_random_connection_1 (gpointer d)
       g_string_append_printf (video_source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
-      audio_source1.live_seconds = 7;
+      audio_source1.live_seconds = 5;
       audio_source1.name = g_strdup_printf ("test-audio-source1-%d", i);
       audio_source1.desc = g_string_new ("");
       g_string_append_printf (audio_source1.desc, "audiotestsrc freq=110 wave=%d ", rand() % 12);
@@ -1296,7 +1296,7 @@ test_random_connection_1 (gpointer d)
 }
 
 static gpointer
-test_random_connection_2 (gpointer d)
+test_random_2 (gpointer d)
 {
   testcase video_source1 = { "test-video-source1", 0 };
   testcase audio_source1 = { "test-audio-source1", 0 };
@@ -1311,7 +1311,7 @@ test_random_connection_2 (gpointer d)
 
   for (i = m = 0; m < 3; ++m) {
     for (n = 0; n < 3; ++n, ++i) {
-      video_source1.live_seconds = 2;
+      video_source1.live_seconds = 10;
       video_source1.name = g_strdup_printf ("test-video-source2-%d", i);
       video_source1.desc = g_string_new ("");
       g_string_append_printf (video_source1.desc,"videotestsrc pattern=%d ", rand() % 20);
@@ -1320,7 +1320,7 @@ test_random_connection_2 (gpointer d)
       g_string_append_printf (video_source1.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ");
       g_string_append_printf (video_source1.desc, "! gdppay ! tcpclientsink port=3000 ");
 
-      audio_source1.live_seconds = 3;
+      audio_source1.live_seconds = 10;
       audio_source1.name = g_strdup_printf ("test-audio-source2-%d", i);
       audio_source1.desc = g_string_new ("");
       g_string_append_printf (audio_source1.desc, "audiotestsrc freq=110 wave=%d ", rand () % 12);
@@ -1339,7 +1339,7 @@ test_random_connection_2 (gpointer d)
 }
 
 static void
-test_random_connections (void)
+test_random (void)
 {
   GPid server_pid = 0;
   GPid ui_pid = 0;
@@ -1359,8 +1359,8 @@ test_random_connections (void)
     sleep (1); /* give a second for ui to be ready */
   }
 
-  t1 = g_thread_new ("random-1", test_random_connection_1, NULL); sleep (1);
-  t2 = g_thread_new ("random-2", test_random_connection_2, NULL);
+  t1 = g_thread_new ("random-1", test_random_1, NULL); sleep (1);
+  t2 = g_thread_new ("random-2", test_random_2, NULL);
 
   g_thread_join (t1);
   g_thread_join (t2);
@@ -1638,7 +1638,7 @@ test_fuzz (void)
 static void
 test_checking_timestamps (void)
 {
-  const gint seconds = 60 * 5;
+  const gint seconds = 60;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source = { "test-video-source", 0 };
@@ -1727,8 +1727,8 @@ int main (int argc, char**argv)
     g_test_add_func ("/gst-switch/switching", test_switching);
     g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   }
-  if (opts.enable_test_random_connection) {
-    g_test_add_func ("/gst-switch/random-connections", test_random_connections);
+  if (opts.enable_test_random) {
+    g_test_add_func ("/gst-switch/random", test_random);
     g_test_add_func ("/gst-switch/recording-result", test_recording_result);
   }
   if (opts.enable_test_fuzz) {
