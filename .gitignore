@@ -38,3 +38,4 @@ test-server-*.log
 *.data
 *.log
 *.gcno
+*.gcda
