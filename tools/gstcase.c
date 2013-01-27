@@ -55,6 +55,7 @@ enum
 //static guint gst_case_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
+#define gst_case_parent_class parent_class
 G_DEFINE_TYPE (GstCase, gst_case, GST_TYPE_WORKER);
 
 static void
@@ -71,11 +72,11 @@ gst_case_init (GstCase * cas)
   cas->b_width = 0;
   cas->b_height = 0;
 
-  INFO ("Case initialized (%p)", cas);
+  INFO ("init %p", cas);
 }
 
 static void
-gst_case_finalize (GstCase * cas)
+gst_case_dispose (GstCase * cas)
 {
   if (cas->stream) {
 #if 0
@@ -99,10 +100,15 @@ gst_case_finalize (GstCase * cas)
     cas->branch = NULL;
   }
 
-  if (G_OBJECT_CLASS (gst_case_parent_class)->finalize)
-    (*G_OBJECT_CLASS (gst_case_parent_class)->finalize) (G_OBJECT (cas));
+  INFO ("dispose %p", cas);
+  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (cas));
+}
 
-  INFO ("Case finalized (%p)", cas);
+static void
+gst_case_finalize (GstCase * cas)
+{
+  if (G_OBJECT_CLASS (parent_class)->finalize)
+    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (cas));
 }
 
 static void
@@ -342,6 +348,7 @@ gst_case_class_init (GstCaseClass * klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
+  object_class->dispose = (GObjectFinalizeFunc) gst_case_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_case_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_case_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_case_get_property;

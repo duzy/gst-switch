@@ -58,7 +58,14 @@ gst_audio_visual_init (GstAudioVisual *visual)
   g_mutex_init (&visual->endtime_lock);
   g_mutex_init (&visual->value_lock);
 
-  INFO ("Audio visual initialized");
+  INFO ("init %p", visual);
+}
+
+static void
+gst_audio_visual_dispose (GstAudioVisual *visual)
+{
+  INFO ("dispose %p", visual);
+  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (visual));
 }
 
 static void
@@ -269,6 +276,7 @@ gst_audio_visual_class_init (GstAudioVisualClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
+  object_class->dispose = (GObjectFinalizeFunc) gst_audio_visual_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_audio_visual_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_audio_visual_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_audio_visual_get_property;

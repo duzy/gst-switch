@@ -99,11 +99,8 @@ gst_worker_dispose (GstWorker *worker)
     worker->pipeline_string = NULL;
   }
 
-  //INFO ("%s disposed (%p)", worker->name, worker);
-
   INFO ("dispose %p", worker);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (worker));
-  INFO ("dispose %p", worker);
 }
 
 static void
@@ -284,7 +281,7 @@ gst_worker_handle_error (GstWorker *worker, GError * error,
     const char *debug)
 {
   ERROR ("%s: %s", worker->name, error->message);
-  ERROR ("%s", debug);
+  ERROR ("DEBUG INFO:\n%s\n", debug);
   gst_worker_stop (worker);
 }
 

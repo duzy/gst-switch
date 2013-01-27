@@ -47,7 +47,6 @@ struct _GstRecorder
   guint height;
 
   GstCompositeMode mode;
-  gboolean deprecated;
 };
 
 struct _GstRecorderClass

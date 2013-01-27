@@ -91,7 +91,7 @@ gst_composite_init (GstComposite * composite)
    */
   composite->transition = TRUE;
 
-  INFO ("Composite initialized");
+  INFO ("init %p", composite);
 }
 
 static void
@@ -99,7 +99,6 @@ gst_composite_dispose (GstComposite * composite)
 {
   INFO ("dispose %p", composite);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (composite));
-  INFO ("dispose %p", composite);
 }
 
 static void
@@ -110,8 +109,6 @@ gst_composite_finalize (GstComposite * composite)
 
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (composite));
-
-  INFO ("Composite finalized");
 }
 
 static void

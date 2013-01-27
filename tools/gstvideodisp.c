@@ -47,7 +47,14 @@ G_DEFINE_TYPE (GstVideoDisp, gst_video_disp, GST_TYPE_WORKER);
 static void
 gst_video_disp_init (GstVideoDisp *disp)
 {
-  INFO ("Video display initialized");
+  INFO ("init %p", disp);
+}
+
+static void
+gst_video_disp_dispose (GstVideoDisp *disp)
+{
+  INFO ("dispose %p", disp);
+  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (disp));
 }
 
 static void
@@ -55,8 +62,6 @@ gst_video_disp_finalize (GstVideoDisp *disp)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (disp));
-
-  INFO ("Video display finalized");
 }
 
 static void
@@ -134,6 +139,7 @@ gst_video_disp_class_init (GstVideoDispClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
+  object_class->dispose = (GObjectFinalizeFunc) gst_video_disp_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_video_disp_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_video_disp_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_video_disp_get_property;

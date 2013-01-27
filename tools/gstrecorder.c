@@ -63,9 +63,8 @@ gst_recorder_init (GstRecorder * rec)
   rec->mode = 0;
   rec->width = 0;
   rec->height = 0;
-  rec->deprecated = FALSE;
 
-  INFO ("Recorder initialized (%p)", rec);
+  INFO ("init %p", rec);
 }
 
 static void
@@ -73,7 +72,6 @@ gst_recorder_dispose (GstRecorder * rec)
 {
   INFO ("dispose %p", rec);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (rec));
-  INFO ("dispose %p", rec);
 }
 
 static void
@@ -81,8 +79,6 @@ gst_recorder_finalize (GstRecorder * rec)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (rec));
-
-  INFO ("Recorder finalized (%p)", rec);
 }
 
 static void
@@ -204,38 +200,6 @@ gst_recorder_prepare (GstRecorder *rec)
   return TRUE;
 }
 
-#if 0
-static GstWorkerNullReturn
-gst_recorder_null (GstRecorder *rec)
-{
-  GstWorker *worker;
-  GstElement *sink;
-  const gchar *filename;
-
-  g_return_val_if_fail (GST_IS_WORKER (rec), GST_WORKER_NR_END);
-  g_return_val_if_fail (GST_IS_RECORDER (rec), GST_WORKER_NR_END);
-
-  worker = GST_WORKER (rec);
-
-  if (rec->deprecated) {
-    return GST_WORKER_NR_END;
-  }
-
-  g_return_val_if_fail (GST_IS_BIN (worker->pipeline), GST_WORKER_NR_END);
-
-  sink = gst_bin_get_by_name (GST_BIN (worker->pipeline), "disk_sink");
-  g_return_val_if_fail (sink != NULL, GST_WORKER_NR_END);
-  
-  filename = gst_recorder_new_filename (rec);
-  g_return_val_if_fail (filename != NULL, GST_WORKER_NR_END);
-
-  g_object_set (G_OBJECT (sink), "location", filename, NULL);
-  g_object_unref (G_OBJECT (sink));
-  g_free ((gpointer) filename);
-  return GST_WORKER_NR_REPLAY;
-}
-#endif
-
 static void
 gst_recorder_class_init (GstRecorderClass * klass)
 {
@@ -268,7 +232,6 @@ gst_recorder_class_init (GstRecorderClass * klass)
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  //worker_class->null = (GstWorkerNullFunc) gst_recorder_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_recorder_get_pipeline_string;
