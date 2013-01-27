@@ -19,6 +19,10 @@ TESTS = \
 test: $(TESTS)
 	@ls $(TESTS:%=%.log)
 
+show-tests:
+	@printf "Available tests:\n\t$(TESTS)\n"
+	@printf "You may want to do 'make test-*' for specific test."
+
 $(TESTS):
 	./tests/test-switch-server --enable-$@ || true
 
