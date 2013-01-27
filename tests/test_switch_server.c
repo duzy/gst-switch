@@ -1072,7 +1072,7 @@ test_composite_mode (void)
 static void
 test_video (void)
 {
-  const gint seconds = 60;
+  const gint seconds = 30;
   GPid server_pid = 0;
   testcase source1 = { "test-video-source1", 0 };
   testcase source2 = { "test-video-source2", 0 };
@@ -1452,7 +1452,7 @@ test_random_1 (gpointer d)
     ;
   gint n, m, i;
 
-  audio_source0.live_seconds = 102;
+  audio_source0.live_seconds = 60;
   audio_source0.desc = g_string_new ("");
   g_string_append_printf (audio_source0.desc, "audiotestsrc freq=110 wave=2 ");
   g_string_append_printf (audio_source0.desc, "! gdppay ! tcpclientsink port=4000");
@@ -1571,7 +1571,7 @@ test_random (void)
 static void
 test_switching (void)
 {
-  const gint seconds = 180;
+  const gint seconds = 120;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source1 = { "test-video-source1", 0 };
