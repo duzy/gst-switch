@@ -309,6 +309,15 @@ gst_worker_state_ready_to_paused (GstWorker *worker)
 static void
 gst_worker_state_paused_to_playing (GstWorker *worker)
 {
+  GstWorkerClass *workerclass;
+
+  g_return_if_fail (GST_IS_WORKER (worker));
+
+  workerclass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
+  if (workerclass->alive) {
+    (*workerclass->alive) (worker);
+  }
+
   g_signal_emit (worker, gst_worker_signals[SIGNAL_START_WORKER], 0);
 }
 
@@ -434,7 +443,7 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
 	    GST_STATE_TRANSITION (oldstate, newstate));
 
 	if (!ret && verbose)
-	  g_print ("unknown state change from %s to %s\n",
+	  g_print ("%s: UNKNOWN state change from %s to %s\n", worker->name,
 	      gst_element_state_get_name (oldstate),
 	      gst_element_state_get_name (newstate));
       }

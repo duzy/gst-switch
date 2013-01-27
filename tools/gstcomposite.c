@@ -30,13 +30,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gstswitchserver.h"
+#include "gstrecorder.h"
+
+#define GST_COMPOSITE_LOCK(composite) (g_mutex_lock (&(composite)->lock))
+#define GST_COMPOSITE_UNLOCK(composite) (g_mutex_unlock (&(composite)->lock))
+#define GST_COMPOSITE_LOCK_RECORDER(composite) (g_mutex_lock (&(composite)->recorder_lock))
+#define GST_COMPOSITE_UNLOCK_RECORDER(composite) (g_mutex_unlock (&(composite)->recorder_lock))
 
 enum
 {
   PROP_0,
-  PROP_TYPE,
   PROP_MODE,
   PROP_PORT,
+  PROP_ENCODE_PORT,
   PROP_A_X,
   PROP_A_Y,
   PROP_A_WIDTH,
@@ -61,14 +67,24 @@ extern gboolean verbose;
 G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 
 static void gst_composite_set_mode (GstComposite *, GstCompositeMode);
+static void gst_composite_start_transition_mode (GstComposite *);
 
 static void
 gst_composite_init (GstComposite * composite)
 {
-  composite->type = COMPOSE_TYPE_WORK;
+  composite->transition = FALSE;
   composite->deprecated = FALSE;
+  composite->output = NULL;
+  composite->recorder = NULL;
+
+  g_mutex_init (&composite->lock);
+  g_mutex_init (&composite->recorder_lock);
 
   gst_composite_set_mode (composite, DEFAULT_COMPOSE_MODE);
+
+  /* Indicating transition from no-mode to default mode.
+   */
+  composite->transition = TRUE;
 
   INFO ("Composite initialized");
 }
@@ -84,6 +100,9 @@ gst_composite_dispose (GstComposite * composite)
 static void
 gst_composite_finalize (GstComposite * composite)
 {
+  g_mutex_clear (&composite->lock);
+  g_mutex_clear (&composite->recorder_lock);
+
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (composite));
 
@@ -94,6 +113,12 @@ static void
 gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
 {
   guint h;
+
+  if (composite->transition) {
+    WARN ("changing mode while transition is not allowed");
+    return;
+  }
+  
   composite->a_x = 0;
   composite->a_y = 0;
   composite->a_width  = GST_SWITCH_COMPOSITE_DEFAULT_WIDTH;
@@ -134,10 +159,27 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   default:
     break;
   }
-  INFO ("new composite %dx%d (%d, %dx%d, %dx%d)",
-      composite->width, composite->height, mode,
+
+  INFO ("new mode %d, %dx%d (%dx%d, %dx%d)", mode,
+      composite->width, composite->height,
       composite->a_width, composite->a_height,
       composite->b_width, composite->b_height);
+
+  if (composite->output && composite->recorder) {
+    gst_composite_start_transition_mode (composite);
+  }
+}
+
+static void
+gst_composite_start_transition_mode (GstComposite *composite)
+{
+  g_return_if_fail (GST_IS_COMPOSITE (composite));
+
+  GST_COMPOSITE_LOCK (composite);
+  composite->transition = TRUE;
+  GST_COMPOSITE_UNLOCK (composite);
+
+  gst_worker_stop (GST_WORKER (composite));
 }
 
 static void
@@ -145,11 +187,11 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
     const GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
-  case PROP_TYPE:
-    composite->type = (GstCompositeType) (g_value_get_uint (value));
-    break;
   case PROP_PORT:
     composite->sink_port = g_value_get_uint (value);
+    break;
+  case PROP_ENCODE_PORT:
+    composite->encode_sink_port = g_value_get_uint (value);
     break;
   case PROP_A_X:
     composite->a_x = g_value_get_uint (value);
@@ -175,11 +217,14 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
   case PROP_B_HEIGHT:
     composite->b_height = g_value_get_uint (value);
     break; // goto reset;
-  case PROP_MODE:
-    composite->mode = (GstCompositeMode) (g_value_get_uint (value));
-    //reset:
-    gst_composite_set_mode (composite, composite->mode);
-    break;
+  case PROP_MODE: {
+    guint mode = g_value_get_uint (value);
+    if (COMPOSE_MODE_0 <= mode && mode <= COMPOSE_MODE__LAST) {
+      gst_composite_set_mode (composite, (GstCompositeMode) mode);
+    } else {
+      WARN ("invalid composite mode %d", mode);
+    }
+  } break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
 	pspec);
@@ -192,14 +237,14 @@ gst_composite_get_property (GstComposite * composite, guint property_id,
     GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
-  case PROP_TYPE:
-    g_value_set_uint (value, composite->type);
-    break;
   case PROP_MODE:
     g_value_set_uint (value, composite->mode);
     break;
   case PROP_PORT:
     g_value_set_uint (value, composite->sink_port);
+    break;
+  case PROP_ENCODE_PORT:
+    g_value_set_uint (value, composite->encode_sink_port);
     break;
   case PROP_A_X:
     g_value_set_uint (value, composite->a_x);
@@ -239,7 +284,7 @@ gst_composite_get_property (GstComposite * composite, guint property_id,
 }
 
 static GString *
-gst_composite_get_pipeline_string_w (GstComposite * composite)
+gst_composite_get_pipeline_string (GstComposite * composite)
 {
   GString *desc;
 
@@ -292,7 +337,8 @@ gst_composite_get_pipeline_string_w (GstComposite * composite)
 }
 
 static GString *
-gst_composite_get_pipeline_string_ov (GstComposite * composite)
+gst_composite_get_pipeline_string_ov (GstWorker *worker,
+    GstComposite * composite)
 {
   GString *desc;
 
@@ -308,70 +354,73 @@ gst_composite_get_pipeline_string_ov (GstComposite * composite)
   return desc;
 }
 
-static GString *
-gst_composite_get_pipeline_string_oa (GstComposite * composite)
-{
-  GString *desc;
-
-  desc = g_string_new ("");
-
-  g_string_append_printf (desc, "interaudiosrc name=source "
-      "channel=audio_out ");
-  g_string_append_printf (desc, "tcpserversink name=sink "
-      "port=%d ", composite->sink_port);
-  g_string_append_printf (desc, "source. ! gdppay ! sink. ");
-
-  return desc;
-}
-
-static GString *
-gst_composite_get_pipeline_string (GstComposite * composite)
-{
-  switch (composite->type) {
-  case COMPOSE_TYPE_WORK:
-    return gst_composite_get_pipeline_string_w (composite);
-  case COMPOSE_TYPE_OUT_VIDEO:
-    return gst_composite_get_pipeline_string_ov (composite);
-  case COMPOSE_TYPE_OUT_AUDIO:
-    return gst_composite_get_pipeline_string_oa (composite);
-  }
-  return NULL;
-}
-
-static void
-on_source_pad_added (GstElement * element, GstPad * pad,
-    GstComposite * composite)
-{
-  INFO ("source-pad-added: %s.%s", GST_ELEMENT_NAME (element),
-      GST_PAD_NAME (pad));
-}
-
 static gboolean
 gst_composite_prepare (GstComposite *composite)
 {
-  GstWorker *worker = GST_WORKER (composite);
-  GstElement *source = gst_worker_get_element (worker, "source");
-  if (source) {
-    g_signal_connect (source, "pad-added",
-	G_CALLBACK (on_source_pad_added), worker);
+  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+
+  if (composite->output == NULL) {
+    composite->output = GST_WORKER (g_object_new (GST_TYPE_WORKER,
+	    "name", "composite-out", NULL));
+    composite->output->pipeline_func_data = composite;
+    composite->output->pipeline_func = (GstWorkerGetPipelineString)
+      gst_composite_get_pipeline_string_ov;
   }
+
+  if (composite->recorder == NULL) {
+    composite->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
+	    "name", "recorder", "port", composite->encode_sink_port,
+	    "mode", composite->mode, "width", composite->width,
+	    "height", composite->height, NULL));
+  }
+
   return TRUE;
+}
+
+static void
+gst_composite_alive (GstComposite *composite)
+{
+  g_return_if_fail (GST_IS_COMPOSITE (composite));
+
+  if (composite->transition) {
+    INFO ("new mode %d, %dx%d outputing...", composite->mode,
+	composite->width, composite->height);
+    gst_worker_start (GST_WORKER (composite->output));
+    gst_worker_start (GST_WORKER (composite->recorder));
+    composite->transition = FALSE;
+    INFO ("new mode %d, %dx%d transited", composite->mode,
+	composite->width, composite->height);
+  }
 }
 
 static GstWorkerNullReturn
 gst_composite_null (GstComposite *composite)
 {
-  GstWorker *worker;
-
-  g_return_val_if_fail (GST_IS_WORKER (composite), GST_WORKER_NR_END);
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), GST_WORKER_NR_END);
-  
-  worker = GST_WORKER (composite);
 
-  (void) worker;
+  if (composite->transition) {
+    gst_worker_stop (GST_WORKER (composite->output));
+    gst_worker_stop (GST_WORKER (composite->recorder));
+  }
 
   return composite->deprecated ? 
     GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
+}
+
+gboolean
+gst_composite_new_record (GstComposite *composite)
+{
+  gboolean result = FALSE;
+  GST_COMPOSITE_LOCK_RECORDER (composite);
+  if (composite->recorder) {
+    gst_worker_stop (GST_WORKER (composite->recorder));
+    g_object_set (G_OBJECT (composite->recorder),
+	"mode", composite->mode, "port", composite->encode_sink_port,
+	"width", composite->width, "height", composite->height, NULL);
+    result = gst_worker_start (GST_WORKER (composite->recorder));
+  }
+  GST_COMPOSITE_UNLOCK_RECORDER (composite);
+  return result;
 }
 
 static void
@@ -385,11 +434,6 @@ gst_composite_class_init (GstCompositeClass * klass)
   object_class->set_property = (GObjectSetPropertyFunc) gst_composite_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_composite_get_property;
 
-  g_object_class_install_property (object_class, PROP_TYPE,
-      g_param_spec_uint ("type", "Type", "Composite Type",
-          COMPOSE_TYPE_WORK, COMPOSE_TYPE_OUT_AUDIO, COMPOSE_TYPE_WORK,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
   g_object_class_install_property (object_class, PROP_MODE,
       g_param_spec_uint ("mode", "Mode", "Composite Mode",
           COMPOSE_MODE_0, COMPOSE_MODE__LAST, DEFAULT_COMPOSE_MODE,
@@ -397,6 +441,12 @@ gst_composite_class_init (GstCompositeClass * klass)
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port", "Sink port",
+          GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
+	  GST_SWITCH_MIN_SINK_PORT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_ENCODE_PORT,
+      g_param_spec_uint ("encode", "EncodePort", "Encoding Sink port",
           GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
 	  GST_SWITCH_MIN_SINK_PORT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
@@ -451,6 +501,7 @@ gst_composite_class_init (GstCompositeClass * klass)
           1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
+  worker_class->alive = (GstWorkerAliveFunc) gst_composite_alive;
   worker_class->null = (GstWorkerNullFunc) gst_composite_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)

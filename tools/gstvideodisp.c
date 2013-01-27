@@ -117,8 +117,12 @@ gst_video_disp_prepare (GstVideoDisp *disp)
   GstWorker *worker = GST_WORKER (disp);
   GstElement *sink = gst_worker_get_element (worker, "sink");
 
+  g_return_val_if_fail (GST_IS_ELEMENT (sink), FALSE);
+
   gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (sink),
       disp->handle);
+
+  gst_object_unref (sink);
 
   INFO ("prepared display video on %ld", disp->handle);
   return TRUE;

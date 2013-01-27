@@ -27,7 +27,6 @@
 #define __GST_SWITCH_SERVER_H__by_Duzy_Chan__ 1
 #include <gio/gio.h>
 #include "gstcomposite.h"
-#include "gstrecorder.h"
 #include "gstswitchcontroller.h"
 #include "../logutils.h"
 
@@ -86,14 +85,8 @@ struct _GstSwitchServer
   GMutex cases_lock;
   GList *cases;
 
-  GMutex composite_lock;
   GstComposite *composite;
-  GstComposite *composite_out;
-  GstComposite *audio_out;
-  gboolean changing_composite;
-
-  GMutex recorder_lock;
-  GstRecorder *recorder;
+  GstCompositeMode new_composite_mode;
 
   GMutex pip_lock;
   gint pip_x, pip_y, pip_w, pip_h;

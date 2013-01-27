@@ -322,6 +322,7 @@ gst_case_prepare (GstCase *cas)
       return FALSE;
     }
     g_object_set (source, "stream", cas->stream, NULL);
+    gst_object_unref (source);
     break;
 
   case GST_CASE_BRANCH_A:

@@ -48,19 +48,14 @@
 #define DEFAULT_COMPOSE_MODE COMPOSE_MODE_3
 
 typedef enum {
-  COMPOSE_TYPE_WORK,
-  COMPOSE_TYPE_OUT_VIDEO,
-  COMPOSE_TYPE_OUT_AUDIO,
-} GstCompositeType;
-
-typedef enum {
   COMPOSE_MODE_0, /* none */
   COMPOSE_MODE_1, /* picture-in-picture */
   COMPOSE_MODE_2, /* side-by-side (preview) */
   COMPOSE_MODE_3, /* side-by-side (equal) */
-  COMPOSE_MODE__LAST
+  COMPOSE_MODE__LAST = COMPOSE_MODE_3
 } GstCompositeMode;
 
+typedef struct _GstRecorder GstRecorder;
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
 typedef struct _GstSwitchServer GstSwitchServer;
@@ -69,10 +64,16 @@ struct _GstComposite
 {
   GstWorker base;
 
-  GstCompositeType type;
   GstCompositeMode mode;
 
+  GMutex lock;
+  GMutex recorder_lock;
+
+  GstWorker *output;
+  GstRecorder *recorder;
+
   gint sink_port;
+  gint encode_sink_port;
 
   guint a_x;
   guint a_y;
@@ -86,6 +87,7 @@ struct _GstComposite
   guint width;
   guint height;
 
+  gboolean transition;
   gboolean deprecated;
 };
 
@@ -97,5 +99,9 @@ struct _GstCompositeClass
 };
 
 GType gst_composite_get_type (void);
+
+gboolean gst_composite_new_record (GstComposite *composite);
+//void gst_composite_lock (GstComposite *composite);
+//void gst_composite_unlock (GstComposite *composite);
 
 #endif//__GST_COMPOSITE_H__by_Duzy_Chan__
