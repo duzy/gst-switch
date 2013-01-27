@@ -1578,7 +1578,7 @@ test_random (void)
 static void
 test_switching (void)
 {
-  const gint seconds = 60;
+  const gint seconds = 60 * 3;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source1 = { "test-video-source1", 0 };

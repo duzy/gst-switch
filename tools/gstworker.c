@@ -89,6 +89,7 @@ gst_worker_dispose (GstWorker *worker)
   }
 
   if (worker->pipeline) {
+    gst_element_set_state (worker->pipeline, GST_STATE_NULL);
     gst_object_unref (worker->pipeline);
     worker->pipeline = NULL;
   }

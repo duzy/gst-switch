@@ -87,6 +87,7 @@ struct _GstComposite
   guint width;
   guint height;
 
+  gboolean adjusting;
   gboolean transition;
   gboolean deprecated;
 };
@@ -104,7 +105,7 @@ struct _GstCompositeClass
 GType gst_composite_get_type (void);
 
 gboolean gst_composite_new_record (GstComposite *composite);
-//void gst_composite_lock (GstComposite *composite);
-//void gst_composite_unlock (GstComposite *composite);
+gboolean gst_composite_adjust_pip (GstComposite *composite,
+				   gint x, gint y, gint w, gint h);
 
 #endif//__GST_COMPOSITE_H__by_Duzy_Chan__

@@ -785,8 +785,10 @@ gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
   result = (mode == srv->composite->mode);
 
   if (result) {
-    srv->pip_x = 0, srv->pip_y = 0;
-    srv->pip_w = 0, srv->pip_h = 0;
+    srv->pip_x = srv->composite->b_x;
+    srv->pip_y = srv->composite->b_y;
+    srv->pip_w = srv->composite->b_width;
+    srv->pip_h = srv->composite->b_height;
   }
 
  end:
@@ -815,7 +817,7 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
 {
   guint result = 0;
 
-  INFO ("adjust-pip: %d, %d, %d, %d", dx, dy, dw, dh);
+  g_return_val_if_fail (GST_IS_COMPOSITE (srv->composite), 0);
 
   GST_SWITCH_SERVER_LOCK_PIP (srv);
 
@@ -828,7 +830,8 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
   if (srv->pip_h < GST_SWITCH_COMPOSITE_MIN_PIP_H)
     srv->pip_h   = GST_SWITCH_COMPOSITE_MIN_PIP_H;
 
-  gst_worker_stop (GST_WORKER (srv->composite));
+  result = gst_composite_adjust_pip (srv->composite,
+      srv->pip_x, srv->pip_y, srv->pip_w, srv->pip_h);
 
   if (dx != 0) result |= (1 << 0);
   if (dy != 0) result |= (1 << 1);

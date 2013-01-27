@@ -76,6 +76,7 @@ static void gst_composite_start_transition_mode (GstComposite *);
 static void
 gst_composite_init (GstComposite * composite)
 {
+  composite->adjusting = FALSE;
   composite->transition = FALSE;
   composite->deprecated = FALSE;
   composite->output = NULL;
@@ -199,28 +200,28 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
     break;
   case PROP_A_X:
     composite->a_x = g_value_get_uint (value);
-    break; // goto reset;
+    break;
   case PROP_A_Y:
     composite->a_y = g_value_get_uint (value);
-    break; // goto reset;
+    break;
   case PROP_A_WIDTH:
     composite->a_width = g_value_get_uint (value);
-    break; // goto reset;
+    break;
   case PROP_A_HEIGHT:
     composite->a_height = g_value_get_uint (value);
-    break; // goto reset;
+    break;
   case PROP_B_X:
     composite->b_x = g_value_get_uint (value);
-    break; // goto reset;
+    break;
   case PROP_B_Y:
     composite->b_y = g_value_get_uint (value);
-    break; // goto reset;
+    break;
   case PROP_B_WIDTH:
     composite->b_width = g_value_get_uint (value);
-    break; // goto reset;
+    break;
   case PROP_B_HEIGHT:
     composite->b_height = g_value_get_uint (value);
-    break; // goto reset;
+    break;
   case PROP_MODE: {
     guint mode = g_value_get_uint (value);
     if (COMPOSE_MODE_0 <= mode && mode <= COMPOSE_MODE__LAST) {
@@ -453,6 +454,10 @@ gst_composite_alive (GstComposite *composite)
     INFO ("new mode %d, %dx%d transited", composite->mode,
 	composite->width, composite->height);
   }
+
+  if (composite->adjusting) {
+    composite->adjusting = FALSE;
+  }
 }
 
 static GstWorkerNullReturn
@@ -464,10 +469,47 @@ gst_composite_null (GstComposite *composite)
     gst_worker_stop (GST_WORKER (composite->output));
     gst_worker_stop (GST_WORKER (composite->recorder));
     gst_composite_apply_parameters (composite);
+  } else if (composite->adjusting) {
+    GstWorkerClass * worker_class;
+    worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
+    if (!worker_class->reset (GST_WORKER (composite))) {
+      ERROR ("failed to reset composite");
+    }
   }
 
   return composite->deprecated ? 
     GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
+}
+
+gboolean
+gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
+    gint w, gint h)
+{
+  gboolean result = FALSE;
+
+  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+
+  GST_COMPOSITE_LOCK (composite);
+  if (composite->adjusting) {
+    WARN ("last PIP adjustment request is progressing");
+    goto end;
+  }
+  
+  INFO ("adjust-pip: %d, %d, %d, %d", x, y, w, h);
+
+  composite->b_x = x;
+  composite->b_y = y;
+  composite->b_width = w;
+  composite->b_height = h;
+  composite->adjusting = TRUE;
+  gst_worker_stop (GST_WORKER (composite));
+
+  result = TRUE;
+
+ end:
+  GST_COMPOSITE_UNLOCK (composite);
+
+  return result;
 }
 
 gboolean
