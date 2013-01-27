@@ -487,15 +487,11 @@ static void
 gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
 {
   GST_SWITCH_UI_LOCK_COMPOSE (ui);
-  if (ui->compose && ui->compose->port == port) {
-    INFO ("compose %d already displayed", port);
-  } else {
-    if (ui->compose)
-      g_object_unref (ui->compose);
+  if (ui->compose)
+    g_object_unref (ui->compose);
 
-    ui->compose = gst_switch_ui_new_video_disp (ui,
-	ui->compose_view, port);
-  }
+  ui->compose = gst_switch_ui_new_video_disp (ui,
+      ui->compose_view, port);
   GST_SWITCH_UI_UNLOCK_COMPOSE (ui);
 }
 
