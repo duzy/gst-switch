@@ -57,10 +57,14 @@ enum
 
 enum
 {
+  SIGNAL_START_OUTPUT,
+  SIGNAL_START_RECORDER,
+  SIGNAL_END_OUTPUT,
+  SIGNAL_END_RECORDER,
   SIGNAL__LAST,
 };
 
-//static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
+static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
 #define gst_composite_parent_class parent_class
@@ -283,6 +287,32 @@ gst_composite_get_property (GstComposite * composite, guint property_id,
   }
 }
 
+static void
+gst_composite_apply_parameters (GstComposite * composite)
+{
+  GstWorkerClass * worker_class;
+
+  g_return_if_fail (GST_IS_COMPOSITE (composite));
+
+  worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
+
+  if (!worker_class->reset (GST_WORKER (composite))) {
+    ERROR ("failed to reset composite");
+  }
+  if (!worker_class->reset (GST_WORKER (composite->output))) {
+    ERROR ("failed to reset composite output");
+  }
+
+  g_object_set (composite->recorder,
+      "port", composite->encode_sink_port,
+      "mode", composite->mode, "width", composite->width,
+      "height", composite->height, NULL);
+
+  if (!worker_class->reset (GST_WORKER (composite->recorder))) {
+    ERROR ("failed to reset composite recorder");
+  }
+}
+
 static GString *
 gst_composite_get_pipeline_string (GstComposite * composite)
 {
@@ -337,7 +367,7 @@ gst_composite_get_pipeline_string (GstComposite * composite)
 }
 
 static GString *
-gst_composite_get_pipeline_string_ov (GstWorker *worker,
+gst_composite_get_output_string (GstWorker *worker,
     GstComposite * composite)
 {
   GString *desc;
@@ -354,6 +384,30 @@ gst_composite_get_pipeline_string_ov (GstWorker *worker,
   return desc;
 }
 
+static void
+gst_composite_start_output (GstWorker *worker, GstComposite *composite)
+{
+  g_signal_emit (composite, gst_composite_signals[SIGNAL_START_OUTPUT], 0);
+}
+
+static void
+gst_composite_start_recorder (GstRecorder *rec, GstComposite *composite)
+{
+  g_signal_emit (composite, gst_composite_signals[SIGNAL_START_RECORDER], 0);
+}
+
+static void
+gst_composite_end_output (GstWorker *worker, GstComposite *composite)
+{
+  g_signal_emit (composite, gst_composite_signals[SIGNAL_END_OUTPUT], 0);
+}
+
+static void
+gst_composite_end_recorder (GstRecorder *rec, GstComposite *composite)
+{
+  g_signal_emit (composite, gst_composite_signals[SIGNAL_END_RECORDER], 0);
+}
+
 static gboolean
 gst_composite_prepare (GstComposite *composite)
 {
@@ -364,7 +418,11 @@ gst_composite_prepare (GstComposite *composite)
 	    "name", "composite-out", NULL));
     composite->output->pipeline_func_data = composite;
     composite->output->pipeline_func = (GstWorkerGetPipelineString)
-      gst_composite_get_pipeline_string_ov;
+      gst_composite_get_output_string;
+    g_signal_connect (composite->output, "start-worker",
+	G_CALLBACK (gst_composite_start_output), composite);
+    g_signal_connect (composite->output, "end-worker",
+	G_CALLBACK (gst_composite_end_output), composite);
   }
 
   if (composite->recorder == NULL) {
@@ -372,6 +430,10 @@ gst_composite_prepare (GstComposite *composite)
 	    "name", "recorder", "port", composite->encode_sink_port,
 	    "mode", composite->mode, "width", composite->width,
 	    "height", composite->height, NULL));
+    g_signal_connect (composite->recorder, "start-worker",
+	G_CALLBACK (gst_composite_start_recorder), composite);
+    g_signal_connect (composite->recorder, "end-worker",
+	G_CALLBACK (gst_composite_end_recorder), composite);
   }
 
   return TRUE;
@@ -401,6 +463,7 @@ gst_composite_null (GstComposite *composite)
   if (composite->transition) {
     gst_worker_stop (GST_WORKER (composite->output));
     gst_worker_stop (GST_WORKER (composite->recorder));
+    gst_composite_apply_parameters (composite);
   }
 
   return composite->deprecated ? 
@@ -433,6 +496,26 @@ gst_composite_class_init (GstCompositeClass * klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_composite_finalize;
   object_class->set_property = (GObjectSetPropertyFunc) gst_composite_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_composite_get_property;
+
+  gst_composite_signals[SIGNAL_START_OUTPUT] = 
+    g_signal_new ("start-output", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, start_output),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  gst_composite_signals[SIGNAL_START_RECORDER] = 
+    g_signal_new ("start-recorder", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, start_recorder),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  gst_composite_signals[SIGNAL_END_OUTPUT] = 
+    g_signal_new ("end-output", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_output),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  gst_composite_signals[SIGNAL_END_RECORDER] = 
+    g_signal_new ("end-recorder", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_recorder),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
   g_object_class_install_property (object_class, PROP_MODE,
       g_param_spec_uint ("mode", "Mode", "Composite Mode",

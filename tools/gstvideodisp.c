@@ -115,7 +115,7 @@ static gboolean
 gst_video_disp_prepare (GstVideoDisp *disp)
 {
   GstWorker *worker = GST_WORKER (disp);
-  GstElement *sink = gst_worker_get_element (worker, "sink");
+  GstElement *sink = gst_worker_get_element_unsafe (worker, "sink");
 
   g_return_val_if_fail (GST_IS_ELEMENT (sink), FALSE);
 

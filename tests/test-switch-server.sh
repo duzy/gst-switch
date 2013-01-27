@@ -1,12 +1,13 @@
 #!/bin/bash
 #EXT="--gst-debug-no-color"
-#EXT="$EXT --test-external-server"
-#EXT="$EXT --test-external-ui"
+EXT="$EXT --test-external-server"
+EXT="$EXT --test-external-ui"
 
 ./tests/test-switch-server $EXT \
     --enable-test-composite-mode \
 
 #    --enable-test-controller \
+
 #    --enable-test-video \
 #    --enable-test-ui-integration \
 #    --enable-test-fuzz-ui \

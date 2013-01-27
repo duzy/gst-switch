@@ -95,7 +95,10 @@ struct _GstCompositeClass
 {
   GstWorkerClass base_class;
 
-  void (*end_composite) (GstComposite *composite);
+  void (*start_output) (GstComposite *composite);
+  void (*start_recorder) (GstComposite *composite);
+  void (*end_output) (GstComposite *composite);
+  void (*end_recorder) (GstComposite *composite);
 };
 
 GType gst_composite_get_type (void);

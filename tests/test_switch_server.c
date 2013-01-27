@@ -606,10 +606,16 @@ testclient_test_mode_2 (testclient *client)
 }
 
 static void
+testclient_end (testclient *client)
+{
+  g_main_loop_quit (client->mainloop);
+}
+
+static void
 testclient_connection_closed (testclient *client, GError *error)
 {
   INFO ("closed: %s", error ? error->message : "");
-  g_main_loop_quit (client->mainloop);
+  testclient_end (client);
 }
 
 static void
@@ -799,14 +805,22 @@ testclient_join (testclient *client)
   g_thread_unref (client->thread);
   client->thread = NULL;
 
-  if (client->thread_test1) g_thread_join (client->thread_test1);
-  if (client->thread_test2) g_thread_join (client->thread_test2);
-  if (client->thread_test3) g_thread_join (client->thread_test3);
-  if (client->thread_test4) g_thread_join (client->thread_test4);
-  if (client->thread_test1) g_thread_unref (client->thread_test1);
-  if (client->thread_test2) g_thread_unref (client->thread_test2);
-  if (client->thread_test3) g_thread_unref (client->thread_test3);
-  if (client->thread_test4) g_thread_unref (client->thread_test4);
+  if (client->thread_test1) {
+    g_thread_join (client->thread_test1);
+    g_thread_unref (client->thread_test1);
+  }
+  if (client->thread_test2) {
+    g_thread_join (client->thread_test2);
+    g_thread_unref (client->thread_test2);
+  }
+  if (client->thread_test3) {
+    g_thread_join (client->thread_test3);
+    g_thread_unref (client->thread_test3);
+  }
+  if (client->thread_test4) {
+    g_thread_join (client->thread_test4);
+    g_thread_unref (client->thread_test4);
+  }
   client->thread_test1 = NULL;
   client->thread_test2 = NULL;
   client->thread_test3 = NULL;
@@ -828,7 +842,7 @@ testclient_join (testclient *client)
 static void
 test_controller (void)
 {
-  enum { seconds = 60 };
+  enum { seconds = 30 };
   GPid server_pid = 0;
   testclient *client;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -914,8 +928,7 @@ test_controller (void)
     }
   }
 
-  g_assert_cmpint (g_list_length (client->sink0), <=, 1);
-
+  sleep (5), testclient_end (client);
   testclient_join (client);
   g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
   g_object_unref (client);
@@ -1030,8 +1043,7 @@ test_composite_mode (void)
     }
   }
 
-  g_assert_cmpint (g_list_length (client->sink0), <=, 1);
-
+  sleep (10), testclient_end (client);
   testclient_join (client);
   g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
   g_object_unref (client);

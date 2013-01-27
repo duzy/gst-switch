@@ -79,6 +79,15 @@ gst_worker_dispose (GstWorker *worker)
     worker->server = NULL;
   }
 
+  if (worker->watch) {
+    g_source_remove (worker->watch);
+  }
+
+  if (worker->bus) {
+    gst_object_unref (worker->bus);
+    worker->bus = NULL;
+  }
+
   if (worker->pipeline) {
     gst_object_unref (worker->pipeline);
     worker->pipeline = NULL;
@@ -87,10 +96,6 @@ gst_worker_dispose (GstWorker *worker)
   if (worker->pipeline_string) {
     g_string_free (worker->pipeline_string, FALSE);
     worker->pipeline_string = NULL;
-  }
-
-  if (worker->watch) {
-    g_source_remove (worker->watch);
   }
 
   //INFO ("%s disposed (%p)", worker->name, worker);
@@ -197,13 +202,11 @@ gst_worker_start (GstWorker *worker)
 
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
-  GST_WORKER_LOCK_PIPELINE (worker);
-
   if (gst_worker_prepare (worker)) {
+    GST_WORKER_LOCK_PIPELINE (worker);
     ret = gst_element_set_state (worker->pipeline, GST_STATE_READY);
+    GST_WORKER_UNLOCK_PIPELINE (worker);
   }
-
-  GST_WORKER_UNLOCK_PIPELINE (worker);
 
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
@@ -251,15 +254,21 @@ gst_worker_stop (GstWorker *worker)
 }
 
 GstElement *
+gst_worker_get_element_unsafe (GstWorker *worker, const gchar *name)
+{
+  g_return_val_if_fail (GST_IS_WORKER (worker), NULL);
+
+  return gst_bin_get_by_name (GST_BIN (worker->pipeline), name);
+}
+
+GstElement *
 gst_worker_get_element (GstWorker *worker, const gchar *name)
 {
   GstElement *element = NULL;
 
-  g_return_val_if_fail (GST_IS_WORKER (worker), element);
-
-  //GST_WORKER_LOCK_PIPELINE (worker);
-  element = gst_bin_get_by_name (GST_BIN (worker->pipeline), name);
-  //GST_WORKER_UNLOCK_PIPELINE (worker);
+  GST_WORKER_LOCK_PIPELINE (worker);
+  element = gst_worker_get_element_unsafe (worker, name);
+  GST_WORKER_UNLOCK_PIPELINE (worker);
   return element;
 }
 
@@ -505,6 +514,8 @@ gst_worker_prepare (GstWorker *worker)
   if (!workerclass->create_pipeline)
     goto error_create_pipeline_not_installed;
 
+  GST_WORKER_LOCK_PIPELINE (worker);
+
   worker->pipeline = workerclass->create_pipeline (worker);
   if (!worker->pipeline)
     goto error_create_pipeline;
@@ -516,14 +527,13 @@ gst_worker_prepare (GstWorker *worker)
       (GstBusFunc) gst_worker_message, worker);
 
   if (workerclass->prepare) {
-    if (!workerclass->prepare (worker)) {
-      WARN ("failed to prepare worker");
-      return FALSE;
-    }
+    if (!workerclass->prepare (worker))
+      goto error_prepare;
   }
 
   g_signal_emit (worker, gst_worker_signals[SIGNAL_PREPARE_WORKER], 0);
 
+  GST_WORKER_UNLOCK_PIPELINE (worker);
   return TRUE;
 
   /* Errors Handling */
@@ -537,8 +547,39 @@ gst_worker_prepare (GstWorker *worker)
  error_create_pipeline:
   {
     ERROR ("%s: failed to create new pipeline", worker->name);
+    GST_WORKER_UNLOCK_PIPELINE (worker);
     return FALSE;
   }
+
+ error_prepare:
+  {
+    ERROR ("%s: failed to prepare", worker->name);
+    GST_WORKER_UNLOCK_PIPELINE (worker);
+    return FALSE;
+  }
+}
+
+static gboolean
+gst_worker_reset (GstWorker *worker)
+{
+  g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
+
+  GST_WORKER_LOCK_PIPELINE (worker);
+
+  if (worker->pipeline) {
+    if (worker->watch)
+      g_source_remove (worker->watch);
+    if (worker->bus)
+      gst_object_unref (worker->bus);
+    if (worker->pipeline)
+      gst_object_unref (worker->pipeline);
+    worker->pipeline = NULL;
+    worker->bus = NULL;
+    worker->watch = 0;
+  }
+  GST_WORKER_UNLOCK_PIPELINE (worker);
+
+  return gst_worker_prepare (worker);
 }
 
 static void
@@ -573,6 +614,7 @@ gst_worker_class_init (GstWorkerClass *klass)
   klass->get_pipeline_string = gst_worker_get_pipeline_string;
   klass->create_pipeline = gst_worker_create_pipeline;
   klass->null = gst_worker_null;
+  klass->reset = gst_worker_reset;
 
   INFO ("Worker class initialized");
 }

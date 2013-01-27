@@ -85,6 +85,8 @@ struct _GstWorkerClass
   gboolean (*prepare) (GstWorker *worker);
   void (*alive) (GstWorker *worker);
   GstWorkerNullReturn (*null) (GstWorker *worker);
+
+  gboolean (*reset) (GstWorker *worker);
 };
 
 GType gst_worker_get_type (void);
@@ -92,6 +94,7 @@ GType gst_worker_get_type (void);
 gboolean gst_worker_start (GstWorker *worker);
 gboolean gst_worker_stop (GstWorker *worker);
 
-GstElement *gst_worker_get_element (GstWorker *worker, const gchar *name);
+GstElement *gst_worker_get_element_unsafe (GstWorker *, const gchar *);
+GstElement *gst_worker_get_element (GstWorker *, const gchar *name);
 
 #endif//__GST_WORKER_H__by_Duzy_Chan__
