@@ -34,6 +34,13 @@
 #include "../logutils.h"
 
 #define TEST_RECORDING_DATA 0
+#define TEST_DISPLAY_VIDEO_RESULT 0
+#if TEST_DISPLAY_VIDEO_RESULT
+#define VIDEOSINK "xvimagesink"
+#else
+#define VIDEOSINK "fakesink"
+#endif//TEST_DISPLAY_VIDEO_RESULT
+#define AUDIOSINK "alsasink"
 
 gboolean verbose = FALSE;
 
@@ -644,7 +651,7 @@ testclient_set_compose_port (testclient *client, gint port)
     g_string_append_printf (sink0->desc, "tcpclientsrc port=%d ", client->compose_port);
     g_string_append_printf (sink0->desc, "! gdpdepay ");
     g_string_append_printf (sink0->desc, "! videoconvert ");
-    g_string_append_printf (sink0->desc, "! xvimagesink");
+    g_string_append_printf (sink0->desc, "! "VIDEOSINK);
     testcase_run_thread (sink0);
     g_mutex_lock (&client->sink0_lock);
     sink0->null_func = testclient_remove_sink0;
@@ -684,7 +691,7 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
       g_string_append_printf (client->sink1.desc, "tcpclientsrc port=%d ", client->preview_port_1);
       g_string_append_printf (client->sink1.desc, "! gdpdepay ");
       g_string_append_printf (client->sink1.desc, "! videoconvert ");
-      g_string_append_printf (client->sink1.desc, "! xvimagesink");
+      g_string_append_printf (client->sink1.desc, "! "VIDEOSINK);
       testcase_run_thread (&client->sink1);
     }
     break;
@@ -699,7 +706,7 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
       g_string_append_printf (client->sink2.desc, "tcpclientsrc port=%d ", client->preview_port_2);
       g_string_append_printf (client->sink2.desc, "! gdpdepay ");
       g_string_append_printf (client->sink2.desc, "! videoconvert ");
-      g_string_append_printf (client->sink2.desc, "! xvimagesink");
+      g_string_append_printf (client->sink2.desc, "! "VIDEOSINK);
       testcase_run_thread (&client->sink2);
     }
     break;
@@ -720,7 +727,7 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
       g_string_append_printf (client->sink3.desc, "! gdpdepay ");
       g_string_append_printf (client->sink3.desc, "! goom2k1 ");
       g_string_append_printf (client->sink3.desc, "! videoconvert ");
-      g_string_append_printf (client->sink3.desc, "! xvimagesink");
+      g_string_append_printf (client->sink3.desc, "! "VIDEOSINK);
       testcase_run_thread (&client->sink3);
     }
     break;
@@ -736,7 +743,7 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
       g_string_append_printf (client->sink4.desc, "! gdpdepay ");
       g_string_append_printf (client->sink4.desc, "! goom2k1 ");
       g_string_append_printf (client->sink4.desc, "! videoconvert ");
-      g_string_append_printf (client->sink4.desc, "! xvimagesink");
+      g_string_append_printf (client->sink4.desc, "! "VIDEOSINK);
       testcase_run_thread (&client->sink4);
     }
     break;
@@ -944,7 +951,7 @@ test_controller (void)
       play.desc = g_string_new ("filesrc location=test-recording.data ");
       g_string_append_printf (play.desc, "! avidemux name=dm ");
       g_string_append_printf (play.desc, "dm.audio_0 ! queue ! faad ! audioconvert ! alsasink ");
-      g_string_append_printf (play.desc, "dm.video_0 ! queue ! vp8dec ! videoconvert ! xvimagesink ");
+      g_string_append_printf (play.desc, "dm.video_0 ! queue ! vp8dec ! videoconvert ! "VIDEOSINK" ");
       testcase_run_thread (&play);
       testcase_join (&play);
       g_assert_cmpint (play.error_count, ==, 0);
@@ -1059,7 +1066,7 @@ test_composite_mode (void)
       play.desc = g_string_new ("filesrc location=test-recording.data ");
       g_string_append_printf (play.desc, "! avidemux name=dm ");
       g_string_append_printf (play.desc, "dm.audio_0 ! queue ! faad ! audioconvert ! alsasink ");
-      g_string_append_printf (play.desc, "dm.video_0 ! queue ! vp8dec ! videoconvert ! xvimagesink ");
+      g_string_append_printf (play.desc, "dm.video_0 ! queue ! vp8dec ! videoconvert ! "VIDEOSINK" ");
       testcase_run_thread (&play);
       testcase_join (&play);
       g_assert_cmpint (play.error_count, ==, 0);
@@ -1121,25 +1128,25 @@ test_video (void)
   sink0.desc = g_string_new ("tcpclientsrc port=3001 ");
   g_string_append_printf (sink0.desc, "! gdpdepay ");
   g_string_append_printf (sink0.desc, "! videoconvert ");
-  g_string_append_printf (sink0.desc, "! xvimagesink");
+  g_string_append_printf (sink0.desc, "! "VIDEOSINK);
 
   sink1.live_seconds = seconds;
   sink1.desc = g_string_new ("tcpclientsrc port=3003 ");
   g_string_append_printf (sink1.desc, "! gdpdepay ");
   g_string_append_printf (sink1.desc, "! videoconvert ");
-  g_string_append_printf (sink1.desc, "! xvimagesink");
+  g_string_append_printf (sink1.desc, "! "VIDEOSINK);
 
   sink2.live_seconds = seconds;
   sink2.desc = g_string_new ("tcpclientsrc port=3004 ");
   g_string_append_printf (sink2.desc, "! gdpdepay ");
   g_string_append_printf (sink2.desc, "! videoconvert ");
-  g_string_append_printf (sink2.desc, "! xvimagesink");
+  g_string_append_printf (sink2.desc, "! "VIDEOSINK);
 
   sink3.live_seconds = seconds;
   sink3.desc = g_string_new ("tcpclientsrc port=3005 ");
   g_string_append_printf (sink3.desc, "! gdpdepay ");
   g_string_append_printf (sink3.desc, "! videoconvert ");
-  g_string_append_printf (sink3.desc, "! xvimagesink");
+  g_string_append_printf (sink3.desc, "! "VIDEOSINK);
 
   if (!opts.test_external_server) {
     server_pid = launch_server ();
@@ -1256,21 +1263,21 @@ test_audio (void)
   g_string_append_printf (sink1.desc, "! gdpdepay ! faad ! goom2k1 ");
   g_string_append_printf (sink1.desc, "! %s text=audio1 ", textoverlay);
   g_string_append_printf (sink1.desc, "! videoconvert ");
-  g_string_append_printf (sink1.desc, "! xvimagesink");
+  g_string_append_printf (sink1.desc, "! "VIDEOSINK);
 
   sink2.live_seconds = seconds;
   sink2.desc = g_string_new ("tcpclientsrc port=3004 ");
   g_string_append_printf (sink2.desc, "! gdpdepay ! faad ! goom2k1 ");
   g_string_append_printf (sink2.desc, "! %s text=audio2 ", textoverlay);
   g_string_append_printf (sink2.desc, "! videoconvert ");
-  g_string_append_printf (sink2.desc, "! xvimagesink");
+  g_string_append_printf (sink2.desc, "! "VIDEOSINK);
 
   sink3.live_seconds = seconds;
   sink3.desc = g_string_new ("tcpclientsrc port=3005 ");
   g_string_append_printf (sink3.desc, "! gdpdepay ! faad ! goom2k1 ");
   g_string_append_printf (sink3.desc, "! %s text=audio3 ", textoverlay);
   g_string_append_printf (sink3.desc, "! videoconvert ");
-  g_string_append_printf (sink3.desc, "! xvimagesink");
+  g_string_append_printf (sink3.desc, "! "VIDEOSINK);
 
   if (!opts.test_external_server) {
     server_pid = launch_server ();
@@ -1571,7 +1578,7 @@ test_random (void)
 static void
 test_switching (void)
 {
-  const gint seconds = 120;
+  const gint seconds = 60;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -1748,25 +1755,25 @@ test_fuzz (void)
   sink0.desc = g_string_new ("tcpclientsrc port=3001 ");
   g_string_append_printf (sink0.desc, "! gdpdepay ");
   g_string_append_printf (sink0.desc, "! videoconvert ");
-  g_string_append_printf (sink0.desc, "! xvimagesink");
+  g_string_append_printf (sink0.desc, "! "VIDEOSINK);
 
   sink1.live_seconds = seconds;
   sink1.desc = g_string_new ("tcpclientsrc port=3003 ");
   g_string_append_printf (sink1.desc, "! gdpdepay ");
   g_string_append_printf (sink1.desc, "! videoconvert ");
-  g_string_append_printf (sink1.desc, "! xvimagesink");
+  g_string_append_printf (sink1.desc, "! "VIDEOSINK);
 
   sink2.live_seconds = seconds;
   sink2.desc = g_string_new ("tcpclientsrc port=3004 ");
   g_string_append_printf (sink2.desc, "! gdpdepay ");
   g_string_append_printf (sink2.desc, "! videoconvert ");
-  g_string_append_printf (sink2.desc, "! xvimagesink");
+  g_string_append_printf (sink2.desc, "! "VIDEOSINK);
 
   sink3.live_seconds = seconds;
   sink3.desc = g_string_new ("tcpclientsrc port=3005 ");
   g_string_append_printf (sink3.desc, "! gdpdepay ");
   g_string_append_printf (sink3.desc, "! videoconvert ");
-  g_string_append_printf (sink3.desc, "! xvimagesink");
+  g_string_append_printf (sink3.desc, "! "VIDEOSINK);
 
   if (!opts.test_external_server) {
     server_pid = launch_server ();
