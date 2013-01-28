@@ -62,6 +62,7 @@ static struct {
   gboolean enable_test_switching;
   gboolean enable_test_fuzz;
   gboolean enable_test_checking_timestamps;
+  gboolean enable_test_multiple_clients;
   gboolean test_external_server;
   gboolean test_external_ui;
 } opts = {
@@ -88,6 +89,7 @@ static GOptionEntry option_entries[] = {
   {"enable-test-switching",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_switching,		"Enable testing switching",          NULL},
   {"enable-test-fuzz",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_fuzz,		"Enable testing fuzz input",         NULL},
   {"enable-test-checking-timestamps",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_checking_timestamps,	"Enable testing checking timestamps",NULL},
+  {"enable-test-multiple-clients",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_multiple_clients,	"Enable testing multiple clients",   NULL},
   {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server",           NULL},
   {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui",               NULL},
   {NULL}
@@ -859,6 +861,11 @@ test_controller (void)
 
   g_print ("\n");
 
+  if (opts.test_external_ui) {
+    ERROR ("Testing controller for external UI is not allowed!");
+    return;
+  }
+
   if (!opts.test_external_server) {
     server_pid = launch_server ();
     g_assert_cmpint (server_pid, !=, 0);
@@ -973,6 +980,11 @@ test_composite_mode (void)
   testcase audio_source2 = { "test-audio-source2", 0 };
 
   g_print ("\n");
+
+  if (opts.test_external_ui) {
+    ERROR ("Testing composite mode for external UI is not allowed!");
+    return;
+  }
 
   if (!opts.test_external_server) {
     server_pid = launch_server ();
@@ -1885,6 +1897,12 @@ test_checking_timestamps (void)
     close_pid (server_pid);
 }
 
+static void
+test_multiple_clients (void)
+{
+  ERROR ("TODO: test for multiple clients");
+}
+
 int main (int argc, char**argv)
 {
   {
@@ -1943,6 +1961,9 @@ int main (int argc, char**argv)
   if (opts.enable_test_checking_timestamps) {
     g_test_add_func ("/gst-switch/checking-timestamps", test_checking_timestamps);
     g_test_add_func ("/gst-switch/recording-result", test_recording_result);
+  }
+  if (opts.enable_test_multiple_clients) {
+    g_test_add_func ("/gst-switch/multiple-clients", test_multiple_clients);
   }
   return g_test_run ();
 }

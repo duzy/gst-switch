@@ -213,13 +213,14 @@ static gboolean
 gst_worker_replay (GstWorker *worker)
 {
   GstStateChangeReturn ret = GST_STATE_CHANGE_FAILURE;
-  GstState state;
 
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
   GST_WORKER_LOCK_PIPELINE (worker);
  
   if (worker->pipeline) {
+    GstState state;
+
     ret = gst_element_get_state (worker->pipeline, &state, NULL,
 	GST_CLOCK_TIME_NONE);
 
@@ -243,7 +244,14 @@ gst_worker_stop (GstWorker *worker)
   GST_WORKER_LOCK_PIPELINE (worker);
 
   if (worker->pipeline) {
-    ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+    GstState state;
+
+    ret = gst_element_get_state (worker->pipeline, &state, NULL,
+	GST_CLOCK_TIME_NONE);
+
+    if (state == GST_STATE_PLAYING) {
+      ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+    }
   }
 
   GST_WORKER_UNLOCK_PIPELINE (worker);
