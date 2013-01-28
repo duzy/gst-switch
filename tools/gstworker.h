@@ -92,7 +92,9 @@ struct _GstWorkerClass
 GType gst_worker_get_type (void);
 
 gboolean gst_worker_start (GstWorker *worker);
-gboolean gst_worker_stop (GstWorker *worker);
+gboolean gst_worker_stop_force (GstWorker *worker, gboolean force);
+
+#define gst_worker_stop(worker) (gst_worker_stop_force ((worker), FALSE))
 
 GstElement *gst_worker_get_element_unsafe (GstWorker *, const gchar *);
 GstElement *gst_worker_get_element (GstWorker *, const gchar *name);

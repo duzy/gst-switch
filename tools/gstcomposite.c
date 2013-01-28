@@ -179,7 +179,7 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
 static gboolean
 gst_composite_ready_for_transition (GstComposite *composite)
 {
-  return TRUE;
+  return !composite->transition;
 }
 
 static void
@@ -190,11 +190,9 @@ gst_composite_start_transition (GstComposite *composite)
   GST_COMPOSITE_LOCK_TRANSITION (composite);
 
   if (gst_composite_ready_for_transition (composite)) {
-    GST_COMPOSITE_LOCK (composite);
-    composite->transition = TRUE;
-    GST_COMPOSITE_UNLOCK (composite);
-
-    gst_worker_stop (GST_WORKER (composite));
+    composite->transition = gst_worker_stop (GST_WORKER (composite));
+    INFO ("transtion ok=%d, %d, %dx%d", composite->transition,
+	composite->mode, composite->width, composite->height);
   }
 
   GST_COMPOSITE_UNLOCK_TRANSITION (composite);
@@ -459,13 +457,15 @@ gst_composite_alive (GstComposite *composite)
   g_return_if_fail (GST_IS_COMPOSITE (composite));
 
   if (composite->transition) {
-    INFO ("new mode %d, %dx%d outputing...", composite->mode,
-	composite->width, composite->height);
-    gst_worker_start (GST_WORKER (composite->output));
-    gst_worker_start (GST_WORKER (composite->recorder));
-    composite->transition = FALSE;
-    INFO ("new mode %d, %dx%d transited", composite->mode,
-	composite->width, composite->height);
+    GST_COMPOSITE_LOCK_TRANSITION (composite);
+    if (composite->transition) {
+      gst_worker_start (GST_WORKER (composite->output));
+      gst_worker_start (GST_WORKER (composite->recorder));
+      composite->transition = FALSE;
+      INFO ("new mode %d, %dx%d transited", composite->mode,
+	  composite->width, composite->height);
+    }
+    GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }
 
   if (composite->adjusting) {
@@ -483,6 +483,8 @@ gst_composite_null (GstComposite *composite)
     if (composite->transition) {
       gst_worker_stop (GST_WORKER (composite->output));
       gst_worker_stop (GST_WORKER (composite->recorder));
+      INFO ("new mode %d, %dx%d applying...",
+	  composite->mode, composite->width, composite->height);
       gst_composite_apply_parameters (composite);
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
@@ -533,16 +535,58 @@ gboolean
 gst_composite_new_record (GstComposite *composite)
 {
   gboolean result = FALSE;
-  GST_COMPOSITE_LOCK_RECORDER (composite);
   if (composite->recorder) {
-    gst_worker_stop (GST_WORKER (composite->recorder));
-    g_object_set (G_OBJECT (composite->recorder),
-	"mode", composite->mode, "port", composite->encode_sink_port,
-	"width", composite->width, "height", composite->height, NULL);
-    result = gst_worker_start (GST_WORKER (composite->recorder));
+    GST_COMPOSITE_LOCK_RECORDER (composite);
+    if (composite->recorder) {
+      gst_worker_stop (GST_WORKER (composite->recorder));
+      g_object_set (G_OBJECT (composite->recorder),
+	  "mode", composite->mode, "port", composite->encode_sink_port,
+	  "width", composite->width, "height", composite->height, NULL);
+      result = gst_worker_start (GST_WORKER (composite->recorder));
+    }
+    GST_COMPOSITE_UNLOCK_RECORDER (composite);
   }
-  GST_COMPOSITE_UNLOCK_RECORDER (composite);
   return result;
+}
+
+static void
+gst_composite_error (GstComposite *composite)
+{
+  g_return_if_fail (GST_IS_COMPOSITE (composite));
+
+  if (composite->transition) {
+    GST_COMPOSITE_LOCK_TRANSITION (composite);
+    if (composite->transition) {
+      gboolean ok1, ok2, ok3;
+      INFO ("new mode %d, %dx%d transition error",
+	  composite->mode, composite->width, composite->height);
+      ok1 = gst_worker_stop_force (GST_WORKER (composite), TRUE);
+      ok2 = gst_worker_stop_force (GST_WORKER (composite->output), TRUE);
+      ok3 = gst_worker_stop_force (GST_WORKER (composite->recorder), TRUE);
+      //INFO ("stop: %d, %d, %d", ok1, ok2, ok3);
+      (void) ok1, (void) ok2, (void) ok3;
+      gst_composite_apply_parameters (composite);
+    }
+    GST_COMPOSITE_UNLOCK_TRANSITION (composite);
+  }
+
+  /*
+  if (composite->adjusting) {
+    composite->adjusting = FALSE;
+  }
+  */
+}
+
+static gboolean
+gst_composite_message (GstComposite *composite, GstMessage * message)
+{
+  switch (GST_MESSAGE_TYPE (message)) {
+  case GST_MESSAGE_ERROR:
+    gst_composite_error (composite);
+    break;
+  default: break;
+  }
+  return TRUE;
 }
 
 static void
@@ -646,6 +690,7 @@ gst_composite_class_init (GstCompositeClass * klass)
   worker_class->alive = (GstWorkerAliveFunc) gst_composite_alive;
   worker_class->null = (GstWorkerNullFunc) gst_composite_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
+  worker_class->message = (GstWorkerMessageFunc) gst_composite_message;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_composite_get_pipeline_string;
 }

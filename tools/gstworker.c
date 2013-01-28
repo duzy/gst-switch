@@ -235,7 +235,7 @@ gst_worker_replay (GstWorker *worker)
 }
 
 gboolean
-gst_worker_stop (GstWorker *worker)
+gst_worker_stop_force (GstWorker *worker, gboolean force)
 {
   GstStateChangeReturn ret = GST_STATE_CHANGE_FAILURE;
 
@@ -244,14 +244,18 @@ gst_worker_stop (GstWorker *worker)
   GST_WORKER_LOCK_PIPELINE (worker);
 
   if (worker->pipeline) {
+#if 1
     GstState state;
 
     ret = gst_element_get_state (worker->pipeline, &state, NULL,
 	GST_CLOCK_TIME_NONE);
 
-    if (state == GST_STATE_PLAYING) {
+    if (state == GST_STATE_PLAYING || force) {
       ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
     }
+#else
+    ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+#endif
   }
 
   GST_WORKER_UNLOCK_PIPELINE (worker);
@@ -290,7 +294,9 @@ gst_worker_handle_error (GstWorker *worker, GError * error,
 {
   ERROR ("%s: %s", worker->name, error->message);
   ERROR ("DEBUG INFO:\n%s\n", debug);
+#if 0
   gst_worker_stop (worker);
+#endif
 }
 
 static void
