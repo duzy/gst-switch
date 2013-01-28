@@ -480,6 +480,12 @@ gst_switch_controller_call_uis (GstSwitchController * controller,
   GDBusConnection *connection;
   GVariant *value;
   GList *ui;
+
+  if (controller->uis == NULL) {
+    WARN ("%s: no connections", method_name);
+    return;
+  }
+  
   GST_SWITCH_CONTROLLER_LOCK_UIS (controller);
   for (ui = controller->uis; ui; ) {
     connection = G_DBUS_CONNECTION (ui->data);
@@ -542,7 +548,7 @@ gst_switch_controller_add_ui_preview_port (GstSwitchController * controller,
 }
 
 static void
-gst_switch_controller_get_property(GstSwitchController * controller,
+gst_switch_controller_get_property (GstSwitchController * controller,
     guint prop_id, GValue *value, GParamSpec *pspec)
 {
   switch (prop_id) {
@@ -553,7 +559,7 @@ gst_switch_controller_get_property(GstSwitchController * controller,
 }
 
 static void
-gst_switch_controller_set_property(GstSwitchController * controller,
+gst_switch_controller_set_property (GstSwitchController * controller,
     guint prop_id, const GValue *value, GParamSpec *pspec)
 {
   switch (prop_id) {

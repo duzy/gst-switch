@@ -576,20 +576,21 @@ gst_worker_reset (GstWorker *worker)
 {
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
-  GST_WORKER_LOCK_PIPELINE (worker);
-
   if (worker->pipeline) {
-    if (worker->watch)
-      g_source_remove (worker->watch);
-    if (worker->bus)
-      gst_object_unref (worker->bus);
-    if (worker->pipeline)
-      gst_object_unref (worker->pipeline);
-    worker->pipeline = NULL;
-    worker->bus = NULL;
-    worker->watch = 0;
+    GST_WORKER_LOCK_PIPELINE (worker);
+    if (worker->pipeline) {
+      if (worker->watch)
+	g_source_remove (worker->watch);
+      if (worker->bus)
+	gst_object_unref (worker->bus);
+      if (worker->pipeline)
+	gst_object_unref (worker->pipeline);
+      worker->pipeline = NULL;
+      worker->bus = NULL;
+      worker->watch = 0;
+    }
+    GST_WORKER_UNLOCK_PIPELINE (worker);
   }
-  GST_WORKER_UNLOCK_PIPELINE (worker);
 
   return gst_worker_prepare (worker);
 }

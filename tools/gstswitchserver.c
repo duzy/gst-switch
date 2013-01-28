@@ -282,14 +282,18 @@ gst_switch_server_start_case (GstCase *cas, GstSwitchServer *srv)
   default:
     break;
   }
-  
-  if (srv->controller && is_branch) {
-    gst_switch_controller_tell_preview_port (srv->controller,
-	cas->sink_port, cas->serve_type);
 
-    if (cas->type == GST_CASE_BRANCH_a) {
-      gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
+  if (srv->controller && is_branch) {
+    GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+    if (srv->controller && is_branch) {
+      gst_switch_controller_tell_preview_port (srv->controller,
+	  cas->sink_port, cas->serve_type);
+
+      if (cas->type == GST_CASE_BRANCH_a) {
+	gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
+      }
     }
+    GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
   }
 }
 
@@ -773,10 +777,8 @@ gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
 
   GST_SWITCH_SERVER_LOCK_PIP (srv);
 
-  //INFO ("set composite mode: %d", mode);
-
   if (mode == srv->composite->mode) {
-    WARN ("same composite mode");
+    WARN ("same composite mode %d", mode);
     goto end;
   }
 

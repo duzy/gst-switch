@@ -121,7 +121,7 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   guint h;
 
   if (composite->transition) {
-    WARN ("changing mode while transition is not allowed");
+    WARN ("changing mode in transition is not allowed");
     return;
   }
 
@@ -350,7 +350,8 @@ gst_composite_get_pipeline_string (GstComposite * composite)
 	"sink_1::zorder=1 ",
 	composite->a_x, composite->a_y,
 	composite->b_x, composite->b_y);
-    g_string_append_printf (desc,"source_b.!video/x-raw,width=%d,height=%d ",
+    g_string_append_printf (desc,"source_b. "
+	"! video/x-raw,width=%d,height=%d ! queue2 ",
 	composite->a_width, composite->a_height);
     if (composite->a_width  != composite->b_width ||
 	composite->a_height != composite->b_height) {
@@ -358,7 +359,7 @@ gst_composite_get_pipeline_string (GstComposite * composite)
 	  "! video/x-raw,width=%d,height=%d ",
 	  composite->b_width, composite->b_height);
     }
-    g_string_append_printf (desc, "! queue2 ! compose.sink_1 ");
+    g_string_append_printf (desc, "! compose.sink_1 ");
     g_string_append_printf (desc, "source_a. "
 	"! video/x-raw,width=%d,height=%d ! queue2 ! compose.sink_0 ",
 	composite->a_width, composite->a_height);
@@ -496,8 +497,7 @@ gst_composite_null (GstComposite *composite)
     }
   }
 
-  return composite->deprecated ? 
-    GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
+  return composite->deprecated ? GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
 }
 
 gboolean
@@ -558,7 +558,7 @@ gst_composite_error (GstComposite *composite)
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
       gboolean ok1, ok2, ok3;
-      INFO ("new mode %d, %dx%d transition error",
+      WARN ("new mode %d, %dx%d transition error",
 	  composite->mode, composite->width, composite->height);
       ok1 = gst_worker_stop_force (GST_WORKER (composite), TRUE);
       ok2 = gst_worker_stop_force (GST_WORKER (composite->output), TRUE);
