@@ -486,19 +486,21 @@ gst_composite_null (GstComposite *composite)
   if (composite->transition) {
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
-      gst_worker_stop (GST_WORKER (composite->output));
-      gst_worker_stop (GST_WORKER (composite->recorder));
       INFO ("new mode %d, %dx%d applying...",
 	  composite->mode, composite->width, composite->height);
       gst_composite_apply_parameters (composite);
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   } else if (composite->adjusting) {
-    GstWorkerClass * worker_class;
-    worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
-    if (!worker_class->reset (GST_WORKER (composite))) {
-      ERROR ("failed to reset composite");
+    GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
+    if (composite->adjusting) {
+      GstWorkerClass * worker_class;
+      worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
+      if (!worker_class->reset (GST_WORKER (composite))) {
+	ERROR ("failed to reset composite");
+      }
     }
+    GST_COMPOSITE_UNLOCK_ADJUSTMENT (composite);
   }
 
   return composite->deprecated ? GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
@@ -561,29 +563,21 @@ gst_composite_error (GstComposite *composite)
   if (composite->transition) {
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
-      gboolean ok1, ok2, ok3;
       WARN ("new mode %d, %dx%d transition error",
 	  composite->mode, composite->width, composite->height);
-      ok1 = gst_worker_stop_force (GST_WORKER (composite), TRUE);
-      ok2 = gst_worker_stop_force (GST_WORKER (composite->output), TRUE);
-      ok3 = gst_worker_stop_force (GST_WORKER (composite->recorder), TRUE);
-      (void) ok1, (void) ok2, (void) ok3;
       gst_composite_apply_parameters (composite);
       gst_worker_start (GST_WORKER (composite));
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
-  }
-
-  if (composite->adjusting) {
+  } else if (composite->adjusting) {
     GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
     if (composite->adjusting) {
-      gboolean ok1, ok2, ok3;
+      GstWorkerClass * worker_class;
       WARN ("adjusting PIP error, retry..");
-      ok1 = gst_worker_stop_force (GST_WORKER (composite), TRUE);
-      ok2 = gst_worker_stop_force (GST_WORKER (composite->output), TRUE);
-      ok3 = gst_worker_stop_force (GST_WORKER (composite->recorder), TRUE);
-      (void) ok1, (void) ok2, (void) ok3;
-      gst_composite_apply_parameters (composite);
+      worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
+      if (!worker_class->reset (GST_WORKER (composite))) {
+	ERROR ("failed to reset composite");
+      }
       gst_worker_start (GST_WORKER (composite));
     }
     GST_COMPOSITE_UNLOCK_ADJUSTMENT (composite);

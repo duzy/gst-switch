@@ -583,8 +583,10 @@ gst_worker_reset (GstWorker *worker)
 	g_source_remove (worker->watch);
       if (worker->bus)
 	gst_object_unref (worker->bus);
-      if (worker->pipeline)
+      if (worker->pipeline) {
+	gst_element_set_state (worker->pipeline, GST_STATE_NULL);
 	gst_object_unref (worker->pipeline);
+      }
       worker->pipeline = NULL;
       worker->bus = NULL;
       worker->watch = 0;
