@@ -511,6 +511,10 @@ gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
     gint w, gint h)
 {
   gboolean result = FALSE;
+  GstIterator *iter = NULL;
+  GValue value = { 0 };
+  GstElement *element = NULL;
+  gboolean done = FALSE;
 
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
@@ -520,20 +524,62 @@ gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
     goto end;
   }
   
-  INFO ("adjust-pip: %d, %d, %d, %d", x, y, w, h);
-
   composite->b_x = x;
   composite->b_y = y;
-  composite->b_width = w;
-  composite->b_height = h;
-  composite->adjusting = TRUE;
-  gst_worker_stop (GST_WORKER (composite));
 
-  result = TRUE;
+  if (composite->b_width != w || composite->b_height != h) {
+    composite->b_width = w;
+    composite->b_height = h;
+    composite->adjusting = TRUE;
+    gst_worker_stop (GST_WORKER (composite));
+    result = TRUE;
+    goto end;
+  }
+
+  element = gst_worker_get_element (GST_WORKER (composite), "compose");
+  iter = gst_element_iterate_sink_pads(element);
+  while (iter && !done) {
+    switch (gst_iterator_next (iter, &value)) {
+    case GST_ITERATOR_OK: {
+      GstPad *pad = g_value_get_object (&value);
+      if (g_strcmp0 (gst_pad_get_name (pad), "sink_1") == 0) {
+	g_object_set (pad, "xpos", composite->b_x,
+	    "ypos", composite->b_y, NULL);
+	done = TRUE;
+	result = TRUE;
+      }
+      g_value_reset (&value);
+    } break;
+    case GST_ITERATOR_RESYNC:
+      gst_iterator_resync (iter);
+      break;
+    case GST_ITERATOR_DONE:
+      done = TRUE;
+      break;
+    default:
+      /* iterator returned _ERROR or premature end with _OK,
+       * mark an error and exit */
+      done = TRUE;
+      result = FALSE;
+      break;
+    }
+  }
+
+  if (G_IS_VALUE (&value))
+    g_value_unset (&value);
+  if (iter)
+    gst_iterator_free (iter);
+
+  composite->adjusting = FALSE;
+
+  /*
+  if (!result) {
+    WARN ("failed to adjust PIP: %d, %d, %d, %d", x, y, w, h);
+  }
+  */
 
  end:
   GST_COMPOSITE_UNLOCK (composite);
-
   return result;
 }
 
