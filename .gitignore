@@ -8,6 +8,7 @@
 /Makefile.in
 /aclocal.m4
 /autom4te.cache/
+/autoregen.sh
 /compile
 /config.guess
 /config.h
@@ -32,6 +33,7 @@
 /tools/gst-switch-srv
 /tools/gst-switch-ui
 /test-switch-srv.out
+/tests/test-mix-source
 /tests/test-switch-server
 test-server-*.log
 *.dat
