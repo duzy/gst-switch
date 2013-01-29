@@ -10,11 +10,12 @@ TESTS = \
 	test-fuzz \
 	test-random \
 	test-checking-timestamps \
-	test-ui \
-	test-switching \
 	test-controller \
 	test-composite-mode \
 	$(null)
+
+#	test-ui
+#	test-switching
 
 test: $(TESTS)
 	@ls $(TESTS:%=%.log)
@@ -23,7 +24,7 @@ show-tests:
 	@printf "Available tests:\n\t$(TESTS)\n"
 	@printf "You may want to do 'make test-*' for specific test."
 
-$(TESTS):
+$(TESTS) test-ui:
 	./tests/test-switch-server $(TESTARGS) --enable-$@ || true
 
 demo: test-ui

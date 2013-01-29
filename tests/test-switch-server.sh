@@ -1,7 +1,7 @@
 #!/bin/bash
 #EXT="--gst-debug-no-color"
-EXT="$EXT --test-external-server"
-EXT="$EXT --test-external-ui"
+#EXT="$EXT --test-external-server"
+#EXT="$EXT --test-external-ui"
 
 ./tests/test-switch-server $EXT \
     --enable-test-ui \

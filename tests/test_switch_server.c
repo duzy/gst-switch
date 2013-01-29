@@ -297,7 +297,7 @@ launch (const gchar *name, ...)
   GMainContext *context;
   GIOChannel *channel;
   GSource *source;
-  gint fd_in, fd_out, fd_err;
+  gint fd_in = 0, fd_out = 0, fd_err = 0;
   GFileOutputStream *outstream;
   GFile *outfile;
   gchar *outfilename;
@@ -313,8 +313,14 @@ launch (const gchar *name, ...)
   g_ptr_array_add (array, NULL);
   argv = (gchar **) g_ptr_array_free (array, FALSE);
 
+#if 0
   ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
       NULL, NULL, &pid, &fd_in, &fd_out, &fd_err, &error);
+#else
+  (void) fd_in, (void) fd_out, (void) fd_err;
+  ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
+      NULL, NULL, &pid, NULL, NULL, NULL, &error);
+#endif
 
   g_free (argv);
 
@@ -332,14 +338,17 @@ launch (const gchar *name, ...)
   g_assert (outfile);
   g_assert (outstream);
 
-  channel = g_io_channel_unix_new (fd_out);
-  source = g_io_create_watch (channel, G_IO_IN | G_IO_HUP | G_IO_ERR);
-  g_source_set_callback (source, (GSourceFunc) child_stdout, outstream, NULL);
-  g_source_attach (source, context);
-  g_source_unref (source);
-  g_io_channel_unref (channel);
+  if (fd_out) {
+    channel = g_io_channel_unix_new (fd_out);
+    source = g_io_create_watch (channel, G_IO_IN | G_IO_HUP | G_IO_ERR);
+    g_source_set_callback (source, (GSourceFunc) child_stdout, outstream, NULL);
+    g_source_attach (source, context);
+    g_source_unref (source);
+    g_io_channel_unref (channel);
+  }
 
   (void) child_stderr;
+
   /*
   channel = g_io_channel_unix_new (fd_err);
   source = g_io_create_watch (channel, G_IO_IN | G_IO_HUP | G_IO_ERR);
