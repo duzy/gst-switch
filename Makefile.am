@@ -9,8 +9,8 @@ TESTS = \
 	test-audio \
 	test-fuzz \
 	test-random \
-	test-ui \
 	test-checking-timestamps \
+	test-ui \
 	test-switching \
 	test-controller \
 	test-composite-mode \
@@ -24,7 +24,9 @@ show-tests:
 	@printf "You may want to do 'make test-*' for specific test."
 
 $(TESTS):
-	./tests/test-switch-server --enable-$@ || true
+	./tests/test-switch-server $(TESTARGS) --enable-$@ || true
+
+demo: test-ui
 
 if GPROF_ENABLED
 perf:
