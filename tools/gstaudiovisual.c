@@ -159,14 +159,14 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual *visual)
 	"! alsasink name=play ");
   }
 
-  g_string_append_printf (desc, "a. ! queue2 ! goom2k1 ");
+  g_string_append_printf (desc, "a. ! queue2 ! audioconvert ! monoscope ");
   if (visual->active) {
     g_string_append_printf (desc, "! textoverlay text=\"active\" "
 	"font-desc=\"Sans 50\" "
 	"shaded-background=true "
 	"auto-resize=true ");
   }
-  g_string_append_printf (desc, "! videoconvert ");
+  g_string_append_printf (desc, "! autovideoconvert ");
   g_string_append_printf (desc, "! xvimagesink name=visual ");
 
   return desc;
