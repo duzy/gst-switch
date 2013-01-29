@@ -115,6 +115,16 @@ function clone-gst-project()
     clone-project git://anongit.freedesktop.org/gstreamer $1
 }
 
+function get-project-build-options()
+{
+    local project=$1
+    case $project in
+	gst-plugins-good)
+	    echo --enable-experimental
+	    ;;
+    esac
+}
+
 function build-project()
 {
     local project=$1
@@ -126,7 +136,8 @@ function build-project()
 	if [[ -f autoregen.sh ]]; then
 	    ./autoregen.sh
 	else
-	    ./autogen.sh --prefix=$stage || {
+	    local options=$(get-project-build-options $project)
+	    ./autogen.sh --prefix=$stage $options || {
 		printf "Failed to do autogen!!!\n"
 		exit -1
 	    }
