@@ -38,6 +38,8 @@
 #define GST_COMPOSITE_UNLOCK_RECORDER(composite) (g_mutex_unlock (&(composite)->recorder_lock))
 #define GST_COMPOSITE_LOCK_TRANSITION(composite) (g_mutex_lock (&(composite)->transition_lock))
 #define GST_COMPOSITE_UNLOCK_TRANSITION(composite) (g_mutex_unlock (&(composite)->transition_lock))
+#define GST_COMPOSITE_LOCK_ADJUSTMENT(composite) (g_mutex_lock (&(composite)->adjustment_lock))
+#define GST_COMPOSITE_UNLOCK_ADJUSTMENT(composite) (g_mutex_unlock (&(composite)->adjustment_lock))
 
 enum
 {
@@ -87,6 +89,7 @@ gst_composite_init (GstComposite * composite)
   g_mutex_init (&composite->lock);
   g_mutex_init (&composite->recorder_lock);
   g_mutex_init (&composite->transition_lock);
+  g_mutex_init (&composite->adjustment_lock);
 
   gst_composite_set_mode (composite, DEFAULT_COMPOSE_MODE);
 
@@ -110,6 +113,7 @@ gst_composite_finalize (GstComposite * composite)
   g_mutex_clear (&composite->lock);
   g_mutex_clear (&composite->recorder_lock);
   g_mutex_clear (&composite->transition_lock);
+  g_mutex_clear (&composite->adjustment_lock);
 
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (composite));
@@ -570,11 +574,20 @@ gst_composite_error (GstComposite *composite)
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }
 
-  /*
   if (composite->adjusting) {
-    composite->adjusting = FALSE;
+    GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
+    if (composite->adjusting) {
+      gboolean ok1, ok2, ok3;
+      WARN ("adjusting PIP error, retry..");
+      ok1 = gst_worker_stop_force (GST_WORKER (composite), TRUE);
+      ok2 = gst_worker_stop_force (GST_WORKER (composite->output), TRUE);
+      ok3 = gst_worker_stop_force (GST_WORKER (composite->recorder), TRUE);
+      (void) ok1, (void) ok2, (void) ok3;
+      gst_composite_apply_parameters (composite);
+      gst_worker_start (GST_WORKER (composite));
+    }
+    GST_COMPOSITE_UNLOCK_ADJUSTMENT (composite);
   }
-  */
 }
 
 static gboolean

@@ -69,6 +69,7 @@ struct _GstComposite
   GMutex lock;
   GMutex recorder_lock;
   GMutex transition_lock;
+  GMutex adjustment_lock;
 
   GstWorker *output;
   GstRecorder *recorder;
