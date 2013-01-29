@@ -4,9 +4,11 @@ EXT="$EXT --test-external-server"
 EXT="$EXT --test-external-ui"
 
 ./tests/test-switch-server $EXT \
-    --enable-test-controller \
+    --enable-test-ui \
 
 #    --enable-test-composite-mode \
+#    --enable-test-switching \
+
 #    --enable-test-random \
 #    --enable-test-composite-mode \
 #    --enable-test-switching \

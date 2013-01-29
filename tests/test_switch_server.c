@@ -1359,7 +1359,7 @@ test_audio_recording_result (void)
 static void
 test_ui (void)
 {
-  const gint seconds = 30;
+  const gint seconds = 60 * 5;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source1 = { "test-video-source1", 0 };

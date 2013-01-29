@@ -166,7 +166,7 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
   const gchar *filename = gst_recorder_new_filename (rec);
   GString *desc;
 
-  INFO ("Recording to %s and port %d", filename, rec->sink_port);
+  //INFO ("Recording to %s and port %d", filename, rec->sink_port);
 
   desc = g_string_new ("");
 

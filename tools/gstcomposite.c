@@ -563,9 +563,9 @@ gst_composite_error (GstComposite *composite)
       ok1 = gst_worker_stop_force (GST_WORKER (composite), TRUE);
       ok2 = gst_worker_stop_force (GST_WORKER (composite->output), TRUE);
       ok3 = gst_worker_stop_force (GST_WORKER (composite->recorder), TRUE);
-      //INFO ("stop: %d, %d, %d", ok1, ok2, ok3);
       (void) ok1, (void) ok2, (void) ok3;
       gst_composite_apply_parameters (composite);
+      gst_worker_start (GST_WORKER (composite));
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }

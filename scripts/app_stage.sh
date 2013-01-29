@@ -33,8 +33,10 @@ function install-prerequisite()
 function install-git-libvpx()
 {
     local back=$PWD
+    local root=$(gst-root)
     local stage=$(gst-stage)
-    
+
+    cd $root
     clone-project http://git.chromium.org/webm libvpx .git
 
     cd libvpx && git checkout v1.2.0 && \
