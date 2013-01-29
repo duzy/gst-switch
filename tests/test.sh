@@ -9,8 +9,6 @@ function goto_gstreamer_stage_directory() {
 
 function launch() {
     goto_gstreamer_stage_directory
-    echo $PWD
-    exit
     ./bin/gst-launch-1.0 $@
     cd - > /dev/null
 }
