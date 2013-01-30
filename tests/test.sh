@@ -1,9 +1,11 @@
 #
 #  By Duzy Chan <code@duzy.info>, 2012, 2013
 #  
+. ./scripts/common.sh
+
 function goto_gstreamer_stage_directory() {
     local D1=/store/open/gstreamer/stage
-    local D2=$HOME/gst/stage
+    local D2=$(gst-stage)
     [ -d $D1 ] && cd $D1 || cd $D2
 }
 
