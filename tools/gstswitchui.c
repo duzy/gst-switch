@@ -65,11 +65,14 @@ static const gchar * gst_switch_ui_css =
   "  border-color: rgba(0,0,0,0.2);\n"
   "  padding: 0px;\n"
   "}\n"
+  ".audio_frame {\n"
+  "  border-color: rgba(200,10,10,0.65);\n"
+  "}\n"
   ".preview_frame:selected {\n"
   "  border-color: rgba(10,50,225,0.85);\n"
   "}\n"
-  ".audio_frame {\n"
-  "  border-color: rgba(200,10,10,0.65);\n"
+  ".preview_frame_selected {\n"
+  "  border-color: rgba(10,50,225,0.85);\n"
   "}\n"
   ;
 
@@ -573,7 +576,6 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
 
   style = gtk_widget_get_style_context (frame);
   gtk_style_context_add_class (style, "preview_frame");
-  //gtk_widget_set_state_flags (frame, GTK_STATE_FLAG_SELECTED, TRUE);
 
   style = gtk_widget_get_style_context (preview);
   gtk_style_context_add_class (style, "preview_drawing_area");
@@ -644,8 +646,14 @@ gst_switch_ui_select_preview (GstSwitchUI *ui, guint key)
   }
 
   if (ui->selected) {
-    if (previous) gtk_widget_unset_state_flags (previous,
-	GTK_STATE_FLAG_SELECTED);
+    GtkStyleContext *style = NULL;
+    if (previous) {
+      style = gtk_widget_get_style_context (previous);
+      gtk_style_context_remove_class (style, "preview_frame_selected");
+      gtk_widget_unset_state_flags (previous, GTK_STATE_FLAG_SELECTED);
+    }
+    style = gtk_widget_get_style_context (ui->selected);
+    gtk_style_context_add_class (style, "preview_frame_selected");
     gtk_widget_set_state_flags (ui->selected, GTK_STATE_FLAG_SELECTED, TRUE);
   }
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
