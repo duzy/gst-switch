@@ -29,6 +29,11 @@ $(TESTS) test-ui:
 
 demo: test-ui
 
+clean-test-data:
+	rm -f "record "*" "*.dat
+	rm -f "test-recording "*" "*.data
+	rm -f test-server-*.log
+
 if GPROF_ENABLED
 perf:
 	echo "TODO: program profiling"
