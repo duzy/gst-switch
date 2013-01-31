@@ -33,6 +33,7 @@ function install-git-libvpx()
 	./configure --prefix="$stage" \
 	--enable-shared --enable-vp8
 
+    make clean || true
     make && make install
 
     cd $back
@@ -143,6 +144,7 @@ function build-project()
 	printf "Configure $project failed, no Makefile generated!!!\n"
 	exit -1
     }
+    make clean || true
     make && make install
     cd $backdir
 }
