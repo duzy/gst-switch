@@ -36,8 +36,10 @@
 
 #if 3 <= GTK_MAJOR_VERSION && GTK_MINOR_VERSION <= 4
 #define CUSTOM_FRAME_DRAWING 1
+#define gst_switch_ui_update(w) (gtk_widget_queue_draw (w))
 #else
 #define CUSTOM_FRAME_DRAWING 0
+#define gst_switch_ui_update(w) ((void) FALSE)
 #endif
 
 #define GST_SWITCH_UI_LOCK_AUDIO(ui) (g_mutex_lock (&(ui)->audio_lock))
@@ -581,6 +583,7 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
 	visual = gst_switch_ui_renew_audio_visual (ui, frame, visual);
 	if (visual->active) {
 	  gtk_style_context_add_class (style, "active_audio_frame");
+	  gst_switch_ui_update (frame);
 	  ui->audio = visual;
 	}
       }
@@ -605,6 +608,7 @@ gst_switch_ui_mark_active_video (GstSwitchUI *ui, gint port, gint type)
       } else if (disp->type == type) {
 	gtk_style_context_remove_class (style, "active_video_frame");
       }
+      gst_switch_ui_update (frame);
     }
   }
 }
@@ -703,6 +707,7 @@ gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
 	    gtk_style_context_remove_class (style, "active_video_frame");
 	    break;
 	  }
+	  gst_switch_ui_update (prevframe);
 	  prevdisp->type = t;
 	}
       }
@@ -728,13 +733,14 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint serve,
       GDK_BUTTON_PRESS_MASK);
   gtk_container_add (GTK_CONTAINER (frame), preview);
   gtk_container_add (GTK_CONTAINER (ui->preview_box), frame);
-  gtk_widget_show_all (frame);
 
   style = gtk_widget_get_style_context (frame);
   gtk_style_context_add_class (style, "preview_frame");
 
   style = gtk_widget_get_style_context (preview);
   gtk_style_context_add_class (style, "preview_drawing_area");
+
+  gtk_widget_show_all (frame);
 
 #if CUSTOM_FRAME_DRAWING
   g_signal_connect (frame, "draw",
@@ -765,6 +771,7 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint serve,
       gst_switch_ui_mark_active_video (ui, port, type);
       break;
     }
+    gst_switch_ui_update (frame);
     break;
   case GST_SERVE_AUDIO_STREAM:
     visual = gst_switch_ui_new_audio_visual (ui, preview, port);
@@ -775,6 +782,7 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint serve,
       style = gtk_widget_get_style_context (frame);
       gtk_style_context_add_class (style, "active_audio_frame");
     }
+    gst_switch_ui_update (frame);
     break;
   default:
     gtk_widget_destroy (preview);
