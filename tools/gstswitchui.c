@@ -72,10 +72,10 @@ static const gchar * gst_switch_ui_css =
   "  padding: 0px;\n"
   "}\n"
   ".preview_frame:selected {\n"
-  "  border-color: rgba(25,25,200,0.2);\n"
+  "  border-color: rgba(25,25,200,0.75);\n"
   "}\n"
   ".audio_frame {\n"
-  "  border-color: rgba(200,25,25,0.2);\n"
+  "  border-color: rgba(200,25,25,0.75);\n"
   "}\n"
   ;
 
@@ -163,11 +163,11 @@ gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
   cairo_arc (cr, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
   cairo_close_path (cr);
   if (gtk_widget_get_state_flags (widget) & GTK_STATE_FLAG_SELECTED) {
-    cairo_set_source_rgba (cr, 0.25, 0.25, 0.85, 0.65);
+    cairo_set_source_rgba (cr, 0.25, 0.25, 0.85, 0.85);
   } else if (data && GST_IS_AUDIO_VISUAL (data)) {
     GstAudioVisual *visual = GST_AUDIO_VISUAL (data);
     if (visual->active) {
-      cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.25);
+      cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
     } else goto default_color;
   } else {
   default_color:
