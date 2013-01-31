@@ -48,6 +48,7 @@ function prepare-prerequisites()
 	autoconf \
 	automake \
 	autopoint \
+	libtool \
 	libtoolize \
 	pkg-config \
 	zlib1g-dev \
@@ -56,7 +57,10 @@ function prepare-prerequisites()
 	libmjpegtools-dev \
 	libvpx-dev \
 	libgtk-3-dev \
+	gtk-doc-tools \
 	yasm \
+	bison \
+	flex \
 	;
     do
 	install-prerequisite $name

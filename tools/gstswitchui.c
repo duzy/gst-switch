@@ -651,10 +651,15 @@ gst_switch_ui_select_preview (GstSwitchUI *ui, guint key)
       style = gtk_widget_get_style_context (previous);
       gtk_style_context_remove_class (style, "preview_frame_selected");
       gtk_widget_unset_state_flags (previous, GTK_STATE_FLAG_SELECTED);
+      gtk_widget_hide (previous);
+      gtk_widget_show (previous);
     }
     style = gtk_widget_get_style_context (ui->selected);
     gtk_style_context_add_class (style, "preview_frame_selected");
     gtk_widget_set_state_flags (ui->selected, GTK_STATE_FLAG_SELECTED, TRUE);
+    gtk_widget_hide (ui->selected);
+    gtk_widget_show (ui->selected);
+    INFO ("select: %p, %p", previous, ui->selected);
   }
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
 }
