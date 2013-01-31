@@ -62,17 +62,15 @@ static const gchar * gst_switch_ui_css =
   "  border-style: solid;\n"
   "  border-width: 5px;\n"
   "  border-radius: 5px;\n"
-  "  border-color: rgba(0,0,0,0.2);\n"
+  "  border-color: #AA1010;\n"
   "  padding: 0px;\n"
   "}\n"
-  ".audio_frame {\n"
-  "  border-color: rgba(200,10,10,0.65);\n"
-  "}\n"
   ".preview_frame:selected {\n"
-  "  border-color: rgba(10,50,225,0.85);\n"
+  "  border-color: #1010AA;\n"
+  "  border-width: 7px;\n"
   "}\n"
-  ".preview_frame_selected {\n"
-  "  border-color: rgba(10,50,225,0.85);\n"
+  ".audio_frame {\n"
+  "  border-color: #AA1111;\n"
   "}\n"
   ;
 
@@ -413,7 +411,7 @@ gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
 }
 
 static GstAudioVisual *
-gst_switch_ui_new_audio_visual_unlock (GstSwitchUI *ui, GtkWidget *view,
+gst_switch_ui_new_audio_visual_unsafe (GstSwitchUI *ui, GtkWidget *view,
     gulong handle, gint port)
 {
   gchar *name = g_strdup_printf ("visual-%d", port);
@@ -438,7 +436,7 @@ gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
 {
   GstAudioVisual *visual = NULL;
   GST_SWITCH_UI_LOCK_AUDIO (ui);
-  visual = gst_switch_ui_new_audio_visual_unlock (ui, view, 0, port);
+  visual = gst_switch_ui_new_audio_visual_unsafe (ui, view, 0, port);
   GST_SWITCH_UI_UNLOCK_AUDIO (ui);
   return visual;
 }
@@ -495,8 +493,7 @@ gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
     g_object_unref (ui->compose);
   }
 
-  ui->compose = gst_switch_ui_new_video_disp (ui,
-      ui->compose_view, port);
+  ui->compose = gst_switch_ui_new_video_disp (ui, ui->compose_view, port);
   GST_SWITCH_UI_UNLOCK_COMPOSE (ui);
 }
 
@@ -510,8 +507,7 @@ gst_switch_ui_renew_audio_visual (GstSwitchUI *ui, GtkWidget *frame,
   visual->renewing = TRUE;
   gst_worker_stop (GST_WORKER (visual));
 
-  visual = gst_switch_ui_new_audio_visual_unlock (ui,
-      NULL, handle, port);
+  visual = gst_switch_ui_new_audio_visual_unsafe (ui, NULL, handle, port);
 
   g_object_set_data (G_OBJECT (frame), "audio-visual", visual);
   return visual;
@@ -549,10 +545,9 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
 static gboolean
 gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
 {
-  INFO ("event: %d", event->type);
   switch (event->type) {
-  case GDK_BUTTON_RELEASE: {
-    
+  case GDK_BUTTON_PRESS: {
+    INFO ("TODO: activate %p", w);
   } break;
   default: break;
   }
@@ -569,7 +564,8 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
   GtkWidget *preview = gtk_drawing_area_new ();
   gtk_widget_set_double_buffered (preview, FALSE);
   gtk_widget_set_size_request (preview, -1, 80);
-  gtk_widget_set_events (preview, GDK_BUTTON_RELEASE_MASK);
+  gtk_widget_set_events (preview, GDK_BUTTON_RELEASE_MASK|
+      GDK_BUTTON_PRESS_MASK);
   gtk_container_add (GTK_CONTAINER (frame), preview);
   gtk_container_add (GTK_CONTAINER (ui->preview_box), frame);
   gtk_widget_show_all (frame);
@@ -580,7 +576,7 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
   style = gtk_widget_get_style_context (preview);
   gtk_style_context_add_class (style, "preview_drawing_area");
 
-  g_signal_connect (preview, "button-release-event",
+  g_signal_connect (preview, "button-press-event",
       G_CALLBACK (gst_switch_ui_preview_click), ui);
 
   switch (type) {
@@ -646,19 +642,12 @@ gst_switch_ui_select_preview (GstSwitchUI *ui, guint key)
   }
 
   if (ui->selected) {
-    GtkStyleContext *style = NULL;
     if (previous) {
-      style = gtk_widget_get_style_context (previous);
-      gtk_style_context_remove_class (style, "preview_frame_selected");
       gtk_widget_unset_state_flags (previous, GTK_STATE_FLAG_SELECTED);
-      gtk_widget_hide (previous);
-      gtk_widget_show (previous);
+      gtk_widget_show_all (previous);
     }
-    style = gtk_widget_get_style_context (ui->selected);
-    gtk_style_context_add_class (style, "preview_frame_selected");
     gtk_widget_set_state_flags (ui->selected, GTK_STATE_FLAG_SELECTED, TRUE);
-    gtk_widget_hide (ui->selected);
-    gtk_widget_show (ui->selected);
+    gtk_widget_show_all (ui->selected);
     INFO ("select: %p, %p", previous, ui->selected);
   }
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
