@@ -29,6 +29,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <signal.h>
+#include <errno.h>
+#include <string.h>
 #include "../tools/gstswitchclient.h"
 #include "../tools/gstcase.h"
 #include "../logutils.h"
@@ -85,7 +87,7 @@ static GOptionEntry option_entries[] = {
   {"enable-test-video",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_video,		"Enable testing video",              NULL},
   {"enable-test-audio",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_audio,		"Enable testing audio",              NULL},
   {"enable-test-ui",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_ui,			"Enable testing UI",                 NULL},
-  {"enable-test-random",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_random,		"Enable testing random input streams",  NULL},
+  {"enable-test-random",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_random,		"Enable testing random input streams", NULL},
   {"enable-test-switching",		0, 0, G_OPTION_ARG_NONE, &opts.enable_test_switching,		"Enable testing switching",          NULL},
   {"enable-test-fuzz",			0, 0, G_OPTION_ARG_NONE, &opts.enable_test_fuzz,		"Enable testing fuzz input",         NULL},
   {"enable-test-checking-timestamps",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_checking_timestamps,	"Enable testing checking timestamps",NULL},
@@ -110,6 +112,7 @@ struct _testcase
   void (*null_func) (testcase *t, gpointer data);
   gpointer null_func_data;
   gboolean errors_are_ok;
+  gboolean pass;
 };
 
 static void
@@ -266,7 +269,7 @@ child_stdout (GIOChannel *channel, GIOCondition condition, gpointer data)
   gsize bytes_read;
   GOutputStream *ostream = G_OUTPUT_STREAM (data);
 
-  //INFO ("out");
+  INFO ("out");
 
   if (condition & G_IO_IN) {
     gsize bytes_written;
@@ -287,6 +290,37 @@ static void
 child_stderr (GIOChannel *channel, GIOCondition condition, gpointer data)
 {
   //INFO ("err");
+}
+
+typedef struct _log_dumper {
+  gint fd;
+  GFileOutputStream *ostream;
+} log_dumper;
+static gpointer
+dump_log (gpointer data)
+{
+  enum { max_len = 1024 };
+  log_dumper *l = (log_dumper *) data;
+  gchar buffer[max_len];
+  ssize_t len = 0;
+  GError *error = NULL;
+  gsize bytes_written;
+
+  do {
+    len = read (l->fd, buffer, max_len);
+    if (len < 0) {
+      ERROR ("%s", strerror (errno));
+      break;
+    }
+    g_output_stream_write_all (l->ostream, buffer, len, &bytes_written, NULL, &error);
+    g_assert_no_error (error);
+    g_assert_cmpint (len, ==, bytes_written);
+  } while (TRUE);
+
+  close (l->fd);
+
+  g_free (l);
+  g_thread_unref (g_thread_self ());
 }
 
 static GPid
@@ -313,7 +347,7 @@ launch (const gchar *name, ...)
   g_ptr_array_add (array, NULL);
   argv = (gchar **) g_ptr_array_free (array, FALSE);
 
-#if 0
+#if 1
   ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
       NULL, NULL, &pid, &fd_in, &fd_out, &fd_err, &error);
 #else
@@ -339,12 +373,19 @@ launch (const gchar *name, ...)
   g_assert (outstream);
 
   if (fd_out) {
+#if 0
     channel = g_io_channel_unix_new (fd_out);
     source = g_io_create_watch (channel, G_IO_IN | G_IO_HUP | G_IO_ERR);
     g_source_set_callback (source, (GSourceFunc) child_stdout, outstream, NULL);
     g_source_attach (source, context);
     g_source_unref (source);
     g_io_channel_unref (channel);
+#else
+    log_dumper *p = g_new0 (log_dumper, 1);
+    p->fd = fd_out;
+    p->ostream = outstream;
+    g_thread_new ("log-dumper", dump_log, p);
+#endif
   }
 
   (void) child_stderr;
@@ -411,7 +452,8 @@ testcase_run (testcase *t)
 {
   g_mutex_init (&t->lock);
 
-  g_print ("========== %s\n", t->name);
+  g_print ("Running test %s\n", t->name);
+  t->pass = TRUE; // assume everything is ok
   t->mainloop = g_main_loop_new (NULL, TRUE);
   if (testcase_launch_pipeline (t)) {
     if (0 < t->live_seconds) {
@@ -431,8 +473,15 @@ testcase_run (testcase *t)
   t->desc = NULL;
   t->timer = 0;
 
-  if (!t->errors_are_ok && 0 < t->error_count) {
-    ERROR ("%s: %d errors", t->name, t->error_count);
+  if (0 < t->error_count) {
+    if (t->errors_are_ok) {
+      t->pass = t->pass && TRUE;
+    } else {
+      t->pass = FALSE;
+      ERROR ("%s: %d errors", t->name, t->error_count);
+    }
+  } else {
+    t->pass = t->pass && TRUE;
   }
 
   g_mutex_lock (&t->lock);

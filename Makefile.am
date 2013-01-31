@@ -8,26 +8,29 @@ TESTS = \
 	test-video \
 	test-audio \
 	test-fuzz \
-	test-random \
-	test-checking-timestamps \
 	test-controller \
 	test-composite-mode \
 	$(null)
 
-#	test-ui
-#	test-switching
+UI_TESTS = \
+	test-ui \
+	test-switching \
+	test-random \
+	test-checking-timestamps \
+	$(null)
 
 test: $(TESTS)
 	@ls $(TESTS:%=%.log)
 
 show-tests:
 	@printf "Available tests:\n\t$(TESTS)\n"
-	@printf "You may want to do 'make test-*' for specific test."
+	@printf "And these tests demonstrate the UI:\n\t$(UI_TESTS)\n"
+	@printf "You may want to do 'make test-*' for specific test.\n"
 
-$(TESTS) test-ui:
+$(TESTS) $(UI_TESTS):
 	./tests/test-switch-server $(TESTARGS) --enable-$@ || true
 
-demo: test-ui
+demo: $(UI_TESTS)
 
 clean-test-data:
 	rm -f "record "*" "*.dat
