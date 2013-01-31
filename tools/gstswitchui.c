@@ -34,6 +34,12 @@
 #include "gstaudiovisual.h"
 #include "gstcase.h"
 
+#if 3 <= GTK_MAJOR_VERSION && GTK_MINOR_VERSION <= 4
+#define CUSTOM_FRAME_DRAWING 1
+#else
+#define CUSTOM_FRAME_DRAWING 0
+#endif
+
 #define GST_SWITCH_UI_LOCK_AUDIO(ui) (g_mutex_lock (&(ui)->audio_lock))
 #define GST_SWITCH_UI_UNLOCK_AUDIO(ui) (g_mutex_unlock (&(ui)->audio_lock))
 #define GST_SWITCH_UI_LOCK_COMPOSE(ui) (g_mutex_lock (&(ui)->compose_lock))
@@ -62,15 +68,14 @@ static const gchar * gst_switch_ui_css =
   "  border-style: solid;\n"
   "  border-width: 5px;\n"
   "  border-radius: 5px;\n"
-  "  border-color: #AA1010;\n"
+  "  border-color: rgba(0,0,0,0.2);\n"
   "  padding: 0px;\n"
   "}\n"
   ".preview_frame:selected {\n"
-  "  border-color: #1010AA;\n"
-  "  border-width: 7px;\n"
+  "  border-color: rgba(25,25,200,0.2);\n"
   "}\n"
   ".audio_frame {\n"
-  "  border-color: #AA1111;\n"
+  "  border-color: rgba(200,25,25,0.2);\n"
   "}\n"
   ;
 
@@ -130,20 +135,50 @@ gst_switch_ui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
   return FALSE;
 }
 
-/*
+#if CUSTOM_FRAME_DRAWING
 static gboolean
-draw_cb (GtkWidget *widget, cairo_t *cr)
+gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
+    GstSwitchUI *ui)
 {
   GtkStyleContext *style;
+  gpointer data = g_object_get_data (G_OBJECT (widget), "audio-visual");
+  double x = 0.5, y = 0.5, width, height, radius, degrees;
+  width = (double) gtk_widget_get_allocated_width (widget) - 0.5;
+  height = (double) gtk_widget_get_allocated_height (widget) - 0.5;
+  degrees = 3.14159265359 / 180.0;
+  radius = 10.0;
+#if 0
   style = gtk_widget_get_style_context (widget);
   gtk_style_context_save (style);
-  //gtk_style_context_add_class (style, "red");
-  gtk_render_frame (style, cr, 0, 0, 100, 100);
-  //gtk_style_context_remove_class (style, "red");
+  gtk_style_context_add_class (style, "red");
+  gtk_render_frame (style, cr, 0, 0, width, height);
+  gtk_style_context_remove_class (style, "red");
   gtk_style_context_restore (style);
+#else
+  (void) style;
+  cairo_new_sub_path (cr);
+  cairo_arc (cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
+  cairo_arc (cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
+  cairo_arc (cr, x + radius, y + height - radius, radius, 90 * degrees, 180 * degrees);
+  cairo_arc (cr, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
+  cairo_close_path (cr);
+  if (gtk_widget_get_state_flags (widget) & GTK_STATE_FLAG_SELECTED) {
+    cairo_set_source_rgba (cr, 0.25, 0.25, 0.85, 0.65);
+  } else if (data && GST_IS_AUDIO_VISUAL (data)) {
+    GstAudioVisual *visual = GST_AUDIO_VISUAL (data);
+    if (visual->active) {
+      cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.25);
+    } else goto default_color;
+  } else {
+  default_color:
+    cairo_set_source_rgba (cr, 0.25, 0.25, 0.25, 0.25);
+  }
+  cairo_set_line_width (cr, 10.0);
+  cairo_stroke (cr);
+#endif
   return TRUE;
 }
-*/
+#endif
 
 static gboolean gst_switch_ui_key_event (GtkWidget *, GdkEvent *, GstSwitchUI *);
 static gboolean gst_switch_ui_compose_key_event (GtkWidget *, GdkEvent *, GstSwitchUI *);
@@ -576,6 +611,10 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint type)
   style = gtk_widget_get_style_context (preview);
   gtk_style_context_add_class (style, "preview_drawing_area");
 
+#if CUSTOM_FRAME_DRAWING
+  g_signal_connect (frame, "draw",
+      G_CALLBACK (gst_switch_ui_draw_preview_frame), ui);
+#endif
   g_signal_connect (preview, "button-press-event",
       G_CALLBACK (gst_switch_ui_preview_click), ui);
 
