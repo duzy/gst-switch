@@ -101,6 +101,7 @@ typedef struct _testcase testcase;
 struct _testcase
 {
   const gchar *name;
+  gboolean free_name;
   GMainLoop *mainloop;
   GstElement *pipeline;
   GMutex lock;
@@ -486,6 +487,9 @@ testcase_run (testcase *t)
     t->pass = t->pass && TRUE;
   }
 
+  if (t->free_name)
+    g_free ((gpointer) t->name);
+
   g_mutex_lock (&t->lock);
   g_thread_unref (t->thread);
   t->thread = NULL;
@@ -703,12 +707,13 @@ testclient_set_compose_port (testclient *client, gint port)
   //INFO ("set-compose-port: %d", port);
   client->compose_port = port;
   client->compose_port_count += 1;
-  //g_assert_cmpint (client->compose_port0, ==, client->compose_port);
-  //g_assert (client->sink0.thread == NULL);
+  g_assert_cmpint (client->compose_port, !=, 0);
+  g_assert_cmpint (client->compose_port0, ==, client->compose_port);
   if (client->enable_test_sinks) {
     testcase *sink0 = g_new0 (testcase, 1);
     sink0->live_seconds = client->sink1.live_seconds;
-    sink0->name = "test-compose-result";
+    sink0->name = g_strdup_printf ("test-compose-output-%d-%d", port, client->compose_port_count);
+    sink0->free_name = TRUE;
     sink0->desc = g_string_new ("");
     g_string_append_printf (sink0->desc, "tcpclientsrc port=%d ", client->compose_port);
     g_string_append_printf (sink0->desc, "! gdpdepay ");
@@ -843,7 +848,7 @@ testclient_run (gpointer data)
   client->audio_port0 = gst_switch_client_get_audio_port (GST_SWITCH_CLIENT (client));
   g_assert_cmpint (client->compose_port0, !=, 0);
   g_assert_cmpint (client->encode_port0, !=, 0);
-  g_assert_cmpint (client->audio_port0, !=, 0);
+  g_assert_cmpint (client->audio_port0, ==, 0); // audio is not allocated initially
 
   testclient_set_compose_port (client, client->compose_port0);
 
@@ -999,7 +1004,6 @@ test_controller (void)
       g_assert_cmpint (client->compose_port, ==, client->compose_port0);
       g_assert_cmpint (client->compose_port_count, >=, 1);
       g_assert_cmpint (client->encode_port, ==, client->encode_port0);
-      //g_assert_cmpint (client->audio_port, ==, client->audio_port0);
       g_assert_cmpint (client->audio_port, !=, 0);
       g_assert_cmpint (client->audio_port_count, >=, 1);
       g_assert_cmpint (client->preview_port_1, !=, 0);
