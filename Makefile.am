@@ -14,7 +14,7 @@ show-tests:
 	@printf "You may want to do 'make test-*' for specific test.\n"
 
 $(TESTS) $(UI_TESTS):
-	$(MAKE) -C tests $@
+	@$(MAKE) -C tests $@
 
 clean-test-data:
 	rm -f "record "*" "*.dat

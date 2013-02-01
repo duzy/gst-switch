@@ -580,18 +580,6 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
   GST_SWITCH_UI_UNLOCK_AUDIO (ui);
 }
 
-static gboolean
-gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
-{
-  switch (event->type) {
-  case GDK_BUTTON_PRESS: {
-    INFO ("TODO: activate %p", w);
-  } break;
-  default: break;
-  }
-  return TRUE;
-}
-
 static void
 gst_switch_ui_mark_active_video (GstSwitchUI *ui, gint port, gint type)
 {
@@ -610,6 +598,60 @@ gst_switch_ui_mark_active_video (GstSwitchUI *ui, gint port, gint type)
       }
     }
   }
+}
+
+static gboolean gst_switch_ui_switch_unsafe (GstSwitchUI *, gint);
+static gboolean gst_switch_ui_switch (GstSwitchUI *, gint);
+
+static gboolean
+gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
+{
+  GstVideoDisp *disp = NULL;
+  GstAudioVisual *visual = NULL;
+  GtkWidget *previous = NULL;
+  gint port = 0;
+
+  switch (event->type) {
+  case GDK_BUTTON_PRESS: {
+    while (w) {
+      disp = g_object_get_data (G_OBJECT (w), "video-display");
+      visual = g_object_get_data (G_OBJECT (w), "audio-visual");
+      if (disp) {
+	port = disp->port;
+	break;
+      } else if (visual) {
+	port = visual->port;
+	break;
+      } else {
+	w = gtk_widget_get_parent (w);
+      }
+    }
+  } break;
+  default: break;
+  }
+
+  (void) port;
+
+  if ((disp || visual) && w) {
+    GdkEventButton *ev = (GdkEventButton *) event;
+
+    GST_SWITCH_UI_LOCK_SELECT (ui);
+    previous = ui->selected;
+    ui->selected = w;
+    switch (ev->button) {
+    case 1: // left button
+      if (gst_switch_ui_switch_unsafe (ui, GDK_KEY_A)) {
+      }
+      break;
+    case 3: // right button
+      if (disp && gst_switch_ui_switch_unsafe (ui, GDK_KEY_B)) {
+      }
+      break;
+    }
+    ui->selected = previous;
+    GST_SWITCH_UI_UNLOCK_SELECT (ui);
+  }
+  return TRUE;
 }
 
 static void
@@ -705,14 +747,16 @@ gst_switch_ui_select_preview (GstSwitchUI *ui, guint key)
 	break;
       }
     }
-    previous = GTK_WIDGET (selected->data);
-    switch (key) {
-    case GDK_KEY_Up:
-      selected = g_list_previous (selected);
-      break;
-    case GDK_KEY_Down:
-      selected = g_list_next (selected);
-      break;
+    if (selected) {
+      previous = GTK_WIDGET (selected->data);
+      switch (key) {
+      case GDK_KEY_Up:
+	selected = g_list_previous (selected);
+	break;
+      case GDK_KEY_Down:
+	selected = g_list_next (selected);
+	break;
+      }
     }
   }
 
@@ -723,22 +767,20 @@ gst_switch_ui_select_preview (GstSwitchUI *ui, guint key)
   if (ui->selected) {
     if (previous) {
       gtk_widget_unset_state_flags (previous, GTK_STATE_FLAG_SELECTED);
-      gtk_widget_show_all (previous);
     }
     gtk_widget_set_state_flags (ui->selected, GTK_STATE_FLAG_SELECTED, TRUE);
-    gtk_widget_show_all (ui->selected);
-    INFO ("select: %p, %p", previous, ui->selected);
+    //INFO ("select: %p, %p", previous, ui->selected);
   }
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
 }
 
-static void
-gst_switch_ui_switch (GstSwitchUI *ui, gint key)
+static gboolean
+gst_switch_ui_switch_unsafe (GstSwitchUI *ui, gint key)
 {
   gint port, type;
   gpointer data;
   gboolean ok = FALSE;
-  GST_SWITCH_UI_LOCK_SELECT (ui);
+  //GST_SWITCH_UI_LOCK_SELECT (ui);
   if (!ui->selected) {
     goto end;
   }
@@ -782,7 +824,18 @@ gst_switch_ui_switch (GstSwitchUI *ui, gint key)
   }
 
  end:
+  //GST_SWITCH_UI_UNLOCK_SELECT (ui);
+  return ok;
+}
+
+static gboolean
+gst_switch_ui_switch (GstSwitchUI *ui, gint key)
+{
+  gboolean ok = FALSE;
+  GST_SWITCH_UI_LOCK_SELECT (ui);
+  ok = gst_switch_ui_switch_unsafe (ui, key);
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
+  return ok;
 }
 
 static void
