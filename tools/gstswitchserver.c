@@ -1004,10 +1004,8 @@ gst_switch_server_start_recorder (GstWorker *worker, GstSwitchServer * srv)
 
   GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
   if (srv->controller) {
-#if 0
     gst_switch_controller_tell_encode_port (srv->controller,
 	srv->composite->encode_sink_port);
-#endif
   }
   GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
 }

@@ -583,10 +583,6 @@ testclient_init (testclient *client)
 
   client->thread = NULL;
   client->sink0 = NULL;
-  client->sink1.name = "test_preview1";
-  client->sink2.name = "test_preview2";
-  client->sink3.name = "test_preview3";
-  client->sink4.name = "test_preview4";
   client->expected_compose_count = 0;
   client->enable_test_sinks = FALSE;
 }
@@ -729,6 +725,16 @@ testclient_set_compose_port (testclient *client, gint port)
 }
 
 static void
+testclient_set_encode_port (testclient *client, gint port)
+{
+  //INFO ("set-encode-port: %d", port);
+  client->encode_port = port;
+  client->encode_port_count += 1;
+  g_assert_cmpint (client->encode_port, !=, 0);
+  g_assert_cmpint (client->encode_port0, ==, client->encode_port);
+}
+
+static void
 testclient_set_audio_port (testclient *client, gint port)
 {
   //INFO ("set-audio-port: %d", port);
@@ -754,6 +760,8 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
     if (client->enable_test_sinks) {
       g_assert (client->sink1.thread == NULL);
       client->sink1.live_seconds = client->seconds;
+      client->sink1.name = g_strdup_printf ("test-preview-output-%d", port);
+      client->sink1.free_name = TRUE;
       client->sink1.desc = g_string_new ("");
       g_string_append_printf (client->sink1.desc, "tcpclientsrc port=%d ", client->preview_port_1);
       g_string_append_printf (client->sink1.desc, "! gdpdepay ");
@@ -769,6 +777,8 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
     if (client->enable_test_sinks) {
       g_assert (client->sink2.thread == NULL);
       client->sink2.live_seconds = client->seconds;
+      client->sink2.name = g_strdup_printf ("test-preview-output-%d", port);
+      client->sink2.free_name = TRUE;
       client->sink2.desc = g_string_new ("");
       g_string_append_printf (client->sink2.desc, "tcpclientsrc port=%d ", client->preview_port_2);
       g_string_append_printf (client->sink2.desc, "! gdpdepay ");
@@ -789,6 +799,8 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
     if (client->enable_test_sinks) {
       g_assert (client->sink3.thread == NULL);
       client->sink3.live_seconds = client->seconds;
+      client->sink3.name = g_strdup_printf ("test-preview-output-%d", port);
+      client->sink3.free_name = TRUE;
       client->sink3.desc = g_string_new ("");
       g_string_append_printf (client->sink3.desc, "tcpclientsrc port=%d ", client->preview_port_3);
       g_string_append_printf (client->sink3.desc, "! gdpdepay ");
@@ -805,6 +817,8 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
     if (client->enable_test_sinks) {
       g_assert (client->sink4.thread == NULL);
       client->sink4.live_seconds = client->seconds;
+      client->sink4.name = g_strdup_printf ("test-preview-output-%d", port);
+      client->sink4.free_name = TRUE;
       client->sink4.desc = g_string_new ("");
       g_string_append_printf (client->sink4.desc, "tcpclientsrc port=%d ", client->preview_port_4);
       g_string_append_printf (client->sink4.desc, "! gdpdepay ");
@@ -827,6 +841,8 @@ testclient_class_init (testclientClass *klass)
     testclient_connection_closed;
   client_class->set_compose_port = (GstSwitchClientSetComposePortFunc)
     testclient_set_compose_port;
+  client_class->set_encode_port = (GstSwitchClientSetEncodePortFunc)
+    testclient_set_encode_port;
   client_class->set_audio_port = (GstSwitchClientSetAudioPortFunc)
     testclient_set_audio_port;
   client_class->add_preview_port = (GstSwitchClientAddPreviewPortFunc)

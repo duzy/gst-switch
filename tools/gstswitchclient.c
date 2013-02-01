@@ -53,6 +53,9 @@ static const gchar introspection_xml[] =
   "    <method name='set_compose_port'>"
   "      <arg type='i' name='port' direction='in'/>"
   "    </method>"
+  "    <method name='set_encode_port'>"
+  "      <arg type='i' name='port' direction='in'/>"
+  "    </method>"
   "    <method name='add_preview_port'>"
   "      <arg type='i' name='port' direction='in'/>"
   "      <arg type='i' name='type' direction='in'/>"
@@ -458,6 +461,15 @@ gst_switch_client_set_compose_port (GstSwitchClient *client, gint port)
 }
 
 static void
+gst_switch_client_set_encode_port (GstSwitchClient *client, gint port)
+{
+  GstSwitchClientClass *klass = GST_SWITCH_CLIENT_CLASS (
+      G_OBJECT_GET_CLASS (client));
+  if (klass->set_encode_port)
+    (*klass->set_encode_port) (client, port);
+}
+
+static void
 gst_switch_client_set_audio_port (GstSwitchClient *client, gint port)
 {
   GstSwitchClientClass *klass = GST_SWITCH_CLIENT_CLASS (
@@ -510,6 +522,17 @@ gst_switch_client__set_compose_port (GstSwitchClient *client,
 }
 
 static GVariant *
+gst_switch_client__set_encode_port (GstSwitchClient *client,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  gint port = 0;
+  g_variant_get (parameters, "(i)", &port);
+  //INFO ("compose: %d", port);
+  gst_switch_client_set_encode_port (client, port);
+  return NULL;
+}
+
+static GVariant *
 gst_switch_client__add_preview_port (GstSwitchClient *client,
     GDBusConnection *connection, GVariant *parameters)
 {
@@ -527,6 +550,7 @@ static MethodTableEntry gst_switch_client_method_table[] = {
 #endif//ENABLE_TEST
   { "set_audio_port", (MethodFunc) gst_switch_client__set_audio_port },
   { "set_compose_port", (MethodFunc) gst_switch_client__set_compose_port },
+  { "set_encode_port", (MethodFunc) gst_switch_client__set_encode_port },
   { "add_preview_port", (MethodFunc) gst_switch_client__add_preview_port },
   { NULL, NULL }
 };

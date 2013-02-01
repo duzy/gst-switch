@@ -39,6 +39,7 @@ typedef struct _GstSwitchClientClass GstSwitchClientClass;
 
 typedef void (*GstSwitchClientConnectionClosedFunc) (GstSwitchClient *client, GError *error);
 typedef void (*GstSwitchClientSetComposePortFunc) (GstSwitchClient *client, gint port);
+typedef void (*GstSwitchClientSetEncodePortFunc) (GstSwitchClient *client, gint port);
 typedef void (*GstSwitchClientSetAudioPortFunc) (GstSwitchClient *client, gint port);
 typedef void (*GstSwitchClientAddPreviewPortFunc) (GstSwitchClient *client, gint port, gint type);
 
@@ -57,8 +58,9 @@ struct _GstSwitchClientClass
   GHashTable *methods;
 
   void (*connection_closed) (GstSwitchClient *client, GError *error);
-  void (*set_compose_port) (GstSwitchClient *client, gint port);
   void (*set_audio_port) (GstSwitchClient *client, gint port);
+  void (*set_compose_port) (GstSwitchClient *client, gint port);
+  void (*set_encode_port) (GstSwitchClient *client, gint port);
   void (*add_preview_port) (GstSwitchClient *client, gint port, gint type);
 };
 

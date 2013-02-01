@@ -66,6 +66,10 @@ static const gchar introspection_xml[] =
   "      <arg type='i' name='channel' direction='in'/>"
   "      <arg type='b' name='result' direction='out'/>"
   "    </method>"
+  "    <method name='set_encode_mode'>"
+  "      <arg type='i' name='channel' direction='in'/>"
+  "      <arg type='b' name='result' direction='out'/>"
+  "    </method>"
   "    <method name='new_record'>"
   "      <arg type='b' name='result' direction='out'/>"
   "    </method>"
@@ -90,6 +94,9 @@ static const gchar introspection_xml[] =
   "      <arg type='i' name='port'/>"
   "    </signal>"
   "    <signal name='compose_port'>"
+  "      <arg type='i' name='port'/>"
+  "    </signal>"
+  "    <signal name='encode_port'>"
   "      <arg type='i' name='port'/>"
   "    </signal>"
   "    <signal name='preview_port'>"
@@ -540,6 +547,14 @@ gst_switch_controller_set_ui_compose_port (GstSwitchController * controller,
 }
 
 static void
+gst_switch_controller_set_ui_encode_port (GstSwitchController * controller,
+    gint port)
+{
+  gst_switch_controller_call_uis (controller, "set_encode_port",
+      g_variant_new ("(i)", port), G_VARIANT_TYPE ("()"));
+}
+
+static void
 gst_switch_controller_add_ui_preview_port (GstSwitchController * controller,
     gint port, gint type)
 {
@@ -585,6 +600,15 @@ gst_switch_controller_tell_compose_port (GstSwitchController *controller,
   gst_switch_controller_emit_ui_signal (controller, "compose_port",
       g_variant_new ("(i)", port));
   gst_switch_controller_set_ui_compose_port (controller, port);
+}
+
+void
+gst_switch_controller_tell_encode_port (GstSwitchController *controller,
+    gint port)
+{
+  gst_switch_controller_emit_ui_signal (controller, "encode_port",
+      g_variant_new ("(i)", port));
+  gst_switch_controller_set_ui_encode_port (controller, port);
 }
 
 void
