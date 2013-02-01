@@ -414,7 +414,7 @@ launch (const gchar *name, ...)
 static GPid
 launch_server ()
 {
-  GPid pid = launch ("./tools/gst-switch-srv", "-v",
+  GPid pid = launch ("../tools/gst-switch-srv", "-v",
       "--gst-debug-no-color",
       "--record=test-recording.data",
       NULL);
@@ -425,7 +425,7 @@ launch_server ()
 static GPid
 launch_ui ()
 {
-  GPid pid = launch ("./tools/gst-switch-ui", "-v",
+  GPid pid = launch ("../tools/gst-switch-ui", "-v",
       "--gst-debug-no-color",
       NULL);
   INFO ("ui %d", pid);
