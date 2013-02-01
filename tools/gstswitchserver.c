@@ -287,7 +287,7 @@ gst_switch_server_start_case (GstCase *cas, GstSwitchServer *srv)
     GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
     if (srv->controller && is_branch) {
       gst_switch_controller_tell_preview_port (srv->controller,
-	  cas->sink_port, cas->serve_type);
+	  cas->sink_port, cas->serve_type, cas->type);
 
       if (cas->type == GST_CASE_BRANCH_a) {
 	gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
@@ -747,11 +747,13 @@ gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
 }
 
 GArray *
-gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
+gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
+    GArray **s, GArray **t)
 {
   GArray *a = g_array_new (FALSE, TRUE, sizeof (gint));
   GList *item;
 
+  if (s) *s = g_array_new (FALSE, TRUE, sizeof (gint));
   if (t) *t = g_array_new (FALSE, TRUE, sizeof (gint));
   
   GST_SWITCH_SERVER_LOCK_CASES (srv);
@@ -762,7 +764,8 @@ gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **t)
     case GST_CASE_BRANCH_a:
     case GST_CASE_PREVIEW:
       a = g_array_append_val (a, GST_CASE (item->data)->sink_port);
-      if (t) *t = g_array_append_val (*t, GST_CASE (item->data)->serve_type);
+      if (s) *s = g_array_append_val (*s, GST_CASE (item->data)->serve_type);
+      if (t) *t = g_array_append_val (*t, GST_CASE (item->data)->type);
     default: break;
     }
   }

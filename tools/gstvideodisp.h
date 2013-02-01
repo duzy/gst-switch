@@ -40,7 +40,7 @@ struct _GstVideoDisp
 {
   GstWorker base;
 
-  gint port;
+  gint port, type;
   gulong handle;
 };
 

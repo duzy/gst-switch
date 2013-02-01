@@ -37,6 +37,7 @@
 
 #define TEST_RECORDING_DATA 0
 #define TEST_DISPLAY_VIDEO_RESULT 0
+#define DUMP_DEBUG_MESSAGES_TO_FILES 0
 #if TEST_DISPLAY_VIDEO_RESULT
 #define VIDEOSINK "xvimagesink"
 #else
@@ -313,6 +314,8 @@ dump_log (gpointer data)
       ERROR ("%s", strerror (errno));
       break;
     }
+    if (!G_IS_OUTPUT_STREAM (l->ostream))
+      break;
     g_output_stream_write_all (l->ostream, buffer, len, &bytes_written, NULL, &error);
     g_assert_no_error (error);
     g_assert_cmpint (len, ==, bytes_written);
@@ -349,7 +352,7 @@ launch (const gchar *name, ...)
   g_ptr_array_add (array, NULL);
   argv = (gchar **) g_ptr_array_free (array, FALSE);
 
-#if 1
+#if DUMP_DEBUG_MESSAGES_TO_FILES
   ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
       NULL, NULL, &pid, &fd_in, &fd_out, &fd_err, &error);
 #else

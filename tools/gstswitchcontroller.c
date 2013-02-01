@@ -101,6 +101,7 @@ static const gchar introspection_xml[] =
   "    </signal>"
   "    <signal name='preview_port'>"
   "      <arg type='i' name='port'/>"
+  "      <arg type='i' name='serve'/>"
   "      <arg type='i' name='type'/>"
   "    </signal>"
   "  </interface>"
@@ -556,10 +557,10 @@ gst_switch_controller_set_ui_encode_port (GstSwitchController * controller,
 
 static void
 gst_switch_controller_add_ui_preview_port (GstSwitchController * controller,
-    gint port, gint type)
+    gint port, gint serve, gint type)
 {
   gst_switch_controller_call_uis (controller, "add_preview_port",
-      g_variant_new ("(ii)", port, type), G_VARIANT_TYPE ("()"));
+      g_variant_new ("(iii)", port, serve, type), G_VARIANT_TYPE ("()"));
 }
 
 static void
@@ -613,11 +614,11 @@ gst_switch_controller_tell_encode_port (GstSwitchController *controller,
 
 void
 gst_switch_controller_tell_preview_port (GstSwitchController *controller,
-    gint port, gint type)
+    gint port, gint serve, gint type)
 {
   gst_switch_controller_emit_ui_signal (controller, "preview_port",
-      g_variant_new ("(ii)", port, type));
-  gst_switch_controller_add_ui_preview_port (controller, port, type);
+      g_variant_new ("(iii)", port, serve, type));
+  gst_switch_controller_add_ui_preview_port (controller, port, serve, type);
 }
 
 #if ENABLE_TEST
@@ -671,18 +672,19 @@ gst_switch_controller__get_preview_ports (GstSwitchController *controller,
 {
   GVariant *result = NULL;
   if (controller->server) {
-    GArray *types = NULL;
+    GArray  *serves = NULL, *types = NULL;
     GArray *ports = gst_switch_server_get_preview_sink_ports (
-	controller->server, &types);
+	controller->server, &serves, &types);
     int n;
     GVariantBuilder *builder;
     GVariant *value;
     gchar *res;
 
-    builder = g_variant_builder_new (G_VARIANT_TYPE ("a(ii)"));
+    builder = g_variant_builder_new (G_VARIANT_TYPE ("a(iii)"));
     for (n = 0; n < ports->len; ++n) {
-      g_variant_builder_add (builder, "(ii)",
+      g_variant_builder_add (builder, "(iii)",
 	  g_array_index (ports, gint, n),
+	  g_array_index (serves, gint, n),
 	  g_array_index (types, gint, n));
     }
     value = g_variant_builder_end (builder);

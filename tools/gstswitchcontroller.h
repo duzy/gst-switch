@@ -73,6 +73,6 @@ GType gst_switch_controller_get_type (void);
 void gst_switch_controller_tell_audio_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_compose_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_encode_port (GstSwitchController *, gint port);
-void gst_switch_controller_tell_preview_port (GstSwitchController *, gint port, gint type);
+void gst_switch_controller_tell_preview_port (GstSwitchController *, gint port, gint serve, gint type);
 
 #endif//__GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__

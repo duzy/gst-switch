@@ -58,6 +58,7 @@ static const gchar introspection_xml[] =
   "    </method>"
   "    <method name='add_preview_port'>"
   "      <arg type='i' name='port' direction='in'/>"
+  "      <arg type='i' name='serve' direction='in'/>"
   "      <arg type='i' name='type' direction='in'/>"
   "    </method>"
   "  </interface>"
@@ -479,12 +480,13 @@ gst_switch_client_set_audio_port (GstSwitchClient *client, gint port)
 }
 
 static void
-gst_switch_client_add_preview_port (GstSwitchClient *client, gint port, gint type)
+gst_switch_client_add_preview_port (GstSwitchClient *client, gint port,
+    gint serve, gint type)
 {
   GstSwitchClientClass *klass = GST_SWITCH_CLIENT_CLASS (
       G_OBJECT_GET_CLASS (client));
   if (klass->add_preview_port)
-    (*klass->add_preview_port) (client, port, type);
+    (*klass->add_preview_port) (client, port, serve, type);
 }
 
 #if ENABLE_TEST
@@ -537,10 +539,11 @@ gst_switch_client__add_preview_port (GstSwitchClient *client,
     GDBusConnection *connection, GVariant *parameters)
 {
   gint port = 0;
+  gint serve = 0;
   gint type = 0;
-  g_variant_get (parameters, "(ii)", &port, &type);
-  //INFO ("preview: %d, %d", port, type);
-  gst_switch_client_add_preview_port (client, port, type);
+  g_variant_get (parameters, "(iii)", &port, &serve, &type);
+  //INFO ("preview: %d, %d, %d", port, serve, type);
+  gst_switch_client_add_preview_port (client, port, serve, type);
   return NULL;
 }
 

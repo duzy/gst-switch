@@ -41,7 +41,7 @@ typedef void (*GstSwitchClientConnectionClosedFunc) (GstSwitchClient *client, GE
 typedef void (*GstSwitchClientSetComposePortFunc) (GstSwitchClient *client, gint port);
 typedef void (*GstSwitchClientSetEncodePortFunc) (GstSwitchClient *client, gint port);
 typedef void (*GstSwitchClientSetAudioPortFunc) (GstSwitchClient *client, gint port);
-typedef void (*GstSwitchClientAddPreviewPortFunc) (GstSwitchClient *client, gint port, gint type);
+typedef void (*GstSwitchClientAddPreviewPortFunc) (GstSwitchClient *client, gint port, gint serve, gint type);
 
 struct _GstSwitchClient
 {
@@ -61,7 +61,7 @@ struct _GstSwitchClientClass
   void (*set_audio_port) (GstSwitchClient *client, gint port);
   void (*set_compose_port) (GstSwitchClient *client, gint port);
   void (*set_encode_port) (GstSwitchClient *client, gint port);
-  void (*add_preview_port) (GstSwitchClient *client, gint port, gint type);
+  void (*add_preview_port) (GstSwitchClient *client, gint port, gint serve, gint type);
 };
 
 GType gst_switch_client_get_type (void);
