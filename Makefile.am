@@ -20,7 +20,6 @@ UI_TESTS = \
 	$(null)
 
 test: $(TESTS)
-	@ls $(TESTS:%=%.log)
 
 show-tests:
 	@printf "Available tests:\n\t$(TESTS)\n"
@@ -28,7 +27,7 @@ show-tests:
 	@printf "You may want to do 'make test-*' for specific test.\n"
 
 $(TESTS) $(UI_TESTS):
-	./tests/test-switch-server $(TESTARGS) --enable-$@ || true
+	@./tests/test-switch-server $(TESTARGS) --enable-$@ || true
 
 demo: $(UI_TESTS)
 

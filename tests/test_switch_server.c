@@ -294,7 +294,7 @@ child_stderr (GIOChannel *channel, GIOCondition condition, gpointer data)
 
 typedef struct _log_dumper {
   gint fd;
-  GFileOutputStream *ostream;
+  GOutputStream *ostream;
 } log_dumper;
 static gpointer
 dump_log (gpointer data)
@@ -321,6 +321,7 @@ dump_log (gpointer data)
 
   g_free (l);
   g_thread_unref (g_thread_self ());
+  return NULL;
 }
 
 static GPid
@@ -381,9 +382,10 @@ launch (const gchar *name, ...)
     g_source_unref (source);
     g_io_channel_unref (channel);
 #else
+    (void) source, (void) channel, (void) context, (void) child_stdout;
     log_dumper *p = g_new0 (log_dumper, 1);
     p->fd = fd_out;
-    p->ostream = outstream;
+    p->ostream = G_OUTPUT_STREAM (outstream);
     g_thread_new ("log-dumper", dump_log, p);
 #endif
   }
@@ -724,7 +726,7 @@ testclient_set_compose_port (testclient *client, gint port)
 static void
 testclient_set_audio_port (testclient *client, gint port)
 {
-  INFO ("set-audio-port: %d", port);
+  //INFO ("set-audio-port: %d", port);
   client->audio_port = port;
   client->audio_port_count += 1;
   /*
@@ -839,9 +841,9 @@ testclient_run (gpointer data)
   client->compose_port0 = gst_switch_client_get_compose_port (GST_SWITCH_CLIENT (client));
   client->encode_port0 = gst_switch_client_get_encode_port (GST_SWITCH_CLIENT (client));
   client->audio_port0 = gst_switch_client_get_audio_port (GST_SWITCH_CLIENT (client));
-  //g_assert_cmpint (client->compose_port0, ==, 3001);
-  //g_assert_cmpint (client->encode_port0, ==, 3002);
-  //g_assert_cmpint (client->audio_port0, ==, 3004);
+  g_assert_cmpint (client->compose_port0, !=, 0);
+  g_assert_cmpint (client->encode_port0, !=, 0);
+  g_assert_cmpint (client->audio_port0, !=, 0);
 
   testclient_set_compose_port (client, client->compose_port0);
 
@@ -904,6 +906,11 @@ testclient_join (testclient *client)
   testcase_join (&client->sink2);
   testcase_join (&client->sink3);
   testcase_join (&client->sink4);
+
+  g_assert (client->sink1.pass);
+  g_assert (client->sink2.pass);
+  g_assert (client->sink3.pass);
+  g_assert (client->sink4.pass);
 }
 
 static void
@@ -977,6 +984,11 @@ test_controller (void)
       testcase_join (&audio_source1);
       testcase_join (&audio_source2);
 
+      g_assert (video_source1.pass);
+      g_assert (video_source2.pass);
+      g_assert (audio_source1.pass);
+      g_assert (audio_source2.pass);
+
       if (0 < video_source1.error_count ||
 	  0 < video_source2.error_count ||
 	  0 < audio_source1.error_count ||
@@ -984,13 +996,11 @@ test_controller (void)
 	g_test_fail ();
       }
 
-      //g_assert_cmpint (client->compose_port, ==, 3001);
-      //g_assert_cmpint (client->compose_port, ==, client->compose_port0);
+      g_assert_cmpint (client->compose_port, ==, client->compose_port0);
       g_assert_cmpint (client->compose_port_count, >=, 1);
-      //g_assert_cmpint (client->encode_port0, ==, 3002);
-      //g_assert_cmpint (client->encode_port, ==, client->encode_port0);
-      //g_assert_cmpint (client->audio_port, ==, 3004);
+      g_assert_cmpint (client->encode_port, ==, client->encode_port0);
       //g_assert_cmpint (client->audio_port, ==, client->audio_port0);
+      g_assert_cmpint (client->audio_port, !=, 0);
       g_assert_cmpint (client->audio_port_count, >=, 1);
       g_assert_cmpint (client->preview_port_1, !=, 0);
       g_assert_cmpint (client->preview_port_2, !=, 0);
@@ -1097,6 +1107,11 @@ test_composite_mode (void)
       testcase_join (&audio_source1);
       testcase_join (&audio_source2);
 
+      g_assert (video_source1.pass);
+      g_assert (video_source2.pass);
+      g_assert (audio_source1.pass);
+      g_assert (audio_source2.pass);
+
       if (0 < video_source1.error_count ||
 	  0 < video_source2.error_count ||
 	  0 < audio_source1.error_count ||
@@ -1104,13 +1119,10 @@ test_composite_mode (void)
 	g_test_fail ();
       }
 
-      //g_assert_cmpint (client->compose_port, ==, 3001);
-      //g_assert_cmpint (client->compose_port, ==, client->compose_port0);
+      g_assert_cmpint (client->compose_port, ==, client->compose_port0);
       g_assert_cmpint (client->compose_port_count, >=, 1);
-      //g_assert_cmpint (client->encode_port0, ==, 3002);
-      //g_assert_cmpint (client->encode_port, ==, client->encode_port0);
-      //g_assert_cmpint (client->audio_port, ==, 3004);
-      //g_assert_cmpint (client->audio_port, ==, client->audio_port0);
+      g_assert_cmpint (client->encode_port, ==, client->encode_port0);
+      g_assert_cmpint (client->audio_port, ==, client->audio_port0);
       g_assert_cmpint (client->audio_port_count, >=, 1);
       g_assert_cmpint (client->preview_port_1, !=, 0);
       g_assert_cmpint (client->preview_port_2, !=, 0);
@@ -1240,6 +1252,14 @@ test_video (void)
   testcase_join (&sink1);
   testcase_join (&sink2);
   testcase_join (&sink3);
+
+  g_assert (source1.pass);
+  g_assert (source2.pass);
+  g_assert (source3.pass);
+  g_assert (sink0.pass);
+  g_assert (sink1.pass);
+  g_assert (sink2.pass);
+  g_assert (sink3.pass);
 
   if (!opts.test_external_server)
     close_pid (server_pid);
@@ -1373,6 +1393,13 @@ test_audio (void)
     testcase_join (&sink3);
   }
 
+  g_assert (source1.pass);
+  g_assert (source2.pass);
+  g_assert (source3.pass);
+  g_assert (sink1.pass);
+  g_assert (sink2.pass);
+  g_assert (sink3.pass);
+
   if (!opts.test_external_server)
     close_pid (server_pid);
 
@@ -1493,6 +1520,13 @@ test_ui (void)
   testcase_join (&audio_source2);
   testcase_join (&audio_source3);
 
+  g_assert (video_source1.pass);
+  g_assert (video_source2.pass);
+  g_assert (video_source3.pass);
+  g_assert (audio_source1.pass);
+  g_assert (audio_source2.pass);
+  g_assert (audio_source3.pass);
+
   if (!opts.test_external_ui)
     close_pid (ui_pid);
   if (!opts.test_external_server)
@@ -1558,6 +1592,9 @@ test_random_1 (gpointer d)
       testcase_join (&video_source1);
       testcase_join (&audio_source1);
 
+      g_assert (video_source1.pass);
+      g_assert (audio_source1.pass);
+
       g_free ((void*) video_source1.name);
       g_free ((void*) audio_source1.name);
     }
@@ -1602,6 +1639,9 @@ test_random_2 (gpointer d)
       testcase_run_thread (&audio_source1);
       testcase_join (&video_source1);
       testcase_join (&audio_source1);
+
+      g_assert (video_source1.pass);
+      g_assert (audio_source1.pass);
 
       g_free ((void*) video_source1.name);
       g_free ((void*) audio_source1.name);
@@ -1725,6 +1765,13 @@ test_switching (void)
   testcase_join (&audio_source2);
   testcase_join (&audio_source3);
 
+  g_assert (video_source1.pass);
+  g_assert (video_source2.pass);
+  g_assert (video_source3.pass);
+  g_assert (audio_source1.pass);
+  g_assert (audio_source2.pass);
+  g_assert (audio_source3.pass);
+
   if (!opts.test_external_ui)
     close_pid (ui_pid);
   if (!opts.test_external_server)
@@ -1764,6 +1811,9 @@ test_fuzz_feed (gpointer data)
     testcase_run_thread (&source2);
     testcase_join (&source1);
     testcase_join (&source2);
+
+    g_assert (source1.pass);
+    g_assert (source2.pass);
 
     usleep (5000);
   }
@@ -1870,6 +1920,14 @@ test_fuzz (void)
   testcase_join (&sink2);
   testcase_join (&sink3);
 
+  g_assert (source1.pass);
+  g_assert (source2.pass);
+  g_assert (source3.pass);
+  g_assert (sink0.pass);
+  g_assert (sink1.pass);
+  g_assert (sink2.pass);
+  g_assert (sink3.pass);
+
   feed_quit = TRUE;
   g_thread_join (feed);
   g_thread_unref (feed);
@@ -1948,6 +2006,8 @@ test_checking_timestamps (void)
 
   testcase_run_thread (&video_source);
   testcase_join (&video_source);
+
+  g_assert (video_source.pass);
 
   if (!opts.test_external_ui)
     close_pid (ui_pid);
