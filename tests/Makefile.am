@@ -9,7 +9,7 @@ test_switch_server_LDFLAGS = $(GST_LIBS) $(GST_BASE_LIBS) $(GST_PLUGINS_BASE_LIB
 test_switch_server_LDADD = $(GST_LIBS) $(GIO_LIBS) $(LIBM)
 
 TESTARGS  =
-TESTARGS += --test-external-server
+#TESTARGS += --test-external-server
 #TESTARGS += --test-external-ui
 
 include names.mk
