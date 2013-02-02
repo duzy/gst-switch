@@ -144,21 +144,25 @@ gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
     GstSwitchUI *ui)
 {
   GtkStyleContext *style;
-  gpointer data = g_object_get_data (G_OBJECT (widget), "audio-visual");
+  gpointer data= NULL;
   double x = 0.5, y = 0.5, width, height, radius, degrees;
+  style = gtk_widget_get_style_context (widget);
   width = (double) gtk_widget_get_allocated_width (widget) - 0.5;
   height = (double) gtk_widget_get_allocated_height (widget) - 0.5;
   degrees = 3.14159265359 / 180.0;
   radius = 10.0;
+
+  data = g_object_get_data (G_OBJECT (widget), "audio-visual");
+  if (!data) 
+    data = g_object_get_data (G_OBJECT (widget), "video-display");
+
 #if 0
-  style = gtk_widget_get_style_context (widget);
   gtk_style_context_save (style);
   gtk_style_context_add_class (style, "red");
   gtk_render_frame (style, cr, 0, 0, width, height);
   gtk_style_context_remove_class (style, "red");
   gtk_style_context_restore (style);
 #else
-  (void) style;
   cairo_new_sub_path (cr);
   cairo_arc (cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
   cairo_arc (cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
@@ -167,9 +171,14 @@ gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
   cairo_close_path (cr);
   if (gtk_widget_get_state_flags (widget) & GTK_STATE_FLAG_SELECTED) {
     cairo_set_source_rgba (cr, 0.25, 0.25, 0.85, 0.85);
+  } else if (data && GST_IS_VIDEO_DISP (data)) {
+    GstVideoDisp *disp = GST_VIDEO_DISP (data);
+    if (gtk_style_context_has_class (style, "active_video_frame")) {
+      cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
+    } else goto default_color;
   } else if (data && GST_IS_AUDIO_VISUAL (data)) {
     GstAudioVisual *visual = GST_AUDIO_VISUAL (data);
-    if (visual->active) {
+    if (gtk_style_context_has_class (style, "active_audio_frame")) {
       cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
     } else goto default_color;
   } else {
@@ -634,19 +643,69 @@ gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
 
   if ((disp || visual) && w) {
     GdkEventButton *ev = (GdkEventButton *) event;
+    GtkWidget *prevframe = NULL;
+    GstVideoDisp *prevdisp = NULL;
+    gint newvideotype = GST_CASE_UNKNOWN;
 
     GST_SWITCH_UI_LOCK_SELECT (ui);
     previous = ui->selected;
     ui->selected = w;
+
+    switch (ev->button) {
+    case 1: // left button
+      newvideotype = GST_CASE_BRANCH_A;
+      break;
+    case 3: // right button
+      if (disp) newvideotype = GST_CASE_BRANCH_B;
+      break;
+    }
+
+    if (newvideotype != GST_CASE_UNKNOWN) {
+      gpointer data;
+      GList *item = gtk_container_get_children (
+	  GTK_CONTAINER (ui->preview_box));
+      for (; item; item = g_list_next (item)) {
+	GtkWidget *frame = GTK_WIDGET (item->data);
+	data = g_object_get_data (G_OBJECT (frame), "video-display");
+	if (frame == ui->selected || data == disp) continue;
+	if (!GST_IS_VIDEO_DISP (data)) continue;
+	if (GST_VIDEO_DISP (data)->type == newvideotype) {
+	  prevdisp = GST_VIDEO_DISP (data);
+	  prevframe = frame;
+	  break;
+	}
+      }
+    }
+    
     switch (ev->button) {
     case 1: // left button
       if (gst_switch_ui_switch_unsafe (ui, GDK_KEY_A)) {
+	goto swap_video_type;
       }
       break;
     case 3: // right button
       if (disp && gst_switch_ui_switch_unsafe (ui, GDK_KEY_B)) {
+	goto swap_video_type;
       }
       break;
+    swap_video_type:
+      if (disp) {
+	gint t = disp->type;
+	disp->type = newvideotype;
+	if (prevframe && prevdisp) {
+	  GtkStyleContext *style = gtk_widget_get_style_context (prevframe);
+	  switch (t) {
+	  case GST_CASE_BRANCH_A:
+	  case GST_CASE_BRANCH_B:
+	    gtk_style_context_add_class (style, "active_video_frame");
+	    break;
+	  case GST_CASE_BRANCH_p:
+	    gtk_style_context_remove_class (style, "active_video_frame");
+	    break;
+	  }
+	  prevdisp->type = t;
+	}
+      }
     }
     ui->selected = previous;
     GST_SWITCH_UI_UNLOCK_SELECT (ui);
