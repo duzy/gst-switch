@@ -474,7 +474,7 @@ gst_switch_controller_call_ui (GstSwitchController * controller,
   /* ERRORS */
  error_call_sync:
   {
-    ERROR ("%s", error->message);
+    ERROR ("%s (%s)", error->message, method_name);
     g_error_free (error);
     return NULL;
   }

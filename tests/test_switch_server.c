@@ -458,7 +458,7 @@ testcase_run (testcase *t)
 {
   g_mutex_init (&t->lock);
 
-  g_print ("Running test %s\n", t->name);
+  g_print ("Running %s\n", t->name);
   t->pass = TRUE; // assume everything is ok
   t->mainloop = g_main_loop_new (NULL, TRUE);
   if (testcase_launch_pipeline (t)) {
@@ -517,6 +517,14 @@ testcase_join (testcase *t)
   }
   g_mutex_unlock (&t->lock);
   if (thread) g_thread_join (thread);
+}
+
+static void
+testcase_end (testcase *t)
+{
+  if (t->mainloop)
+    g_main_loop_quit (t->mainloop);
+  //testcase_join (t);
 }
 
 typedef struct _testclient {
@@ -867,7 +875,11 @@ testclient_run (gpointer data)
   client->audio_port0 = gst_switch_client_get_audio_port (GST_SWITCH_CLIENT (client));
   g_assert_cmpint (client->compose_port0, !=, 0);
   g_assert_cmpint (client->encode_port0, !=, 0);
-  g_assert_cmpint (client->audio_port0, ==, 0); // audio is not allocated initially
+  if (!opts.test_external_server) {
+    /* audio is not allocated initially
+     */
+    g_assert_cmpint (client->audio_port0, ==, 0);
+  }
 
   testclient_set_compose_port (client, client->compose_port0);
 
@@ -920,16 +932,19 @@ testclient_join (testclient *client)
   client->thread_test4 = NULL;
 
   g_mutex_lock (&client->sink0_lock);
-  for (sink0 = client->sink0; sink0; sink0 = g_list_next (client->sink0)) {
+  for (sink0 = client->sink0; sink0; sink0 = g_list_next (sink0)) {
     testcase_join (((testcase*) (sink0->data)));
   }
   g_list_free_full (client->sink0, g_free);
   client->sink0 = NULL;
+
   g_mutex_unlock (&client->sink0_lock);
   testcase_join (&client->sink1);
   testcase_join (&client->sink2);
   testcase_join (&client->sink3);
   testcase_join (&client->sink4);
+
+  INFO ("end testclient");
 
   g_assert (client->sink1.pass);
   g_assert (client->sink2.pass);
