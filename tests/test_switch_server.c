@@ -172,15 +172,27 @@ testcase_state_change (testcase *t, GstState oldstate, GstState newstate, GstSta
 static void
 testcase_error_message (testcase *t, GError *error, const gchar *info)
 {
-  /*
+#if 0
   ERROR ("%s: %s", t->name, error->message);
-  */
-
-  /*
-  g_print ("%s\n", info);
-  */
+  ERROR ("debug:\n%s\n", info);
+#endif
 
   t->error_count += 1;
+
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_TOO_LAZY));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_NOT_IMPLEMENTED));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_STATE_CHANGE));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_PAD));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_THREAD));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_NEGOTIATION));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_EVENT));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_SEEK));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_CAPS));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_TAG));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_MISSING_PLUGIN));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_CLOCK));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_DISABLED));
+  g_assert (!g_error_matches (error, GST_CORE_ERROR, GST_CORE_ERROR_NUM_ERRORS));
 }
 
 static gboolean
@@ -815,9 +827,13 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
       client->sink3.desc = g_string_new ("");
       g_string_append_printf (client->sink3.desc, "tcpclientsrc port=%d ", client->preview_port_3);
       g_string_append_printf (client->sink3.desc, "! gdpdepay ");
+#if 0
       g_string_append_printf (client->sink3.desc, "! goom2k1 ");
       g_string_append_printf (client->sink3.desc, "! videoconvert ");
       g_string_append_printf (client->sink3.desc, "! "VIDEOSINK);
+#else
+      g_string_append_printf (client->sink3.desc, "! fakesink ");
+#endif
       testcase_run_thread (&client->sink3);
     }
     break;
@@ -833,9 +849,13 @@ testclient_add_preview_port (testclient *client, gint port, gint type)
       client->sink4.desc = g_string_new ("");
       g_string_append_printf (client->sink4.desc, "tcpclientsrc port=%d ", client->preview_port_4);
       g_string_append_printf (client->sink4.desc, "! gdpdepay ");
+#if 0
       g_string_append_printf (client->sink4.desc, "! goom2k1 ");
       g_string_append_printf (client->sink4.desc, "! videoconvert ");
       g_string_append_printf (client->sink4.desc, "! "VIDEOSINK);
+#else
+      g_string_append_printf (client->sink4.desc, "! fakesink ");
+#endif
       testcase_run_thread (&client->sink4);
     }
     break;
@@ -944,7 +964,7 @@ testclient_join (testclient *client)
   testcase_join (&client->sink3);
   testcase_join (&client->sink4);
 
-  INFO ("end testclient");
+  INFO ("end test client");
 
   g_assert (client->sink1.pass);
   g_assert (client->sink2.pass);

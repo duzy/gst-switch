@@ -170,10 +170,12 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
     break;
   }
 
+  /*
   INFO ("new mode %d, %dx%d (%dx%d, %dx%d)", mode,
       composite->width, composite->height,
       composite->a_width, composite->a_height,
       composite->b_width, composite->b_height);
+  */
 
   if (composite->output && composite->recorder) {
     gst_composite_start_transition (composite);
@@ -467,8 +469,10 @@ gst_composite_alive (GstComposite *composite)
       gst_worker_start (GST_WORKER (composite->output));
       gst_worker_start (GST_WORKER (composite->recorder));
       composite->transition = FALSE;
+      /*
       INFO ("new mode %d, %dx%d transited", composite->mode,
 	  composite->width, composite->height);
+      */
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }
@@ -486,8 +490,10 @@ gst_composite_null (GstComposite *composite)
   if (composite->transition) {
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
+      /*
       INFO ("new mode %d, %dx%d applying...",
 	  composite->mode, composite->width, composite->height);
+      */
       gst_composite_apply_parameters (composite);
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
