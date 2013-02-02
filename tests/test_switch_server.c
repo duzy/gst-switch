@@ -657,7 +657,9 @@ testclient_test_mode (testclient *client)
       if (3 < mode) mode = 0;
       ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (client), mode);
       if (!ok) {
+#if 0
 	WARN ("failed changing mode: %d", mode);
+#endif
       } else {
 	g_mutex_lock (&client->expected_compose_count_lock);
 	client->expected_compose_count += 1;
@@ -683,7 +685,9 @@ testclient_test_mode_2 (testclient *client)
       if (3 < mode) mode = 0;
       ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (client), mode);
       if (!ok) {
+#if 0
 	WARN ("failed changing mode: %d", mode);
+#endif
       } else {
 	g_mutex_lock (&client->expected_compose_count_lock);
 	client->expected_compose_count += 1;
