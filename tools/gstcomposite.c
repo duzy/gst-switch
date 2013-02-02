@@ -345,7 +345,7 @@ gst_composite_get_pipeline_string (GstComposite * composite)
   } else {
     g_string_append_printf (desc, "intervideosrc name=source_b "
 	"channel=composite_b ");
-    g_string_append_printf (desc, "videomixer name=compose "
+    g_string_append_printf (desc, "videomixeraaa name=compose "
 	"sink_0::xpos=%d "
 	"sink_0::ypos=%d "
 	"sink_0::zorder=0 "

@@ -165,23 +165,54 @@ gst_worker_create_pipeline (GstWorker *worker)
   GstWorkerClass *workerclass = GST_WORKER_CLASS (
       G_OBJECT_GET_CLASS (worker));
 
-  GString *desc = workerclass->get_pipeline_string (worker);
-  GstElement *pipeline;
+  GString *desc = NULL;
+  GstElement *pipeline = NULL;
   GError *error = NULL;
+  GstParseContext *context = NULL;
+
+ create_pipeline:
+  desc = workerclass->get_pipeline_string (worker);
+  context = gst_parse_context_new ();
 
   if (verbose) {
     g_print ("%s: %s\n", worker->name, desc->str);
   }
 
-  pipeline = (GstElement *) gst_parse_launch (desc->str, &error);
+  pipeline = (GstElement *) gst_parse_launch_full (desc->str, context,
+      GST_PARSE_FLAG_NONE, &error);
   g_string_free (desc, FALSE);
 
-  if (error) {
-    ERROR ("%s: pipeline parsing error: %s", worker->name, error->message);
-    if (pipeline) gst_object_unref (pipeline);
-    return NULL;
+  if (error == NULL) {
+    goto end;
   }
 
+  if (g_error_matches (error, GST_PARSE_ERROR,
+	  GST_PARSE_ERROR_NO_SUCH_ELEMENT)) {
+    gchar **name = NULL;
+    gchar **names = gst_parse_context_get_missing_elements (context);
+    gboolean retry = workerclass->missing &&
+      (*workerclass->missing) (worker, names);
+    for (name = names; *name; ++name) ERROR ("missing: %s", *name);
+    g_strfreev (names);
+
+    if (retry) {
+      gst_parse_context_free (context);
+      gst_object_unref (pipeline);
+      pipeline = NULL;
+      context = NULL;
+      goto create_pipeline;
+    }
+  } else {
+    ERROR ("%s: pipeline parsing error: %s", worker->name, error->message);
+  }
+
+  if (pipeline) {
+    gst_object_unref (pipeline);
+    pipeline = NULL;
+  }
+
+ end:
+  gst_parse_context_free (context);
   return pipeline;
 }
 
@@ -282,6 +313,20 @@ gst_worker_get_element (GstWorker *worker, const gchar *name)
   return element;
 }
 
+/*
+static void
+gst_worker_missing_plugin (GstWorker *worker, GstStructure *structure)
+{
+  GstWorkerClass *workerclass = GST_WORKER_CLASS (
+      G_OBJECT_GET_CLASS (worker));
+
+  ERROR ("missing plugin");
+
+  if (workerclass->missing_plugin)
+    (*workerclass->missing_plugin) (worker, structure);
+}
+*/
+
 static void
 gst_worker_handle_eos (GstWorker *worker)
 {
@@ -294,6 +339,15 @@ gst_worker_handle_error (GstWorker *worker, GError * error,
 {
   ERROR ("%s: %s", worker->name, error->message);
   ERROR ("DEBUG INFO:\n%s\n", debug);
+
+  if (error->domain == GST_CORE_ERROR) {
+    switch (error->code) {
+    case GST_CORE_ERROR_MISSING_PLUGIN:
+      ERROR ("missing plugin...");
+      break;
+    }
+  }
+
 #if 0
   gst_worker_stop (worker);
 #endif
@@ -415,98 +469,98 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
   workerclass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
 
   switch (GST_MESSAGE_TYPE (message)) {
-    case GST_MESSAGE_EOS:
-      gst_worker_handle_eos (worker);
-      break;
-    case GST_MESSAGE_ERROR:
-    {
-      GError *error = NULL;
-      gchar *debug;
-      gst_message_parse_error (message, &error, &debug);
-      gst_worker_handle_error (worker, error, debug);
-    } break;
-    case GST_MESSAGE_WARNING:
-    {
-      GError *error = NULL;
-      gchar *debug;
+  case GST_MESSAGE_EOS:
+    gst_worker_handle_eos (worker);
+    break;
+  case GST_MESSAGE_ERROR:
+  {
+    GError *error = NULL;
+    gchar *debug;
+    gst_message_parse_error (message, &error, &debug);
+    gst_worker_handle_error (worker, error, debug);
+  } break;
+  case GST_MESSAGE_WARNING:
+  {
+    GError *error = NULL;
+    gchar *debug;
 
-      gst_message_parse_warning (message, &error, &debug);
-      gst_worker_handle_warning (worker, error, debug);
-    } break;
-    case GST_MESSAGE_INFO:
-    {
-      GError *error = NULL;
-      gchar *debug;
+    gst_message_parse_warning (message, &error, &debug);
+    gst_worker_handle_warning (worker, error, debug);
+  } break;
+  case GST_MESSAGE_INFO:
+  {
+    GError *error = NULL;
+    gchar *debug;
 
-      gst_message_parse_info (message, &error, &debug);
-      gst_worker_handle_info (worker, error, debug);
-    } break;
-    case GST_MESSAGE_TAG:
-    {
-      GstTagList *tag_list;
+    gst_message_parse_info (message, &error, &debug);
+    gst_worker_handle_info (worker, error, debug);
+  } break;
+  case GST_MESSAGE_TAG:
+  {
+    GstTagList *tag_list;
 
-      gst_message_parse_tag (message, &tag_list);
+    gst_message_parse_tag (message, &tag_list);
+    if (verbose)
+      g_print ("tag\n");
+  } break;
+  case GST_MESSAGE_STATE_CHANGED:
+  {
+    gboolean ret;
+    GstState oldstate, newstate, pending;
+    gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
+    if (GST_ELEMENT (message->src) == worker->pipeline) {
       if (verbose)
-        g_print ("tag\n");
-    } break;
-    case GST_MESSAGE_STATE_CHANGED:
-    {
-      gboolean ret;
-      GstState oldstate, newstate, pending;
-      gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
-      if (GST_ELEMENT (message->src) == worker->pipeline) {
-        if (verbose)
-          g_print ("%s: state change from %s to %s\n", worker->name,
-              gst_element_state_get_name (oldstate),
-              gst_element_state_get_name (newstate));
+	g_print ("%s: state change from %s to %s\n", worker->name,
+	    gst_element_state_get_name (oldstate),
+	    gst_element_state_get_name (newstate));
 
-	ret = gst_worker_pipeline_state_changed (worker,
-	    GST_STATE_TRANSITION (oldstate, newstate));
+      ret = gst_worker_pipeline_state_changed (worker,
+	  GST_STATE_TRANSITION (oldstate, newstate));
 
-	if (!ret && verbose)
-	  g_print ("%s: UNKNOWN state change from %s to %s\n", worker->name,
-	      gst_element_state_get_name (oldstate),
-	      gst_element_state_get_name (newstate));
-      }
-    } break;
-    case GST_MESSAGE_BUFFERING:
-    {
-      int percent;
-      gst_message_parse_buffering (message, &percent);
-      //g_print("buffering %d\n", percent);
-      if (!worker->paused_for_buffering && percent < 100) {
-        g_print ("pausing for buffing\n");
-        worker->paused_for_buffering = TRUE;
-        gst_element_set_state (worker->pipeline, GST_STATE_PAUSED);
-      } else if (worker->paused_for_buffering && percent == 100) {
-        g_print ("unpausing for buffing\n");
-        worker->paused_for_buffering = FALSE;
-        gst_element_set_state (worker->pipeline, GST_STATE_PLAYING);
-      }
-    } break;
-    case GST_MESSAGE_STATE_DIRTY:
-    case GST_MESSAGE_CLOCK_PROVIDE:
-    case GST_MESSAGE_CLOCK_LOST:
-    case GST_MESSAGE_NEW_CLOCK:
-    case GST_MESSAGE_STRUCTURE_CHANGE:
-    case GST_MESSAGE_STREAM_STATUS:
-      break;
-    case GST_MESSAGE_STEP_DONE:
-    case GST_MESSAGE_APPLICATION:
-    case GST_MESSAGE_ELEMENT:
-    case GST_MESSAGE_SEGMENT_START:
-    case GST_MESSAGE_SEGMENT_DONE:
-    case GST_MESSAGE_LATENCY:
-    case GST_MESSAGE_ASYNC_START:
-    case GST_MESSAGE_ASYNC_DONE:
-    case GST_MESSAGE_REQUEST_STATE:
-    case GST_MESSAGE_STEP_START:
-    case GST_MESSAGE_QOS:
-    default:
-      if (verbose) {
-        //g_print ("message: %s\n", GST_MESSAGE_TYPE_NAME (message));
-      }
-      break;
+      if (!ret && verbose)
+	g_print ("%s: UNKNOWN state change from %s to %s\n", worker->name,
+	    gst_element_state_get_name (oldstate),
+	    gst_element_state_get_name (newstate));
+    }
+  } break;
+  case GST_MESSAGE_BUFFERING:
+  {
+    int percent;
+    gst_message_parse_buffering (message, &percent);
+    //g_print("buffering %d\n", percent);
+    if (!worker->paused_for_buffering && percent < 100) {
+      g_print ("pausing for buffing\n");
+      worker->paused_for_buffering = TRUE;
+      gst_element_set_state (worker->pipeline, GST_STATE_PAUSED);
+    } else if (worker->paused_for_buffering && percent == 100) {
+      g_print ("unpausing for buffing\n");
+      worker->paused_for_buffering = FALSE;
+      gst_element_set_state (worker->pipeline, GST_STATE_PLAYING);
+    }
+  } break;
+  case GST_MESSAGE_ELEMENT:
+  case GST_MESSAGE_STATE_DIRTY:
+  case GST_MESSAGE_CLOCK_PROVIDE:
+  case GST_MESSAGE_CLOCK_LOST:
+  case GST_MESSAGE_NEW_CLOCK:
+  case GST_MESSAGE_STRUCTURE_CHANGE:
+  case GST_MESSAGE_STREAM_STATUS:
+    break;
+  case GST_MESSAGE_STEP_DONE:
+  case GST_MESSAGE_APPLICATION:
+  case GST_MESSAGE_SEGMENT_START:
+  case GST_MESSAGE_SEGMENT_DONE:
+  case GST_MESSAGE_LATENCY:
+  case GST_MESSAGE_ASYNC_START:
+  case GST_MESSAGE_ASYNC_DONE:
+  case GST_MESSAGE_REQUEST_STATE:
+  case GST_MESSAGE_STEP_START:
+  case GST_MESSAGE_QOS:
+  default:
+    if (verbose) {
+      //g_print ("message: %s\n", GST_MESSAGE_TYPE_NAME (message));
+    }
+    break;
   }
 
   return workerclass->message ?

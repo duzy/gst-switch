@@ -78,6 +78,7 @@ struct _GstWorkerClass
   void (*start_worker) (GstWorker *worker);
   void (*end_worker) (GstWorker *worker);
 
+  gboolean (*missing) (GstWorker *worker, gchar **elements);
   gboolean (*message)(GstWorker *worker, GstMessage * message);
 
   GString *(*get_pipeline_string) (GstWorker *worker);

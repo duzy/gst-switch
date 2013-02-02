@@ -140,6 +140,20 @@ gst_audio_visual_get_value (GstAudioVisual *visual)
   return value;
 }
 
+static gboolean
+gst_audio_visual_missing (GstWorker *worker, gchar **elements)
+{
+  GstAudioVisual *visual = NULL;
+  gboolean retry = FALSE;
+  gchar **name = elements;
+  visual = GST_AUDIO_VISUAL (worker);
+  (void) visual;
+  for (name = elements; name; ++name) {
+    ERROR ("missing element: %s", *name);
+  }
+  return retry;
+}
+
 static GString *
 gst_audio_visual_get_pipeline_string (GstAudioVisual *visual)
 {
@@ -295,6 +309,7 @@ gst_audio_visual_class_init (GstAudioVisualClass *klass)
       g_param_spec_boolean ("active", "Active", "Activated audio",
           FALSE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+  worker_class->missing = gst_audio_visual_missing;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_audio_visual_prepare;
   worker_class->message = (GstWorkerMessageFunc) gst_audio_visual_message;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
