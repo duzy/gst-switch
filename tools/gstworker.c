@@ -68,7 +68,7 @@ gst_worker_init (GstWorker *worker)
 
   g_mutex_init (&worker->pipeline_lock);
 
-  INFO ("Worker initialized (%p)", worker);
+  //INFO ("init (%p)", worker);
 }
 
 static void
@@ -572,15 +572,15 @@ gst_worker_prepare (GstWorker *worker)
 {
   GstWorkerClass *workerclass;
 
-  if (worker->pipeline) {
-    return TRUE;
-  }
+  g_return_val_if_fail (worker, FALSE);
 
   workerclass = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
   if (!workerclass->create_pipeline)
     goto error_create_pipeline_not_installed;
 
   GST_WORKER_LOCK_PIPELINE (worker);
+  if (worker->pipeline)
+    goto end;
 
   worker->pipeline = workerclass->create_pipeline (worker);
   if (!worker->pipeline)
@@ -592,13 +592,12 @@ gst_worker_prepare (GstWorker *worker)
   worker->watch = gst_bus_add_watch (worker->bus,
       (GstBusFunc) gst_worker_message, worker);
 
-  if (workerclass->prepare) {
-    if (!workerclass->prepare (worker))
-      goto error_prepare;
-  }
+  if (workerclass->prepare && !workerclass->prepare (worker))
+    goto error_prepare;
 
   g_signal_emit (worker, gst_worker_signals[SIGNAL_PREPARE_WORKER], 0);
 
+ end:
   GST_WORKER_UNLOCK_PIPELINE (worker);
   return TRUE;
 
@@ -633,10 +632,12 @@ gst_worker_reset (GstWorker *worker)
   if (worker->pipeline) {
     GST_WORKER_LOCK_PIPELINE (worker);
     if (worker->pipeline) {
-      if (worker->watch)
+      if (worker->watch) {
 	g_source_remove (worker->watch);
-      if (worker->bus)
+      }
+      if (worker->bus) {
 	gst_object_unref (worker->bus);
+      }
       if (worker->pipeline) {
 	gst_element_set_state (worker->pipeline, GST_STATE_NULL);
 	gst_object_unref (worker->pipeline);
@@ -685,5 +686,5 @@ gst_worker_class_init (GstWorkerClass *klass)
   klass->null = gst_worker_null;
   klass->reset = gst_worker_reset;
 
-  INFO ("Worker class initialized");
+  //INFO ("Worker class initialized");
 }

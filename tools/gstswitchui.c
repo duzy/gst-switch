@@ -304,8 +304,10 @@ gst_switch_ui_init (GstSwitchUI * ui)
   g_signal_connect (G_OBJECT (ui->window), "delete-event",
       G_CALLBACK (gst_switch_ui_window_closed), ui);
 
+  /*
   g_signal_connect (G_OBJECT (ui->compose_view), "expose-event",
       G_CALLBACK (gst_switch_ui_compose_view_expose), ui);
+  */
   g_signal_connect (G_OBJECT (ui->compose_view), "motion-notify-event",
       G_CALLBACK (gst_switch_ui_compose_view_motion), ui);
   g_signal_connect (G_OBJECT (ui->compose_view), "button-press-event",

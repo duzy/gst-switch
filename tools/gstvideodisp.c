@@ -129,7 +129,7 @@ gst_video_disp_prepare (GstVideoDisp *disp)
 
   gst_object_unref (sink);
 
-  INFO ("prepared display video on %ld", disp->handle);
+  //INFO ("prepared display video on %ld", disp->handle);
   return TRUE;
 }
 

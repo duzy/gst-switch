@@ -97,7 +97,7 @@ gst_composite_init (GstComposite * composite)
    */
   composite->transition = TRUE;
 
-  INFO ("init %p", composite);
+  //INFO ("init %p", composite);
 }
 
 static void
@@ -197,8 +197,10 @@ gst_composite_start_transition (GstComposite *composite)
 
   if (gst_composite_ready_for_transition (composite)) {
     composite->transition = gst_worker_stop (GST_WORKER (composite));
+    /*
     INFO ("transtion ok=%d, %d, %dx%d", composite->transition,
 	composite->mode, composite->width, composite->height);
+    */
   }
 
   GST_COMPOSITE_UNLOCK_TRANSITION (composite);

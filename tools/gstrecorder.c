@@ -64,7 +64,7 @@ gst_recorder_init (GstRecorder * rec)
   rec->width = 0;
   rec->height = 0;
 
-  INFO ("init %p", rec);
+  //INFO ("init %p", rec);
 }
 
 static void

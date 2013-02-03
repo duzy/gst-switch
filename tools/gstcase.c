@@ -72,7 +72,7 @@ gst_case_init (GstCase * cas)
   cas->b_width = 0;
   cas->b_height = 0;
 
-  INFO ("init %p", cas);
+  //INFO ("init %p", cas);
 }
 
 static void
