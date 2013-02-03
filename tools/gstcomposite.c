@@ -125,7 +125,7 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   guint h;
 
   if (composite->transition) {
-    WARN ("changing mode in transition is not allowed");
+    WARN ("ignore changing mode in transition");
     return;
   }
 
@@ -617,7 +617,7 @@ gst_composite_error (GstComposite *composite)
   if (composite->transition) {
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
-      WARN ("new mode %d, %dx%d transition error",
+      WARN ("new mode %d, %dx%d (error transition)",
 	  composite->mode, composite->width, composite->height);
       gst_composite_apply_parameters (composite);
       gst_worker_start (GST_WORKER (composite));

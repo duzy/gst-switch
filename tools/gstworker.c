@@ -337,16 +337,35 @@ static void
 gst_worker_handle_error (GstWorker *worker, GError * error,
     const char *debug)
 {
-  ERROR ("%s: %s", worker->name, error->message);
-  ERROR ("DEBUG INFO:\n%s\n", debug);
+  //ERROR ("%s: %s", worker->name, error->message);
 
   if (error->domain == GST_CORE_ERROR) {
+    ERROR ("%s: (CORE: %d) %s", worker->name, error->code, error->message);
     switch (error->code) {
     case GST_CORE_ERROR_MISSING_PLUGIN:
-      ERROR ("missing plugin...");
+      ERROR ("missing plugin..");
+      break;
+    case GST_CORE_ERROR_NEGOTIATION:
+      ERROR ("%s: negotiation: %s", worker->name, error->message);
       break;
     }
   }
+
+  if (error->domain == GST_LIBRARY_ERROR) {
+    ERROR ("%s: (LIBRARY: %d) %s", worker->name, error->code, error->message);
+  }
+
+  if (error->domain == GST_RESOURCE_ERROR) {
+    ERROR ("%s: (RESOURCE: %d) %s", worker->name, error->code, error->message);
+  }
+
+  if (error->domain == GST_STREAM_ERROR) {
+    ERROR ("%s: (STREAM: %d) %s", worker->name, error->code, error->message);
+  }
+
+#if 0
+  ERROR ("DEBUG INFO:\n%s\n", debug);
+#endif
 
 #if 0
   gst_worker_stop (worker);

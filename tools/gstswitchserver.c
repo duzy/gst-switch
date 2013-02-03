@@ -781,7 +781,7 @@ gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
   GST_SWITCH_SERVER_LOCK_PIP (srv);
 
   if (mode == srv->composite->mode) {
-    WARN ("same composite mode %d", mode);
+    WARN ("ignore the same composite mode %d", mode);
     goto end;
   }
 
