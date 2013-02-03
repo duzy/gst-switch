@@ -213,19 +213,19 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
   gboolean result = FALSE;
   GVariant *value = NULL;
 
-  INFO ("changing: %d", client->changing_composite_mode);
+  //INFO ("changing: %d", client->changing_composite_mode);
 
   /* Only commit the change-composite-mode request once a time.
    */
   if (!client->changing_composite_mode) {
     GST_SWITCH_CLIENT_LOCK_COMPOSITE_MODE (client);
     if (!client->changing_composite_mode) {
-      client->changing_composite_mode = TRUE;
       value = gst_switch_client_call_controller (client,
 	  "set_composite_mode", g_variant_new ("(i)", mode),
 	  G_VARIANT_TYPE ("(b)"));
       if (value) {
 	g_variant_get (value, "(b)", &result);
+	client->changing_composite_mode = result;
       }
     }
     GST_SWITCH_CLIENT_UNLOCK_COMPOSITE_MODE (client);
@@ -518,7 +518,7 @@ gst_switch_client_new_mode_online (GstSwitchClient *client, gint mode)
    * online, and when we receive that message, shall we release unset
    * changing_composite_mode.
    */
-  INFO ("new-mode: %d", mode);
+  INFO ("New composite mode: %d", mode);
   if (client->changing_composite_mode) {
     GST_SWITCH_CLIENT_LOCK_COMPOSITE_MODE (client);
     if (client->changing_composite_mode) {
