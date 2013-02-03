@@ -483,7 +483,6 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
   {
     GError *error = NULL;
     gchar *debug;
-
     gst_message_parse_warning (message, &error, &debug);
     gst_worker_handle_warning (worker, error, debug);
   } break;
@@ -491,7 +490,6 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
   {
     GError *error = NULL;
     gchar *debug;
-
     gst_message_parse_info (message, &error, &debug);
     gst_worker_handle_info (worker, error, debug);
   } break;
@@ -568,7 +566,7 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
 }
 
 static gboolean
-gst_worker_prepare (GstWorker *worker)
+gst_worker_prepare_unsafe (GstWorker *worker)
 {
   GstWorkerClass *workerclass;
 
@@ -578,7 +576,7 @@ gst_worker_prepare (GstWorker *worker)
   if (!workerclass->create_pipeline)
     goto error_create_pipeline_not_installed;
 
-  GST_WORKER_LOCK_PIPELINE (worker);
+  //GST_WORKER_LOCK_PIPELINE (worker);
   if (worker->pipeline)
     goto end;
 
@@ -589,8 +587,13 @@ gst_worker_prepare (GstWorker *worker)
   gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
 
   worker->bus = gst_pipeline_get_bus (GST_PIPELINE (worker->pipeline));
+  if (!worker->bus)
+    goto error_get_bus;
+
   worker->watch = gst_bus_add_watch (worker->bus,
       (GstBusFunc) gst_worker_message, worker);
+  if (!worker->watch)
+    goto error_add_watch;
 
   if (workerclass->prepare && !workerclass->prepare (worker))
     goto error_prepare;
@@ -598,7 +601,7 @@ gst_worker_prepare (GstWorker *worker)
   g_signal_emit (worker, gst_worker_signals[SIGNAL_PREPARE_WORKER], 0);
 
  end:
-  GST_WORKER_UNLOCK_PIPELINE (worker);
+  //GST_WORKER_UNLOCK_PIPELINE (worker);
   return TRUE;
 
   /* Errors Handling */
@@ -612,21 +615,45 @@ gst_worker_prepare (GstWorker *worker)
  error_create_pipeline:
   {
     ERROR ("%s: failed to create new pipeline", worker->name);
-    GST_WORKER_UNLOCK_PIPELINE (worker);
+    //GST_WORKER_UNLOCK_PIPELINE (worker);
     return FALSE;
   }
 
  error_prepare:
   {
+    g_source_remove (worker->watch);
+  error_add_watch:
+    gst_object_unref (worker->bus);
+  error_get_bus:
+    gst_object_unref (worker->pipeline);
+    worker->pipeline = NULL;
+    worker->bus = NULL;
+    worker->watch = 0;
     ERROR ("%s: failed to prepare", worker->name);
-    GST_WORKER_UNLOCK_PIPELINE (worker);
+    //GST_WORKER_UNLOCK_PIPELINE (worker);
     return FALSE;
   }
 }
 
 static gboolean
+gst_worker_prepare (GstWorker *worker)
+{
+  gboolean ok = FALSE;
+  if (worker->pipeline == NULL) {
+    GST_WORKER_LOCK_PIPELINE (worker);
+    ok = gst_worker_prepare_unsafe (worker);
+    GST_WORKER_UNLOCK_PIPELINE (worker);
+  } else {
+    ok = TRUE;
+  }
+  return ok;
+}
+
+static gboolean
 gst_worker_reset (GstWorker *worker)
 {
+  gboolean ok = FALSE;
+
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
   if (worker->pipeline) {
@@ -645,11 +672,13 @@ gst_worker_reset (GstWorker *worker)
       worker->pipeline = NULL;
       worker->bus = NULL;
       worker->watch = 0;
+
+      ok = gst_worker_prepare_unsafe (worker);
     }
     GST_WORKER_UNLOCK_PIPELINE (worker);
   }
 
-  return gst_worker_prepare (worker);
+  return ok;
 }
 
 static void
@@ -685,6 +714,4 @@ gst_worker_class_init (GstWorkerClass *klass)
   klass->create_pipeline = gst_worker_create_pipeline;
   klass->null = gst_worker_null;
   klass->reset = gst_worker_reset;
-
-  //INFO ("Worker class initialized");
 }
