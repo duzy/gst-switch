@@ -47,13 +47,13 @@ G_DEFINE_TYPE (GstVideoDisp, gst_video_disp, GST_TYPE_WORKER);
 static void
 gst_video_disp_init (GstVideoDisp *disp)
 {
-  INFO ("init %p", disp);
+  //INFO ("init %p", disp);
 }
 
 static void
 gst_video_disp_dispose (GstVideoDisp *disp)
 {
-  INFO ("dispose %p", disp);
+  //INFO ("dispose %p", disp);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (disp));
 }
 

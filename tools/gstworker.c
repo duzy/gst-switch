@@ -99,7 +99,7 @@ gst_worker_dispose (GstWorker *worker)
     worker->pipeline_string = NULL;
   }
 
-  INFO ("dispose %p", worker);
+  //INFO ("dispose %p", worker);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (worker));
 }
 
