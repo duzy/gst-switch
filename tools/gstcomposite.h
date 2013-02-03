@@ -102,6 +102,7 @@ struct _GstCompositeClass
   void (*start_recorder) (GstComposite *composite);
   void (*end_output) (GstComposite *composite);
   void (*end_recorder) (GstComposite *composite);
+  void (*end_transition) (GstComposite *composite);
 };
 
 GType gst_composite_get_type (void);

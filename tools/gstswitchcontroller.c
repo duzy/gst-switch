@@ -621,6 +621,14 @@ gst_switch_controller_tell_preview_port (GstSwitchController *controller,
   gst_switch_controller_add_ui_preview_port (controller, port, serve, type);
 }
 
+void
+gst_switch_controller_tell_new_mode_onlne (GstSwitchController *controller,
+    gint mode)
+{
+  gst_switch_controller_call_uis (controller, "new_mode_online",
+      g_variant_new ("(i)", mode), G_VARIANT_TYPE ("()"));
+}
+
 #if ENABLE_TEST
 static GVariant *
 gst_switch_controller__test (GstSwitchController *controller,

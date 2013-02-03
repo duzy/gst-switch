@@ -49,6 +49,9 @@ struct _GstSwitchClient
 
   GMutex controller_lock;
   GDBusConnection *controller;
+
+  GMutex composite_mode_lock;
+  gboolean changing_composite_mode;
 };
 
 struct _GstSwitchClientClass

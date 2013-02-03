@@ -74,5 +74,6 @@ void gst_switch_controller_tell_audio_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_compose_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_encode_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_preview_port (GstSwitchController *, gint port, gint serve, gint type);
+void gst_switch_controller_tell_new_mode_onlne (GstSwitchController *, gint mode);
 
 #endif//__GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__

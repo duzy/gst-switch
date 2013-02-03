@@ -1013,6 +1013,20 @@ gst_switch_server_start_recorder (GstWorker *worker, GstSwitchServer * srv)
   GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
 }
 
+static void
+gst_switch_server_end_transition (GstWorker *worker, GstSwitchServer * srv)
+//gint mode)
+{
+  g_return_if_fail (GST_IS_WORKER (worker));
+
+  GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+  if (srv->controller) {
+    gint mode = srv->composite->mode;
+    gst_switch_controller_tell_new_mode_onlne (srv->controller, mode);
+  }
+  GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+}
+
 static gboolean
 gst_switch_server_prepare_composite (GstSwitchServer * srv,
     GstCompositeMode mode)
@@ -1036,6 +1050,8 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv,
       G_CALLBACK (gst_switch_server_start_output), srv);
   g_signal_connect (srv->composite, "start-recorder",
       G_CALLBACK (gst_switch_server_start_recorder), srv);
+  g_signal_connect (srv->composite, "end-transition",
+      G_CALLBACK (gst_switch_server_end_transition), srv);
 
   GST_SWITCH_SERVER_LOCK_PIP (srv);
   srv->pip_x = srv->composite->b_x;

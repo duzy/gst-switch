@@ -65,6 +65,7 @@ enum
   SIGNAL_START_RECORDER,
   SIGNAL_END_OUTPUT,
   SIGNAL_END_RECORDER,
+  SIGNAL_END_TRANSITION,
   SIGNAL__LAST,
 };
 
@@ -468,11 +469,13 @@ gst_composite_end_transition (GstComposite *composite)
   if (composite->transition) {
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
-      composite->transition = FALSE;
       /*
       INFO ("new mode %d, %dx%d transited", composite->mode,
 	  composite->width, composite->height);
       */
+      composite->transition = FALSE;
+      g_signal_emit (composite,
+	  gst_composite_signals[SIGNAL_END_TRANSITION], 0/*, composite->mode*/);
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }
@@ -753,6 +756,11 @@ gst_composite_class_init (GstCompositeClass * klass)
     g_signal_new ("end-recorder", G_TYPE_FROM_CLASS (klass),
 	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_recorder),
 	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  gst_composite_signals[SIGNAL_END_TRANSITION] = 
+    g_signal_new ("end-transition", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_transition),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0/*1, G_TYPE_INT*/);
 
   g_object_class_install_property (object_class, PROP_MODE,
       g_param_spec_uint ("mode", "Mode", "Composite Mode",

@@ -36,6 +36,8 @@ G_DEFINE_TYPE (GstSwitchClient, gst_switch_client, G_TYPE_OBJECT);
 
 #define GST_SWITCH_CLIENT_LOCK_CONTROLLER(c) (g_mutex_lock (&(c)->controller_lock))
 #define GST_SWITCH_CLIENT_UNLOCK_CONTROLLER(c) (g_mutex_unlock (&(c)->controller_lock))
+#define GST_SWITCH_CLIENT_LOCK_COMPOSITE_MODE(c) (g_mutex_lock (&(c)->composite_mode_lock))
+#define GST_SWITCH_CLIENT_UNLOCK_COMPOSITE_MODE(c) (g_mutex_unlock (&(c)->composite_mode_lock))
 
 static GDBusNodeInfo *introspection_data = NULL;
 static const gchar introspection_xml[] =
@@ -61,6 +63,9 @@ static const gchar introspection_xml[] =
   "      <arg type='i' name='serve' direction='in'/>"
   "      <arg type='i' name='type' direction='in'/>"
   "    </method>"
+  "    <method name='new_mode_online'>"
+  "      <arg type='i' name='mode' direction='in'/>"
+  "    </method>"
   "  </interface>"
   "</node>"
   ;
@@ -71,12 +76,14 @@ static void
 gst_switch_client_init (GstSwitchClient * client)
 {
   g_mutex_init (&client->controller_lock);
+  g_mutex_init (&client->composite_mode_lock);
 }
 
 static void
 gst_switch_client_finalize (GstSwitchClient * client)
 {
   g_mutex_clear (&client->controller_lock);
+  g_mutex_clear (&client->composite_mode_lock);
 
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (client));
@@ -204,12 +211,26 @@ gboolean
 gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
 {
   gboolean result = FALSE;
-  GVariant *value = gst_switch_client_call_controller (client,
-      "set_composite_mode", g_variant_new ("(i)", mode),
-      G_VARIANT_TYPE ("(b)"));
-  if (value) {
-    g_variant_get (value, "(b)", &result);
+  GVariant *value = NULL;
+
+  INFO ("changing: %d", client->changing_composite_mode);
+
+  /* Only commit the change-composite-mode request once a time.
+   */
+  if (!client->changing_composite_mode) {
+    GST_SWITCH_CLIENT_LOCK_COMPOSITE_MODE (client);
+    if (!client->changing_composite_mode) {
+      client->changing_composite_mode = TRUE;
+      value = gst_switch_client_call_controller (client,
+	  "set_composite_mode", g_variant_new ("(i)", mode),
+	  G_VARIANT_TYPE ("(b)"));
+      if (value) {
+	g_variant_get (value, "(b)", &result);
+      }
+    }
+    GST_SWITCH_CLIENT_UNLOCK_COMPOSITE_MODE (client);
   }
+
   return result;
 }
 
@@ -457,6 +478,7 @@ gst_switch_client_set_compose_port (GstSwitchClient *client, gint port)
 {
   GstSwitchClientClass *klass = GST_SWITCH_CLIENT_CLASS (
       G_OBJECT_GET_CLASS (client));
+
   if (klass->set_compose_port)
     (*klass->set_compose_port) (client, port);
 }
@@ -487,6 +509,23 @@ gst_switch_client_add_preview_port (GstSwitchClient *client, gint port,
       G_OBJECT_GET_CLASS (client));
   if (klass->add_preview_port)
     (*klass->add_preview_port) (client, port, serve, type);
+}
+
+static void
+gst_switch_client_new_mode_online (GstSwitchClient *client, gint mode)
+{
+  /* When a new composite mode changed, the server will inform us that it's
+   * online, and when we receive that message, shall we release unset
+   * changing_composite_mode.
+   */
+  INFO ("new-mode: %d", mode);
+  if (client->changing_composite_mode) {
+    GST_SWITCH_CLIENT_LOCK_COMPOSITE_MODE (client);
+    if (client->changing_composite_mode) {
+      client->changing_composite_mode = FALSE;
+    }
+    GST_SWITCH_CLIENT_UNLOCK_COMPOSITE_MODE (client);
+  }
 }
 
 #if ENABLE_TEST
@@ -547,6 +586,17 @@ gst_switch_client__add_preview_port (GstSwitchClient *client,
   return NULL;
 }
 
+static GVariant *
+gst_switch_client__new_mode_online (GstSwitchClient *client,
+    GDBusConnection *connection, GVariant *parameters)
+{
+  gint mode = 0;
+  g_variant_get (parameters, "(i)", &mode);
+  //INFO ("compose: %d", port);
+  gst_switch_client_new_mode_online (client, mode);
+  return NULL;
+}
+
 static MethodTableEntry gst_switch_client_method_table[] = {
 #if ENABLE_TEST
   { "test", (MethodFunc) gst_switch_client__test },
@@ -555,6 +605,7 @@ static MethodTableEntry gst_switch_client_method_table[] = {
   { "set_compose_port", (MethodFunc) gst_switch_client__set_compose_port },
   { "set_encode_port", (MethodFunc) gst_switch_client__set_encode_port },
   { "add_preview_port", (MethodFunc) gst_switch_client__add_preview_port },
+  { "new_mode_online", (MethodFunc) gst_switch_client__new_mode_online },
   { NULL, NULL }
 };
 
