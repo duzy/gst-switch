@@ -24,13 +24,20 @@
  */
 
 #ifndef __LOG_UTILS_H__
+#define DEBUG 1
+#define ENABLE_LOW_RESOLUTION 1
+#if DEBUG
 #define INFO_PREFIX LOG_PREFIX"/%s:%d:info:"
 #define WARN_PREFIX LOG_PREFIX"/%s:%d:warning:"
 #define ERROR_PREFIX LOG_PREFIX"/%s:%d:error:"
 #define INFO(S, ...) g_print (INFO_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
 #define WARN(S, ...) g_print (WARN_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
 #define ERROR(S, ...) g_print (ERROR_PREFIX" "S"\n", __FILE__, __LINE__, ## __VA_ARGS__)
+#else
+#define INFO(S, ...) ((void) FALSE)
+#define WARN(S, ...) ((void) FALSE)
+#define ERROR(S, ...) ((void) FALSE)
+#endif//DEBUG
 #define LOW_RES_W 100 /* 160 */ /* 320 */
 #define LOW_RES_H 56  /* 120 */ /* 240 */
-#define ENABLE_LOW_RESOLUTION 1
 #endif//__LOG_UTILS_H__

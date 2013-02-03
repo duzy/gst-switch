@@ -460,6 +460,25 @@ gst_composite_prepare (GstComposite *composite)
   return TRUE;
 }
 
+static gboolean
+gst_composite_end_transition (GstComposite *composite)
+{
+  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+
+  if (composite->transition) {
+    GST_COMPOSITE_LOCK_TRANSITION (composite);
+    if (composite->transition) {
+      composite->transition = FALSE;
+      /*
+      INFO ("new mode %d, %dx%d transited", composite->mode,
+	  composite->width, composite->height);
+      */
+    }
+    GST_COMPOSITE_UNLOCK_TRANSITION (composite);
+  }
+  return FALSE;
+}
+
 static void
 gst_composite_alive (GstComposite *composite)
 {
@@ -470,11 +489,9 @@ gst_composite_alive (GstComposite *composite)
     if (composite->transition) {
       gst_worker_start (GST_WORKER (composite->output));
       gst_worker_start (GST_WORKER (composite->recorder));
-      composite->transition = FALSE;
-      /*
-      INFO ("new mode %d, %dx%d transited", composite->mode,
-	  composite->width, composite->height);
-      */
+      /* It's ok to discard the source ID here, the timeout is one-shot. */
+      g_timeout_add (1000, (GSourceFunc) gst_composite_end_transition,
+	  composite);
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }
