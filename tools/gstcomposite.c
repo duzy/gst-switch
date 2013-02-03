@@ -438,8 +438,8 @@ gst_composite_prepare (GstComposite *composite)
     composite->output = GST_WORKER (g_object_new (GST_TYPE_WORKER,
 	    "name", "output", NULL));
     composite->output->pipeline_func_data = composite;
-    composite->output->pipeline_func = (GstWorkerGetPipelineString)
-      gst_composite_get_output_string;
+    composite->output->pipeline_func =
+      (GstWorkerGetPipelineString) gst_composite_get_output_string;
     g_signal_connect (composite->output, "start-worker",
 	G_CALLBACK (gst_composite_start_output), composite);
     g_signal_connect (composite->output, "end-worker",

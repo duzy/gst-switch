@@ -507,18 +507,22 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
     GstState oldstate, newstate, pending;
     gst_message_parse_state_changed (message, &oldstate, &newstate, &pending);
     if (GST_ELEMENT (message->src) == worker->pipeline) {
-      if (verbose)
+      /*
+      if (verbose) {
 	g_print ("%s: state change from %s to %s\n", worker->name,
 	    gst_element_state_get_name (oldstate),
 	    gst_element_state_get_name (newstate));
+      }
+      */
 
       ret = gst_worker_pipeline_state_changed (worker,
 	  GST_STATE_TRANSITION (oldstate, newstate));
 
-      if (!ret && verbose)
-	g_print ("%s: UNKNOWN state change from %s to %s\n", worker->name,
+      if (!ret /*&& verbose*/) {
+	WARN ("%s: UNKNOWN state change from %s to %s\n", worker->name,
 	    gst_element_state_get_name (oldstate),
 	    gst_element_state_get_name (newstate));
+      }
     }
   } break;
   case GST_MESSAGE_BUFFERING:
@@ -656,6 +660,7 @@ gst_worker_reset (GstWorker *worker)
 
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
+#if 1
   if (worker->pipeline) {
     GST_WORKER_LOCK_PIPELINE (worker);
     if (worker->pipeline) {
@@ -677,6 +682,9 @@ gst_worker_reset (GstWorker *worker)
     }
     GST_WORKER_UNLOCK_PIPELINE (worker);
   }
+#else
+  ok = TRUE;
+#endif
 
   return ok;
 }
