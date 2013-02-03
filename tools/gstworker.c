@@ -514,11 +514,16 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
   } break;
   case GST_MESSAGE_TAG:
   {
+    /*
     GstTagList *tag_list;
 
     gst_message_parse_tag (message, &tag_list);
-    if (verbose)
-      g_print ("tag\n");
+
+    //if (verbose)
+    //  g_print ("tag\n");
+
+    gst_tag_list_unref (tag_list);
+    */
   } break;
   case GST_MESSAGE_STATE_CHANGED:
   {
