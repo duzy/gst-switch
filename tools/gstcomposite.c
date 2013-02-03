@@ -512,7 +512,7 @@ gst_composite_close_transition (GstComposite *composite)
       gst_worker_start (GST_WORKER (composite->output));
       gst_worker_start (GST_WORKER (composite->recorder));
       /* It's ok to discard the source ID here, the timeout is one-shot. */
-      g_timeout_add (300, (GSourceFunc) gst_composite_end_transition,
+      g_timeout_add (200, (GSourceFunc) gst_composite_end_transition,
 	  composite);
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);

@@ -995,7 +995,7 @@ gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
       gst_switch_ui_switch (ui, ke->keyval);
       break;
     case GDK_KEY_Tab: {
-      if (300 <= ke->time - ui->tabtime) {
+      if (200 <= ke->time - ui->tabtime) {
 	ui->tabtime = ke->time;
 	gst_switch_ui_next_compose_mode (ui);
       }
