@@ -113,6 +113,7 @@ gst_switch_ui_window_closed (GtkWidget * widget, GdkEvent * event,
   gst_switch_ui_quit (ui);
 }
 
+/*
 static gboolean
 gst_switch_ui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
     gpointer data)
@@ -121,6 +122,7 @@ gst_switch_ui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
   (void) ui;
   return FALSE;
 }
+*/
 
 static gboolean
 gst_switch_ui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
