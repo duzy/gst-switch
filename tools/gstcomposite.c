@@ -685,10 +685,10 @@ gst_composite_new_record (GstComposite *composite)
   return result;
 }
 
-static void
-gst_composite_error (GstComposite *composite)
+static gboolean
+gst_composite_retry_transition (GstComposite *composite)
 {
-  g_return_if_fail (GST_IS_COMPOSITE (composite));
+  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
   if (composite->transition) {
     GST_COMPOSITE_LOCK_TRANSITION (composite);
@@ -699,7 +699,17 @@ gst_composite_error (GstComposite *composite)
       gst_worker_start (GST_WORKER (composite));
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
-  } else if (composite->adjusting) {
+  }
+  
+  return FALSE;
+}
+
+static gboolean
+gst_composite_retry_adjustment (GstComposite *composite)
+{
+  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+
+  if (composite->adjusting) {
     GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
     if (composite->adjusting) {
       GstWorkerClass * worker_class;
@@ -711,6 +721,22 @@ gst_composite_error (GstComposite *composite)
       gst_worker_start (GST_WORKER (composite));
     }
     GST_COMPOSITE_UNLOCK_ADJUSTMENT (composite);
+  }
+
+  return FALSE;
+}
+
+static void
+gst_composite_error (GstComposite *composite)
+{
+  g_return_if_fail (GST_IS_COMPOSITE (composite));
+
+  if (composite->transition) {
+    g_timeout_add (10, (GSourceFunc) gst_composite_retry_transition,
+	composite);
+  } else if (composite->adjusting) {
+    g_timeout_add (10, (GSourceFunc) gst_composite_retry_adjustment,
+	composite);
   }
 }
 

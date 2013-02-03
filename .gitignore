@@ -2,7 +2,6 @@
 *.o
 *.lo
 *.la
-
 /INSTALL
 /Makefile
 /Makefile.in
@@ -32,12 +31,8 @@
 /tools/Makefile.in
 /tools/gst-switch-srv
 /tools/gst-switch-ui
+/tools/*.gcno
+/tools/*.gcda
 /test-switch-srv.out
 /tests/test-mix-source
 /tests/test-switch-server
-test-server-*.log
-*.dat
-*.data
-*.log
-*.gcno
-*.gcda

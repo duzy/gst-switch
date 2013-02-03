@@ -473,7 +473,7 @@ testcase_run (testcase *t)
 {
   g_mutex_init (&t->lock);
 
-  g_print ("Running %s\n", t->name);
+  g_print ("Running %s (%d seconds)\n", t->name, t->live_seconds);
   t->pass = TRUE; // assume everything is ok
   t->mainloop = g_main_loop_new (NULL, TRUE);
   if (testcase_launch_pipeline (t)) {
@@ -505,8 +505,10 @@ testcase_run (testcase *t)
     t->pass = t->pass && TRUE;
   }
 
-  if (t->free_name)
+  if (t->free_name) {
     g_free ((gpointer) t->name);
+    t->name = NULL;
+  }
 
   g_mutex_lock (&t->lock);
   g_thread_unref (t->thread);
@@ -1864,6 +1866,8 @@ test_fuzz_feed (gpointer data)
   sleep (5);
   const gchar *names[] = {
     "/dev/zero",
+    "./data/fuzz-input-01.data",
+    "./data/fuzz-input-02.data",
   };
   const gint len = sizeof (names) / sizeof (names[0]);
   srand (time (NULL));
@@ -1875,14 +1879,14 @@ test_fuzz_feed (gpointer data)
     source1.errors_are_ok = TRUE;
     source1.desc = g_string_new ("");
     g_string_append_printf (source1.desc, "filesrc location=%s ", names[rand () % len]);
-    g_string_append_printf (source1.desc, "! gdppay ");
+    //g_string_append_printf (source1.desc, "! gdppay ");
     g_string_append_printf (source1.desc, "! tcpclientsink port=3000 ");
 
     source2.live_seconds = seconds;
     source2.errors_are_ok = TRUE;
     source2.desc = g_string_new ("");
     g_string_append_printf (source2.desc, "filesrc location=%s ", names[rand () % len]);
-    g_string_append_printf (source2.desc, "! gdppay ");
+    //g_string_append_printf (source2.desc, "! gdppay ");
     g_string_append_printf (source2.desc, "! tcpclientsink port=4000 ");
 
     testcase_run_thread (&source1);
