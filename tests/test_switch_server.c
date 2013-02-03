@@ -37,7 +37,6 @@
 
 #define TEST_RECORDING_DATA 0
 #define TEST_DISPLAY_VIDEO_RESULT 0
-#define DUMP_DEBUG_MESSAGES_TO_FILES 1
 #if TEST_DISPLAY_VIDEO_RESULT
 #define VIDEOSINK "xvimagesink"
 #else
@@ -68,6 +67,7 @@ static struct {
   gboolean enable_test_multiple_clients;
   gboolean test_external_server;
   gboolean test_external_ui;
+  gboolean print_debug_messages;
 } opts = {
   .enable_test_controller		= FALSE,
   .enable_test_composite_mode		= FALSE,
@@ -80,6 +80,7 @@ static struct {
   .enable_test_checking_timestamps	= FALSE,
   .test_external_server			= FALSE,
   .test_external_ui			= FALSE,
+  .print_debug_messages			= FALSE,
 };
 
 static GOptionEntry option_entries[] = {
@@ -95,6 +96,7 @@ static GOptionEntry option_entries[] = {
   {"enable-test-multiple-clients",	0, 0, G_OPTION_ARG_NONE, &opts.enable_test_multiple_clients,	"Enable testing multiple clients",   NULL},
   {"test-external-server",		0, 0, G_OPTION_ARG_NONE, &opts.test_external_server,		"Testing external server",           NULL},
   {"test-external-ui",			0, 0, G_OPTION_ARG_NONE, &opts.test_external_ui,		"Testing external ui",               NULL},
+  {"print-debug-messages",		0, 0, G_OPTION_ARG_NONE, &opts.print_debug_messages,		"Print debug messages",              NULL},
   {NULL}
 };
 
@@ -364,14 +366,14 @@ launch (const gchar *name, ...)
   g_ptr_array_add (array, NULL);
   argv = (gchar **) g_ptr_array_free (array, FALSE);
 
-#if DUMP_DEBUG_MESSAGES_TO_FILES
-  ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
-      NULL, NULL, &pid, &fd_in, &fd_out, &fd_err, &error);
-#else
-  (void) fd_in, (void) fd_out, (void) fd_err;
-  ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
-      NULL, NULL, &pid, NULL, NULL, NULL, &error);
-#endif
+  if (!opts.print_debug_messages) {
+    ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
+	NULL, NULL, &pid, &fd_in, &fd_out, &fd_err, &error);
+  } else {
+    (void) fd_in, (void) fd_out, (void) fd_err;
+    ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
+	NULL, NULL, &pid, NULL, NULL, NULL, &error);
+  }
 
   g_free (argv);
 
