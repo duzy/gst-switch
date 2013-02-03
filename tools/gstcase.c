@@ -100,7 +100,7 @@ gst_case_dispose (GstCase * cas)
     cas->branch = NULL;
   }
 
-  INFO ("dispose %p", cas);
+  //INFO ("dispose %p", cas);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (cas));
 }
 
