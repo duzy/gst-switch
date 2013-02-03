@@ -517,7 +517,7 @@ gst_switch_client_new_mode_online (GstSwitchClient *client, gint mode)
   GstSwitchClientClass *klass = GST_SWITCH_CLIENT_CLASS (
       G_OBJECT_GET_CLASS (client));
 
-  INFO ("New composite mode: %d", mode);
+  //INFO ("New composite mode: %d", mode);
 
   /* When a new composite mode changed, the server will inform us that it's
    * online, and when we receive that message, shall we release unset
