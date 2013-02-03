@@ -32,6 +32,7 @@
 #include <errno.h>
 #include <string.h>
 #include "../tools/gstswitchclient.h"
+#include "../tools/gstcomposite.h"
 #include "../tools/gstcase.h"
 #include "../logutils.h"
 
@@ -562,6 +563,7 @@ typedef struct _testclient {
   gint encode_port0;
   gint encode_port;
   gint encode_port_count;
+  gint new_mode_count;
   gint preview_port_1;
   gint preview_port_2;
   gint preview_port_3;
@@ -764,6 +766,15 @@ testclient_set_encode_port (testclient *client, gint port)
 }
 
 static void
+testclient_new_mode (testclient *client, gint mode)
+{
+  //INFO ("set-encode-port: %d", port);
+  client->new_mode_count += 1;
+  g_assert_cmpint (mode, >=, COMPOSE_MODE_0);
+  g_assert_cmpint (mode, <=, COMPOSE_MODE_3);
+}
+
+static void
 testclient_set_audio_port (testclient *client, gint port)
 {
   //INFO ("set-audio-port: %d", port);
@@ -884,6 +895,8 @@ testclient_class_init (testclientClass *klass)
     testclient_set_audio_port;
   client_class->add_preview_port = (GstSwitchClientAddPreviewPortFunc)
     testclient_add_preview_port;
+  client_class->new_mode_online = (GstSwitchClientNewModeOnlineFunc)
+    testclient_new_mode;
 }
 
 static gpointer
@@ -1198,7 +1211,8 @@ test_composite_mode (void)
 
   sleep (10), testclient_end (client);
   testclient_join (client);
-  g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
+  //g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
+  g_assert_cmpint (client->new_mode_count, ==, client->expected_compose_count);
   g_object_unref (client);
   g_assert_cmpint (clientcount, ==, 0);
 

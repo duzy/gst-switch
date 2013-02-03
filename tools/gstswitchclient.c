@@ -514,11 +514,15 @@ gst_switch_client_add_preview_port (GstSwitchClient *client, gint port,
 static void
 gst_switch_client_new_mode_online (GstSwitchClient *client, gint mode)
 {
+  GstSwitchClientClass *klass = GST_SWITCH_CLIENT_CLASS (
+      G_OBJECT_GET_CLASS (client));
+
+  INFO ("New composite mode: %d", mode);
+
   /* When a new composite mode changed, the server will inform us that it's
    * online, and when we receive that message, shall we release unset
    * changing_composite_mode.
    */
-  INFO ("New composite mode: %d", mode);
   if (client->changing_composite_mode) {
     GST_SWITCH_CLIENT_LOCK_COMPOSITE_MODE (client);
     if (client->changing_composite_mode) {
@@ -526,6 +530,9 @@ gst_switch_client_new_mode_online (GstSwitchClient *client, gint mode)
     }
     GST_SWITCH_CLIENT_UNLOCK_COMPOSITE_MODE (client);
   }
+
+  if (klass->new_mode_online)
+    (*klass->new_mode_online) (client, mode);
 }
 
 #if ENABLE_TEST
