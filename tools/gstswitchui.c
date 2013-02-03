@@ -992,9 +992,12 @@ gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
     case GDK_KEY_b:
       gst_switch_ui_switch (ui, ke->keyval);
       break;
-    case GDK_KEY_Tab:
-      gst_switch_ui_next_compose_mode (ui);
-      break;
+    case GDK_KEY_Tab: {
+      if (300 <= ke->time - ui->tabtime) {
+	ui->tabtime = ke->time;
+	gst_switch_ui_next_compose_mode (ui);
+      }
+    } break;
     case GDK_KEY_Escape:
       gst_switch_ui_next_compose_off (ui);
       break;

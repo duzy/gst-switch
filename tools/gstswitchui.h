@@ -68,6 +68,7 @@ struct _GstSwitchUI
   GMutex compose_lock;
   GstVideoDisp *compose;
 
+  guint32 tabtime;
   gint compose_mode;
   gint timer;
 };
