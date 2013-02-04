@@ -310,6 +310,26 @@ gst_case_get_pipeline_string (GstCase * cas)
   return desc;
 }
 
+static void
+gst_case_client_socket_added (GstElement *element,
+    GSocket *socket, GstCase *cas)
+{
+  g_return_if_fail (G_IS_SOCKET (socket));
+
+  INFO ("client-socket-added: %d", g_socket_get_fd (socket));
+}
+
+static void
+gst_case_client_socket_removed (GstElement *element,
+    GSocket *socket, GstCase *cas)
+{
+  g_return_if_fail (G_IS_SOCKET (socket));
+
+  INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
+
+  g_socket_close (socket, NULL);
+}
+
 static gboolean
 gst_case_prepare (GstCase *cas)
 {
@@ -334,7 +354,18 @@ gst_case_prepare (GstCase *cas)
   case GST_CASE_BRANCH_A:
   case GST_CASE_BRANCH_B:
   case GST_CASE_BRANCH_a:
-  case GST_CASE_BRANCH_p:
+  case GST_CASE_BRANCH_p: {
+    GstElement *sink = gst_worker_get_element_unlocked (worker, "sink");
+
+    g_return_val_if_fail (GST_IS_ELEMENT (sink), FALSE);
+
+    g_signal_connect (sink, "client-added",
+	G_CALLBACK (gst_case_client_socket_added), cas);
+
+    g_signal_connect (sink, "client-socket-removed",
+	G_CALLBACK (gst_case_client_socket_removed), cas);
+  } break;
+
   default:
     break;
   }

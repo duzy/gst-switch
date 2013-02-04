@@ -1141,7 +1141,7 @@ test_composite_mode (void)
 
   client = TESTCLIENT (g_object_new (TYPE_TESTCLIENT, NULL));
   client->seconds = seconds;
-  client->enable_test_sinks = FALSE;
+  client->enable_test_sinks = TRUE;
   client->enable_thread_test1 = TRUE;
   client->enable_thread_test2 = TRUE;
   client->enable_thread_test3 = TRUE;

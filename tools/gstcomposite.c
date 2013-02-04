@@ -407,6 +407,15 @@ gst_composite_get_output_string (GstWorker *worker,
 }
 
 static void
+gst_composite_output_client_socket_added (GstElement *element,
+    GSocket *socket, GstComposite *composite)
+{
+  g_return_if_fail (G_IS_SOCKET (socket));
+
+  INFO ("client-socket-added: %d", g_socket_get_fd (socket));
+}
+
+static void
 gst_composite_output_client_socket_removed (GstElement *element,
     GSocket *socket, GstComposite *composite)
 {
@@ -429,6 +438,9 @@ gst_composite_prepare_output (GstWorker *worker, GstComposite *composite)
   sink = gst_worker_get_element_unlocked (worker, "sink");
 
   g_return_if_fail (GST_IS_ELEMENT (sink));
+
+  g_signal_connect (sink, "client-added",
+      G_CALLBACK (gst_composite_output_client_socket_added), composite);
 
   g_signal_connect (sink, "client-socket-removed",
       G_CALLBACK (gst_composite_output_client_socket_removed), composite);
