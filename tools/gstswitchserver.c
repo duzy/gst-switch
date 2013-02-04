@@ -63,7 +63,7 @@ GstSwitchServerOpts opts = {
   GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
 };
 
-gboolean verbose;
+gboolean verbose = FALSE;
 
 static GOptionEntry entries[] = {
   {"verbose",		'v', 0,	G_OPTION_ARG_NONE,   &verbose,

@@ -295,7 +295,7 @@ gst_worker_stop_force (GstWorker *worker, gboolean force)
 }
 
 GstElement *
-gst_worker_get_element_unsafe (GstWorker *worker, const gchar *name)
+gst_worker_get_element_unlocked (GstWorker *worker, const gchar *name)
 {
   g_return_val_if_fail (GST_IS_WORKER (worker), NULL);
 
@@ -308,7 +308,7 @@ gst_worker_get_element (GstWorker *worker, const gchar *name)
   GstElement *element = NULL;
 
   GST_WORKER_LOCK_PIPELINE (worker);
-  element = gst_worker_get_element_unsafe (worker, name);
+  element = gst_worker_get_element_unlocked (worker, name);
   GST_WORKER_UNLOCK_PIPELINE (worker);
   return element;
 }

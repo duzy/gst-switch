@@ -1118,7 +1118,7 @@ test_controller (void)
 static void
 test_composite_mode (void)
 {
-  enum { seconds = 60 * 5 };
+  enum { seconds = 60 * 3 };
   GPid server_pid = 0;
   testclient *client;
   testcase video_source1 = { "test-video-source1", 0 };

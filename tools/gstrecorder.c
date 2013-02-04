@@ -194,9 +194,33 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
   return desc;
 }
 
+static void
+gst_recorder_client_socket_removed (GstElement *element,
+    GSocket *socket, GstRecorder *rec)
+{
+  g_return_if_fail (G_IS_SOCKET (socket));
+
+  INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
+
+  g_socket_close (socket, NULL);
+  //g_object_unref (socket);
+}
+
 static gboolean
 gst_recorder_prepare (GstRecorder *rec)
 {
+  GstElement *tcp_sink = NULL;
+
+  g_return_val_if_fail (GST_IS_RECORDER (rec), FALSE);
+
+  tcp_sink = gst_worker_get_element_unlocked (GST_WORKER (rec), "tcp_sink");
+
+  g_return_val_if_fail (GST_IS_ELEMENT (tcp_sink), FALSE);
+
+  g_signal_connect (tcp_sink, "client-socket-removed",
+      G_CALLBACK (gst_recorder_client_socket_removed), rec);
+
+  gst_object_unref (tcp_sink);
   return TRUE;
 }
 

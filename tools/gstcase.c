@@ -322,7 +322,7 @@ gst_case_prepare (GstCase *cas)
       ERROR ("no stream for new case");
       return FALSE;
     }
-    source = gst_worker_get_element_unsafe (worker, "source");
+    source = gst_worker_get_element_unlocked (worker, "source");
     if (!source) {
       ERROR ("no source");
       return FALSE;

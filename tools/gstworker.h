@@ -97,7 +97,7 @@ gboolean gst_worker_stop_force (GstWorker *worker, gboolean force);
 
 #define gst_worker_stop(worker) (gst_worker_stop_force ((worker), FALSE))
 
-GstElement *gst_worker_get_element_unsafe (GstWorker *, const gchar *);
+GstElement *gst_worker_get_element_unlocked (GstWorker *, const gchar *);
 GstElement *gst_worker_get_element (GstWorker *, const gchar *name);
 
 #endif//__GST_WORKER_H__by_Duzy_Chan__

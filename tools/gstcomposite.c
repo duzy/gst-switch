@@ -407,6 +407,36 @@ gst_composite_get_output_string (GstWorker *worker,
 }
 
 static void
+gst_composite_output_client_socket_removed (GstElement *element,
+    GSocket *socket, GstComposite *composite)
+{
+  g_return_if_fail (G_IS_SOCKET (socket));
+
+  INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
+
+  g_socket_close (socket, NULL);
+  //g_object_unref (socket);
+}
+
+static void
+gst_composite_prepare_output (GstWorker *worker, GstComposite *composite)
+{
+  GstElement *sink = NULL;
+
+  g_return_if_fail (GST_IS_WORKER (worker));
+  g_return_if_fail (GST_IS_COMPOSITE (composite));
+
+  sink = gst_worker_get_element_unlocked (worker, "sink");
+
+  g_return_if_fail (GST_IS_ELEMENT (sink));
+
+  g_signal_connect (sink, "client-socket-removed",
+      G_CALLBACK (gst_composite_output_client_socket_removed), composite);
+
+  gst_object_unref (sink);
+}
+
+static void
 gst_composite_start_output (GstWorker *worker, GstComposite *composite)
 {
   g_signal_emit (composite, gst_composite_signals[SIGNAL_START_OUTPUT], 0);
@@ -441,6 +471,8 @@ gst_composite_prepare (GstComposite *composite)
     composite->output->pipeline_func_data = composite;
     composite->output->pipeline_func =
       (GstWorkerGetPipelineString) gst_composite_get_output_string;
+    g_signal_connect (composite->output, "prepare-worker",
+	G_CALLBACK (gst_composite_prepare_output), composite);
     g_signal_connect (composite->output, "start-worker",
 	G_CALLBACK (gst_composite_start_output), composite);
     g_signal_connect (composite->output, "end-worker",
