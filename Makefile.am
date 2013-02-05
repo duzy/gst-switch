@@ -5,7 +5,7 @@ EXTRA_DIST = autogen.sh
 ACLOCAL_AMFLAGS = -I m4
 
 include tests/names.mk
-test: clean-test-data $(TESTS)
+test: clean-test-instances clean-test-data $(TESTS)
 demo: $(UI_TESTS)
 
 show-tests:
@@ -16,10 +16,12 @@ show-tests:
 $(TESTS) $(UI_TESTS):
 	@$(MAKE) -C tests $@
 
+clean-test-instances:
+	pkill gst-switch-srv || true
+
 clean-test-data:
-	rm -f "record "*" "*.dat
-	rm -f "test-recording "*" "*.data
-	rm -f test-server-*.log
+	rm -f "tests/test-recording "*" "*.data
+	rm -f "tests/test-server-"*.log
 
 if GPROF_ENABLED
 perf:
