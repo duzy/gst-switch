@@ -1115,6 +1115,7 @@ test_controller (void)
       g_assert_cmpint (client->compose_port, ==, client->compose_port0);
       g_assert_cmpint (client->compose_port_count, >=, 1);
       g_assert_cmpint (client->encode_port, ==, client->encode_port0);
+      g_assert_cmpint (client->encode_port_count, >=, 1);
       g_assert_cmpint (client->audio_port, !=, 0);
       g_assert_cmpint (client->audio_port_count, >=, 1);
       g_assert_cmpint (client->preview_port_1, !=, 0);
@@ -1154,7 +1155,7 @@ test_controller (void)
 static void
 test_composite_mode (void)
 {
-  enum { seconds = 60 * 3 };
+  enum { seconds = 60 * 10 };
   GPid server_pid = 0;
   testclient *client;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -1237,6 +1238,7 @@ test_composite_mode (void)
       g_assert_cmpint (client->compose_port, ==, client->compose_port0);
       g_assert_cmpint (client->compose_port_count, >=, 1);
       g_assert_cmpint (client->encode_port, ==, client->encode_port0);
+      g_assert_cmpint (client->encode_port_count, >=, 1);
       g_assert_cmpint (client->audio_port, ==, client->audio_port0);
       g_assert_cmpint (client->audio_port_count, >=, 1);
       g_assert_cmpint (client->preview_port_1, !=, 0);
