@@ -10,7 +10,7 @@ test_switch_server_LDADD = $(GST_LIBS) $(GIO_LIBS) $(LIBM)
 
 include names.mk
 $(TESTS) $(UI_TESTS): clean-test-instances
-	@$(TESTWRAP) ./test-switch-server $(TESTARGS) --enable-$@ || true
+	$(TESTWRAP) ./test-switch-server $(TESTARGS) --enable-$@ || true
 
 clean-test-instances:
 	pkill gst-switch-srv || true

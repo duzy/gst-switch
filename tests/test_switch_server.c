@@ -429,10 +429,24 @@ launch (const gchar *name, ...)
 static GPid
 launch_server ()
 {
-  GPid pid = launch ("../tools/gst-switch-srv", "-v",
+  GPid pid = launch (
+      "/usr/bin/valgrind",
+      //"--leak-check=full",
+      //"--show-reachable=yes",
+      //"--track-origins=yes",
+      "--tool=memcheck",
+      "--leak-check=full",
+      "--leak-resolution=high",
+      "--num-callers=20",
+      "--log-file=test-switch-server-valgrind.log",
+      "--suppressions=gst.supp",
+      "--suppressions=gtk.suppression",
+      
+      "../tools/gst-switch-srv", "-v",
       "--gst-debug-no-color",
       "--record=test-recording.data",
       NULL);
+  sleep (5);
   INFO ("server %d", pid);
   return pid;
 }
