@@ -235,8 +235,8 @@ gst_switch_server_end_case (GstCase *cas, GstSwitchServer *srv)
   switch (cas->type) {
   default:
     srv->cases = g_list_remove (srv->cases, cas);
-    INFO ("Removed %s (%p) (%d cases left)", GST_WORKER (cas)->name, cas,
-	g_list_length (srv->cases));
+    INFO ("Removed %s (%p, %d) (%d cases left)", GST_WORKER (cas)->name,
+	cas, G_OBJECT (cas)->ref_count,	g_list_length (srv->cases));
     caseport = cas->sink_port;
     g_object_unref (cas);
     break;

@@ -424,7 +424,6 @@ gst_composite_output_client_socket_removed (GstElement *element,
   INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
 
   g_socket_close (socket, NULL);
-  //g_object_unref (socket);
 }
 
 static void
