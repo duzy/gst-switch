@@ -36,3 +36,4 @@
 /test-switch-srv.out
 /tests/test-mix-source
 /tests/test-switch-server
+/tests/test-switch-server-valgrind.log
