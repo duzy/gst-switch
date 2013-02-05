@@ -5,7 +5,7 @@ EXTRA_DIST = autogen.sh
 ACLOCAL_AMFLAGS = -I m4
 
 include tests/names.mk
-test: $(TESTS)
+test: clean-test-data $(TESTS)
 demo: $(UI_TESTS)
 
 show-tests:
