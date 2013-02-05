@@ -94,6 +94,8 @@ g_socket_input_stream_finalize (GObject *object)
 
   if (stream->priv->socket) {
     GError *error = NULL;
+    g_print ("%s:%d: %d\n", __FILE__, __LINE__,
+	g_socket_get_fd (stream->priv->socket));
     g_socket_close (stream->priv->socket, &error);
     if (error) {
       //ERROR ("%s", error->message);
