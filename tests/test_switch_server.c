@@ -737,7 +737,7 @@ testclient_set_compose_port (testclient *client, gint port)
   client->compose_port = port;
   client->compose_port_count += 1;
   g_assert_cmpint (client->compose_port, !=, 0);
-  g_assert_cmpint (client->compose_port0, ==, client->compose_port);
+  //g_assert_cmpint (client->compose_port0, ==, client->compose_port);
   if (client->enable_test_sinks) {
     testcase *sink0 = g_new0 (testcase, 1);
     sink0->live_seconds = client->sink1.live_seconds;
@@ -764,7 +764,7 @@ testclient_set_encode_port (testclient *client, gint port)
   client->encode_port = port;
   client->encode_port_count += 1;
   g_assert_cmpint (client->encode_port, !=, 0);
-  g_assert_cmpint (client->encode_port0, ==, client->encode_port);
+  //g_assert_cmpint (client->encode_port0, ==, client->encode_port);
 }
 
 static void
@@ -985,7 +985,8 @@ testclient_join (testclient *client)
   testcase_join (&client->sink3);
   testcase_join (&client->sink4);
 
-  INFO ("end test client");
+  g_assert_cmpint (client->encode_port0, ==, client->encode_port);
+  g_assert_cmpint (client->compose_port0, ==, client->compose_port);
 
   g_assert (client->sink1.pass);
   g_assert (client->sink2.pass);
