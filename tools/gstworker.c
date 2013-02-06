@@ -389,12 +389,16 @@ gst_worker_handle_info (GstWorker *worker, GError * error,
 static void
 gst_worker_state_null_to_ready (GstWorker *worker)
 {
+  g_return_if_fail (GST_IS_WORKER (worker));
+
   gst_element_set_state (worker->pipeline, GST_STATE_PAUSED);
 }
 
 static void
 gst_worker_state_ready_to_paused (GstWorker *worker)
 {
+  g_return_if_fail (GST_IS_WORKER (worker));
+
   if (!worker->paused_for_buffering) {
     gst_element_set_state (worker->pipeline, GST_STATE_PLAYING);
   }
