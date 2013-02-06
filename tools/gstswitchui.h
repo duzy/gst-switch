@@ -29,6 +29,8 @@
 #include <gtk/gtk.h>
 #include "gstswitchclient.h"
 #include "gstworker.h"
+#include "gstvideodisp.h"
+#include "gstaudiovisual.h"
 
 #define GST_TYPE_SWITCH_UI (gst_switch_ui_get_type ())
 #define GST_SWITCH_UI(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_UI, GstSwitchUI))
@@ -38,8 +40,6 @@
 
 typedef struct _GstSwitchUI GstSwitchUI;
 typedef struct _GstSwitchUIClass GstSwitchUIClass;
-typedef struct _GstVideoDisp GstVideoDisp;
-typedef struct _GstAudioVisual GstAudioVisual;
 
 struct _GstSwitchUI
 {

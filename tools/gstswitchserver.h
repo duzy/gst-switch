@@ -39,7 +39,6 @@
 #define GST_SWITCH_MIN_SINK_PORT 1
 #define GST_SWITCH_MAX_SINK_PORT 65535
 
-typedef struct _GstSwitchServer GstSwitchServer;
 typedef struct _GstSwitchServerClass GstSwitchServerClass;
 typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
@@ -76,7 +75,7 @@ struct _GstSwitchServer
   GThread *controller_thread;
   GSocket *controller_socket;
   gint controller_port;
-  GstSwitchController * controller;
+  GstSwitchController *controller;
 
   GMutex alloc_port_lock;
   gint alloc_port_count;
