@@ -5,4 +5,4 @@ compiler:
 before_install:
  - echo 'yes' | sudo add-apt-repository ppa:gstreamer-developers/ppa
  - sudo apt-get update
- - sudo apt-get install gstreamer1.0 gst-plugins-good1.0 gst-plugins-bad1.0 gst-plugins-ugly1.0
+ - sudo apt-get install gstreamer1.0.*
