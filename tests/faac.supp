@@ -1,0 +1,49 @@
+{
+   <valgrind doesn't like faac cond-1>
+   Memcheck:Cond
+   obj:/usr/lib/libfaac.so.0.0.0
+   fun:*
+}
+{
+   <valgrind doesn't like faac value8-1>
+   Memcheck:Value8
+   obj:/usr/lib/libfaac.so.0.0.0
+   fun:*
+}
+{
+   <valgrind doesn't like faac cond-2>
+   Memcheck:Cond
+   ...
+   fun:gst_faac_handle_frame
+   ...
+   fun:start_thread
+   fun:clone
+}
+{
+   <valgrind doesn't like faac value8-2>
+   Memcheck:Value8
+   ...
+   fun:gst_faac_handle_frame
+   ...
+   fun:start_thread
+   fun:clone
+}
+{
+   <valgrind doesn't like faac leak-1>
+   Memcheck:Leak
+   ...
+   fun:gst_faac_set_format
+   ...
+   fun:start_thread
+   fun:clone
+}
+{
+   <valgrind doesn't like vp8 leak-1>
+   Memcheck:Leak
+   ...
+   fun:vp8e_init
+   ...
+   fun:start_thread
+   fun:clone
+}
+
