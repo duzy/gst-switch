@@ -176,12 +176,10 @@ gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
   if (gtk_widget_get_state_flags (widget) & GTK_STATE_FLAG_SELECTED) {
     cairo_set_source_rgba (cr, 0.25, 0.25, 0.85, 0.85);
   } else if (data && GST_IS_VIDEO_DISP (data)) {
-    GstVideoDisp *disp = GST_VIDEO_DISP (data);
     if (gtk_style_context_has_class (style, "active_video_frame")) {
       cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
     } else goto default_color;
   } else if (data && GST_IS_AUDIO_VISUAL (data)) {
-    GstAudioVisual *visual = GST_AUDIO_VISUAL (data);
     if (gtk_style_context_has_class (style, "active_audio_frame")) {
       cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
     } else goto default_color;

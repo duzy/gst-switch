@@ -275,9 +275,12 @@ gst_audio_visual_message (GstAudioVisual *visual, GstMessage * message)
 	INFO ("endtime: %" GST_TIME_FORMAT ", channels: %d",
 	    GST_TIME_ARGS (endtime), channels);
 	*/
-      } else {
+      } else if (list_rms) {
 	INFO ("endtime: %" GST_TIME_FORMAT ", (%s) ",
 	    GST_TIME_ARGS (endtime), G_VALUE_TYPE_NAME (list_rms));
+      } else {
+	INFO ("endtime: %" GST_TIME_FORMAT ", ->NULL<- ",
+	    GST_TIME_ARGS (endtime));
       }
     }
   }

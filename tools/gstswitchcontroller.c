@@ -423,7 +423,8 @@ gst_switch_controller_init (GstSwitchController * controller)
   /* Errors Handling */
  error_new_server:
   {
-    ERROR ("%s", error->message);
+    if (error)
+      ERROR ("%s", error->message);
     return;
   }
 }

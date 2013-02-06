@@ -184,7 +184,9 @@ static void gst_conv_bin_autosink (GstConvBin * conv)
     gst_pad_set_active (srcpad, TRUE);
 
     if (gst_element_add_pad (GST_ELEMENT (conv), srcpad)) {
-      GST_OBJECT_FLAG_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED);
+      if (basepad) {
+        GST_OBJECT_FLAG_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED);
+      }
     }
   }
   
