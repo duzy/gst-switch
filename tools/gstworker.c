@@ -180,7 +180,7 @@ gst_worker_create_pipeline (GstWorker *worker)
 
   pipeline = (GstElement *) gst_parse_launch_full (desc->str, context,
       GST_PARSE_FLAG_NONE, &error);
-  g_string_free (desc, FALSE);
+  g_string_free (desc, TRUE);
 
   if (error == NULL) {
     goto end;
