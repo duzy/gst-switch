@@ -403,7 +403,6 @@ gst_switch_controller_init (GstSwitchController * controller)
       &error);
 
   g_assert_no_error (error);
-  g_object_unref (auth_observer);
   g_free (guid);
 
   if (controller->bus_server == NULL)
@@ -421,6 +420,8 @@ gst_switch_controller_init (GstSwitchController * controller)
 
   g_dbus_server_start (controller->bus_server);
 
+  g_object_unref(auth_observer);
+
   // TODO: singleton object
   return;
 
@@ -436,7 +437,10 @@ gst_switch_controller_init (GstSwitchController * controller)
 static void
 gst_switch_controller_finalize (GstSwitchController * controller)
 {
+  INFO ("gst_switch_controller finalized");
   if (controller->bus_server) {
+    g_dbus_server_stop (controller->bus_server);
+    g_assert(!g_dbus_server_is_active (controller->bus_server));
     g_object_unref (controller->bus_server);
     controller->bus_server = NULL;
   }
@@ -447,7 +451,6 @@ gst_switch_controller_finalize (GstSwitchController * controller)
     (*G_OBJECT_CLASS (gst_switch_controller_parent_class)->finalize)
       (G_OBJECT (controller));
 
-  INFO ("Controller finalized");
 }
 
 static GVariant *

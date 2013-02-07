@@ -68,44 +68,53 @@ gst_worker_init (GstWorker *worker)
 
   g_mutex_init (&worker->pipeline_lock);
 
-  //INFO ("init (%p)", worker);
+  INFO ("gst_worker init %p", worker);
 }
 
 static void
 gst_worker_dispose (GstWorker *worker)
 {
-  if (worker->server) {
-    g_object_unref (worker->server);
-    worker->server = NULL;
-  }
-
-  if (worker->watch) {
-    g_source_remove (worker->watch);
-  }
-
-  if (worker->bus) {
-    gst_object_unref (worker->bus);
-    worker->bus = NULL;
-  }
-
+  INFO ("gst_worker dispose %p", worker);
   if (worker->pipeline) {
     gst_element_set_state (worker->pipeline, GST_STATE_NULL);
-    gst_object_unref (worker->pipeline);
-    worker->pipeline = NULL;
+  }
+  if (worker->bus) {
+    gst_bus_set_flushing (worker->bus, TRUE);
   }
 
-  if (worker->pipeline_string) {
-    g_string_free (worker->pipeline_string, FALSE);
-    worker->pipeline_string = NULL;
-  }
-
-  //INFO ("dispose %p", worker);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (worker));
 }
 
 static void
 gst_worker_finalize (GstWorker *worker)
 {
+  if (worker->watch) {
+    g_source_remove (worker->watch);
+    worker->watch = 0;
+  }
+  if (worker->pipeline) {
+    INFO("pipeline ref %d", GST_OBJECT_REFCOUNT(worker->pipeline));
+    gst_object_unref (worker->pipeline);
+    worker->pipeline = NULL;
+  }
+  if (worker->bus) {
+    INFO("bus ref %d", GST_OBJECT_REFCOUNT(worker->bus));
+    gst_object_unref (worker->bus);
+    worker->bus = NULL;
+  }
+
+  if (worker->server) {
+    g_object_unref (worker->server);
+    worker->server = NULL;
+  }
+
+  if (worker->pipeline_string) {
+    g_string_free (worker->pipeline_string, TRUE);
+    worker->pipeline_string = NULL;
+  }
+
+
+  INFO ("gst_worker finalize %p", worker);
   g_mutex_clear (&worker->pipeline_lock);
 
   g_free (worker->name);
@@ -199,9 +208,12 @@ gst_worker_create_pipeline (GstWorker *worker)
 
     if (retry) {
       gst_parse_context_free (context);
+      context = NULL;
+
+      g_assert(GST_OBJECT_REFCOUNT(pipeline) == 1);
       gst_object_unref (pipeline);
       pipeline = NULL;
-      context = NULL;
+
       goto create_pipeline;
     }
   } else {
@@ -209,6 +221,7 @@ gst_worker_create_pipeline (GstWorker *worker)
   }
 
   if (pipeline) {
+    g_assert(GST_OBJECT_REFCOUNT(pipeline) == 1);
     gst_object_unref (pipeline);
     pipeline = NULL;
   }
@@ -642,7 +655,7 @@ gst_worker_prepare_unsafe (GstWorker *worker)
   if (!worker->pipeline)
     goto error_create_pipeline;
 
-  //gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
+  gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
 
   worker->bus = gst_pipeline_get_bus (GST_PIPELINE (worker->pipeline));
   if (!worker->bus)
@@ -653,9 +666,6 @@ gst_worker_prepare_unsafe (GstWorker *worker)
 
   if (!worker->watch)
     goto error_add_watch;
-
-  //gst_object_unref (worker->bus);
-  //worker->bus = NULL;
 
   if (workerclass->prepare && !workerclass->prepare (worker))
     goto error_prepare;
@@ -684,13 +694,16 @@ gst_worker_prepare_unsafe (GstWorker *worker)
  error_prepare:
   {
     g_source_remove (worker->watch);
+    worker->watch = 0;
   error_add_watch:
+    g_assert(GST_OBJECT_REFCOUNT(worker->bus) == 1);
     gst_object_unref (worker->bus);
+    worker->bus = NULL;
   error_get_bus:
+    g_assert(GST_OBJECT_REFCOUNT(worker->pipeline) == 1);
     gst_object_unref (worker->pipeline);
     worker->pipeline = NULL;
-    worker->bus = NULL;
-    worker->watch = 0;
+
     ERROR ("%s: failed to prepare", worker->name);
     //GST_WORKER_UNLOCK_PIPELINE (worker);
     return FALSE;
@@ -721,37 +734,30 @@ gst_worker_reset (GstWorker *worker)
   //INFO ("%s", __FUNCTION__);
 
 #if 1
-  if (worker->pipeline) {
+  if (worker) {
     GST_WORKER_LOCK_PIPELINE (worker);
     if (worker->pipeline) {
-      if (worker->watch) {
-	g_source_remove (worker->watch);
-      }
-
-      //INFO ("%s", __FUNCTION__);
-
-      if (worker->bus) {
-	g_assert_cmpint (G_OBJECT (worker->bus)->ref_count, ==, 2);
-	gst_bus_set_flushing (worker->bus, TRUE);
-	gst_object_unref (worker->bus);
-      }
-
-      //INFO ("%s", __FUNCTION__);
-
-      if (worker->pipeline) {
-	gst_element_set_state (worker->pipeline, GST_STATE_NULL);
-	g_assert_cmpint (G_OBJECT (worker->pipeline)->ref_count, ==, 1);
-	gst_object_unref (worker->pipeline);
-      }
-
-      //INFO ("%s", __FUNCTION__);
-
-      worker->pipeline = NULL;
-      worker->bus = NULL;
-      worker->watch = 0;
-
-      ok = gst_worker_prepare_unsafe (worker);
+      gst_element_set_state (worker->pipeline, GST_STATE_NULL);
     }
+    if (worker->bus) {
+      gst_bus_set_flushing (worker->bus, TRUE);
+    }
+
+    if (worker->watch) {
+      g_source_remove (worker->watch);
+      worker->watch = 0;
+    }
+    if (worker->pipeline) {
+      INFO("pipeline ref %d", GST_OBJECT_REFCOUNT(worker->pipeline));
+      gst_object_unref (worker->pipeline);
+      worker->pipeline = NULL;
+    }
+    if (worker->bus) {
+      INFO("bus ref %d", GST_OBJECT_REFCOUNT(worker->bus));
+      gst_object_unref (worker->bus);
+      worker->bus = NULL;
+    }
+    ok = gst_worker_prepare_unsafe (worker);
     GST_WORKER_UNLOCK_PIPELINE (worker);
   }
 #else

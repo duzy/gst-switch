@@ -81,6 +81,8 @@ static void gst_composite_start_transition (GstComposite *);
 static void
 gst_composite_init (GstComposite * composite)
 {
+  INFO ("gst_composite init %p", composite);
+
   composite->adjusting = FALSE;
   composite->transition = FALSE;
   composite->deprecated = FALSE;
@@ -104,13 +106,20 @@ gst_composite_init (GstComposite * composite)
 static void
 gst_composite_dispose (GstComposite * composite)
 {
-  INFO ("dispose %p", composite);
+  INFO ("gst_composite dispose %p", composite);
+  g_object_unref(composite->output);
+  composite->output = NULL;
+
+  g_object_unref(composite->recorder);
+  composite->recorder = NULL;
+
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (composite));
 }
 
 static void
 gst_composite_finalize (GstComposite * composite)
 {
+  INFO ("gst_composite finalize %p", composite);
   g_mutex_clear (&composite->lock);
   g_mutex_clear (&composite->recorder_lock);
   g_mutex_clear (&composite->transition_lock);

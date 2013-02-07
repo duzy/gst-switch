@@ -102,6 +102,7 @@ gst_switch_server_parse_args (int *argc, char **argv[])
 static void
 gst_switch_server_init (GstSwitchServer *srv)
 {
+  INFO ("gst_switch_server init %p", srv);
   srv->host = g_strdup (GST_SWITCH_SERVER_DEFAULT_HOST);
 
   srv->cancellable = g_cancellable_new ();
@@ -136,10 +137,13 @@ gst_switch_server_init (GstSwitchServer *srv)
 static void
 gst_switch_server_finalize (GstSwitchServer *srv)
 {
+  INFO ("gst_switch_server finalize %p", srv);
+
   g_free (srv->host);
   srv->host = NULL;
 
   g_main_loop_quit (srv->main_loop);
+  g_main_loop_unref(srv->main_loop);
   srv->main_loop = NULL;
 
   if (srv->cancellable) {
@@ -151,22 +155,35 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     g_object_unref (srv->video_acceptor_socket);
     srv->video_acceptor_socket = NULL;
   }
-
+/*
+  if (srv->video_acceptor) {
+    DEBUG("Waiting for video_acceptor thread to die.");
+    g_thread_join (srv->video_acceptor);
+  }
+*/
+  if (srv->audio_acceptor_socket) {
+    g_object_unref (srv->audio_acceptor_socket);
+    srv->audio_acceptor_socket = NULL;
+  }
+/*
+  if (srv->audio_acceptor) {
+    DEBUG("Waiting for audio_acceptor thread to die.");
+    g_thread_join (srv->audio_acceptor);
+  }
+*/
   if (srv->controller_socket) {
     g_object_unref (srv->controller_socket);
     srv->controller_socket = NULL;
   }
-
-  if (srv->video_acceptor) {
-    g_thread_join (srv->video_acceptor);
-  }
-
-  if (srv->audio_acceptor) {
-    g_thread_join (srv->audio_acceptor);
-  }
-
+/*
   if (srv->controller_thread) {
+    DEBUG("Waiting for controller_thread thread to die.");
     g_thread_join (srv->controller_thread);
+  }
+*/
+  if (srv->controller) {
+    g_object_unref (srv->controller);
+    srv->controller = NULL;
   }
 
   if (srv->cases) {
@@ -188,8 +205,6 @@ gst_switch_server_finalize (GstSwitchServer *srv)
 
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (srv));
-
-  INFO ("SwitchServer finalized");
 }
 
 static void
@@ -1047,6 +1062,7 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv,
 
   INFO ("Compose sink to %d, %d", port, encode);
 
+  g_assert(srv->composite == NULL);
   srv->composite = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
 	  "name", "composite", "port", port, "encode", encode,
 	  "mode", mode, NULL));
@@ -1078,10 +1094,18 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv,
   }
 }
 
+gboolean timeout(gpointer user_data) {
+  INFO ("Exiting!");
+  GstSwitchServer *srv = (GstSwitchServer*)user_data;
+  g_main_loop_quit (srv->main_loop);
+  return FALSE;
+}
+
 static void
 gst_switch_server_run (GstSwitchServer * srv)
 {
   srv->main_loop = g_main_loop_new (NULL, TRUE);
+  //g_timeout_add_seconds (15, &timeout, srv);
 
   if (!gst_switch_server_prepare_composite (srv, DEFAULT_COMPOSE_MODE))
     goto error_prepare;
@@ -1099,9 +1123,11 @@ gst_switch_server_run (GstSwitchServer * srv)
 
   g_main_loop_run (srv->main_loop);
 
+/*
   g_thread_join (srv->video_acceptor);
   g_thread_join (srv->audio_acceptor);
   g_thread_join (srv->controller_thread);
+*/
   return;
 
   /* Errors Handling */
@@ -1112,11 +1138,11 @@ gst_switch_server_run (GstSwitchServer * srv)
   }
 }
 
+
 int
 main (int argc, char *argv[])
 {
   GstSwitchServer *srv;
-
   gst_switch_server_parse_args (&argc, &argv);
 
   srv = GST_SWITCH_SERVER (g_object_new (GST_TYPE_SWITCH_SERVER, NULL));
@@ -1124,5 +1150,9 @@ main (int argc, char *argv[])
   gst_switch_server_run (srv);
 
   g_object_unref (G_OBJECT (srv));
+  srv = NULL;
+
+  gst_deinit();
+
   return 0;
 }
