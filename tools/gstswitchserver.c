@@ -1096,19 +1096,20 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv,
   }
 }
 
+/*
 gboolean timeout(gpointer user_data) {
   INFO ("Exiting!");
   GstSwitchServer *srv = (GstSwitchServer*)user_data;
   g_main_loop_quit (srv->main_loop);
   return FALSE;
-}
+} */
 
 static void
 gst_switch_server_run (GstSwitchServer * srv)
 {
 
   srv->main_loop = g_main_loop_new (NULL, TRUE);
-  g_timeout_add_seconds (15, &timeout, srv);
+  //g_timeout_add_seconds (15, &timeout, srv);
 
   if (!gst_switch_server_prepare_composite (srv, DEFAULT_COMPOSE_MODE))
     goto error_prepare;
