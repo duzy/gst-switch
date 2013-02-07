@@ -271,6 +271,9 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
   gint num;
 
   GST_SWITCH_CONTROLLER_LOCK_UIS (controller);
+  g_assert(parameters);
+  g_variant_ref_sink(parameters);
+
   for (ui = controller->uis, num = 0; ui; ui = g_list_next (ui)) {
     error = NULL;
     res = g_dbus_connection_emit_signal (G_DBUS_CONNECTION (ui->data),
@@ -287,6 +290,7 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
   /*
   INFO ("emit: %s (%d/%d)", signame, num, g_list_length (controller->uis));
   */
+  g_variant_unref (parameters);
 
   GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 }
@@ -490,8 +494,11 @@ gst_switch_controller_call_uis (GstSwitchController * controller,
   GVariant *value;
   GList *ui;
 
+  g_variant_ref_sink(parameters);
+
   if (controller->uis == NULL) {
     WARN ("%s: no connections", method_name);
+    g_variant_unref (parameters);
     return;
   }
   
@@ -512,6 +519,8 @@ gst_switch_controller_call_uis (GstSwitchController * controller,
     }
     ui = g_list_next (ui);
   }
+
+  g_variant_unref (parameters);
   GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 }
 
