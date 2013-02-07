@@ -4,3 +4,5 @@
 /tools
 /test-recording*.data
 /test-server-*.log
+/test-fd-leaks
+/tests

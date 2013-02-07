@@ -66,6 +66,7 @@ struct _GstWorker
   gpointer pipeline_func_data;
   GString *pipeline_string;
 
+  gboolean auto_replay;
   gboolean paused_for_buffering;
   guint watch;
 };
