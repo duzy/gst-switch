@@ -42,8 +42,8 @@ test_worker_pipeline (GstWorker *worker, gpointer data)
 
   g_string_append_printf (desc, "videotestsrc name=source ");
   g_string_append_printf (desc, "! video/x-raw,width=180,height=100 ");
-  //g_string_append_printf (desc, "! fakesink ");
-  g_string_append_printf (desc, "! xvimagesink ");
+  g_string_append_printf (desc, "! fakesink ");
+  //g_string_append_printf (desc, "! xvimagesink ");
 
   return desc;
 }
@@ -51,10 +51,10 @@ test_worker_pipeline (GstWorker *worker, gpointer data)
 static gpointer
 test_worker_pulse (GstWorker *worker)
 {
-  sleep (2);
+  //sleep (1);
 
   while (GST_IS_WORKER (worker)) {
-    usleep (10000);
+    usleep (1000 * 1);
     if (!transition) {
       g_mutex_lock (&trans_lock);
       if (!transition) {
@@ -73,7 +73,7 @@ test_worker_pulse (GstWorker *worker)
     }
 
     if (transition)
-      usleep (100000);
+      usleep (1000 * 10);
 
     //INFO ("tick: %d", transition);
   }
@@ -152,7 +152,7 @@ test_worker_end (GstWorker *worker, gpointer data)
 {
   gboolean worker_reset_ok;
 
-  INFO ("%s: %s", worker->name, __FUNCTION__);
+  //INFO ("%s: %s, %d", worker->name, __FUNCTION__, transition);
 
   g_return_if_fail (GST_IS_WORKER (worker));
 
@@ -161,6 +161,8 @@ test_worker_end (GstWorker *worker, gpointer data)
     if (transition) {
       worker_reset_ok = test_worker_reset (worker);
       g_assert (worker_reset_ok);
+
+      INFO ("%s: %s", worker->name, __FUNCTION__);
 
       /*
       worker_reset_ok = test_worker_reset (worker1);

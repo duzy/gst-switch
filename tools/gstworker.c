@@ -268,6 +268,13 @@ gst_worker_replay (GstWorker *worker)
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
 
+static void gst_worker_state_ready_to_null (GstWorker *);
+static gboolean gst_worker_state_ready_to_null_proxy (GstWorker * worker)
+{
+  gst_worker_state_ready_to_null (worker);
+  return FALSE;
+}
+
 gboolean
 gst_worker_stop_force (GstWorker *worker, gboolean force)
 {
@@ -286,6 +293,11 @@ gst_worker_stop_force (GstWorker *worker, gboolean force)
 
     if (state == GST_STATE_PLAYING || force) {
       ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+
+      gst_bus_set_flushing (worker->bus, TRUE);
+
+      g_timeout_add (5, (GSourceFunc) gst_worker_state_ready_to_null_proxy,
+	  worker);
     }
 #else
     ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
@@ -438,7 +450,7 @@ gst_worker_state_ready_to_null (GstWorker *worker)
   GstWorkerClass *workerclass;
   GstWorkerNullReturn ret = GST_WORKER_NR_END;
 
-  INFO ("%s", __FUNCTION__);
+  //INFO ("%s", __FUNCTION__);
 
   g_return_if_fail (GST_IS_WORKER (worker));
 
@@ -478,7 +490,9 @@ gst_worker_pipeline_state_changed (GstWorker *worker,
     gst_worker_state_paused_to_ready (worker);
     break;
   case GST_STATE_CHANGE_READY_TO_NULL:
+#if 0
     gst_worker_state_ready_to_null (worker);
+#endif
     break;
   default:
     return FALSE;
@@ -549,9 +563,11 @@ gst_worker_message (GstBus * bus, GstMessage * message, GstWorker *worker)
 	    gst_element_state_get_name (newstate));
       }
       */
+      /*
       INFO ("%s: %s to %s", worker->name,
 	  gst_element_state_get_name (oldstate),
 	  gst_element_state_get_name (newstate));
+      */
 
       ret = gst_worker_pipeline_state_changed (worker,
 	  GST_STATE_TRANSITION (oldstate, newstate));
@@ -638,8 +654,8 @@ gst_worker_prepare_unsafe (GstWorker *worker)
   if (!worker->watch)
     goto error_add_watch;
 
-  gst_object_unref (worker->bus);
-  worker->bus = NULL;
+  //gst_object_unref (worker->bus);
+  //worker->bus = NULL;
 
   if (workerclass->prepare && !workerclass->prepare (worker))
     goto error_prepare;
@@ -702,7 +718,7 @@ gst_worker_reset (GstWorker *worker)
 
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
-  INFO ("%s", __FUNCTION__);
+  //INFO ("%s", __FUNCTION__);
 
 #if 1
   if (worker->pipeline) {
@@ -712,14 +728,15 @@ gst_worker_reset (GstWorker *worker)
 	g_source_remove (worker->watch);
       }
 
-      INFO ("%s", __FUNCTION__);
+      //INFO ("%s", __FUNCTION__);
 
       if (worker->bus) {
 	g_assert_cmpint (G_OBJECT (worker->bus)->ref_count, ==, 2);
+	gst_bus_set_flushing (worker->bus, TRUE);
 	gst_object_unref (worker->bus);
       }
 
-      INFO ("%s", __FUNCTION__);
+      //INFO ("%s", __FUNCTION__);
 
       if (worker->pipeline) {
 	gst_element_set_state (worker->pipeline, GST_STATE_NULL);
@@ -727,7 +744,7 @@ gst_worker_reset (GstWorker *worker)
 	gst_object_unref (worker->pipeline);
       }
 
-      INFO ("%s", __FUNCTION__);
+      //INFO ("%s", __FUNCTION__);
 
       worker->pipeline = NULL;
       worker->bus = NULL;
