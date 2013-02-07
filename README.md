@@ -68,3 +68,10 @@ The command control port is *5000*.
  e.g. *record 2013-01-23 131139.dat*
  </td></tr>
 </table>
+
+
+
+# Current Build Status
+
+[![Build Status](https://travis-ci.org/timsvideo/gst-switch.png?branch=master)](https://travis-ci.org/timsvideo/gst-switch)
+

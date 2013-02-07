@@ -27,6 +27,7 @@
 #define __GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__ 1
 #include <gio/gio.h>
 #include "../logutils.h"
+#include "gstworker.h"
 
 #define GST_TYPE_SWITCH_CONTROLLER (gst_switch_controller_get_type ())
 #define GST_SWITCH_CONTROLLER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_CONTROLLER, GstSwitchController))
@@ -42,7 +43,6 @@
 
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
-typedef struct _GstSwitchServer GstSwitchServer;
 
 typedef GVariant * (*MethodFunc) (GObject *, GDBusConnection *, GVariant *);
 typedef struct _MethodTableEntry MethodTableEntry;

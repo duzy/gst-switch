@@ -6,8 +6,8 @@ AC_INIT([gst-switch],[0.0.1])
 
 dnl required versions of gstreamer and plugins-base
 GLIB_REQUIRED=2.32.0
-GST_REQUIRED=1.1.0.1
-GSTPB_REQUIRED=1.1.0.1
+GST_REQUIRED=1.0.1
+GSTPB_REQUIRED=1.0.1
 
 AC_CONFIG_SRCDIR([plugins/gstswitch.c])
 AC_CONFIG_HEADERS([config.h])

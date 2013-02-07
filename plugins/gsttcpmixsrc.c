@@ -242,7 +242,6 @@ gst_tcp_mix_src_pad_read (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
 {
   GstTCPMixSrc *src = GST_TCP_MIX_SRC (GST_PAD_PARENT (pad));
   gssize avail, receivedBytes;
-  gsize readBytes;
   GstMapInfo map;
   GError *err = NULL;
 
@@ -283,7 +282,7 @@ gst_tcp_mix_src_pad_read (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
   }
 
   if (0 < avail) {
-    readBytes = MIN (avail, MAX_READ_SIZE);
+    gsize readBytes = MIN (avail, MAX_READ_SIZE);
     *outbuf = gst_buffer_new_and_alloc (readBytes);
     gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
     receivedBytes = g_socket_receive (pad->client, (gchar *) map.data,
@@ -291,7 +290,6 @@ gst_tcp_mix_src_pad_read (GstTCPMixSrcPad *pad, GstBuffer **outbuf)
   } else {
     /* Connection closed */
     receivedBytes = 0;
-    readBytes = 0;
     *outbuf = NULL;
   }
 

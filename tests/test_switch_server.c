@@ -369,6 +369,8 @@ launch (const gchar *name, ...)
   va_end (va);
   g_ptr_array_add (array, NULL);
   argv = (gchar **) g_ptr_array_free (array, FALSE);
+  
+  g_print ("cmdline: %s\n", g_strjoinv(" \\\n ", argv));
 
   if (!opts.print_debug_messages) {
     ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
@@ -446,9 +448,12 @@ launch_server ()
 	"--leak-resolution=high",
 	"--num-callers=20",
 	"--log-file=test-switch-server-valgrind.log",
-	"--suppressions=gst.supp",
-	"--suppressions=gtk.suppression",
-      
+	"--suppressions=../../gstreamer/common/gst.supp",
+	"--suppressions=../../gst-plugins-base/tests/check/gst-plugins-base.supp",
+	"--suppressions=../../gst-plugins-good/tests/check/gst-plugins-good.supp",
+	"--suppressions=../../gst-plugins-bad/tests/check/gst-plugins-bad.supp",
+	"--suppressions=../../gst-plugins-ugly/tests/check/gst-plugins-ugly.supp",
+	"--suppressions=faac.supp",
 	"../tools/gst-switch-srv", "-v",
 	"--gst-debug-no-color",
 	"--record=test-recording.data",

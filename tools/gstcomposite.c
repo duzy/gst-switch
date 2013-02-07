@@ -134,38 +134,39 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   composite->a_y = 0;
   composite->a_width  = GST_SWITCH_COMPOSITE_DEFAULT_WIDTH;
   composite->a_height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
+
   switch ((composite->mode = mode)) {
   case COMPOSE_MODE_0:
     composite->b_x = 0;
     composite->b_y = 0;
     composite->b_width  = 0;
     composite->b_height = 0;
-    composite->width = composite->a_x + composite->a_width;
-    composite->height = composite->a_y + composite->a_height;
+    composite->width = composite->a_width;
+    composite->height = composite->a_height;
     break;
   case COMPOSE_MODE_1:
     composite->b_x = (guint) ((double) composite->a_width * 0.08 + 0.5);
     composite->b_y = (guint) ((double) composite->a_height * 0.08 + 0.5);
     composite->b_width  = (guint) ((double) composite->a_width * 0.3 + 0.5);
     composite->b_height = (guint) ((double) composite->a_height * 0.3 + 0.5);
-    composite->width = composite->a_x + composite->a_width;
-    composite->height = composite->a_y + composite->a_height;
+    composite->width = composite->a_width;
+    composite->height = composite->a_height;
     break;
   case COMPOSE_MODE_2:
-    composite->b_x = composite->a_x + composite->a_width + 1;
+    composite->b_x = composite->a_width + 1;
     composite->b_y = composite->a_y;
     composite->b_width  = (guint) ((double) composite->a_width * 0.3 + 0.5);
     composite->b_height = (guint) ((double) composite->a_height * 0.3 + 0.5);
     goto compute_side_by_side_size;
   case COMPOSE_MODE_3:
-    composite->b_x = composite->a_x + composite->a_width + 1;
+    composite->b_x = composite->a_width + 1;
     composite->b_y = composite->a_y;
     composite->b_width  = GST_SWITCH_COMPOSITE_DEFAULT_WIDTH;
     composite->b_height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
   compute_side_by_side_size:
     composite->width = composite->b_x + composite->b_width;
-    composite->height = composite->a_y + composite->a_height;
-    if (composite->height < (h = composite->b_y + composite->b_height))
+    composite->height = composite->a_height;
+    if (composite->height < (h = composite->b_height))
       composite->height = h;
   default:
     break;

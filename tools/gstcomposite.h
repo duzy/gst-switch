@@ -58,7 +58,6 @@ typedef enum {
 typedef struct _GstRecorder GstRecorder;
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
-typedef struct _GstSwitchServer GstSwitchServer;
 
 struct _GstComposite
 {

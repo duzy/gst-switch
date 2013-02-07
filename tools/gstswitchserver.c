@@ -896,7 +896,12 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   }
 
   if (!candidate_case) {
-    ERROR ("no stream for port %d", port);
+    ERROR ("no stream for port %d (candidate)", port);
+    goto end;
+  }
+
+  if (!compose_case) {
+    ERROR ("no stream for port %d (compose)", port);
     goto end;
   }
 
