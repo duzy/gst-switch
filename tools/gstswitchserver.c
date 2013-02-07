@@ -186,8 +186,6 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     srv->controller = NULL;
   }
 
-
-
   if (srv->cases) {
     g_list_free_full (srv->cases, (GDestroyNotify) g_object_unref);
     srv->cases = NULL;
@@ -1107,7 +1105,6 @@ gboolean timeout(gpointer user_data) {
 static void
 gst_switch_server_run (GstSwitchServer * srv)
 {
-
   srv->main_loop = g_main_loop_new (NULL, TRUE);
   //g_timeout_add_seconds (15, &timeout, srv);
 
