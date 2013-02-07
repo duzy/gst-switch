@@ -75,25 +75,37 @@ static void
 gst_worker_dispose (GstWorker *worker)
 {
   INFO ("gst_worker dispose %p", worker);
+  if (worker->pipeline) {
+    gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+  }
+  if (worker->bus) {
+    gst_bus_set_flushing (worker->bus, TRUE);
+  }
+
+  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (worker));
+}
+
+static void
+gst_worker_finalize (GstWorker *worker)
+{
+  if (worker->watch) {
+    g_source_remove (worker->watch);
+    worker->watch = 0;
+  }
+  if (worker->pipeline) {
+    INFO("pipeline ref %d", GST_OBJECT_REFCOUNT(worker->pipeline));
+    gst_object_unref (worker->pipeline);
+    worker->pipeline = NULL;
+  }
+  if (worker->bus) {
+    INFO("bus ref %d", GST_OBJECT_REFCOUNT(worker->bus));
+    gst_object_unref (worker->bus);
+    worker->bus = NULL;
+  }
 
   if (worker->server) {
     g_object_unref (worker->server);
     worker->server = NULL;
-  }
-
-  if (worker->watch) {
-    g_source_remove (worker->watch);
-  }
-
-  if (worker->pipeline) {
-    gst_element_set_state (worker->pipeline, GST_STATE_NULL);
-    gst_object_unref (worker->pipeline);
-    worker->pipeline = NULL;
-  }
-
-  if (worker->bus) {
-    gst_object_unref (worker->bus);
-    worker->bus = NULL;
   }
 
   if (worker->pipeline_string) {
@@ -101,13 +113,7 @@ gst_worker_dispose (GstWorker *worker)
     worker->pipeline_string = NULL;
   }
 
-  //INFO ("dispose %p", worker);
-  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (worker));
-}
 
-static void
-gst_worker_finalize (GstWorker *worker)
-{
   INFO ("gst_worker finalize %p", worker);
   g_mutex_clear (&worker->pipeline_lock);
 
@@ -633,7 +639,7 @@ gst_worker_prepare_unsafe (GstWorker *worker)
   if (!worker->pipeline)
     goto error_create_pipeline;
 
-  //gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
+  gst_pipeline_set_auto_flush_bus (GST_PIPELINE (worker->pipeline), FALSE);
 
   worker->bus = gst_pipeline_get_bus (GST_PIPELINE (worker->pipeline));
   if (!worker->bus)
@@ -644,9 +650,6 @@ gst_worker_prepare_unsafe (GstWorker *worker)
 
   if (!worker->watch)
     goto error_add_watch;
-
-  gst_object_unref (worker->bus);
-  worker->bus = NULL;
 
   if (workerclass->prepare && !workerclass->prepare (worker))
     goto error_prepare;
@@ -717,21 +720,26 @@ gst_worker_reset (GstWorker *worker)
 #if 1
   if (worker) {
     GST_WORKER_LOCK_PIPELINE (worker);
+    if (worker->pipeline) {
+      gst_element_set_state (worker->pipeline, GST_STATE_NULL);
+    }
+    if (worker->bus) {
+      gst_bus_set_flushing (worker->bus, TRUE);
+    }
+
     if (worker->watch) {
       g_source_remove (worker->watch);
       worker->watch = 0;
     }
-    if (worker->bus) {
-      g_assert(GST_OBJECT_REFCOUNT(worker->bus) == 1);
-      gst_object_unref (worker->bus);
-      worker->bus = NULL;
-    }
     if (worker->pipeline) {
-      gst_element_set_state (worker->pipeline, GST_STATE_NULL);
-
-      g_assert(GST_OBJECT_REFCOUNT(worker->pipeline) == 1);
+      INFO("pipeline ref %d", GST_OBJECT_REFCOUNT(worker->pipeline));
       gst_object_unref (worker->pipeline);
       worker->pipeline = NULL;
+    }
+    if (worker->bus) {
+      INFO("bus ref %d", GST_OBJECT_REFCOUNT(worker->bus));
+      gst_object_unref (worker->bus);
+      worker->bus = NULL;
     }
     ok = gst_worker_prepare_unsafe (worker);
     GST_WORKER_UNLOCK_PIPELINE (worker);

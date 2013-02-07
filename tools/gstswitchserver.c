@@ -155,28 +155,38 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     g_object_unref (srv->video_acceptor_socket);
     srv->video_acceptor_socket = NULL;
   }
-
-  if (srv->controller_socket) {
-    g_object_unref (srv->controller_socket);
-    srv->controller_socket = NULL;
-  }
-
 /*
   if (srv->video_acceptor) {
     DEBUG("Waiting for video_acceptor thread to die.");
     g_thread_join (srv->video_acceptor);
   }
-
+*/
+  if (srv->audio_acceptor_socket) {
+    g_object_unref (srv->audio_acceptor_socket);
+    srv->audio_acceptor_socket = NULL;
+  }
+/*
   if (srv->audio_acceptor) {
     DEBUG("Waiting for audio_acceptor thread to die.");
     g_thread_join (srv->audio_acceptor);
   }
-
+*/
+  if (srv->controller_socket) {
+    g_object_unref (srv->controller_socket);
+    srv->controller_socket = NULL;
+  }
+/*
   if (srv->controller_thread) {
     DEBUG("Waiting for controller_thread thread to die.");
     g_thread_join (srv->controller_thread);
   }
 */
+  if (srv->controller) {
+    g_object_unref (srv->controller);
+    srv->controller = NULL;
+  }
+
+
 
   if (srv->cases) {
     g_list_free_full (srv->cases, (GDestroyNotify) g_object_unref);
@@ -1144,6 +1154,8 @@ main (int argc, char *argv[])
 
   g_object_unref (G_OBJECT (srv));
   srv = NULL;
+
+  gst_deinit();
 
   return 0;
 }
