@@ -37,3 +37,5 @@
 /tests/test-mix-source
 /tests/test-switch-server
 /tests/test-switch-server-valgrind.log
+*.data
+*.log
