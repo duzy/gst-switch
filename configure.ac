@@ -72,6 +72,11 @@ AC_SUBST(GTK_LIBS)
 AC_SUBST(GTK_CFLAGS)
 AM_CONDITIONAL(HAVE_GTK, test "x$HAVE_GTK" = "xyes")
 
+CFLAGS="$GTK_CFLAGS"
+CPPFLAGS="$GTK_CFLAGS"
+AC_CHECK_HEADER([gdk/gdkx.h], [],
+  [AC_MSG_ERROR([GDK X11 header (gdk/gdkx.h) is required])])
+
 AC_ARG_ENABLE(gcov,
   AS_HELP_STRING([--enable-gcov],[enable gcov building]),
   [
@@ -92,8 +97,6 @@ AC_ARG_ENABLE(gprof,
   [BUILD_GPROF=yes])
 AM_CONDITIONAL(GCOV_ENABLED, test "x$BUILD_GCOV" = "xyes")
 AM_CONDITIONAL(GPROF_ENABLED, test "x$BUILD_GPROF" = "xyes")
-
-AC_CHECK_HEADER([gdk/gdkx.h], [AC_DEFINE([WITH_GDK_X11], 1, [GDK wraps X11])])
 
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl This will export GST_CFLAGS and GST_LIBS variables for use in Makefile.am
