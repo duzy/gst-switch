@@ -40,6 +40,8 @@
 #define GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT	5000
 #define GST_SWITCH_SERVER_LISTEN_BACKLOG 8 /* client connection queue */
 
+#define GST_SWITCH_SERVER_LOCK_MAIN_LOOP(srv) (g_mutex_lock (&(srv)->main_loop_lock))
+#define GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP(srv) (g_mutex_unlock (&(srv)->main_loop_lock))
 #define GST_SWITCH_SERVER_LOCK_VIDEO_ACCEPTOR(srv) (g_mutex_lock (&(srv)->video_acceptor_lock))
 #define GST_SWITCH_SERVER_UNLOCK_VIDEO_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->video_acceptor_lock))
 #define GST_SWITCH_SERVER_LOCK_AUDIO_ACCEPTOR(srv) (g_mutex_lock (&(srv)->audio_acceptor_lock))
@@ -126,6 +128,8 @@ gst_switch_server_init (GstSwitchServer *srv)
   srv->pip_w = 0;
   srv->pip_h = 0;
 
+  
+  g_mutex_init (&srv->main_loop_lock);
   g_mutex_init (&srv->video_acceptor_lock);
   g_mutex_init (&srv->audio_acceptor_lock);
   g_mutex_init (&srv->controller_lock);
@@ -141,10 +145,6 @@ gst_switch_server_finalize (GstSwitchServer *srv)
 
   g_free (srv->host);
   srv->host = NULL;
-
-  g_main_loop_quit (srv->main_loop);
-  //g_main_loop_unref(srv->main_loop);
-  srv->main_loop = NULL;
 
   if (srv->cancellable) {
     g_object_unref (srv->cancellable);
@@ -196,6 +196,7 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     srv->composite = NULL;
   }
 
+  g_mutex_clear (&srv->main_loop_lock);
   g_mutex_clear (&srv->video_acceptor_lock);
   g_mutex_clear (&srv->audio_acceptor_lock);
   g_mutex_clear (&srv->controller_lock);
@@ -212,6 +213,14 @@ gst_switch_server_class_init (GstSwitchServerClass *klass)
 {
   GObjectClass * object_class = G_OBJECT_CLASS (klass);
   object_class->finalize = (GObjectFinalizeFunc) gst_switch_server_finalize;
+}
+
+static void
+gst_switch_server_quit (GstSwitchServer *srv)
+{
+  GST_SWITCH_SERVER_LOCK_MAIN_LOOP (srv);
+  g_main_loop_quit (srv->main_loop);
+  GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP (srv);
 }
 
 static gint
@@ -627,6 +636,7 @@ gst_switch_server_video_acceptor (GstSwitchServer *srv)
   srv->video_acceptor_socket = gst_switch_server_listen (srv,
       srv->video_acceptor_port, &bound_port);
   if (!srv->video_acceptor_socket) {
+    gst_switch_server_quit (srv);
     return NULL;
   }
 
@@ -1105,7 +1115,10 @@ gboolean timeout(gpointer user_data) {
 static void
 gst_switch_server_run (GstSwitchServer * srv)
 {
+  GST_SWITCH_SERVER_LOCK_MAIN_LOOP (srv);
   srv->main_loop = g_main_loop_new (NULL, TRUE);
+  GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP (srv);
+
   //g_timeout_add_seconds (15, &timeout, srv);
 
   if (!gst_switch_server_prepare_composite (srv, DEFAULT_COMPOSE_MODE))
@@ -1123,6 +1136,10 @@ gst_switch_server_run (GstSwitchServer * srv)
   gst_switch_server_prepare_bus_controller (srv);
 
   g_main_loop_run (srv->main_loop);
+
+  GST_SWITCH_SERVER_LOCK_MAIN_LOOP (srv);
+  srv->main_loop = NULL;
+  GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP (srv);
 
 /*
   g_thread_join (srv->video_acceptor);
@@ -1150,10 +1167,8 @@ main (int argc, char *argv[])
 
   gst_switch_server_run (srv);
 
-  g_object_unref (G_OBJECT (srv));
-  srv = NULL;
+  g_object_unref (srv);
 
   gst_deinit();
-
   return 0;
 }

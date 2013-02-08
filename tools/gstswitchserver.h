@@ -59,6 +59,7 @@ struct _GstSwitchServer
   gchar *host;
 
   GMainLoop *main_loop;
+  GMutex main_loop_lock;
 
   GCancellable *cancellable;
   GMutex video_acceptor_lock;
