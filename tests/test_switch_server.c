@@ -57,6 +57,8 @@ enum {
 #endif
 };
 
+gboolean infinity_open_file = FALSE;
+
 static struct {
   gboolean enable_test_controller;
   gboolean enable_test_composite_mode;
@@ -1188,7 +1190,7 @@ test_controller (void)
 static void
 test_composite_mode (void)
 {
-  enum { seconds = 60 * 5 };
+  int seconds = 60 * (infinity_open_file ? 5 : 2);
   GPid server_pid = 0;
   testclient *client;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -2199,7 +2201,14 @@ int main (int argc, char**argv)
 
   srand (time (NULL));
 
-  setrlimit (RLIMIT_NOFILE, RLIM_INFINITY);
+  {
+    struct rlimit r;
+    r.rlim_cur = RLIM_INFINITY;
+    r.rlim_max = RLIM_INFINITY;
+    if (setrlimit (RLIMIT_NOFILE, &r) == 0) {
+      infinity_open_file = TRUE;
+    }
+  }
 
   gst_init (&argc, &argv);
   g_test_init (&argc, &argv, NULL);
