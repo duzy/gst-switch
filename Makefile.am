@@ -5,7 +5,7 @@ EXTRA_DIST = autogen.sh
 ACLOCAL_AMFLAGS = -I m4
 
 include tests/names.mk
-test: clean-test-data $(TESTS)
+test: update-test-suite clean-test-data $(TESTS)
 demo: $(UI_TESTS)
 
 show-tests:
@@ -15,6 +15,14 @@ show-tests:
 
 $(TESTS) $(UI_TESTS):
 	@$(MAKE) -C tests $@
+
+update-test-suite: tests/test-switch-server tests/test-fd-leaks
+	$(MAKE) -C tests
+
+tests/test-switch-server: tests/test_switch_server.c \
+  tools/*.h tools/*.c
+tests/test-fd-leaks: tests/test_fd_leaks.c \
+  tools/*.h tools/*.c
 
 clean-test-data:
 	rm -f "tests/test-recording "*" "*.data
