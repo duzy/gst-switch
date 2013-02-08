@@ -667,6 +667,7 @@ gst_switch_server_audio_acceptor (GstSwitchServer *srv)
   srv->audio_acceptor_socket = gst_switch_server_listen (srv,
       srv->audio_acceptor_port, &bound_port);
   if (!srv->audio_acceptor_socket) {
+    gst_switch_server_quit (srv);
     return NULL;
   }
 
@@ -1133,6 +1134,7 @@ gst_switch_server_run (GstSwitchServer * srv)
   srv->controller_thread = g_thread_new ("switch-server-controller",
       (GThreadFunc) gst_switch_server_controller, srv);
 
+  // TODO: quit the server if controller is not ready
   gst_switch_server_prepare_bus_controller (srv);
 
   g_main_loop_run (srv->main_loop);
