@@ -60,6 +60,7 @@ struct _GstSwitchServer
 
   GMainLoop *main_loop;
   GMutex main_loop_lock;
+  gint exit_code;
 
   GCancellable *cancellable;
   GMutex video_acceptor_lock;

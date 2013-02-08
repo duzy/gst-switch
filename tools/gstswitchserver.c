@@ -216,10 +216,11 @@ gst_switch_server_class_init (GstSwitchServerClass *klass)
 }
 
 static void
-gst_switch_server_quit (GstSwitchServer *srv)
+gst_switch_server_quit (GstSwitchServer *srv, gint exit_code)
 {
   GST_SWITCH_SERVER_LOCK_MAIN_LOOP (srv);
   g_main_loop_quit (srv->main_loop);
+  srv->exit_code = exit_code;
   GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP (srv);
 }
 
@@ -636,7 +637,7 @@ gst_switch_server_video_acceptor (GstSwitchServer *srv)
   srv->video_acceptor_socket = gst_switch_server_listen (srv,
       srv->video_acceptor_port, &bound_port);
   if (!srv->video_acceptor_socket) {
-    gst_switch_server_quit (srv);
+    gst_switch_server_quit (srv, -__LINE__);
     return NULL;
   }
 
@@ -667,7 +668,7 @@ gst_switch_server_audio_acceptor (GstSwitchServer *srv)
   srv->audio_acceptor_socket = gst_switch_server_listen (srv,
       srv->audio_acceptor_port, &bound_port);
   if (!srv->audio_acceptor_socket) {
-    gst_switch_server_quit (srv);
+    gst_switch_server_quit (srv, -__LINE__);
     return NULL;
   }
 
@@ -1162,6 +1163,7 @@ gst_switch_server_run (GstSwitchServer * srv)
 int
 main (int argc, char *argv[])
 {
+  gint exit_code = 0;
   GstSwitchServer *srv;
   gst_switch_server_parse_args (&argc, &argv);
 
@@ -1169,8 +1171,9 @@ main (int argc, char *argv[])
 
   gst_switch_server_run (srv);
 
+  exit_code = srv->exit_code;
   g_object_unref (srv);
 
   gst_deinit();
-  return 0;
+  return exit_code;
 }
