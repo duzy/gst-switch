@@ -570,6 +570,7 @@ testcase_join (testcase *t)
   if (thread) g_thread_join (thread);
 }
 
+/*
 static void
 testcase_end (testcase *t)
 {
@@ -577,6 +578,7 @@ testcase_end (testcase *t)
     g_main_loop_quit (t->mainloop);
   //testcase_join (t);
 }
+*/
 
 typedef struct _testclient {
   GstSwitchClient base;
@@ -1135,7 +1137,8 @@ test_controller (void)
 
   sleep (5), testclient_end (client);
   testclient_join (client);
-  g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
+  //g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
+  g_assert_cmpint (client->expected_compose_count, ==, client->new_mode_count);
   g_object_unref (client);
   g_assert_cmpint (clientcount, ==, 0);
 
@@ -1261,7 +1264,7 @@ test_composite_mode (void)
   testclient_join (client);
   //g_assert_cmpint (client->compose_port_count, ==, client->expected_compose_count);
   //g_assert_cmpint (client->new_mode_count, ==, client->expected_compose_count);
-  g_assert_cmpint (client->expected_compose_count-client->new_mode_count, <=, 0);
+  g_assert_cmpint (client->expected_compose_count, ==, client->new_mode_count);
   g_object_unref (client);
   g_assert_cmpint (clientcount, ==, 0);
 
