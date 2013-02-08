@@ -143,7 +143,7 @@ gst_switch_server_finalize (GstSwitchServer *srv)
   srv->host = NULL;
 
   g_main_loop_quit (srv->main_loop);
-  g_main_loop_unref(srv->main_loop);
+  //g_main_loop_unref(srv->main_loop);
   srv->main_loop = NULL;
 
   if (srv->cancellable) {
