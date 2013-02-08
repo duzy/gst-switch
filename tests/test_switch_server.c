@@ -28,6 +28,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <signal.h>
 #include <errno.h>
 #include <string.h>
@@ -1186,7 +1188,7 @@ test_controller (void)
 static void
 test_composite_mode (void)
 {
-  enum { seconds = 60 * 1 };
+  enum { seconds = 60 * 5 };
   GPid server_pid = 0;
   testclient *client;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -2196,6 +2198,8 @@ int main (int argc, char**argv)
   }
 
   srand (time (NULL));
+
+  setrlimit (RLIMIT_NOFILE, RLIM_INFINITY);
 
   gst_init (&argc, &argv);
   g_test_init (&argc, &argv, NULL);
