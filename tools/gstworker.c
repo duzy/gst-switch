@@ -748,12 +748,16 @@ gst_worker_reset (GstWorker *worker)
       worker->watch = 0;
     }
     if (worker->pipeline) {
-      INFO("pipeline ref %d", GST_OBJECT_REFCOUNT(worker->pipeline));
+      if (1 < GST_OBJECT_REFCOUNT(worker->pipeline)) {
+	WARN("possible pipeline leaks %d", GST_OBJECT_REFCOUNT(worker->pipeline));
+      }
       gst_object_unref (worker->pipeline);
       worker->pipeline = NULL;
     }
     if (worker->bus) {
-      INFO("bus ref %d", GST_OBJECT_REFCOUNT(worker->bus));
+      if (1 < GST_OBJECT_REFCOUNT(worker->bus)) {
+	WARN("possible bus leaks %d", GST_OBJECT_REFCOUNT(worker->bus));
+      }
       gst_object_unref (worker->bus);
       worker->bus = NULL;
     }
