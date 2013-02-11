@@ -727,6 +727,9 @@ gst_switch_server_prepare_bus_controller (GstSwitchServer * srv)
     if (srv->controller == NULL) {
       srv->controller = GST_SWITCH_CONTROLLER (g_object_new (
 	      GST_TYPE_SWITCH_CONTROLLER, NULL));
+      if (!gst_switch_controller_is_valid (srv->controller)) {
+	gst_switch_server_quit (srv, -__LINE__);
+      }
       srv->controller->server = srv;
     }
     GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);

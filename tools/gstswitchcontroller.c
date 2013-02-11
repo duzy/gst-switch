@@ -402,7 +402,6 @@ gst_switch_controller_init (GstSwitchController * controller)
       NULL, /* GCancellable */
       &error);
 
-  g_assert_no_error (error);
   g_free (guid);
 
   if (controller->bus_server == NULL)
@@ -451,6 +450,16 @@ gst_switch_controller_finalize (GstSwitchController * controller)
     (*G_OBJECT_CLASS (gst_switch_controller_parent_class)->finalize)
       (G_OBJECT (controller));
 
+}
+
+gboolean
+gst_switch_controller_is_valid (GstSwitchController * controller)
+{
+  gboolean valid = FALSE;
+  if (controller->bus_server) {
+    valid = TRUE;
+  }
+  return valid;
 }
 
 static GVariant *
