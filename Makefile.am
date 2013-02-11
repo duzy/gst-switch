@@ -17,7 +17,7 @@ $(TESTS) $(UI_TESTS):
 	@$(MAKE) -C tests $@
 
 update-test-suite: tests/test-switch-server tests/test-fd-leaks
-	$(MAKE) -C tests
+	$(MAKE)
 
 tests/test-switch-server: tests/test_switch_server.c \
   tools/*.h tools/*.c
