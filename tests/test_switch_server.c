@@ -464,7 +464,8 @@ launch_server ()
 
   if (opts.valgrind) {
     pid = launch (
-	"/usr/bin/valgrind", "-v",
+	"/usr/bin/valgrind",
+        //"-v",
 	"--show-reachable=yes",
 	//"--trace-children=yes"
 	"--track-origins=yes",
