@@ -800,7 +800,7 @@ testclient_set_compose_port (testclient *client, gint port)
   client->compose_port_count += 1;
   g_assert_cmpint (client->compose_port, !=, 0);
   //g_assert_cmpint (client->compose_port0, ==, client->compose_port);
-  if (client->enable_test_sinks) {
+  if (client->enable_test_sinks && 0 < client->sink1.live_seconds) {
     testcase *sink0 = g_new0 (testcase, 1);
     sink0->live_seconds = client->sink1.live_seconds;
     sink0->name = g_strdup_printf ("test-compose-output-%d-%d", port, client->compose_port_count);
