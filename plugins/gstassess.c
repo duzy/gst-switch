@@ -47,13 +47,8 @@ enum
   PROP_0,
 };
 
-enum
-{
-  GST_ASSESS_PAD_FLAG_LAST	= (GST_PAD_FLAG_LAST << 2)
-};
-
 #define gst_assess_parent_class parent_class
-G_DEFINE_TYPE (GstAssess, gst_assess, GST_TYPE_ELEMENT);
+G_DEFINE_TYPE (GstAssess, gst_assess, GST_TYPE_BASE_TRANSFORM);
 
 static GstFlowReturn gst_assess_chain (GstPad *, GstObject *, GstBuffer *);
 static gboolean gst_assess_src_event (GstPad *, GstObject *, GstEvent *);
@@ -125,6 +120,7 @@ gst_assess_chain (GstPad *pad, GstObject *parent, GstBuffer *buffer)
       GST_BUFFER_OFFSET_END (buffer));
   */
 
+  (void) this;
   ret = GST_FLOW_OK;
 
   return ret;

@@ -21,6 +21,7 @@
 #define __GST_ASSESS_H__
 
 #include <gst/gst.h>
+#include <gst/base/gstbasetransform.h>
 
 G_BEGIN_DECLS
 
@@ -38,12 +39,8 @@ G_BEGIN_DECLS
 typedef struct _GstAssess GstAssess;
 typedef struct _GstAssessClass GstAssessClass;
 
-typedef enum {
-  GST_ASSESS_FLAG_LAST = (GST_ELEMENT_FLAG_LAST << 2)
-} GstAssessFlags;
-
 struct _GstAssess {
-  GstElement base;
+  GstBaseTransform base;
   GMutex lock;
 
   GstPad *sinkpad;
@@ -51,7 +48,7 @@ struct _GstAssess {
 };
 
 struct _GstAssessClass {
-  GstElementClass base_class;
+  GstBaseTransformClass base_class;
 };
 
 GType gst_assess_get_type (void);
