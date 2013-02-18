@@ -422,7 +422,7 @@ gst_composite_output_client_socket_added (GstElement *element,
 {
   g_return_if_fail (G_IS_SOCKET (socket));
 
-  INFO ("client-socket-added: %d", g_socket_get_fd (socket));
+  //INFO ("client-socket-added: %d", g_socket_get_fd (socket));
 }
 
 static void
@@ -431,7 +431,7 @@ gst_composite_output_client_socket_removed (GstElement *element,
 {
   g_return_if_fail (G_IS_SOCKET (socket));
 
-  INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
+  //INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
 
   g_socket_close (socket, NULL);
 }

@@ -2128,7 +2128,7 @@ test_fuzz (void)
 static void
 test_checking_timestamps (void)
 {
-  const gint seconds = 60;
+  const gint seconds = 60 + 2;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source = { "test-video-source", 0 };
@@ -2141,16 +2141,16 @@ test_checking_timestamps (void)
   g_string_append_printf (video_source.desc, "! timeoverlay font-desc=\"Verdana bold 50\" ! tee name=v ");
   g_string_append_printf (video_source.desc, "v. ! queue "
       "! textoverlay font-desc=\"Sans 100\" text=111 "
-      "! gdppay ! tcpclientsink name=tcp_sink port=3000 ");
+      "! gdppay ! tcpclientsink name=tcp_sink1 port=3000 ");
   g_string_append_printf (video_source.desc, "v. ! queue "
       "! textoverlay font-desc=\"Sans 100\" text=222 "
-      "! gdppay ! tcpclientsink name=tcp_sink port=3000 ");
+      "! gdppay ! tcpclientsink name=tcp_sink2 port=3000 ");
   g_string_append_printf (video_source.desc, "v. ! queue "
       "! textoverlay font-desc=\"Sans 100\" text=333 "
-      "! gdppay ! tcpclientsink name=tcp_sink port=3000 ");
+      "! gdppay ! tcpclientsink name=tcp_sink3 port=3000 ");
   g_string_append_printf (video_source.desc, "v. ! queue "
       "! textoverlay font-desc=\"Sans 100\" text=444 "
-      "! gdppay ! tcpclientsink name=tcp_sink port=3000 ");
+      "! gdppay ! tcpclientsink name=tcp_sink4 port=3000 ");
 
   if (!opts.test_external_server) {
     server_pid = launch_server ();

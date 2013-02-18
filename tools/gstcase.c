@@ -274,17 +274,37 @@ gst_case_get_pipeline_string (GstCase * cas)
     }
     g_string_append_printf (desc, " name=sink channel=%s_%d ",
 	srctype, cas->sink_port);
+
     if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-      //g_string_append_printf (desc, "source. ! gdpdepay ! sink. ");
-      g_string_append_printf (desc, "source. ! sink. ");
+      g_string_append_printf (desc, "source. ");
+#if ENABLE_ASSESSMENT
+      /*
+      g_string_append_printf (desc, "! assess name=audio-input-%d ",
+	  cas->sink_port);
+      */
+#endif//ENABLE_ASSESSMENT
+      //g_string_append_printf (desc, "! gdpdepay ! sink. ");
+      g_string_append_printf (desc, "! sink. ");
+    } else if (cas->type == GST_CASE_PREVIEW) {
+      g_string_append_printf (desc, "source. "
+	  "! video/x-raw,width=%d,height=%d ",
+	  cas->a_width, cas->a_height);
+#if ENABLE_ASSESSMENT
+      /*
+      g_string_append_printf (desc, "! assess name=video-preview-%d ",
+	  cas->sink_port);
+      */
+#endif//ENABLE_ASSESSMENT
+      g_string_append_printf (desc, "! sink. ");
     } else {
-      if (cas->type == GST_CASE_PREVIEW) {
-	g_string_append_printf (desc, "source. "
-	    "! video/x-raw,width=%d,height=%d ! sink. ",
-	    cas->a_width, cas->a_height);
-      } else {
-	g_string_append_printf (desc, "source. ! gdpdepay ! sink. ");
-      }
+      g_string_append_printf (desc, "source. ");
+#if ENABLE_ASSESSMENT
+      /*
+      g_string_append_printf (desc, "! assess name=video-input-%d ",
+	  cas->sink_port);
+      */
+#endif//ENABLE_ASSESSMENT
+      g_string_append_printf (desc, "! gdpdepay ! sink. ");
     }
     break;
   case GST_CASE_BRANCH_A:
@@ -316,7 +336,7 @@ gst_case_client_socket_added (GstElement *element,
 {
   g_return_if_fail (G_IS_SOCKET (socket));
 
-  INFO ("client-socket-added: %d", g_socket_get_fd (socket));
+  //INFO ("client-socket-added: %d", g_socket_get_fd (socket));
 }
 
 static void
@@ -325,7 +345,7 @@ gst_case_client_socket_removed (GstElement *element,
 {
   g_return_if_fail (G_IS_SOCKET (socket));
 
-  INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
+  //INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
 
   g_socket_close (socket, NULL);
 }
