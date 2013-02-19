@@ -39,6 +39,9 @@
 #define WARN(S, ...) ((void) FALSE)
 #define ERROR(S, ...) ((void) FALSE)
 #endif//DEBUG
+#if ENABLE_ASSESSMENT
+#define ASSESS(name, ...) (g_string_append_printf (desc, "! assess name="#name " ", ##__VA_ARGS__))
+#endif//ENABLE_ASSESSMENT
 #define LOW_RES_W 100 /* 160 */ /* 320 */
 #define LOW_RES_H 56  /* 120 */ /* 240 */
 #endif//__LOG_UTILS_H__

@@ -174,23 +174,47 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
       "channel=composite_video ");
   g_string_append_printf (desc, "interaudiosrc name=source_audio "
       "channel=composite_audio ");
-  g_string_append_printf (desc, "source_video. "
-      "! video/x-raw,width=%d,height=%d "
-      "! queue2 ! vp8enc " //! mpeg2enc
-      "! mux. ", rec->width, rec->height);
-  g_string_append_printf (desc, "source_audio. "
-      "! queue2 ! faac "
-      "! mux. ");
-  g_string_append_printf (desc, "avimux name=mux ! tee name=result ");
+
+  g_string_append_printf (desc,
+      "source_video. ! video/x-raw,width=%d,height=%d ",
+      rec->width, rec->height);
+  ASSESS ("assess-record-video-input");
+  g_string_append_printf (desc, "! queue2 ");
+  ASSESS ("assess-record-video-encode-in");
+  g_string_append_printf (desc, "! vp8enc ");
+  ASSESS ("assess-record-video-encode-out");
+  g_string_append_printf (desc, "! mux. ");
+
+  g_string_append_printf (desc, "source_audio. ");
+  ASSESS ("assess-record-audio-input");
+  g_string_append_printf (desc, "! queue2 ");
+  ASSESS ("assess-record-audio-encode-in");
+  g_string_append_printf (desc, "! faac ");
+  ASSESS ("assess-record-audio-encode-out");
+  g_string_append_printf (desc, "! mux. ");
+
+  g_string_append_printf (desc, "avimux name=mux ");
+  ASSESS ("assess-record-mux-result");
+  g_string_append_printf (desc, "! tee name=result ");
+
   if (filename) {
     g_string_append_printf (desc, "filesink name=disk_sink sync=false "
 	"location=\"%s\" ", filename);
-    g_string_append_printf (desc, "result. ! queue2 ! disk_sink. ");
     g_free ((gpointer) filename);
+    g_string_append_printf (desc, "result. ");
+    ASSESS ("assess-record-file-0");
+    g_string_append_printf (desc, "! queue2 ");
+    ASSESS ("assess-record-file-1");
+    g_string_append_printf (desc, "! disk_sink. ");
   }
+
   g_string_append_printf (desc, "tcpserversink name=tcp_sink sync=false "
       "port=%d ", rec->sink_port);
-  g_string_append_printf (desc, "result. ! queue2 ! gdppay ! tcp_sink. ");
+  g_string_append_printf (desc, "result. ");
+  ASSESS ("assess-record-tcp-0");
+  g_string_append_printf (desc, "! queue2 ");
+  ASSESS ("assess-record-tcp-1");
+  g_string_append_printf (desc, "! gdppay ! tcp_sink. ");
   return desc;
 }
 

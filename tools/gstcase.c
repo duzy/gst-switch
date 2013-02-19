@@ -277,27 +277,18 @@ gst_case_get_pipeline_string (GstCase * cas)
 
     if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
       g_string_append_printf (desc, "source. ");
-#if ENABLE_ASSESSMENT
-      g_string_append_printf (desc, "! assess name=assess-audio-input-%d ",
-	  cas->sink_port);
-#endif//ENABLE_ASSESSMENT
+      ASSESS ("assess-audio-input-%d", cas->sink_port);
       //g_string_append_printf (desc, "! gdpdepay ! sink. ");
       g_string_append_printf (desc, "! sink. ");
     } else if (cas->type == GST_CASE_PREVIEW) {
       g_string_append_printf (desc, "source. "
 	  "! video/x-raw,width=%d,height=%d ",
 	  cas->a_width, cas->a_height);
-#if ENABLE_ASSESSMENT
-      g_string_append_printf (desc, "! assess name=assess-video-preview-%d ",
-	  cas->sink_port);
-#endif//ENABLE_ASSESSMENT
+      ASSESS ("assess-video-preview-%d", cas->sink_port);
       g_string_append_printf (desc, "! sink. ");
     } else {
       g_string_append_printf (desc, "source. ");
-#if ENABLE_ASSESSMENT
-      g_string_append_printf (desc, "! assess name=assess-video-input-%d ",
-	  cas->sink_port);
-#endif//ENABLE_ASSESSMENT
+      ASSESS ("assess-video-input-%d", cas->sink_port);
       g_string_append_printf (desc, "! gdpdepay ! sink. ");
     }
     break;

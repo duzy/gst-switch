@@ -108,10 +108,12 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
   GstFlowReturn ret;
   GstAssess *this = GST_ASSESS (trans);
 
+  /*
   INFO ("buffer: %s, %p, %lld, %lld, %lld, %lld",
       GST_ELEMENT_NAME (trans), gst_element_get_parent (trans),
       GST_BUFFER_TIMESTAMP (buffer), GST_BUFFER_DURATION (buffer),
       GST_BUFFER_OFFSET (buffer), GST_BUFFER_OFFSET_END (buffer));
+  */
 
   (void) this;
   ret = GST_FLOW_OK;
