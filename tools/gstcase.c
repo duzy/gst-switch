@@ -278,7 +278,7 @@ gst_case_get_pipeline_string (GstCase * cas)
     if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
       g_string_append_printf (desc, "source. ");
 #if ENABLE_ASSESSMENT
-      g_string_append_printf (desc, "! assess name=audio-input-%d ",
+      g_string_append_printf (desc, "! assess name=assess-audio-input-%d ",
 	  cas->sink_port);
 #endif//ENABLE_ASSESSMENT
       //g_string_append_printf (desc, "! gdpdepay ! sink. ");
@@ -288,14 +288,14 @@ gst_case_get_pipeline_string (GstCase * cas)
 	  "! video/x-raw,width=%d,height=%d ",
 	  cas->a_width, cas->a_height);
 #if ENABLE_ASSESSMENT
-      g_string_append_printf (desc, "! assess name=video-preview-%d ",
+      g_string_append_printf (desc, "! assess name=assess-video-preview-%d ",
 	  cas->sink_port);
 #endif//ENABLE_ASSESSMENT
       g_string_append_printf (desc, "! sink. ");
     } else {
       g_string_append_printf (desc, "source. ");
 #if ENABLE_ASSESSMENT
-      g_string_append_printf (desc, "! assess name=video-input-%d ",
+      g_string_append_printf (desc, "! assess name=assess-video-input-%d ",
 	  cas->sink_port);
 #endif//ENABLE_ASSESSMENT
       g_string_append_printf (desc, "! gdpdepay ! sink. ");

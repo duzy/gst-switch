@@ -50,32 +50,10 @@ enum
 #define gst_assess_parent_class parent_class
 G_DEFINE_TYPE (GstAssess, gst_assess, GST_TYPE_BASE_TRANSFORM);
 
-static GstFlowReturn gst_assess_chain (GstPad *, GstObject *, GstBuffer *);
-static gboolean gst_assess_src_event (GstPad *, GstObject *, GstEvent *);
-static gboolean gst_assess_sink_event (GstPad *, GstObject *, GstEvent *);
-
 static void 
 gst_assess_init (GstAssess *assess)
 {
   g_mutex_init (&assess->lock);
-
-  assess->sinkpad = gst_pad_new_from_static_template (
-      &gst_assess_sink_factory, "sink");
-  gst_pad_set_chain_function (assess->sinkpad,
-      GST_DEBUG_FUNCPTR (gst_assess_chain));
-  /*
-  gst_pad_set_event_function (assess->sinkpad,
-      GST_DEBUG_FUNCPTR (gst_assess_sink_event));
-  */
-  gst_element_add_pad (GST_ELEMENT (assess), assess->sinkpad);
-
-  assess->srcpad = gst_pad_new_from_static_template (
-      &gst_assess_src_factory, "src");
-  /*
-  gst_pad_set_event_function (assess->srcpad,
-      GST_DEBUG_FUNCPTR (gst_assess_src_event));
-  */
-  gst_element_add_pad (GST_ELEMENT (assess), assess->srcpad);
 }
 
 static void
@@ -83,7 +61,7 @@ gst_assess_finalize (GstAssess *assess)
 {
   g_mutex_clear (&assess->lock);
 
-  G_OBJECT_CLASS (assess)->finalize (G_OBJECT (assess));
+  G_OBJECT_CLASS (parent_class)->finalize (G_OBJECT (assess));
 }
 
 static void
@@ -108,17 +86,32 @@ gst_assess_get_property (GstAssess *assess, guint prop_id,
   }
 }
 
+static gboolean
+gst_assess_start (GstBaseTransform * trans)
+{
+  GstAssess *this = GST_ASSESS (trans);
+  (void) this;
+  return TRUE;
+}
+
+static gboolean
+gst_assess_stop (GstBaseTransform * trans)
+{
+  GstAssess *this = GST_ASSESS (trans);
+  (void) this;
+  return TRUE;
+}
+
 static GstFlowReturn
-gst_assess_chain (GstPad *pad, GstObject *parent, GstBuffer *buffer)
+gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
 {
   GstFlowReturn ret;
-  GstAssess *this = GST_ASSESS (parent);
+  GstAssess *this = GST_ASSESS (trans);
 
-  /*
-  INFO ("buffer: %lld, %lld, %lld, %lld", GST_BUFFER_TIMESTAMP (buffer),
-      GST_BUFFER_DURATION (buffer), GST_BUFFER_OFFSET (buffer),
-      GST_BUFFER_OFFSET_END (buffer));
-  */
+  INFO ("buffer: %s, %p, %lld, %lld, %lld, %lld",
+      GST_ELEMENT_NAME (trans), gst_element_get_parent (trans),
+      GST_BUFFER_TIMESTAMP (buffer), GST_BUFFER_DURATION (buffer),
+      GST_BUFFER_OFFSET (buffer), GST_BUFFER_OFFSET_END (buffer));
 
   (void) this;
   ret = GST_FLOW_OK;
@@ -127,18 +120,12 @@ gst_assess_chain (GstPad *pad, GstObject *parent, GstBuffer *buffer)
 }
 
 static gboolean
-gst_assess_src_event (GstPad *pad, GstObject *parent, GstEvent *event)
+gst_assess_sink_event (GstBaseTransform *trans, GstEvent *event)
 {
   gboolean ret = TRUE;
-  (void) ret;
-  return ret;
-}
-
-static gboolean
-gst_assess_sink_event (GstPad *pad, GstObject *parent, GstEvent *event)
-{
-  gboolean ret = TRUE;
-  //ret = GST_ELEMENT_CLASS (parent_class)->sink_event ();
+  GstAssess *this = GST_ASSESS (trans);
+  (void) this;
+  ret = GST_BASE_TRANSFORM_CLASS (parent_class)->sink_event (trans, event);
   return ret;
 }
 
@@ -147,6 +134,8 @@ gst_assess_change_state (GstElement * element, GstStateChange transition)
 {
   GstStateChangeReturn ret;
   GstAssess *this = GST_ASSESS (element);
+
+  (void) this;
 
   switch (transition) {
   case GST_STATE_CHANGE_READY_TO_PAUSED:
@@ -173,6 +162,7 @@ gst_assess_class_init (GstAssessClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
+  GstBaseTransformClass *basetrans_class = GST_BASE_TRANSFORM_CLASS (klass);
 
   object_class->set_property = (GObjectSetPropertyFunc) gst_assess_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_assess_get_property;
@@ -192,6 +182,11 @@ gst_assess_class_init (GstAssessClass *klass)
   //element_class->request_new_pad = gst_assess_request_new_pad;
   //element_class->release_pad = gst_assess_release_pad;
   element_class->change_state = GST_DEBUG_FUNCPTR (gst_assess_change_state);
+
+  basetrans_class->sink_event = GST_DEBUG_FUNCPTR (gst_assess_sink_event);
+  basetrans_class->transform_ip = GST_DEBUG_FUNCPTR (gst_assess_transform);
+  basetrans_class->start = GST_DEBUG_FUNCPTR (gst_assess_start);
+  basetrans_class->stop = GST_DEBUG_FUNCPTR (gst_assess_stop);
 
   GST_DEBUG_CATEGORY_INIT (gst_assess_debug, "assess", 0, "Assess");
 }
