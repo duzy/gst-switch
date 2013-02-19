@@ -355,7 +355,12 @@ gst_composite_get_pipeline_string (GstComposite * composite)
       "channel=composite_a ");
   if (composite->mode == COMPOSE_MODE_0) {
     g_string_append_printf (desc, "source_a. "
-	"! video/x-raw,width=%d,height=%d ! queue2 ! identity name=compose ",
+	"! video/x-raw,width=%d,height=%d ",
+	composite->a_width, composite->a_height);
+#if ENABLE_ASSESSMENT
+    g_string_append_printf (desc, "! assess name=assess-compose-source-a ");
+#endif//ENABLE_ASSESSMENT
+    g_string_append_printf (desc, "! queue2 ! identity name=compose ",
 	composite->a_width, composite->a_height);
   } else {
     g_string_append_printf (desc, "intervideosrc name=source_b "
@@ -369,9 +374,13 @@ gst_composite_get_pipeline_string (GstComposite * composite)
 	"sink_1::zorder=1 ",
 	composite->a_x, composite->a_y,
 	composite->b_x, composite->b_y);
-    g_string_append_printf (desc,"source_b. "
-	"! video/x-raw,width=%d,height=%d ! queue2 ",
+    g_string_append_printf (desc,
+	"source_b. ! video/x-raw,width=%d,height=%d ",
 	composite->a_width, composite->a_height);
+#if ENABLE_ASSESSMENT
+    g_string_append_printf (desc, "! assess name=assess-compose-source-b ");
+#endif//ENABLE_ASSESSMENT
+    g_string_append_printf (desc, "! queue2 ");
     if (composite->a_width  != composite->b_width ||
 	composite->a_height != composite->b_height) {
       g_string_append_printf (desc, "! videoscale "
@@ -379,18 +388,37 @@ gst_composite_get_pipeline_string (GstComposite * composite)
 	  composite->b_width, composite->b_height);
     }
     g_string_append_printf (desc, "! compose.sink_1 ");
-    g_string_append_printf (desc, "source_a. "
-	"! video/x-raw,width=%d,height=%d ! queue2 ! compose.sink_0 ",
+
+    g_string_append_printf (desc,
+	"source_a. ! video/x-raw,width=%d,height=%d ",
 	composite->a_width, composite->a_height);
+#if ENABLE_ASSESSMENT
+    g_string_append_printf (desc, "! assess name=assess-compose-source-a ");
+#endif//ENABLE_ASSESSMENT
+    g_string_append_printf (desc, "! queue2 ! compose.sink_0 ");
   }
-  g_string_append_printf (desc, "compose. ! video/x-raw,width=%d,height=%d "
-      "! tee name=result ", composite->width, composite->height);
-  g_string_append_printf (desc, "result. ! queue2 ! out. ");
+
+  g_string_append_printf (desc, "compose. ! video/x-raw,width=%d,height=%d ",
+      composite->width, composite->height);
+#if ENABLE_ASSESSMENT
+  g_string_append_printf (desc, "! assess name=assess-compose ");
+#endif//ENABLE_ASSESSMENT
+  g_string_append_printf (desc, "! tee name=result ");
+
+  g_string_append_printf (desc, "result. ! queue2 ");
+#if ENABLE_ASSESSMENT
+  g_string_append_printf (desc, "! assess name=assess-compose-out ");
+#endif//ENABLE_ASSESSMENT
+  g_string_append_printf (desc, "! out. ");
   g_string_append_printf (desc, "intervideosink name=out "
       "channel=composite_out ");
 
   if (opts.record_filename) {
-    g_string_append_printf (desc, "result. ! queue2 ! record. ");
+    g_string_append_printf (desc, "result. ! queue2 ");
+#if ENABLE_ASSESSMENT
+    g_string_append_printf (desc, "! assess name=assess-compose-record ");
+#endif//ENABLE_ASSESSMENT
+    g_string_append_printf (desc, "! record. ");
     g_string_append_printf (desc, "intervideosink name=record "
 	"channel=composite_video ");
   }
@@ -410,8 +438,12 @@ gst_composite_get_output_string (GstWorker *worker,
       "channel=composite_out ");
   g_string_append_printf (desc, "tcpserversink name=sink "
       "port=%d ", composite->sink_port);
-  g_string_append_printf (desc, "source. ! video/x-raw,width=%d,height=%d "
-      "! gdppay ! sink. ", composite->width, composite->height);
+  g_string_append_printf (desc, "source. ! video/x-raw,width=%d,height=%d ",
+      composite->width, composite->height);
+#if ENABLE_ASSESSMENT
+  g_string_append_printf (desc, "! assess name=assess-compose-output ");
+#endif//ENABLE_ASSESSMENT
+  g_string_append_printf (desc, "! gdppay ! sink. ");
 
   return desc;
 }
