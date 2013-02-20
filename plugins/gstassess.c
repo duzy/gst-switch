@@ -72,22 +72,23 @@ static gboolean
 assess_db_timeout (gpointer data)
 {
   gboolean ret = TRUE;
-  GList *keys, *key, *assess_point_list;
+  GHashTable *assess_point_hash = NULL;
+  GList *keys, *key, *names, *name;
   ASSESS_DB_LOCK ();
   keys = g_hash_table_get_keys (assess_db.hash);
-
   for (key = keys; key; key = g_list_next (key)) {
     const gchar *s = (gchar *) key->data;
-    GList *ap;
-    assess_point_list  = g_hash_table_lookup (assess_db.hash, s);
+    assess_point_hash  = g_hash_table_lookup (assess_db.hash, s);
+    names = g_hash_table_get_keys (assess_point_hash);
     INFO ("%s", s);
-    for (ap = assess_point_list; ap; ap = g_list_next (ap)) {
-      GstAssessPoint *assess_point = (GstAssessPoint *) ap->data;
-      INFO ("\t%s", assess_point->name);
-      INFO ("\t%lld", assess_point->dropped_time);
+    for (name = names; name; name = g_list_next (name)) {
+      GstAssessPoint *assess_point = g_hash_table_lookup (
+	  assess_point_hash, name->data);
+      INFO ("  %s", assess_point->name);
+      INFO ("  %lld", (long long int) assess_point->dropped_time);
     }
+    g_list_free (names);
   }
-
   g_list_free (keys);
   ASSESS_DB_UNLOCK ();
   return ret;
@@ -103,8 +104,7 @@ static void
 gst_assess_dispose (GstAssess *assess)
 {
   GstElement *pipeline = NULL;
-  GList *assess_point_list = NULL;
-  GstAssessPoint *assess_point = NULL;
+  GHashTable *assess_point_hash = NULL;
 
   pipeline = GST_ELEMENT (gst_element_get_parent (GST_ELEMENT (assess)));
 
@@ -116,18 +116,10 @@ gst_assess_dispose (GstAssess *assess)
   ASSESS_DB_LOCK ();
 
   if (assess_db.hash) {
-    assess_point_list = g_hash_table_lookup (assess_db.hash,
+    assess_point_hash = g_hash_table_lookup (assess_db.hash,
 	GST_ELEMENT_NAME (pipeline));
-
-    if (assess_point_list) {
-      assess_point = (GstAssessPoint*) g_list_find (assess_point_list, assess);
-      if (assess_point) {
-	assess_point_list = g_list_remove (assess_point_list, assess);
-	g_mutex_clear (&assess_point->lock);
-	g_free (assess_point);
-	g_hash_table_replace (assess_db.hash, GST_ELEMENT_NAME (pipeline),
-	    assess_point_list);
-      }
+    if (assess_point_hash) {
+      g_hash_table_remove (assess_point_hash, GST_ELEMENT_NAME (assess));
     }
   }
 
@@ -191,7 +183,7 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
   GstClock *pipeline_clock = NULL;
   GstClockTime t;
   GstFlowReturn ret;
-  GList *assess_point_list = NULL;
+  GHashTable *assess_point_hash = NULL;
   GstAssessPoint *assess_point = NULL;
 
   this = GST_ASSESS (trans);
@@ -200,19 +192,22 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
 
   ASSESS_DB_LOCK ();
 
-  assess_point_list = g_hash_table_lookup (assess_db.hash,
+  assess_point_hash = g_hash_table_lookup (assess_db.hash,
       GST_ELEMENT_NAME (pipeline));
-
-  if (assess_point_list) {
-    assess_point = (GstAssessPoint*) g_list_find (assess_point_list, this);
+  if (assess_point_hash == NULL) {
+    assess_point_hash = g_hash_table_new_full (g_str_hash, g_str_equal,
+	g_free, g_free);
+    g_hash_table_insert (assess_db.hash,
+	g_strdup (GST_ELEMENT_NAME (pipeline)),	assess_point_hash);
   }
 
+  assess_point = g_hash_table_lookup (assess_point_hash,
+      GST_ELEMENT_NAME (this));
   if (assess_point == NULL) {
     assess_point = g_new0 (GstAssessPoint, 1);
-    assess_point_list = g_list_append (assess_point_list, assess_point);
+    assess_point->name = g_strdup (GST_ELEMENT_NAME (this));
+    g_hash_table_insert (assess_point_hash, assess_point->name, assess_point);
     g_mutex_init (&assess_point->lock);
-    g_hash_table_replace (assess_db.hash, GST_ELEMENT_NAME (pipeline),
-	assess_point_list);
   }
 
   ASSESS_DB_UNLOCK ();
@@ -234,7 +229,6 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
       GST_BUFFER_OFFSET_END (buffer));
   */
 
-  assess_point->name = GST_ELEMENT_NAME (this);
   if (GST_CLOCK_TIME_NONE != GST_BUFFER_DURATION (buffer)) {
     assess_point->dropped_time += GST_BUFFER_DURATION (buffer) / GST_MSECOND;
   }
@@ -319,7 +313,8 @@ gst_assess_class_init (GstAssessClass *klass)
   if (assess_db.hash == NULL) {
     ASSESS_DB_LOCK ();
     if (assess_db.hash == NULL) {
-      assess_db.hash = g_hash_table_new (g_str_hash, g_str_equal);
+      assess_db.hash = g_hash_table_new_full (g_str_hash, g_str_equal,
+	  g_free, g_hash_table_destroy);
       assess_db.timer = g_timeout_add (1000,
 	  (GSourceFunc) assess_db_timeout, NULL);
     }
