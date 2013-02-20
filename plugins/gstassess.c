@@ -76,6 +76,7 @@ assess_db_timeout (gpointer data)
   GList *keys, *key, *names, *name;
   ASSESS_DB_LOCK ();
   keys = g_hash_table_get_keys (assess_db.hash);
+  INFO ("========== %d pipelines ==========", g_list_length (keys));
   for (key = keys; key; key = g_list_next (key)) {
     const gchar *s = (gchar *) key->data;
     assess_point_hash  = g_hash_table_lookup (assess_db.hash, s);
@@ -84,8 +85,8 @@ assess_db_timeout (gpointer data)
     for (name = names; name; name = g_list_next (name)) {
       GstAssessPoint *assess_point = g_hash_table_lookup (
 	  assess_point_hash, name->data);
-      INFO ("  %s", assess_point->name);
-      INFO ("  %lld", (long long int) assess_point->dropped_time);
+      INFO ("  %s, %lldms", assess_point->name,
+	  (long long int) assess_point->dropped_time);
     }
     g_list_free (names);
   }
