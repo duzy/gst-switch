@@ -39,8 +39,9 @@ typedef struct _GstAssessPoint {
   guint number;
   const gchar *name;
   GstClockTime pts;
+  GstClockTime duration;
   guint64 running_time; /* measured in milliseconds */
-  guint64 dropped_time; /* measured in milliseconds */
+  guint64 offset, offset_end;
   guint64 buffer_count;
 } GstAssessPoint;
 
@@ -248,19 +249,11 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
 
   ASSESS_POINT_LOCK (assess_point);
 
-  /*
-  INFO ("%s.%s, %p, %lld, %lld, %lld, %lld, %lld",
-      GST_ELEMENT_NAME (pipeline),
-      GST_ELEMENT_NAME (trans), pipeline,
-      GST_BUFFER_DURATION (buffer) / GST_MSECOND,
-      GST_BUFFER_TIMESTAMP (buffer),
-      GST_BUFFER_DTS (buffer),
-      GST_BUFFER_OFFSET (buffer),
-      GST_BUFFER_OFFSET_END (buffer));
-  */
-
   assess_point->pts = GST_BUFFER_PTS (buffer);
   assess_point->buffer_count += 1;
+  assess_point->offset = GST_BUFFER_OFFSET (buffer);
+  assess_point->offset_end += GST_BUFFER_OFFSET_END (buffer);
+  assess_point->duration = GST_BUFFER_DURATION (buffer);
 
   if (GST_CLOCK_TIME_NONE != GST_BUFFER_DURATION (buffer)) {
     assess_point->running_time += GST_BUFFER_DURATION (buffer) / GST_MSECOND;
