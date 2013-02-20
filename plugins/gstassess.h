@@ -43,6 +43,8 @@ struct _GstAssess {
   GstBaseTransform base;
   GMutex lock;
 
+  guint number;
+
   GstPad *sinkpad;
   GstPad *srcpad;
 };

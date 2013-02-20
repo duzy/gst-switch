@@ -36,9 +36,12 @@ GST_DEBUG_CATEGORY_STATIC (gst_assess_debug);
 
 typedef struct _GstAssessPoint {
   GMutex lock;
+  guint number;
   const gchar *name;
+  GstClockTime pts;
   guint64 running_time; /* measured in milliseconds */
   guint64 dropped_time; /* measured in milliseconds */
+  guint64 buffer_count;
 } GstAssessPoint;
 
 typedef struct _GstAssessDB {
@@ -64,10 +67,24 @@ static GstStaticPadTemplate gst_assess_src_factory =
 enum
 {
   PROP_0,
+  PROP_N,
 };
 
 #define gst_assess_parent_class parent_class
 G_DEFINE_TYPE (GstAssess, gst_assess, GST_TYPE_BASE_TRANSFORM);
+
+static gint assess_compare_name(gconstpointer a,
+    gconstpointer b, gpointer user_data)
+{
+  GHashTable *assess_point_hash = user_data;
+  GstAssessPoint *ap1 = g_hash_table_lookup (assess_point_hash, a);
+  GstAssessPoint *ap2 = g_hash_table_lookup (assess_point_hash, b);
+  if (ap1->number < ap2->number) return -1;
+  if (ap1->number > ap2->number) return 1;
+  if (ap1->pts < ap2->pts) return -1;
+  if (ap1->pts > ap2->pts) return 1;
+  return 0;
+}
 
 static gboolean
 assess_db_timeout (gpointer data)
@@ -82,11 +99,15 @@ assess_db_timeout (gpointer data)
     const gchar *s = (gchar *) key->data;
     assess_point_hash  = g_hash_table_lookup (assess_db.hash, s);
     names = g_hash_table_get_keys (assess_point_hash);
+    names = g_list_sort_with_data (names, assess_compare_name, assess_point_hash);
     g_print ("%s\n", s);
     for (name = names; name; name = g_list_next (name)) {
       GstAssessPoint *assess_point = g_hash_table_lookup (
 	  assess_point_hash, name->data);
-      g_print ("\t%s, %lldms\n", assess_point->name,
+      g_print ("\t%d\t%s, %lld, %lld buffers, %lldms\n",
+	  assess_point->number, assess_point->name,
+	  (long long int) assess_point->pts,
+	  (long long int) assess_point->buffer_count,
 	  (long long int) assess_point->running_time);
     }
     g_list_free (names);
@@ -144,6 +165,9 @@ gst_assess_set_property (GstAssess *assess, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
   switch (prop_id) {
+  case PROP_N:
+    assess->number = g_value_get_uint (value);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (assess), prop_id, pspec);
     break;
@@ -155,6 +179,9 @@ gst_assess_get_property (GstAssess *assess, guint prop_id,
     GValue * value, GParamSpec * pspec)
 {
   switch (prop_id) {
+  case PROP_N:
+    g_value_set_uint (value, assess->number);
+    break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (assess), prop_id, pspec);
     break;
@@ -207,6 +234,7 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
       GST_ELEMENT_NAME (this));
   if (assess_point == NULL) {
     assess_point = g_new0 (GstAssessPoint, 1);
+    assess_point->number = this->number;
     assess_point->name = g_strdup (GST_ELEMENT_NAME (this));
     g_hash_table_insert (assess_point_hash, assess_point->name, assess_point);
     g_mutex_init (&assess_point->lock);
@@ -230,6 +258,9 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
       GST_BUFFER_OFFSET (buffer),
       GST_BUFFER_OFFSET_END (buffer));
   */
+
+  assess_point->pts = GST_BUFFER_PTS (buffer);
+  assess_point->buffer_count += 1;
 
   if (GST_CLOCK_TIME_NONE != GST_BUFFER_DURATION (buffer)) {
     assess_point->running_time += GST_BUFFER_DURATION (buffer) / GST_MSECOND;
@@ -291,6 +322,10 @@ gst_assess_class_init (GstAssessClass *klass)
   object_class->get_property = (GObjectGetPropertyFunc) gst_assess_get_property;
   object_class->finalize = (GObjectFinalizeFunc) gst_assess_finalize;
   object_class->dispose = (GObjectFinalizeFunc) gst_assess_dispose;
+
+  g_object_class_install_property (object_class, PROP_N,
+      g_param_spec_uint ("n", "N", "Number",
+          0, (guint) -1, -1, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gst_element_class_set_static_metadata (element_class,
       "Stream Assessment", "Element",

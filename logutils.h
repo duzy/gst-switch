@@ -40,7 +40,8 @@
 #define ERROR(S, ...) ((void) FALSE)
 #endif//DEBUG
 #if ENABLE_ASSESSMENT
-#define ASSESS(name, ...) (g_string_append_printf (desc, "! assess name="#name " ", ##__VA_ARGS__))
+extern guint assess_number;
+#define ASSESS(name, ...) (g_string_append_printf (desc, "! assess n=%d name="#name " ", assess_number++, ##__VA_ARGS__))
 #else
 #define ASSESS(name, ...) ((void) FALSE);
 #endif//ENABLE_ASSESSMENT

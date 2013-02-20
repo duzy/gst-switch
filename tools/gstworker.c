@@ -50,6 +50,10 @@ enum
 static guint gst_worker_signals[SIGNAL__LAST] = { 0 };
 extern gboolean verbose;
 
+#if ENABLE_ASSESSMENT
+guint assess_number = 0;
+#endif//ENABLE_ASSESSMENT
+
 #define gst_worker_parent_class parent_class
 G_DEFINE_TYPE (GstWorker, gst_worker, G_TYPE_OBJECT);
 
