@@ -37,6 +37,7 @@ GST_DEBUG_CATEGORY_STATIC (gst_assess_debug);
 typedef struct _GstAssessPoint {
   GMutex lock;
   const gchar *name;
+  guint64 running_time; /* measured in milliseconds */
   guint64 dropped_time; /* measured in milliseconds */
 } GstAssessPoint;
 
@@ -76,17 +77,17 @@ assess_db_timeout (gpointer data)
   GList *keys, *key, *names, *name;
   ASSESS_DB_LOCK ();
   keys = g_hash_table_get_keys (assess_db.hash);
-  INFO ("========== %d pipelines ==========", g_list_length (keys));
+  g_print ("========== %d pipelines ==========\n", g_list_length (keys));
   for (key = keys; key; key = g_list_next (key)) {
     const gchar *s = (gchar *) key->data;
     assess_point_hash  = g_hash_table_lookup (assess_db.hash, s);
     names = g_hash_table_get_keys (assess_point_hash);
-    INFO ("%s", s);
+    g_print ("%s\n", s);
     for (name = names; name; name = g_list_next (name)) {
       GstAssessPoint *assess_point = g_hash_table_lookup (
 	  assess_point_hash, name->data);
-      INFO ("  %s, %lldms", assess_point->name,
-	  (long long int) assess_point->dropped_time);
+      g_print ("\t%s, %lldms\n", assess_point->name,
+	  (long long int) assess_point->running_time);
     }
     g_list_free (names);
   }
@@ -231,7 +232,7 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
   */
 
   if (GST_CLOCK_TIME_NONE != GST_BUFFER_DURATION (buffer)) {
-    assess_point->dropped_time += GST_BUFFER_DURATION (buffer) / GST_MSECOND;
+    assess_point->running_time += GST_BUFFER_DURATION (buffer) / GST_MSECOND;
   }
   
   ASSESS_POINT_UNLOCK (assess_point);
@@ -316,7 +317,7 @@ gst_assess_class_init (GstAssessClass *klass)
     if (assess_db.hash == NULL) {
       assess_db.hash = g_hash_table_new_full (g_str_hash, g_str_equal,
 	  g_free, g_hash_table_destroy);
-      assess_db.timer = g_timeout_add (1000,
+      assess_db.timer = g_timeout_add (2000,
 	  (GSourceFunc) assess_db_timeout, NULL);
     }
     ASSESS_DB_UNLOCK ();
