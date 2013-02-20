@@ -29,6 +29,17 @@ GST_DEBUG_CATEGORY_STATIC (gst_assess_debug);
 
 #define GST_ASSESS_LOCK(obj) (g_mutex_lock (&(obj)->lock))
 #define GST_ASSESS_UNLOCK(obj) (g_mutex_unlock (&(obj)->lock))
+#define ASSESS_DB_LOCK() (g_mutex_lock (&assess_db_lock))
+#define ASSESS_DB_UNLOCK() (g_mutex_unlock (&assess_db_lock))
+#define ASSESS_POINT_LOCK(ap) (g_mutex_lock (&(ap)->lock))
+#define ASSESS_POINT_UNLOCK(ap) (g_mutex_unlock (&(ap)->lock))
+
+typedef struct _GstAssessPoint {
+  GMutex lock;
+} GstAssessPoint;
+
+static GMutex assess_db_lock = { 0 };
+static GHashTable *assess_hash = NULL;
 
 static GstStaticPadTemplate gst_assess_sink_factory =
   GST_STATIC_PAD_TEMPLATE ("sink",
@@ -54,6 +65,44 @@ static void
 gst_assess_init (GstAssess *assess)
 {
   g_mutex_init (&assess->lock);
+}
+
+static void
+gst_assess_dispose (GstAssess *assess)
+{
+  GstElement *pipeline = NULL;
+  GList *assess_point_list = NULL;
+  GstAssessPoint *assess_point = NULL;
+
+  pipeline = GST_ELEMENT (gst_element_get_parent (GST_ELEMENT (assess)));
+
+  if (!pipeline) {
+    ERROR ("fix me");
+    goto end;
+  }
+
+  ASSESS_DB_LOCK ();
+
+  if (assess_hash) {
+    assess_point_list = g_hash_table_lookup (assess_hash,
+	GST_ELEMENT_NAME (pipeline));
+
+    if (assess_point_list) {
+      assess_point = (GstAssessPoint*) g_list_find (assess_point_list, assess);
+      if (assess_point) {
+	assess_point_list = g_list_remove (assess_point_list, assess);
+	g_mutex_clear (&assess_point->lock);
+	g_free (assess_point);
+	g_hash_table_replace (assess_hash, GST_ELEMENT_NAME (pipeline),
+	    assess_point_list);
+      }
+    }
+  }
+
+  ASSESS_DB_UNLOCK ();
+
+ end:
+  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (assess));
 }
 
 static void
@@ -105,8 +154,36 @@ gst_assess_stop (GstBaseTransform * trans)
 static GstFlowReturn
 gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
 {
+  GstAssess *this = NULL;
+  GstElement *pipeline = NULL;
+  GstClock *pipeline_clock = NULL;
+  GstClockTime t;
   GstFlowReturn ret;
-  GstAssess *this = GST_ASSESS (trans);
+  GList *assess_point_list = NULL;
+  GstAssessPoint *assess_point = NULL;
+
+  this = GST_ASSESS (trans);
+  pipeline = GST_ELEMENT (gst_element_get_parent (GST_ELEMENT (trans)));
+  pipeline_clock = gst_pipeline_get_clock (GST_PIPELINE (pipeline));
+
+  ASSESS_DB_LOCK ();
+
+  assess_point_list = g_hash_table_lookup (assess_hash,
+      GST_ELEMENT_NAME (pipeline));
+
+  if (assess_point_list) {
+    assess_point = (GstAssessPoint*) g_list_find (assess_point_list, this);
+  }
+
+  if (assess_point == NULL) {
+    assess_point = g_new0 (GstAssessPoint, 1);
+    g_mutex_init (&assess_point->lock);
+    assess_point_list = g_list_append (assess_point_list, assess_point);
+    g_hash_table_replace (assess_hash, GST_ELEMENT_NAME (pipeline),
+	assess_point_list);
+  }
+
+  ASSESS_DB_UNLOCK ();
 
   /*
   INFO ("buffer: %s, %p, %lld, %lld, %lld, %lld",
@@ -115,17 +192,33 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
       GST_BUFFER_OFFSET (buffer), GST_BUFFER_OFFSET_END (buffer));
   */
 
-  (void) this;
-  ret = GST_FLOW_OK;
+  if (!assess_point) {
+    goto end;
+  }
 
+  ASSESS_POINT_LOCK (assess_point);
+  
+  INFO ("%s.%s, %p, %lld, %lld, %lld, %lld, %lld",
+      GST_ELEMENT_NAME (pipeline),
+      GST_ELEMENT_NAME (trans), pipeline,
+      GST_BUFFER_DURATION (buffer),
+      GST_BUFFER_TIMESTAMP (buffer),
+      GST_BUFFER_DTS (buffer),
+      GST_BUFFER_OFFSET (buffer),
+      GST_BUFFER_OFFSET_END (buffer));
+  
+  ASSESS_POINT_UNLOCK (assess_point);
+
+ end:
+  ret = GST_FLOW_OK;
   return ret;
 }
 
 static gboolean
 gst_assess_sink_event (GstBaseTransform *trans, GstEvent *event)
 {
-  gboolean ret = TRUE;
   GstAssess *this = GST_ASSESS (trans);
+  gboolean ret = TRUE;
   (void) this;
   ret = GST_BASE_TRANSFORM_CLASS (parent_class)->sink_event (trans, event);
   return ret;
@@ -169,6 +262,7 @@ gst_assess_class_init (GstAssessClass *klass)
   object_class->set_property = (GObjectSetPropertyFunc) gst_assess_set_property;
   object_class->get_property = (GObjectGetPropertyFunc) gst_assess_get_property;
   object_class->finalize = (GObjectFinalizeFunc) gst_assess_finalize;
+  object_class->dispose = (GObjectFinalizeFunc) gst_assess_dispose;
 
   gst_element_class_set_static_metadata (element_class,
       "Stream Assessment", "Element",
@@ -189,6 +283,13 @@ gst_assess_class_init (GstAssessClass *klass)
   basetrans_class->transform_ip = GST_DEBUG_FUNCPTR (gst_assess_transform);
   basetrans_class->start = GST_DEBUG_FUNCPTR (gst_assess_start);
   basetrans_class->stop = GST_DEBUG_FUNCPTR (gst_assess_stop);
+
+  if (assess_hash == NULL) {
+    ASSESS_DB_LOCK ();
+    if (assess_hash == NULL)
+      assess_hash = g_hash_table_new (g_str_hash, g_str_equal);
+    ASSESS_DB_UNLOCK ();
+  }
 
   GST_DEBUG_CATEGORY_INIT (gst_assess_debug, "assess", 0, "Assess");
 }
