@@ -317,7 +317,7 @@ gst_assess_class_init (GstAssessClass *klass)
     if (assess_db.hash == NULL) {
       assess_db.hash = g_hash_table_new_full (g_str_hash, g_str_equal,
 	  g_free, g_hash_table_destroy);
-      assess_db.timer = g_timeout_add (2000,
+      assess_db.timer = g_timeout_add (3000,
 	  (GSourceFunc) assess_db_timeout, NULL);
     }
     ASSESS_DB_UNLOCK ();
