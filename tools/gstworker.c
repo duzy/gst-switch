@@ -197,6 +197,13 @@ gst_worker_create_pipeline (GstWorker *worker)
     goto end;
   }
 
+  if (pipeline) {
+    gchar *name = g_strdup_printf ("%s-pipeline", worker->name);
+    //g_object_set (G_OBJECT (pipeline), "name", name, NULL);
+    gst_element_set_name (pipeline, name);
+    g_free (name);
+  }
+
   if (g_error_matches (error, GST_PARSE_ERROR,
 	  GST_PARSE_ERROR_NO_SUCH_ELEMENT)) {
     gchar **name = NULL;
@@ -749,14 +756,14 @@ gst_worker_reset (GstWorker *worker)
     }
     if (worker->pipeline) {
       if (1 < GST_OBJECT_REFCOUNT(worker->pipeline)) {
-	WARN("possible pipeline leaks %d", GST_OBJECT_REFCOUNT(worker->pipeline));
+	WARN("possible pipeline leaks: %d", GST_OBJECT_REFCOUNT(worker->pipeline));
       }
       gst_object_unref (worker->pipeline);
       worker->pipeline = NULL;
     }
     if (worker->bus) {
       if (1 < GST_OBJECT_REFCOUNT(worker->bus)) {
-	WARN("possible bus leaks %d", GST_OBJECT_REFCOUNT(worker->bus));
+	WARN("possible bus leaks: %d", GST_OBJECT_REFCOUNT(worker->bus));
       }
       gst_object_unref (worker->bus);
       worker->bus = NULL;
