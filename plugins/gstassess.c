@@ -133,7 +133,7 @@ gst_assess_dispose (GstAssess *assess)
   pipeline = GST_ELEMENT (gst_element_get_parent (GST_ELEMENT (assess)));
 
   if (!pipeline) {
-    ERROR ("fix me");
+    //ERROR ("fix me");
     goto end;
   }
 
