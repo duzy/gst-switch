@@ -309,16 +309,16 @@ gst_case_get_pipeline_string (GstCase * cas)
 	cas->sink_port);
     g_string_append_printf (desc, "source. ");
     if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-      ASSESS ("assess-branch-%d-source", cas->sink_port);
+      ASSESS ("assess-branch-source-%d", cas->sink_port);
       g_string_append_printf (desc, "! faac ");
-      ASSESS ("assess-branch-%d-audio-encoded", cas->sink_port);
+      ASSESS ("assess-branch-audio-encoded-%d", cas->sink_port);
     } else {
       g_string_append_printf (desc, "! video/x-raw,width=%d,height=%d ",
 	  cas->a_width, cas->a_height);
-      ASSESS ("assess-branch-%d-source", cas->sink_port);
+      ASSESS ("assess-branch-source-%d", cas->sink_port);
     }
     g_string_append_printf (desc, "! gdppay ");
-    ASSESS ("assess-branch-%d-payed", cas->sink_port);
+    ASSESS ("assess-branch-payed-%d", cas->sink_port);
     g_string_append_printf (desc, "! sink. ");
     break;
   case GST_CASE_UNKNOWN:
