@@ -147,12 +147,12 @@ assess_db_timeout (gpointer data)
 	ss = g_strnfill (padlen, ' ');
       else
 	ss = g_strdup ("");
-      g_print ("\t%d\t%s%s\tsequence=%d,ats=%lld, "
+      g_print ("\t%d\t%s%s\tats=%lld, " //"\t%d\t%s%s\tsequence=%d,ats=%lld, "
 	  "pts=%lld, dts=%lld, duration=%lld, "
 	  "buffers=%lld, time=%lldms, offset=%lld"
 	  "\n",
 	  assess_point->number, assess_point->name, ss,
-	  assess_point->sequence,
+	  //assess_point->sequence,
 	  (long long int) (assess_point->ats /*/ GST_MSECOND*/),
 	  (assess_point->pts == GST_CLOCK_TIME_NONE ? -1 :
 	      (long long int) (assess_point->pts /*/ GST_MSECOND*/)),
