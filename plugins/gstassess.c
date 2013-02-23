@@ -21,11 +21,13 @@
 #include "config.h"
 #endif
 
+#include <string.h>
 #include "gstassess.h"
 #include "../logutils.h"
 
 GST_DEBUG_CATEGORY_STATIC (gst_assess_debug);
 #define GST_CAT_DEFAULT gst_assess_debug
+#define ASSESS_NAME_LENGTH (8 * 5)
 
 #define GST_ASSESS_LOCK(obj) (g_mutex_lock (&(obj)->lock))
 #define GST_ASSESS_UNLOCK(obj) (g_mutex_unlock (&(obj)->lock))
@@ -99,7 +101,7 @@ assess_db_timeout (gpointer data)
   keys = g_hash_table_get_keys (assess_db.hash);
   g_print ("========== %d pipelines ==========\n", g_list_length (keys));
   for (key = keys; key; key = g_list_next (key)) {
-    const gchar *s = (gchar *) key->data;
+    const gchar *s = (gchar *) key->data, *ss = NULL;
     assess_point_hash  = g_hash_table_lookup (assess_db.hash, s);
     names = g_hash_table_get_keys (assess_point_hash);
     names = g_list_sort_with_data (names, assess_compare_name, assess_point_hash);
@@ -107,15 +109,22 @@ assess_db_timeout (gpointer data)
     for (name = names; name; name = g_list_next (name)) {
       GstAssessPoint *assess_point = g_hash_table_lookup (
 	  assess_point_hash, name->data);
-      g_print ("\t%d\t%s, ats=%lld, "
+      const int padlen = ASSESS_NAME_LENGTH - strlen (assess_point->name);
+      if (0 < padlen)
+	ss = g_strnfill (padlen, ' ');
+      else
+	ss = g_strdup ("");
+      g_print ("\t%d\t%s%s\tats=%lld, "
 	  "pts=%lld, buffers=%lld, time=%lldms, offset=%lld"
 	  "\n",
-	  assess_point->number, assess_point->name,
-	  (long long int) (assess_point->ats / GST_MSECOND),
-	  (long long int) (assess_point->pts / GST_MSECOND),
+	  assess_point->number, assess_point->name, ss,
+	  (long long int) (assess_point->ats /*/ GST_MSECOND*/),
+	  (assess_point->pts == GST_CLOCK_TIME_NONE ? -1 :
+	      (long long int) (assess_point->pts /*/ GST_MSECOND*/)),
 	  (long long int) assess_point->buffer_count,
 	  (long long int) assess_point->running_time,
 	  assess_point->offset);
+      g_free ((gpointer) ss);
     }
     g_list_free (names);
   }
@@ -216,7 +225,7 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
 {
   GstAssess *this = NULL;
   GstElement *pipeline = NULL;
-  GstClock *pipeline_clock = NULL;
+  //GstClock *pipeline_clock = NULL;
   GstClockTime ats;
   GstFlowReturn ret;
   GHashTable *assess_point_hash = NULL;
@@ -224,7 +233,7 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
 
   this = GST_ASSESS (trans);
   pipeline = GST_ELEMENT (gst_element_get_parent (GST_ELEMENT (trans)));
-  pipeline_clock = gst_pipeline_get_clock (GST_PIPELINE (pipeline));
+  //pipeline_clock = gst_pipeline_get_clock (GST_PIPELINE (pipeline));
 
   ASSESS_DB_LOCK ();
 
