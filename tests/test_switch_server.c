@@ -50,6 +50,9 @@
 
 gboolean verbose = FALSE;
 
+static GMutex children_lock = { 0 };
+static GList *children = NULL;
+
 enum {
 #if ENABLE_LOW_RESOLUTION
   W = LOW_RES_W, H = LOW_RES_H,
@@ -300,6 +303,11 @@ child_quit (GPid pid, gint status, gpointer data)
   GError *error = NULL;
 
   INFO ("quit %d", pid);
+  {
+      g_mutex_lock (&children_lock);
+      children = g_list_remove (children, pid);
+      g_mutex_unlock (&children_lock);
+  }
 
   g_output_stream_flush (ostream, NULL, &error);
   g_assert_no_error (error);
@@ -406,6 +414,12 @@ launch (const gchar *name, ...)
     (void) fd_in, (void) fd_out, (void) fd_err;
     ok = g_spawn_async_with_pipes (NULL, argv, NULL, G_SPAWN_DO_NOT_REAP_CHILD,
 	NULL, NULL, &pid, NULL, NULL, NULL, &error);
+  }
+
+  if (ok) {
+      g_mutex_lock (&children_lock);
+      children = g_list_append (children, pid);
+      g_mutex_unlock (&children_lock);
   }
 
   g_free (argv);
@@ -2149,7 +2163,7 @@ test_fuzz (void)
 static void
 test_checking_timestamps (void)
 {
-  const gint seconds = 60 + 2;
+  const gint seconds = 60 + 5;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source = { "test-video-source", 0 };
@@ -2204,6 +2218,20 @@ test_multiple_clients (void)
   ERROR ("TODO: test for multiple clients");
 }
 
+static void
+kill_children(void)
+{
+    GList *child = NULL;
+    g_mutex_lock (&children_lock);
+    for (child = children; child; g_list_next (child)) {
+	GPid pid = (GPid) child->data;
+	//INFO ("kill %d", pid);
+	kill (pid, SIGKILL);
+	children = g_list_remove_link (children, child);
+    }
+    g_mutex_unlock (&children_lock);
+}
+
 int main (int argc, char**argv)
 {
   {
@@ -2224,6 +2252,8 @@ int main (int argc, char**argv)
       return 1;
     }
   }
+
+  atexit (&kill_children);
 
   srand (time (NULL));
 
