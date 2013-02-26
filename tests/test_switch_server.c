@@ -2163,7 +2163,7 @@ test_fuzz (void)
 static void
 test_checking_timestamps (void)
 {
-  const gint seconds = 60 + 5;
+  const gint seconds = 60 + 10;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source = { "test-video-source", 0 };
