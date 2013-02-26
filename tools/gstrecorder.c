@@ -178,23 +178,37 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
   g_string_append_printf (desc,
       "source_video. ! video/x-raw,width=%d,height=%d ",
       rec->width, rec->height);
+  /*
   ASSESS ("assess-record-video-source");
+  */
   g_string_append_printf (desc, "! queue2 ");
+  /*
   ASSESS ("assess-record-video-encode-queued");
+  */
   g_string_append_printf (desc, "! vp8enc ");
+  /*
   ASSESS ("assess-record-video-encoded");
+  */
   g_string_append_printf (desc, "! mux. ");
 
   g_string_append_printf (desc, "source_audio. ");
+  /*
   ASSESS ("assess-record-audio-source");
+  */
   g_string_append_printf (desc, "! queue2 ");
+  /*
   ASSESS ("assess-record-audio-queued");
+  */
   g_string_append_printf (desc, "! faac ");
+  /*
   ASSESS ("assess-record-audio-encoded");
+  */
   g_string_append_printf (desc, "! mux. ");
 
   g_string_append_printf (desc, "avimux name=mux ");
+  /*
   ASSESS ("assess-record-mux-result");
+  */
   g_string_append_printf (desc, "! tee name=result ");
 
   if (filename) {
@@ -202,18 +216,26 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
 	"location=\"%s\" ", filename);
     g_free ((gpointer) filename);
     g_string_append_printf (desc, "result. ");
+    /*
     ASSESS ("assess-record-file-to-queue");
+    */
     g_string_append_printf (desc, "! queue2 ");
+    /*
     ASSESS ("assess-record-file-to-sink");
+    */
     g_string_append_printf (desc, "! disk_sink. ");
   }
 
   g_string_append_printf (desc, "tcpserversink name=tcp_sink sync=false "
       "port=%d ", rec->sink_port);
   g_string_append_printf (desc, "result. ");
+  /*
   ASSESS ("assess-record-tcp-to-queue");
+  */
   g_string_append_printf (desc, "! queue2 ");
+  /*
   ASSESS ("assess-record-tcp-to-sink");
+  */
   g_string_append_printf (desc, "! gdppay ! tcp_sink. ");
   return desc;
 }

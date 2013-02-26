@@ -54,6 +54,8 @@
 #define GST_SWITCH_SERVER_UNLOCK_SERVE(srv) (g_mutex_unlock (&(srv)->serve_lock))
 #define GST_SWITCH_SERVER_LOCK_PIP(srv) (g_mutex_lock (&(srv)->pip_lock))
 #define GST_SWITCH_SERVER_UNLOCK_PIP(srv) (g_mutex_unlock (&(srv)->pip_lock))
+#define GST_SWITCH_SERVER_LOCK_CLOCK(srv) (g_mutex_lock (&(srv)->clock_lock))
+#define GST_SWITCH_SERVER_UNLOCK_CLOCK(srv) (g_mutex_unlock (&(srv)->clock_lock))
 
 #define gst_switch_server_parent_class parent_class
 G_DEFINE_TYPE (GstSwitchServer, gst_switch_server, G_TYPE_OBJECT);
@@ -128,7 +130,8 @@ gst_switch_server_init (GstSwitchServer *srv)
   srv->pip_w = 0;
   srv->pip_h = 0;
 
-  
+  srv->clock = gst_system_clock_obtain ();
+
   g_mutex_init (&srv->main_loop_lock);
   g_mutex_init (&srv->video_acceptor_lock);
   g_mutex_init (&srv->audio_acceptor_lock);
@@ -136,6 +139,7 @@ gst_switch_server_init (GstSwitchServer *srv)
   g_mutex_init (&srv->cases_lock);
   g_mutex_init (&srv->alloc_port_lock);
   g_mutex_init (&srv->pip_lock);
+  g_mutex_init (&srv->clock_lock);
 }
 
 static void
@@ -195,6 +199,8 @@ gst_switch_server_finalize (GstSwitchServer *srv)
     g_object_unref (srv->composite);
     srv->composite = NULL;
   }
+
+  gst_object_unref (srv->clock);
 
   g_mutex_clear (&srv->main_loop_lock);
   g_mutex_clear (&srv->video_acceptor_lock);
@@ -877,6 +883,9 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
   return result;
 }
 
+static void gst_switch_server_worker_start (GstWorker *, GstSwitchServer *);
+static void gst_switch_server_worker_null (GstWorker *, GstSwitchServer *);
+
 gboolean
 gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 {
@@ -989,8 +998,19 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 
   compose_case->switching = TRUE;
   candidate_case->switching = TRUE;
+
+  g_signal_connect (compose_case, "worker-null",
+      gst_switch_server_worker_null, srv);
+  g_signal_connect (candidate_case, "worker-null",
+      gst_switch_server_worker_null, srv);
+
   gst_worker_stop (GST_WORKER (compose_case));
   gst_worker_stop (GST_WORKER (candidate_case));
+
+  g_signal_connect (work1, "start-worker",
+      gst_switch_server_worker_start, srv);
+  g_signal_connect (work2, "start-worker",
+      gst_switch_server_worker_start, srv);
 
   g_signal_connect (work1, "end-worker", callback, srv);
   g_signal_connect (work2, "end-worker", callback, srv);
@@ -1020,6 +1040,34 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
     GST_SWITCH_SERVER_UNLOCK_CASES (srv);
     return result;
   }
+}
+
+static void
+gst_switch_server_worker_start (GstWorker *worker, GstSwitchServer * srv)
+{
+  GstClockTime t = GST_CLOCK_TIME_NONE;
+
+  g_return_if_fail (GST_IS_WORKER (worker));
+
+  GST_SWITCH_SERVER_LOCK_CLOCK (srv);
+  t = gst_clock_get_time (srv->clock);
+  GST_SWITCH_SERVER_UNLOCK_CLOCK (srv);
+
+  g_print ("online: %s @%lld\n", worker->name, (long long int) t);
+}
+
+static void
+gst_switch_server_worker_null (GstWorker *worker, GstSwitchServer * srv)
+{
+  GstClockTime t = GST_CLOCK_TIME_NONE;
+
+  g_return_if_fail (GST_IS_WORKER (worker));
+
+  GST_SWITCH_SERVER_LOCK_CLOCK (srv);
+  t = gst_clock_get_time (srv->clock);
+  GST_SWITCH_SERVER_UNLOCK_CLOCK (srv);
+
+  g_print ("offline: %s @%lld\n", worker->name, (long long int) t);
 }
 
 static void
@@ -1081,6 +1129,11 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv,
   srv->composite = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
 	  "name", "composite", "port", port, "encode", encode,
 	  "mode", mode, NULL));
+
+  g_signal_connect (srv->composite, "start-worker",
+      G_CALLBACK (gst_switch_server_worker_start), srv);
+  g_signal_connect (srv->composite, "worker-null",
+      G_CALLBACK (gst_switch_server_worker_null), srv);
 
   g_signal_connect (srv->composite, "start-output",
       G_CALLBACK (gst_switch_server_start_output), srv);

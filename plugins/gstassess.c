@@ -138,7 +138,9 @@ assess_db_timeout (gpointer data)
     assess_point_hash  = g_hash_table_lookup (assess_db.hash, s);
     names = g_hash_table_get_keys (assess_point_hash);
     names = g_list_sort_with_data (names, assess_compare_name, assess_point_hash);
+    /*
     g_print ("%s\n", s);
+    */
     for (name = names; name; name = g_list_next (name)) {
       GstAssessPoint *assess_point = g_hash_table_lookup (
 	  assess_point_hash, name->data);

@@ -44,6 +44,7 @@ enum
   SIGNAL_PREPARE_WORKER,
   SIGNAL_START_WORKER,
   SIGNAL_END_WORKER,
+  SIGNAL_WORKER_NULL,
   SIGNAL__LAST,
 };
 
@@ -489,6 +490,8 @@ gst_worker_state_ready_to_null (GstWorker *worker)
     }
   }
 
+  g_signal_emit (worker, gst_worker_signals[SIGNAL_WORKER_NULL], 0);
+
   if (ret == GST_WORKER_NR_END)
     g_signal_emit (worker, gst_worker_signals[SIGNAL_END_WORKER], 0);
 }
@@ -805,6 +808,11 @@ gst_worker_class_init (GstWorkerClass *klass)
   gst_worker_signals[SIGNAL_END_WORKER] =
     g_signal_new ("end-worker", G_TYPE_FROM_CLASS (klass),
 	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, end_worker),
+	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+
+  gst_worker_signals[SIGNAL_WORKER_NULL] =
+    g_signal_new ("worker-null", G_TYPE_FROM_CLASS (klass),
+	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstWorkerClass, worker_null),
 	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
   g_object_class_install_property (object_class, PROP_NAME,

@@ -91,6 +91,9 @@ struct _GstSwitchServer
 
   GMutex pip_lock;
   gint pip_x, pip_y, pip_w, pip_h;
+
+  GMutex clock_lock;
+  GstClock *clock;
 };
 
 struct _GstSwitchServerClass

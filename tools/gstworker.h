@@ -78,6 +78,7 @@ struct _GstWorkerClass
   void (*prepare_worker) (GstWorker *worker);
   void (*start_worker) (GstWorker *worker);
   void (*end_worker) (GstWorker *worker);
+  void (*worker_null) (GstWorker *worker);
 
   gboolean (*missing) (GstWorker *worker, gchar **elements);
   gboolean (*message)(GstWorker *worker, GstMessage * message);

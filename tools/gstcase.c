@@ -256,10 +256,14 @@ gst_case_get_pipeline_string (GstCase * cas)
     if (sink == NULL) sink = "interaudiosink";
     if (convert == NULL) convert = g_strdup ("identity");
     g_string_append_printf (desc, "source. ", convert);
+    /*
     ASSESS ("assess-composite-%s-source-%d", channel, cas->sink_port);
+    */
     g_string_append_printf (desc, "! %s ! tee name=s ", convert);
     g_string_append_printf (desc, "s. ! queue2 ");
+    /*
     ASSESS ("assess-composite-%s-branch-%d", channel, cas->sink_port);
+    */
     g_string_append_printf (desc, "! %s name=sink1 channel=branch_%d ",
 	sink, cas->sink_port);
     g_string_append_printf (desc, "s. ! queue2 ");
@@ -283,17 +287,21 @@ gst_case_get_pipeline_string (GstCase * cas)
 
     if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
       g_string_append_printf (desc, "source. ");
+      /*
       if (cas->type == GST_CASE_PREVIEW)
 	ASSESS ("assess-audio-preview-%d", cas->sink_port);
       else 
 	ASSESS ("assess-audio-input-%d", cas->sink_port);
+      */
       //g_string_append_printf (desc, "! gdpdepay ");
       g_string_append_printf (desc, "! sink. ");
     } else if (cas->type == GST_CASE_PREVIEW) {
       g_string_append_printf (desc, "source. "
 	  "! video/x-raw,width=%d,height=%d ",
 	  cas->a_width, cas->a_height);
+      /*
       ASSESS ("assess-video-preview-%d", cas->sink_port);
+      */
       g_string_append_printf (desc, "! sink. ");
     } else {
       g_string_append_printf (desc, "source. ");
@@ -309,16 +317,24 @@ gst_case_get_pipeline_string (GstCase * cas)
 	cas->sink_port);
     g_string_append_printf (desc, "source. ");
     if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
+	/*
       ASSESS ("assess-branch-source-%d", cas->sink_port);
+	*/
       g_string_append_printf (desc, "! faac ");
+      /*
       ASSESS ("assess-branch-audio-encoded-%d", cas->sink_port);
+      */
     } else {
       g_string_append_printf (desc, "! video/x-raw,width=%d,height=%d ",
 	  cas->a_width, cas->a_height);
+      /*
       ASSESS ("assess-branch-source-%d", cas->sink_port);
+      */
     }
     g_string_append_printf (desc, "! gdppay ");
+    /*
     ASSESS ("assess-branch-payed-%d", cas->sink_port);
+    */
     g_string_append_printf (desc, "! sink. ");
     break;
   case GST_CASE_UNKNOWN:
