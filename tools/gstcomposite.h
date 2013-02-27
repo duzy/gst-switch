@@ -86,6 +86,8 @@ struct _GstComposite
   gboolean adjusting;
   gboolean transition;
   gboolean deprecated;
+
+  GstWorker *scaler;
 };
 
 struct _GstCompositeClass
@@ -97,7 +99,6 @@ struct _GstCompositeClass
 
 GType gst_composite_get_type (void);
 
-//gboolean gst_composite_new_record (GstComposite *composite);
 gboolean gst_composite_adjust_pip (GstComposite *composite,
 				   gint x, gint y, gint w, gint h);
 

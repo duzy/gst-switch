@@ -97,6 +97,12 @@ static void
 gst_composite_dispose (GstComposite * composite)
 {
   //INFO ("gst_composite dispose %p", composite);
+
+  if (composite->scaler) {
+    gst_object_unref (composite->scaler);
+    composite->scaler = NULL;
+  }
+
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (composite));
 }
 
@@ -345,7 +351,7 @@ gst_composite_get_pipeline_string (GstComposite * composite)
   desc = g_string_new ("");
 
   g_string_append_printf (desc,
-      "intervideosrc name=source_a channel=composite_a ");
+      "intervideosrc name=source_a channel=composite_a_scaled ");
   if (composite->mode == COMPOSE_MODE_0) {
     g_string_append_printf (desc,
 	"source_a. ! video/x-raw,width=%d,height=%d ",
@@ -354,12 +360,12 @@ gst_composite_get_pipeline_string (GstComposite * composite)
     ASSESS ("assess-compose-a-source");
     */
     g_string_append_printf (desc, "! queue2 ");
-    g_string_append_printf (desc, "! identity name=compose ");
+    g_string_append_printf (desc, "! identity name=mix ");
   } else {
     g_string_append_printf (desc,
-	"intervideosrc name=source_b channel=composite_b ");
+	"intervideosrc name=source_b channel=composite_b_scaled ");
     g_string_append_printf (desc,
-	"videomixer name=compose "
+	"videomixer name=mix "
 	"sink_0::xpos=%d "
 	"sink_0::ypos=%d "
 	"sink_0::zorder=0 "
@@ -367,7 +373,8 @@ gst_composite_get_pipeline_string (GstComposite * composite)
 	"sink_1::ypos=%d "
 	"sink_1::zorder=1 ",
 	composite->a_x, composite->a_y,
-	composite->b_x, composite->b_y);
+	composite->b_x, composite->b_y
+	);
 
     // ===== B =====
     g_string_append_printf (desc,
@@ -386,7 +393,7 @@ gst_composite_get_pipeline_string (GstComposite * composite)
       */
     }
 #endif
-    g_string_append_printf (desc, "! compose.sink_1 ");
+    g_string_append_printf (desc, "! mix.sink_1 ");
 
     // ===== A =====
     g_string_append_printf (desc,
@@ -405,11 +412,10 @@ gst_composite_get_pipeline_string (GstComposite * composite)
       */
     }
 #endif
-    g_string_append_printf (desc, "! compose.sink_0 ");
+    g_string_append_printf (desc, "! mix.sink_0 ");
   }
 
-  g_string_append_printf (desc,
-      "compose. ! video/x-raw,width=%d,height=%d ",
+  g_string_append_printf (desc, "mix. ! video/x-raw,width=%d,height=%d ",
       composite->width, composite->height);
   ASSESS ("assess-compose-result");
   g_string_append_printf (desc, "! tee name=result ");
@@ -435,25 +441,77 @@ gst_composite_get_pipeline_string (GstComposite * composite)
   return desc;
 }
 
+static GString *
+gst_composite_get_scaler_string (GstWorker *worker, GstComposite *composite)
+{
+  GString *desc;
+
+  desc = g_string_new ("");
+
+  g_string_append_printf (desc,
+      "intervideosrc name=source_a channel=composite_a ");
+  g_string_append_printf (desc,
+      "intervideosink name=sink_a sync=false channel=composite_a_scaled ");
+
+  g_string_append_printf (desc,
+      "source_a. ! video/x-raw,width=%d,height=%d ",
+      composite->width, composite->height);
+  g_string_append_printf (desc,
+      "! queue2 ! videoscale ! video/x-raw,width=%d,height=%d ! sink_a. ",
+      composite->a_width, composite->a_height);
+
+  if (composite->mode == COMPOSE_MODE_0) {
+  } else {
+    g_string_append_printf (desc,
+	"intervideosrc name=source_b channel=composite_b ");
+    g_string_append_printf (desc,
+	"intervideosink name=sink_b sync=false channel=composite_b_scaled ");
+
+    g_string_append_printf (desc,
+	"source_b. ! video/x-raw,width=%d,height=%d ",
+	composite->width, composite->height);
+    g_string_append_printf (desc,
+	"! queue2 ! videoscale ! video/x-raw,width=%d,height=%d ! sink_b. ",
+	composite->b_width, composite->b_height);
+  }
+  return desc;
+}
+
 static gboolean
 gst_composite_prepare (GstComposite *composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
-  /*
-  if (composite->recorder == NULL) {
-    composite->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
-	    "name", "recorder", "port", composite->encode_sink_port,
-	    "mode", composite->mode, "width", composite->width,
-	    "height", composite->height, NULL));
-    g_signal_connect (composite->recorder, "start-worker",
-	G_CALLBACK (gst_composite_start_recorder), composite);
-    g_signal_connect (composite->recorder, "end-worker",
-	G_CALLBACK (gst_composite_end_recorder), composite);
+  if (composite->scaler == NULL) {
+    composite->scaler = GST_WORKER (g_object_new (GST_TYPE_WORKER,
+	    "name", "scale", NULL));
+    composite->scaler->pipeline_func_data = composite;
+    composite->scaler->pipeline_func = (GstWorkerGetPipelineString)
+      gst_composite_get_scaler_string;
+  } else {
+    GstWorkerClass *worker_class;
+    worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite->scaler));
+    if (!worker_class->reset (GST_WORKER (composite->scaler))) {
+      ERROR ("failed to reset scaler");
+    }
   }
-  */
-
   return TRUE;
+}
+
+static void
+gst_composite_start (GstComposite *composite)
+{
+  g_return_if_fail (GST_IS_COMPOSITE (composite));
+
+  gst_worker_start (composite->scaler);
+}
+
+static void
+gst_composite_end (GstComposite *composite)
+{
+  g_return_if_fail (GST_IS_COMPOSITE (composite));
+
+  gst_worker_stop (composite->scaler);
 }
 
 static gboolean
@@ -614,7 +672,7 @@ gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
     goto end;
   }
 
-  element = gst_worker_get_element (GST_WORKER (composite), "compose");
+  element = gst_worker_get_element (GST_WORKER (composite), "mix");
   iter = gst_element_iterate_sink_pads(element);
   while (iter && !done) {
     switch (gst_iterator_next (iter, &value)) {
@@ -660,26 +718,6 @@ gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
   GST_COMPOSITE_UNLOCK (composite);
   return result;
 }
-
-/*
-gboolean
-gst_composite_new_record (GstComposite *composite)
-{
-  gboolean result = FALSE;
-  if (composite->recorder) {
-    GST_COMPOSITE_LOCK_RECORDER (composite);
-    if (composite->recorder) {
-      gst_worker_stop (GST_WORKER (composite->recorder));
-      g_object_set (G_OBJECT (composite->recorder),
-	  "mode", composite->mode, "port", composite->encode_sink_port,
-	  "width", composite->width, "height", composite->height, NULL);
-      result = gst_worker_start (GST_WORKER (composite->recorder));
-    }
-    GST_COMPOSITE_UNLOCK_RECORDER (composite);
-  }
-  return result;
-}
-*/
 
 static gboolean
 gst_composite_retry_transition (GstComposite *composite)
@@ -856,6 +894,8 @@ gst_composite_class_init (GstCompositeClass * klass)
   worker_class->alive = (GstWorkerAliveFunc) gst_composite_alive;
   worker_class->null = (GstWorkerNullFunc) gst_composite_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
+  worker_class->start_worker = (GstWorkerPrepareFunc) gst_composite_start;
+  worker_class->end_worker = (GstWorkerPrepareFunc) gst_composite_end;
   worker_class->message = (GstWorkerMessageFunc) gst_composite_message;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
     gst_composite_get_pipeline_string;

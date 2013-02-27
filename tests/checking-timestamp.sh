@@ -1,7 +1,7 @@
 #!/bin/bash
 
 coproc SERVER( \
-    ./tools/gst-switch-srv \
+    ./tools/gst-switch-srv -v \
     --gst-debug-no-color \
     --record=timestamped.data \
     )
