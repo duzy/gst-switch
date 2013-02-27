@@ -73,13 +73,13 @@ gst_worker_init (GstWorker *worker)
 
   g_mutex_init (&worker->pipeline_lock);
 
-  INFO ("gst_worker init %p", worker);
+  //INFO ("gst_worker init %p", worker);
 }
 
 static void
 gst_worker_dispose (GstWorker *worker)
 {
-  INFO ("gst_worker dispose %p", worker);
+  //INFO ("gst_worker dispose %p", worker);
   if (worker->pipeline) {
     gst_element_set_state (worker->pipeline, GST_STATE_NULL);
   }

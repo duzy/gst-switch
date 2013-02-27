@@ -41,6 +41,8 @@ enum
   PROP_INPUT,
   PROP_BRANCH,
   PROP_PORT,
+  PROP_WIDTH,
+  PROP_HEIGHT,
   PROP_A_WIDTH,
   PROP_A_HEIGHT,
   PROP_B_WIDTH,
@@ -67,6 +69,8 @@ gst_case_init (GstCase * cas)
   cas->branch = NULL;
   cas->serve_type = GST_SERVE_NOTHING;
   cas->sink_port = 0;
+  cas->width = 0;
+  cas->height = 0;
   cas->a_width = 0;
   cas->a_height = 0;
   cas->b_width = 0;
@@ -134,6 +138,12 @@ gst_case_get_property (GstCase *cas, guint property_id,
   case PROP_PORT:
     g_value_set_uint (value, cas->sink_port);
     break;
+  case PROP_WIDTH:
+    g_value_set_uint (value, cas->width);
+    break;
+  case PROP_HEIGHT:
+    g_value_set_uint (value, cas->height);
+    break;
   case PROP_A_WIDTH:
     g_value_set_uint (value, cas->a_width);
     break;
@@ -184,6 +194,12 @@ gst_case_set_property (GstCase *cas, guint property_id,
   case PROP_PORT:
     cas->sink_port = g_value_get_uint (value);
     break;
+  case PROP_WIDTH:
+    cas->width = g_value_get_uint (value);
+    break;
+  case PROP_HEIGHT:
+    cas->height = g_value_get_uint (value);
+    break;
   case PROP_A_WIDTH:
     cas->a_width = g_value_get_uint (value);
     break;
@@ -207,7 +223,8 @@ gst_case_get_pipeline_string (GstCase * cas)
 {
   GString *desc;
   gchar *channel = NULL;
-  gchar *convert = NULL;
+  gchar *caps = NULL;
+  gchar *scale = NULL;
   gchar *srctype = NULL;
   gchar *sink = NULL;
 
@@ -246,20 +263,26 @@ gst_case_get_pipeline_string (GstCase * cas)
   switch (cas->type) {
   case GST_CASE_COMPOSITE_A:
     if (channel == NULL) channel = "a";
+    if (scale == NULL) scale = g_strdup_printf (
+	"videoscale ! video/x-raw,width=%d,height=%d",
+	cas->a_width, cas->a_height);
   case GST_CASE_COMPOSITE_B:
     if (channel == NULL) channel = "b";
+    if (scale == NULL) scale = g_strdup_printf (
+	"videoscale ! video/x-raw,width=%d,height=%d",
+	cas->b_width, cas->b_height);
+    caps = g_strdup_printf (
+	"video/x-raw,width=%d,height=%d", cas->width, cas->height);
     sink = "intervideosink";
-    convert = g_strdup_printf ("video/x-raw,width=%d,height=%d",
-	cas->a_width, cas->a_height);
   case GST_CASE_COMPOSITE_a:
     if (channel == NULL) channel = "audio";
     if (sink == NULL) sink = "interaudiosink";
-    if (convert == NULL) convert = g_strdup ("identity");
-    g_string_append_printf (desc, "source. ", convert);
+    g_string_append_printf (desc, "source. ");
     /*
     ASSESS ("assess-composite-%s-source-%d", channel, cas->sink_port);
     */
-    g_string_append_printf (desc, "! %s ! tee name=s ", convert);
+    if (caps) g_string_append_printf (desc, "! %s ", caps);
+    g_string_append_printf (desc, "! tee name=s ");
     g_string_append_printf (desc, "s. ! queue2 ");
     /*
     ASSESS ("assess-composite-%s-branch-%d", channel, cas->sink_port);
@@ -267,10 +290,16 @@ gst_case_get_pipeline_string (GstCase * cas)
     g_string_append_printf (desc, "! %s name=sink1 channel=branch_%d ",
 	sink, cas->sink_port);
     g_string_append_printf (desc, "s. ! queue2 ");
+    if (scale) {
+      /*
+      g_string_append_printf (desc, "! %s", scale);
+      */
+    }
     ASSESS ("assess-composite-%s-compose-%d", channel, cas->sink_port);
     g_string_append_printf (desc, "! %s name=sink2 channel=composite_%s ",
 	sink, channel);
-    g_free (convert), convert = NULL;
+    if (scale) g_free (scale), scale = NULL;
+    if (caps) g_free (caps), caps = NULL;
     break;
   case GST_CASE_PREVIEW:
     if (srctype == NULL) srctype = "branch";
@@ -298,7 +327,7 @@ gst_case_get_pipeline_string (GstCase * cas)
     } else if (cas->type == GST_CASE_PREVIEW) {
       g_string_append_printf (desc, "source. "
 	  "! video/x-raw,width=%d,height=%d ",
-	  cas->a_width, cas->a_height);
+	  cas->width, cas->height); //cas->a_width, cas->a_height);
       /*
       ASSESS ("assess-video-preview-%d", cas->sink_port);
       */
@@ -326,7 +355,7 @@ gst_case_get_pipeline_string (GstCase * cas)
       */
     } else {
       g_string_append_printf (desc, "! video/x-raw,width=%d,height=%d ",
-	  cas->a_width, cas->a_height);
+	  cas->width, cas->height); //cas->a_width, cas->a_height);
       /*
       ASSESS ("assess-branch-source-%d", cas->sink_port);
       */
@@ -445,6 +474,16 @@ gst_case_class_init (GstCaseClass * klass)
       g_param_spec_uint ("port", "Port", "Sink port",
           GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
 	  GST_SWITCH_MIN_SINK_PORT,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_WIDTH,
+      g_param_spec_uint ("width", "Width", "Output width",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (object_class, PROP_HEIGHT,
+      g_param_spec_uint ("height", "Height", "Output height",
+          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
 	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_WIDTH,

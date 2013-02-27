@@ -68,6 +68,8 @@ struct _GstCase
   GstSwitchServeStreamType serve_type;
   gboolean switching;
   gint sink_port;
+  guint width;
+  guint height;
   guint a_width;
   guint a_height;
   guint b_width;

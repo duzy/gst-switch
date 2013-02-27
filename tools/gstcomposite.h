@@ -55,7 +55,6 @@ typedef enum {
   COMPOSE_MODE__LAST = COMPOSE_MODE_3
 } GstCompositeMode;
 
-typedef struct _GstRecorder GstRecorder;
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
 
@@ -66,12 +65,8 @@ struct _GstComposite
   GstCompositeMode mode;
 
   GMutex lock;
-  GMutex recorder_lock;
   GMutex transition_lock;
   GMutex adjustment_lock;
-
-  GstWorker *output;
-  GstRecorder *recorder;
 
   gint sink_port;
   gint encode_sink_port;
@@ -97,16 +92,12 @@ struct _GstCompositeClass
 {
   GstWorkerClass base_class;
 
-  void (*start_output) (GstComposite *composite);
-  void (*start_recorder) (GstComposite *composite);
-  void (*end_output) (GstComposite *composite);
-  void (*end_recorder) (GstComposite *composite);
   void (*end_transition) (GstComposite *composite);
 };
 
 GType gst_composite_get_type (void);
 
-gboolean gst_composite_new_record (GstComposite *composite);
+//gboolean gst_composite_new_record (GstComposite *composite);
 gboolean gst_composite_adjust_pip (GstComposite *composite,
 				   gint x, gint y, gint w, gint h);
 

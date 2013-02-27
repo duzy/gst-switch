@@ -39,6 +39,7 @@
 #define GST_SWITCH_MIN_SINK_PORT 1
 #define GST_SWITCH_MAX_SINK_PORT 65535
 
+typedef struct _GstRecorder GstRecorder;
 typedef struct _GstSwitchServerClass GstSwitchServerClass;
 typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
@@ -88,6 +89,11 @@ struct _GstSwitchServer
 
   GstComposite *composite;
   GstCompositeMode new_composite_mode;
+
+  GstWorker *output;
+
+  GMutex recorder_lock;
+  GstRecorder *recorder;
 
   GMutex pip_lock;
   gint pip_x, pip_y, pip_w, pip_h;

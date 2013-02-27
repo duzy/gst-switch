@@ -31,6 +31,7 @@
 #include <gio/gio.h>
 #include <stdlib.h>
 #include "gstswitchserver.h"
+#include "gstrecorder.h"
 #include "gstcase.h"
 #include "./gio/gsocketinputstream.h"
 
@@ -54,6 +55,8 @@
 #define GST_SWITCH_SERVER_UNLOCK_SERVE(srv) (g_mutex_unlock (&(srv)->serve_lock))
 #define GST_SWITCH_SERVER_LOCK_PIP(srv) (g_mutex_lock (&(srv)->pip_lock))
 #define GST_SWITCH_SERVER_UNLOCK_PIP(srv) (g_mutex_unlock (&(srv)->pip_lock))
+#define GST_SWITCH_SERVER_LOCK_RECORDER(srv) (g_mutex_lock (&(srv)->recorder_lock))
+#define GST_SWITCH_SERVER_UNLOCK_RECORDER(srv) (g_mutex_unlock (&(srv)->recorder_lock))
 #define GST_SWITCH_SERVER_LOCK_CLOCK(srv) (g_mutex_lock (&(srv)->clock_lock))
 #define GST_SWITCH_SERVER_UNLOCK_CLOCK(srv) (g_mutex_unlock (&(srv)->clock_lock))
 
@@ -139,6 +142,7 @@ gst_switch_server_init (GstSwitchServer *srv)
   g_mutex_init (&srv->cases_lock);
   g_mutex_init (&srv->alloc_port_lock);
   g_mutex_init (&srv->pip_lock);
+  g_mutex_init (&srv->recorder_lock);
   g_mutex_init (&srv->clock_lock);
 }
 
@@ -209,6 +213,8 @@ gst_switch_server_finalize (GstSwitchServer *srv)
   g_mutex_clear (&srv->cases_lock);
   g_mutex_clear (&srv->alloc_port_lock);
   g_mutex_clear (&srv->pip_lock);
+  g_mutex_clear (&srv->recorder_lock);
+  g_mutex_clear (&srv->clock_lock);
 
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (srv));
@@ -449,18 +455,24 @@ gst_switch_server_serve (GstSwitchServer *srv, GSocket *client,
 
   if (serve_type == GST_SERVE_VIDEO_STREAM) {
     g_object_set (input,
+	"width",  srv->composite->width,
+	"height", srv->composite->height,
 	"awidth",  srv->composite->a_width,
 	"aheight", srv->composite->a_height,
 	"bwidth",  srv->composite->b_width,
 	"bheight", srv->composite->b_height,
 	NULL);
     g_object_set (branch,
+	"width",  srv->composite->width,
+	"height", srv->composite->height,
 	"awidth",  srv->composite->a_width,
 	"aheight", srv->composite->a_height,
 	"bwidth",  srv->composite->b_width,
 	"bheight", srv->composite->b_height,
 	NULL);
     g_object_set (workcase,
+	"width",  srv->composite->width,
+	"height", srv->composite->height,
 	"awidth",  srv->composite->a_width,
 	"aheight", srv->composite->a_height,
 	"bwidth",  srv->composite->b_width,
@@ -847,9 +859,30 @@ gst_switch_server_start_audio (GstCase *cas, GstSwitchServer *srv)
 gboolean
 gst_switch_server_new_record (GstSwitchServer * srv)
 {
-  g_return_val_if_fail (GST_IS_COMPOSITE (srv->composite), FALSE);
+  GstWorkerClass * worker_class;
+  gboolean result = FALSE;
 
-  return gst_composite_new_record (srv->composite);
+  g_return_val_if_fail (GST_IS_RECORDER (srv->recorder), FALSE);
+
+  if (srv->recorder) {
+    GST_SWITCH_SERVER_LOCK_RECORDER (srv);
+    if (srv->recorder) {
+      gst_worker_stop (GST_WORKER (srv->recorder));
+      g_object_set (G_OBJECT (srv->recorder),
+	  "mode", srv->composite->mode,
+	  "port", srv->composite->encode_sink_port,
+	  "width", srv->composite->width,
+	  "height", srv->composite->height, NULL);
+      worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (srv->recorder));
+      if (worker_class->reset (GST_WORKER (srv->recorder))) {
+	result = gst_worker_start (GST_WORKER (srv->recorder));
+      } else {
+	ERROR ("failed to reset composite recorder");
+      }
+    }
+    GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+  }
+  return result;
 }
 
 guint
@@ -980,12 +1013,16 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 
   if (compose_case->serve_type == GST_SERVE_VIDEO_STREAM) {
     g_object_set (work1,
+	"width",   compose_case->width,
+	"height",  compose_case->height,
 	"awidth",  compose_case->a_width,
 	"aheight", compose_case->a_height,
 	"bwidth",  compose_case->b_width,
 	"bheight", compose_case->b_height,
 	NULL);
     g_object_set (work2,
+	"width",   candidate_case->width,
+	"height",  candidate_case->height,
 	"awidth",  candidate_case->a_width,
 	"aheight", candidate_case->a_height,
 	"bwidth",  candidate_case->b_width,
@@ -1000,17 +1037,17 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
   candidate_case->switching = TRUE;
 
   g_signal_connect (compose_case, "worker-null",
-      gst_switch_server_worker_null, srv);
+      G_CALLBACK (gst_switch_server_worker_null), srv);
   g_signal_connect (candidate_case, "worker-null",
-      gst_switch_server_worker_null, srv);
+      G_CALLBACK (gst_switch_server_worker_null), srv);
 
   gst_worker_stop (GST_WORKER (compose_case));
   gst_worker_stop (GST_WORKER (candidate_case));
 
   g_signal_connect (work1, "start-worker",
-      gst_switch_server_worker_start, srv);
+      G_CALLBACK (gst_switch_server_worker_start), srv);
   g_signal_connect (work2, "start-worker",
-      gst_switch_server_worker_start, srv);
+      G_CALLBACK (gst_switch_server_worker_start), srv);
 
   g_signal_connect (work1, "end-worker", callback, srv);
   g_signal_connect (work2, "end-worker", callback, srv);
@@ -1098,7 +1135,6 @@ gst_switch_server_start_recorder (GstWorker *worker, GstSwitchServer * srv)
 
 static void
 gst_switch_server_end_transition (GstWorker *worker, GstSwitchServer * srv)
-//gint mode)
 {
   g_return_if_fail (GST_IS_WORKER (worker));
 
@@ -1108,6 +1144,26 @@ gst_switch_server_end_transition (GstWorker *worker, GstSwitchServer * srv)
     gst_switch_controller_tell_new_mode_onlne (srv->controller, mode);
   }
   GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+}
+
+static void
+gst_switch_server_output_client_socket_added (GstElement *element,
+    GSocket *socket, GstSwitchServer * srv)
+{
+  g_return_if_fail (G_IS_SOCKET (socket));
+
+  //INFO ("client-socket-added: %d", g_socket_get_fd (socket));
+}
+
+static void
+gst_switch_server_output_client_socket_removed (GstElement *element,
+    GSocket *socket, GstSwitchServer * srv)
+{
+  g_return_if_fail (G_IS_SOCKET (socket));
+
+  //INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
+
+  g_socket_close (socket, NULL);
 }
 
 static gboolean
@@ -1135,10 +1191,12 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv,
   g_signal_connect (srv->composite, "worker-null",
       G_CALLBACK (gst_switch_server_worker_null), srv);
 
+  /*
   g_signal_connect (srv->composite, "start-output",
       G_CALLBACK (gst_switch_server_start_output), srv);
   g_signal_connect (srv->composite, "start-recorder",
       G_CALLBACK (gst_switch_server_start_recorder), srv);
+  */
   g_signal_connect (srv->composite, "end-transition",
       G_CALLBACK (gst_switch_server_end_transition), srv);
 
@@ -1162,6 +1220,89 @@ gst_switch_server_prepare_composite (GstSwitchServer * srv,
   }
 }
 
+static GString *
+gst_switch_server_get_output_string (GstWorker *worker, GstSwitchServer * srv)
+{
+  GString *desc;
+
+  desc = g_string_new ("");
+
+  g_string_append_printf (desc, "intervideosrc name=source "
+      "channel=composite_out ");
+  g_string_append_printf (desc, "tcpserversink name=sink "
+      "port=%d ", srv->composite->sink_port);
+  g_string_append_printf (desc, "source. ! video/x-raw,width=%d,height=%d ",
+      srv->composite->width, srv->composite->height);
+  ASSESS ("assess-output");
+  g_string_append_printf (desc, "! gdppay ");
+  /*
+  ASSESS ("assess-output-payed");
+  */
+  g_string_append_printf (desc, "! sink. ");
+
+  return desc;
+}
+
+static void
+gst_switch_server_prepare_output (GstWorker *worker, GstSwitchServer * srv)
+{
+  GstElement *sink = NULL;
+  sink = gst_worker_get_element_unlocked (worker, "sink");
+
+  g_return_if_fail (GST_IS_ELEMENT (sink));
+
+  g_signal_connect (sink, "client-added",
+      G_CALLBACK (gst_switch_server_output_client_socket_added), srv);
+
+  g_signal_connect (sink, "client-socket-removed",
+      G_CALLBACK (gst_switch_server_output_client_socket_removed), srv);
+
+  gst_object_unref (sink);
+}
+
+static gboolean
+gst_switch_server_create_output (GstSwitchServer * srv)
+{
+  if (srv->output) {
+    return TRUE;
+  }
+
+  srv->output = GST_WORKER (g_object_new (GST_TYPE_WORKER,
+	  "name", "output", NULL));
+  srv->output->pipeline_func_data = srv;
+  srv->output->pipeline_func = (GstWorkerGetPipelineString)
+    gst_switch_server_get_output_string;
+
+  g_signal_connect (srv->output, "prepare-worker",
+      G_CALLBACK (gst_switch_server_prepare_output), srv);
+  g_signal_connect (srv->output, "start-worker",
+      G_CALLBACK (gst_switch_server_start_output), srv);
+
+  gst_worker_start (srv->output);
+  return TRUE;
+}
+
+static gboolean
+gst_switch_server_create_recorder (GstSwitchServer * srv)
+{
+  if (srv->recorder) {
+    return TRUE;
+  }
+
+  GST_SWITCH_SERVER_LOCK_RECORDER (srv);
+  srv->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
+	  "name", "recorder", "port", srv->composite->encode_sink_port,
+	  "mode", srv->composite->mode, "width", srv->composite->width,
+	  "height", srv->composite->height, NULL));
+
+  g_signal_connect (srv->recorder, "start-worker",
+      G_CALLBACK (gst_switch_server_start_recorder), srv);
+
+  gst_worker_start (GST_WORKER (srv->recorder));
+  GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+  return TRUE;
+}
+
 /*
 gboolean timeout(gpointer user_data) {
   INFO ("Exiting!");
@@ -1180,7 +1321,13 @@ gst_switch_server_run (GstSwitchServer * srv)
   //g_timeout_add_seconds (15, &timeout, srv);
 
   if (!gst_switch_server_prepare_composite (srv, DEFAULT_COMPOSE_MODE))
-    goto error_prepare;
+    goto error_prepare_composite;
+
+  if (!gst_switch_server_create_output (srv))
+    goto error_prepare_output;
+
+  if (!gst_switch_server_create_recorder (srv))
+    goto error_prepare_recorder;
 
   srv->video_acceptor = g_thread_new ("switch-server-video-acceptor",
       (GThreadFunc) gst_switch_server_video_acceptor, srv);
@@ -1208,7 +1355,17 @@ gst_switch_server_run (GstSwitchServer * srv)
   return;
 
   /* Errors Handling */
- error_prepare:
+ error_prepare_composite:
+  {
+    ERROR ("error preparing server");
+    return;
+  }
+ error_prepare_output:
+  {
+    ERROR ("error preparing server");
+    return;
+  }
+ error_prepare_recorder:
   {
     ERROR ("error preparing server");
     return;

@@ -26,7 +26,7 @@
 #ifndef __LOG_UTILS_H__
 #define DEBUG 1
 #define ENABLE_LOW_RESOLUTION 1
-#define ENABLE_ASSESSMENT 1
+#define ENABLE_ASSESSMENT 0
 #if DEBUG
 #define INFO_PREFIX LOG_PREFIX"/%s:%d:info:"
 #define WARN_PREFIX LOG_PREFIX"/%s:%d:warning:"
