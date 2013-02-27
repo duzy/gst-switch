@@ -1070,8 +1070,10 @@ testclient_join (testclient *client)
   testcase_join (&client->sink3);
   testcase_join (&client->sink4);
 
-  g_assert_cmpint (client->encode_port0, ==, client->encode_port);
-  g_assert_cmpint (client->compose_port0, ==, client->compose_port);
+  if (client->encode_port != 0)
+    g_assert_cmpint (client->encode_port0, ==, client->encode_port);
+  if (client->compose_port != 0)
+    g_assert_cmpint (client->compose_port0, ==, client->compose_port);
 
 #if ASSERT_TEST_PIPELINE_ERRORS
   g_assert (client->sink1.pass);
@@ -1168,8 +1170,9 @@ test_controller (void)
 
       g_assert_cmpint (client->compose_port, ==, client->compose_port0);
       g_assert_cmpint (client->compose_port_count, >=, 1);
-      g_assert_cmpint (client->encode_port, ==, client->encode_port0);
-      g_assert_cmpint (client->encode_port_count, >=, 1);
+      if (0 < client->encode_port_count) {
+	g_assert_cmpint (client->encode_port, ==, client->encode_port0);
+      }
       g_assert_cmpint (client->audio_port, !=, 0);
       g_assert_cmpint (client->audio_port_count, >=, 1);
       g_assert_cmpint (client->preview_port_1, !=, 0);
@@ -1210,7 +1213,7 @@ test_controller (void)
 static void
 test_composite_mode (void)
 {
-  int seconds = 60 * (infinity_open_file ? 5 : 2);
+  int seconds = 60 * (infinity_open_file ? 5 : 0.5);
   GPid server_pid = 0;
   testclient *client;
   testcase video_source1 = { "test-video-source1", 0 };
@@ -1294,10 +1297,12 @@ test_composite_mode (void)
 
       g_assert_cmpint (client->compose_port, ==, client->compose_port0);
       g_assert_cmpint (client->compose_port_count, >=, 1);
-      g_assert_cmpint (client->encode_port, ==, client->encode_port0);
-      g_assert_cmpint (client->encode_port_count, >=, 1);
-      g_assert_cmpint (client->audio_port, !=, 0);
-      //g_assert_cmpint (client->audio_port, ==, client->audio_port0);
+      if (0 < client->encode_port_count && client->encode_port0 != 0) {
+	g_assert_cmpint (client->encode_port, ==, client->encode_port0);
+      }
+      if (0 < client->audio_port_count && client->audio_port0 != 0) {
+	g_assert_cmpint (client->audio_port, ==, client->audio_port0);
+      }
       g_assert_cmpint (client->audio_port_count, >=, 1);
       g_assert_cmpint (client->preview_port_1, !=, 0);
       g_assert_cmpint (client->preview_port_2, !=, 0);
@@ -1970,7 +1975,7 @@ test_switching (void)
 static gpointer
 test_fuzz_feed (gpointer data)
 {
-  enum { seconds = 2 };
+  enum { seconds = 3 };
   gboolean *quit = (gboolean *) data;
   sleep (5);
   const gchar *names[] = {
@@ -2016,7 +2021,7 @@ test_fuzz_feed (gpointer data)
 static void
 test_fuzz (void)
 {
-  const gint seconds = 60 * 1;
+  const gint seconds = 60 * 0.5;
   GPid server_pid = 0;
   testcase source1 = { "test-video-good-source1", 0 };
   testcase source2 = { "test-video-good-source2", 0 };
@@ -2163,7 +2168,7 @@ test_fuzz (void)
 static void
 test_checking_timestamps (void)
 {
-  const gint seconds = 60 + 10;
+  const gint seconds = 60 * 5;
   GPid server_pid = 0;
   GPid ui_pid = 0;
   testcase video_source = { "test-video-source", 0 };
