@@ -10,6 +10,6 @@ function main()
     mkdir -p "$out" && launch -v \
 	filesrc location=\"$PWD/$1\" ! avidemux name=d \
 	d. ! queue ! vp8dec ! videoconvert ! pngenc ! multifilesink \
-	location=\"$out/frame-%d.png\"
+	location=\"$out/frame-%08d.png\"
     echo "====================" && ls -l "$out"
 }

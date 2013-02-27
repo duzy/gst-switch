@@ -45,6 +45,6 @@ extern guint assess_number;
 #else
 #define ASSESS(name, ...) ((void) FALSE);
 #endif//ENABLE_ASSESSMENT
-#define LOW_RES_W 100 /* 160 */ /* 320 */
-#define LOW_RES_H 56  /* 120 */ /* 240 */
+#define LOW_RES_W 300 /* 100 */ /* 160 */ /* 320 */
+#define LOW_RES_H 200 /* 56 */ /* 120 */ /* 240 */
 #endif//__LOG_UTILS_H__
