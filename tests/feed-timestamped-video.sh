@@ -14,14 +14,16 @@ fi
 
 if [[ "x$width" == "x" ]]; then
     #width=640
-    width=1280
+    #width=1280
     #width=356
+    width=100
 fi
 
 if [[ "x$height" == "x" ]]; then
     #height=480
-    height=720
-    #height=200
+    #height=720
+    #height=240
+    height=56
 fi
 
 launch \
