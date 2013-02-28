@@ -11,13 +11,13 @@ function get-pkg-info()
 function install-prerequisite()
 {
     local pkg=$1
-    local pkginfo=$(get-pkg-info $pkg)
-    if [[ "x$pkginfo" == "x" ]]; then
-	printf "install $pkginfo..\n"
-	sudo apt-get install $pkg
-    else
-	printf "package $pkg is ok\n"
-    fi
+    #local pkginfo=$(get-pkg-info $pkg)
+    #if [[ "x$pkginfo" == "x" ]]; then
+    printf "install $pkginfo..\n"
+    sudo apt-get install $pkg
+    #else
+    #printf "package $pkg is ok\n"
+    #fi
 }
 
 function install-git-libvpx()
@@ -172,13 +172,16 @@ function prepare-gst-projects()
 function parse-options()
 {
     declare -A options
-    for arg in $@; do
+    local args=( "$@" )
+    for ((n=0; n < ${#args[@]}; ++n)); do
+	arg="${args[$n]}"
 	case $arg in
 	    --force|-f)
 		options[force]="yes"
 		;;
 	    --make-args)
-		options[make-args]="$arg"
+		((++n))
+		options[make-args]="${args[$n]}"
 		;;
 	esac
     done
