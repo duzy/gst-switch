@@ -58,6 +58,8 @@ function prepare-prerequisites()
 	libmjpegtools-dev \
 	libvpx-dev \
 	libgtk-3-dev \
+	libfaac-dev \
+	libfaad-dev \
 	gtk-doc-tools \
 	yasm \
 	bison \
