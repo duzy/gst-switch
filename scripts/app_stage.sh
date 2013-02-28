@@ -34,7 +34,7 @@ function install-git-libvpx()
 	--enable-shared --enable-vp8
 
     make clean || true
-    make && make install
+    make ${options[make-args]} && make ${options[make-args]} install
 
     cd $back
 
@@ -147,7 +147,7 @@ function build-project()
 	exit -1
     }
     make clean || true
-    make && make install
+    make ${options[make-args]} && make ${options[make-args]} install
     cd $backdir
 }
 
@@ -176,6 +176,9 @@ function parse-options()
 	case $arg in
 	    --force|-f)
 		options[force]="yes"
+		;;
+	    --make-args)
+		options[make-args]="$arg"
 		;;
 	esac
     done
