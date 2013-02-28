@@ -28,6 +28,9 @@ clean-test-data:
 	rm -f "tests/test-recording "*" "*.data
 	rm -f "tests/test-server-"*.log
 
+valgrind:
+	./tests/run_server_in_valgrind.sh $(TESTS)
+
 if GPROF_ENABLED
 perf:
 	echo "TODO: program profiling"

@@ -1168,18 +1168,24 @@ test_controller (void)
 	g_test_fail ();
       }
 
-      g_assert_cmpint (client->compose_port, ==, client->compose_port0);
-      g_assert_cmpint (client->compose_port_count, >=, 1);
+      if (0 < client->compose_port_count) {
+	//g_assert_cmpint (client->compose_port_count, >=, 1);
+	g_assert_cmpint (client->compose_port, ==, client->compose_port0);
+      }
       if (0 < client->encode_port_count) {
 	g_assert_cmpint (client->encode_port, ==, client->encode_port0);
       }
-      g_assert_cmpint (client->audio_port, !=, 0);
-      g_assert_cmpint (client->audio_port_count, >=, 1);
-      g_assert_cmpint (client->preview_port_1, !=, 0);
-      g_assert_cmpint (client->preview_port_2, !=, 0);
-      g_assert_cmpint (client->preview_port_3, !=, 0);
-      g_assert_cmpint (client->preview_port_4, !=, 0);
-      g_assert_cmpint (client->preview_port_count, ==, 4);
+      if (0 < client->audio_port_count) {
+	//g_assert_cmpint (client->audio_port_count, >=, 1);
+	g_assert_cmpint (client->audio_port, !=, 0);
+      }
+      if (0 < client->preview_port_count) {
+	g_assert_cmpint (client->preview_port_1, !=, 0);
+	g_assert_cmpint (client->preview_port_2, !=, 0);
+	g_assert_cmpint (client->preview_port_3, !=, 0);
+	g_assert_cmpint (client->preview_port_4, !=, 0);
+	g_assert_cmpint (client->preview_port_count, ==, 4);
+      }
     }
   }
 
