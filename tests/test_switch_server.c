@@ -1534,21 +1534,24 @@ test_audio (void)
 
   sink1.live_seconds = seconds;
   sink1.desc = g_string_new ("tcpclientsrc port=3003 ");
-  g_string_append_printf (sink1.desc, "! gdpdepay ! faad ! goom2k1 ");
+  //g_string_append_printf (sink1.desc, "! gdpdepay ! faad ! goom2k1 ");
+  g_string_append_printf (sink1.desc, "! gdpdepay ! faad ! monoscope ");
   g_string_append_printf (sink1.desc, "! %s text=audio1 ", textoverlay);
   g_string_append_printf (sink1.desc, "! videoconvert ");
   g_string_append_printf (sink1.desc, "! "VIDEOSINK);
 
   sink2.live_seconds = seconds;
   sink2.desc = g_string_new ("tcpclientsrc port=3004 ");
-  g_string_append_printf (sink2.desc, "! gdpdepay ! faad ! goom2k1 ");
+  //g_string_append_printf (sink2.desc, "! gdpdepay ! faad ! goom2k1 ");
+  g_string_append_printf (sink2.desc, "! gdpdepay ! faad ! monoscope ");
   g_string_append_printf (sink2.desc, "! %s text=audio2 ", textoverlay);
   g_string_append_printf (sink2.desc, "! videoconvert ");
   g_string_append_printf (sink2.desc, "! "VIDEOSINK);
 
   sink3.live_seconds = seconds;
   sink3.desc = g_string_new ("tcpclientsrc port=3005 ");
-  g_string_append_printf (sink3.desc, "! gdpdepay ! faad ! goom2k1 ");
+  //g_string_append_printf (sink3.desc, "! gdpdepay ! faad ! goom2k1 ");
+  g_string_append_printf (sink3.desc, "! gdpdepay ! faad ! monoscope ");
   g_string_append_printf (sink3.desc, "! %s text=audio3 ", textoverlay);
   g_string_append_printf (sink3.desc, "! videoconvert ");
   g_string_append_printf (sink3.desc, "! "VIDEOSINK);
