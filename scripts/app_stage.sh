@@ -130,16 +130,14 @@ function build-project()
     local stage=$(gst-stage)
     local backdir=$PWD
     cd $project
-    printf "Building $project...\n" 
-    if [[ -f autoregen.sh ]]; then
-	./autoregen.sh
-    else
-	local options=$(get-project-build-options $project)
-	./autogen.sh --prefix=$stage $options || {
-	    printf "Failed to do autogen!!!\n"
-	    exit -1
-	}
-    fi
+    printf "Building $project...\n"
+    
+    local options=$(get-project-build-options $project)
+    ./autogen.sh --prefix=$stage $options || {
+	printf "Failed to do autogen!!!\n"
+	exit -1
+    }
+
     [[ -f Makefile ]] || {
 	printf "Configure $project failed, no Makefile generated!!!\n"
 	exit -1
