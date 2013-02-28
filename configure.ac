@@ -161,6 +161,8 @@ tools/Makefile
 
 AC_OUTPUT
 
+cd .git/hooks && ln -s ../../scripts/hooks/pre-commit
+
 echo "
   Now just type \"make\" to build.
 "
