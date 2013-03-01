@@ -34,8 +34,8 @@
 #define GST_IS_COMPOSITE_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_COMPOSITE))
 
 #if ENABLE_LOW_RESOLUTION
-#define GST_SWITCH_COMPOSITE_DEFAULT_WIDTH	LOW_RES_W /* 640 */
-#define GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT	LOW_RES_H /* 480 */
+#define GST_SWITCH_COMPOSITE_DEFAULT_WIDTH	LOW_RES_W       /* 640 */
+#define GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT	LOW_RES_H       /* 480 */
 #define GST_SWITCH_COMPOSITE_MIN_PIP_W		13
 #define GST_SWITCH_COMPOSITE_MIN_PIP_H		7
 #else
@@ -47,11 +47,12 @@
 
 #define DEFAULT_COMPOSE_MODE COMPOSE_MODE_3
 
-typedef enum {
-  COMPOSE_MODE_0, /* none */
-  COMPOSE_MODE_1, /* picture-in-picture */
-  COMPOSE_MODE_2, /* side-by-side (preview) */
-  COMPOSE_MODE_3, /* side-by-side (equal) */
+typedef enum
+{
+  COMPOSE_MODE_0,               /* none */
+  COMPOSE_MODE_1,               /* picture-in-picture */
+  COMPOSE_MODE_2,               /* side-by-side (preview) */
+  COMPOSE_MODE_3,               /* side-by-side (equal) */
   COMPOSE_MODE__LAST = COMPOSE_MODE_3
 } GstCompositeMode;
 
@@ -94,12 +95,12 @@ struct _GstCompositeClass
 {
   GstWorkerClass base_class;
 
-  void (*end_transition) (GstComposite *composite);
+  void (*end_transition) (GstComposite * composite);
 };
 
 GType gst_composite_get_type (void);
 
-gboolean gst_composite_adjust_pip (GstComposite *composite,
-				   gint x, gint y, gint w, gint h);
+gboolean gst_composite_adjust_pip (GstComposite * composite,
+    gint x, gint y, gint w, gint h);
 
-#endif//__GST_COMPOSITE_H__by_Duzy_Chan__
+#endif //__GST_COMPOSITE_H__by_Duzy_Chan__

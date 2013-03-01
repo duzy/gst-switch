@@ -63,6 +63,7 @@ enum
 };
 
 static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
+
 extern gboolean verbose;
 
 #define gst_composite_parent_class parent_class
@@ -130,72 +131,75 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   composite->height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
 
   switch ((composite->mode = mode)) {
-  case COMPOSE_MODE_0:
-    composite->a_x = 0;
-    composite->a_y = 0;
-    composite->a_width  = composite->width;
-    composite->a_height = composite->height;
-    composite->b_x = 0;
-    composite->b_y = 0;
-    composite->b_width  = 0;
-    composite->b_height = 0;
-    composite->width = composite->a_width;
-    composite->height = composite->a_height;
-    break;
-  case COMPOSE_MODE_1:
-    composite->a_x = 0;
-    composite->a_y = 0;
-    composite->a_width  = composite->width;
-    composite->a_height = composite->height;
-    composite->b_x = (guint) ((double) composite->a_width * 0.08 + 0.5);
-    composite->b_y = (guint) ((double) composite->a_height * 0.08 + 0.5);
-    composite->b_width  = (guint) ((double) composite->a_width * 0.3 + 0.5);
-    composite->b_height = (guint) ((double) composite->a_height * 0.3 + 0.5);
-    composite->width = composite->a_width;
-    composite->height = composite->a_height;
-    break;
-  case COMPOSE_MODE_2:
-    composite->a_x = 0;
-    composite->a_y = 0;
-    composite->a_width  = (guint) ((double) composite->width * 0.7 + 0.5);
-    composite->a_height = (guint) ((double) composite->height * 0.7 + 0.5);
-    composite->b_x = composite->a_width + 1;
-    composite->b_y = composite->a_y;
-    composite->b_width  = composite->width - composite->a_x - composite->a_width;
-    composite->b_height = composite->height - composite->a_y - composite->a_height;
-    break;
-  case COMPOSE_MODE_3:
-    composite->a_width  = (guint) ((double) composite->width * 0.5 + 0.5);
-    composite->a_height = (guint) ((double) composite->height * 0.5 + 0.5);
-    composite->a_x = 0;
-    composite->a_y = (composite->height - composite->a_height) / 2;
-    composite->b_x = composite->a_width + 1;
-    composite->b_y = composite->a_y;
-    composite->b_width  = composite->width - composite->a_x - composite->a_width;
-    composite->b_height = composite->a_height;
-    break;
-  default:
-    break;
+    case COMPOSE_MODE_0:
+      composite->a_x = 0;
+      composite->a_y = 0;
+      composite->a_width = composite->width;
+      composite->a_height = composite->height;
+      composite->b_x = 0;
+      composite->b_y = 0;
+      composite->b_width = 0;
+      composite->b_height = 0;
+      composite->width = composite->a_width;
+      composite->height = composite->a_height;
+      break;
+    case COMPOSE_MODE_1:
+      composite->a_x = 0;
+      composite->a_y = 0;
+      composite->a_width = composite->width;
+      composite->a_height = composite->height;
+      composite->b_x = (guint) ((double) composite->a_width * 0.08 + 0.5);
+      composite->b_y = (guint) ((double) composite->a_height * 0.08 + 0.5);
+      composite->b_width = (guint) ((double) composite->a_width * 0.3 + 0.5);
+      composite->b_height = (guint) ((double) composite->a_height * 0.3 + 0.5);
+      composite->width = composite->a_width;
+      composite->height = composite->a_height;
+      break;
+    case COMPOSE_MODE_2:
+      composite->a_x = 0;
+      composite->a_y = 0;
+      composite->a_width = (guint) ((double) composite->width * 0.7 + 0.5);
+      composite->a_height = (guint) ((double) composite->height * 0.7 + 0.5);
+      composite->b_x = composite->a_width + 1;
+      composite->b_y = composite->a_y;
+      composite->b_width =
+          composite->width - composite->a_x - composite->a_width;
+      composite->b_height =
+          composite->height - composite->a_y - composite->a_height;
+      break;
+    case COMPOSE_MODE_3:
+      composite->a_width = (guint) ((double) composite->width * 0.5 + 0.5);
+      composite->a_height = (guint) ((double) composite->height * 0.5 + 0.5);
+      composite->a_x = 0;
+      composite->a_y = (composite->height - composite->a_height) / 2;
+      composite->b_x = composite->a_width + 1;
+      composite->b_y = composite->a_y;
+      composite->b_width =
+          composite->width - composite->a_x - composite->a_width;
+      composite->b_height = composite->a_height;
+      break;
+    default:
+      break;
   }
 
   /*
-  INFO ("new mode %d, %dx%d (%dx%d, %dx%d)", mode,
-      composite->width, composite->height,
-      composite->a_width, composite->a_height,
-      composite->b_width, composite->b_height);
-  */
+     INFO ("new mode %d, %dx%d (%dx%d, %dx%d)", mode,
+     composite->width, composite->height,
+     composite->a_width, composite->a_height,
+     composite->b_width, composite->b_height);
+   */
 
   gst_composite_start_transition (composite);
 }
 
 static gboolean
-gst_composite_ready_for_transition (GstComposite *composite)
+gst_composite_ready_for_transition (GstComposite * composite)
 {
   return !composite->transition;
 }
 
 static void
-gst_composite_start_transition (GstComposite *composite)
+gst_composite_start_transition (GstComposite * composite)
 {
   g_return_if_fail (GST_IS_COMPOSITE (composite));
 
@@ -204,9 +208,9 @@ gst_composite_start_transition (GstComposite *composite)
   if (gst_composite_ready_for_transition (composite)) {
     composite->transition = gst_worker_stop (GST_WORKER (composite));
     /*
-    INFO ("transtion ok=%d, %d, %dx%d", composite->transition,
-	composite->mode, composite->width, composite->height);
-    */
+       INFO ("transtion ok=%d, %d, %dx%d", composite->transition,
+       composite->mode, composite->width, composite->height);
+     */
   }
 
   GST_COMPOSITE_UNLOCK_TRANSITION (composite);
@@ -214,109 +218,111 @@ gst_composite_start_transition (GstComposite *composite)
 
 static void
 gst_composite_set_property (GstComposite * composite, guint property_id,
-    const GValue *value, GParamSpec *pspec)
+    const GValue * value, GParamSpec * pspec)
 {
   switch (property_id) {
-  case PROP_PORT:
-    composite->sink_port = g_value_get_uint (value);
-    break;
-  case PROP_ENCODE_PORT:
-    composite->encode_sink_port = g_value_get_uint (value);
-    break;
-  case PROP_A_X:
-    composite->a_x = g_value_get_uint (value);
-    break;
-  case PROP_A_Y:
-    composite->a_y = g_value_get_uint (value);
-    break;
-  case PROP_A_WIDTH:
-    composite->a_width = g_value_get_uint (value);
-    break;
-  case PROP_A_HEIGHT:
-    composite->a_height = g_value_get_uint (value);
-    break;
-  case PROP_B_X:
-    composite->b_x = g_value_get_uint (value);
-    break;
-  case PROP_B_Y:
-    composite->b_y = g_value_get_uint (value);
-    break;
-  case PROP_B_WIDTH:
-    composite->b_width = g_value_get_uint (value);
-    break;
-  case PROP_B_HEIGHT:
-    composite->b_height = g_value_get_uint (value);
-    break;
-  case PROP_MODE: {
-    guint mode = g_value_get_uint (value);
-    if (COMPOSE_MODE_0 <= mode && mode <= COMPOSE_MODE__LAST) {
-      gst_composite_set_mode (composite, (GstCompositeMode) mode);
-    } else {
-      WARN ("invalid composite mode %d", mode);
+    case PROP_PORT:
+      composite->sink_port = g_value_get_uint (value);
+      break;
+    case PROP_ENCODE_PORT:
+      composite->encode_sink_port = g_value_get_uint (value);
+      break;
+    case PROP_A_X:
+      composite->a_x = g_value_get_uint (value);
+      break;
+    case PROP_A_Y:
+      composite->a_y = g_value_get_uint (value);
+      break;
+    case PROP_A_WIDTH:
+      composite->a_width = g_value_get_uint (value);
+      break;
+    case PROP_A_HEIGHT:
+      composite->a_height = g_value_get_uint (value);
+      break;
+    case PROP_B_X:
+      composite->b_x = g_value_get_uint (value);
+      break;
+    case PROP_B_Y:
+      composite->b_y = g_value_get_uint (value);
+      break;
+    case PROP_B_WIDTH:
+      composite->b_width = g_value_get_uint (value);
+      break;
+    case PROP_B_HEIGHT:
+      composite->b_height = g_value_get_uint (value);
+      break;
+    case PROP_MODE:
+    {
+      guint mode = g_value_get_uint (value);
+      if (COMPOSE_MODE_0 <= mode && mode <= COMPOSE_MODE__LAST) {
+        gst_composite_set_mode (composite, (GstCompositeMode) mode);
+      } else {
+        WARN ("invalid composite mode %d", mode);
+      }
     }
-  } break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
-	pspec);
-    break;
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
+          pspec);
+      break;
   }
 }
 
 static void
 gst_composite_get_property (GstComposite * composite, guint property_id,
-    GValue *value, GParamSpec *pspec)
+    GValue * value, GParamSpec * pspec)
 {
   switch (property_id) {
-  case PROP_MODE:
-    g_value_set_uint (value, composite->mode);
-    break;
-  case PROP_PORT:
-    g_value_set_uint (value, composite->sink_port);
-    break;
-  case PROP_ENCODE_PORT:
-    g_value_set_uint (value, composite->encode_sink_port);
-    break;
-  case PROP_A_X:
-    g_value_set_uint (value, composite->a_x);
-    break;
-  case PROP_A_Y:
-    g_value_set_uint (value, composite->a_y);
-    break;
-  case PROP_A_WIDTH:
-    g_value_set_uint (value, composite->a_width);
-    break;
-  case PROP_A_HEIGHT:
-    g_value_set_uint (value, composite->a_height);
-    break;
-  case PROP_B_X:
-    g_value_set_uint (value, composite->b_x);
-    break;
-  case PROP_B_Y:
-    g_value_set_uint (value, composite->b_y);
-    break;
-  case PROP_B_WIDTH:
-    g_value_set_uint (value, composite->b_width);
-    break;
-  case PROP_B_HEIGHT:
-    g_value_set_uint (value, composite->b_height);
-    break;
-  case PROP_WIDTH:
-    g_value_set_uint (value, composite->width);
-    break;
-  case PROP_HEIGHT:
-    g_value_set_uint (value, composite->height);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
-	pspec);
-    break;
+    case PROP_MODE:
+      g_value_set_uint (value, composite->mode);
+      break;
+    case PROP_PORT:
+      g_value_set_uint (value, composite->sink_port);
+      break;
+    case PROP_ENCODE_PORT:
+      g_value_set_uint (value, composite->encode_sink_port);
+      break;
+    case PROP_A_X:
+      g_value_set_uint (value, composite->a_x);
+      break;
+    case PROP_A_Y:
+      g_value_set_uint (value, composite->a_y);
+      break;
+    case PROP_A_WIDTH:
+      g_value_set_uint (value, composite->a_width);
+      break;
+    case PROP_A_HEIGHT:
+      g_value_set_uint (value, composite->a_height);
+      break;
+    case PROP_B_X:
+      g_value_set_uint (value, composite->b_x);
+      break;
+    case PROP_B_Y:
+      g_value_set_uint (value, composite->b_y);
+      break;
+    case PROP_B_WIDTH:
+      g_value_set_uint (value, composite->b_width);
+      break;
+    case PROP_B_HEIGHT:
+      g_value_set_uint (value, composite->b_height);
+      break;
+    case PROP_WIDTH:
+      g_value_set_uint (value, composite->width);
+      break;
+    case PROP_HEIGHT:
+      g_value_set_uint (value, composite->height);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
+          pspec);
+      break;
   }
 }
 
 static void
 gst_composite_apply_parameters (GstComposite * composite)
 {
-  GstWorkerClass * worker_class;
+  GstWorkerClass *worker_class;
 
   g_return_if_fail (GST_IS_COMPOSITE (composite));
 
@@ -326,21 +332,21 @@ gst_composite_apply_parameters (GstComposite * composite)
     ERROR ("failed to reset composite");
   }
   /*
-  if (!worker_class->reset (GST_WORKER (composite->output))) {
-    ERROR ("failed to reset composite output");
-  }
-  */
+     if (!worker_class->reset (GST_WORKER (composite->output))) {
+     ERROR ("failed to reset composite output");
+     }
+   */
 
   /*
-  g_object_set (composite->recorder,
-      "port", composite->encode_sink_port,
-      "mode", composite->mode, "width", composite->width,
-      "height", composite->height, NULL);
+     g_object_set (composite->recorder,
+     "port", composite->encode_sink_port,
+     "mode", composite->mode, "width", composite->width,
+     "height", composite->height, NULL);
 
-  if (!worker_class->reset (GST_WORKER (composite->recorder))) {
-    ERROR ("failed to reset composite recorder");
-  }
-  */
+     if (!worker_class->reset (GST_WORKER (composite->recorder))) {
+     ERROR ("failed to reset composite recorder");
+     }
+   */
 }
 
 static GString *
@@ -354,62 +360,60 @@ gst_composite_get_pipeline_string (GstComposite * composite)
       "intervideosrc name=source_a channel=composite_a_scaled ");
   if (composite->mode == COMPOSE_MODE_0) {
     g_string_append_printf (desc,
-	"source_a. ! video/x-raw,width=%d,height=%d ",
-	composite->a_width, composite->a_height);
+        "source_a. ! video/x-raw,width=%d,height=%d ",
+        composite->a_width, composite->a_height);
     /*
-    ASSESS ("assess-compose-a-source");
-    */
+       ASSESS ("assess-compose-a-source");
+     */
     g_string_append_printf (desc, "! queue2 ");
     g_string_append_printf (desc, "! identity name=mix ");
   } else {
     g_string_append_printf (desc,
-	"intervideosrc name=source_b channel=composite_b_scaled ");
+        "intervideosrc name=source_b channel=composite_b_scaled ");
     g_string_append_printf (desc,
-	"videomixer name=mix "
-	"sink_0::xpos=%d "
-	"sink_0::ypos=%d "
-	"sink_0::zorder=0 "
-	"sink_1::xpos=%d "
-	"sink_1::ypos=%d "
-	"sink_1::zorder=1 ",
-	composite->a_x, composite->a_y,
-	composite->b_x, composite->b_y
-	);
+        "videomixer name=mix "
+        "sink_0::xpos=%d "
+        "sink_0::ypos=%d "
+        "sink_0::zorder=0 "
+        "sink_1::xpos=%d "
+        "sink_1::ypos=%d "
+        "sink_1::zorder=1 ",
+        composite->a_x, composite->a_y, composite->b_x, composite->b_y);
 
     // ===== B =====
     g_string_append_printf (desc,
-	"source_b. ! video/x-raw,width=%d,height=%d ",
-	composite->b_width, composite->b_height);
+        "source_b. ! video/x-raw,width=%d,height=%d ",
+        composite->b_width, composite->b_height);
     ASSESS ("assess-compose-b-source");
     g_string_append_printf (desc, "! queue2 ");
 #if 0
-    if (composite->width  != composite->b_width ||
-	composite->height != composite->b_height) {
+    if (composite->width != composite->b_width ||
+        composite->height != composite->b_height) {
       g_string_append_printf (desc,
-	  "! videoscale ! video/x-raw,width=%d,height=%d ",
-	  composite->b_width, composite->b_height);
+          "! videoscale ! video/x-raw,width=%d,height=%d ",
+          composite->b_width, composite->b_height);
       /*
-      ASSESS ("assess-compose-b-scaled");
-      */
+         ASSESS ("assess-compose-b-scaled");
+       */
     }
 #endif
     g_string_append_printf (desc, "! mix.sink_1 ");
 
     // ===== A =====
     g_string_append_printf (desc,
-	"source_a. ! video/x-raw,width=%d,height=%d ",
-	composite->a_width, composite->a_height);
+        "source_a. ! video/x-raw,width=%d,height=%d ",
+        composite->a_width, composite->a_height);
     ASSESS ("assess-compose-a-source");
     g_string_append_printf (desc, "! queue2 ");
 #if 0
-    if (composite->width  != composite->a_width ||
-	composite->height != composite->a_height) {
+    if (composite->width != composite->a_width ||
+        composite->height != composite->a_height) {
       g_string_append_printf (desc,
-	  "! videoscale ! video/x-raw,width=%d,height=%d ",
-	  composite->a_width, composite->a_height);
+          "! videoscale ! video/x-raw,width=%d,height=%d ",
+          composite->a_width, composite->a_height);
       /*
-      ASSESS ("assess-compose-b-scaled");
-      */
+         ASSESS ("assess-compose-b-scaled");
+       */
     }
 #endif
     g_string_append_printf (desc, "! mix.sink_0 ");
@@ -422,8 +426,8 @@ gst_composite_get_pipeline_string (GstComposite * composite)
 
   g_string_append_printf (desc, "result. ! queue2 ");
   /*
-  ASSESS ("assess-compose-to-output");
-  */
+     ASSESS ("assess-compose-to-output");
+   */
   g_string_append_printf (desc, "! out. ");
   g_string_append_printf (desc,
       "intervideosink name=out channel=composite_out ");
@@ -431,18 +435,18 @@ gst_composite_get_pipeline_string (GstComposite * composite)
   if (opts.record_filename) {
     g_string_append_printf (desc, "result. ! queue2 ");
     /*
-    ASSESS ("assess-compose-to-record");
-    */
+       ASSESS ("assess-compose-to-record");
+     */
     g_string_append_printf (desc, "! record. ");
     g_string_append_printf (desc, "intervideosink name=record "
-	"channel=composite_video ");
+        "channel=composite_video ");
   }
 
   return desc;
 }
 
 static GString *
-gst_composite_get_scaler_string (GstWorker *worker, GstComposite *composite)
+gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
 {
   GString *desc;
 
@@ -463,31 +467,31 @@ gst_composite_get_scaler_string (GstWorker *worker, GstComposite *composite)
   if (composite->mode == COMPOSE_MODE_0) {
   } else {
     g_string_append_printf (desc,
-	"intervideosrc name=source_b channel=composite_b ");
+        "intervideosrc name=source_b channel=composite_b ");
     g_string_append_printf (desc,
-	"intervideosink name=sink_b sync=false channel=composite_b_scaled ");
+        "intervideosink name=sink_b sync=false channel=composite_b_scaled ");
 
     g_string_append_printf (desc,
-	"source_b. ! video/x-raw,width=%d,height=%d ",
-	composite->width, composite->height);
+        "source_b. ! video/x-raw,width=%d,height=%d ",
+        composite->width, composite->height);
     g_string_append_printf (desc,
-	"! queue2 ! videoscale ! video/x-raw,width=%d,height=%d ! sink_b. ",
-	composite->b_width, composite->b_height);
+        "! queue2 ! videoscale ! video/x-raw,width=%d,height=%d ! sink_b. ",
+        composite->b_width, composite->b_height);
   }
   return desc;
 }
 
 static gboolean
-gst_composite_prepare (GstComposite *composite)
+gst_composite_prepare (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
   if (composite->scaler == NULL) {
     composite->scaler = GST_WORKER (g_object_new (GST_TYPE_WORKER,
-	    "name", "scale", NULL));
+            "name", "scale", NULL));
     composite->scaler->pipeline_func_data = composite;
     composite->scaler->pipeline_func = (GstWorkerGetPipelineString)
-      gst_composite_get_scaler_string;
+        gst_composite_get_scaler_string;
   } else {
     GstWorkerClass *worker_class;
     worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite->scaler));
@@ -499,7 +503,7 @@ gst_composite_prepare (GstComposite *composite)
 }
 
 static void
-gst_composite_start (GstComposite *composite)
+gst_composite_start (GstComposite * composite)
 {
   g_return_if_fail (GST_IS_COMPOSITE (composite));
 
@@ -507,7 +511,7 @@ gst_composite_start (GstComposite *composite)
 }
 
 static void
-gst_composite_end (GstComposite *composite)
+gst_composite_end (GstComposite * composite)
 {
   g_return_if_fail (GST_IS_COMPOSITE (composite));
 
@@ -515,7 +519,7 @@ gst_composite_end (GstComposite *composite)
 }
 
 static gboolean
-gst_composite_end_transition (GstComposite *composite)
+gst_composite_end_transition (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
@@ -523,12 +527,13 @@ gst_composite_end_transition (GstComposite *composite)
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
       /*
-      INFO ("new mode %d, %dx%d transited", composite->mode,
-	  composite->width, composite->height);
-      */
+         INFO ("new mode %d, %dx%d transited", composite->mode,
+         composite->width, composite->height);
+       */
       composite->transition = FALSE;
       g_signal_emit (composite,
-	  gst_composite_signals[SIGNAL_END_TRANSITION], 0/*, composite->mode*/);
+          gst_composite_signals[SIGNAL_END_TRANSITION],
+          0 /*, composite->mode */ );
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }
@@ -536,7 +541,7 @@ gst_composite_end_transition (GstComposite *composite)
 }
 
 static gboolean
-gst_composite_commit_transition (GstComposite *composite)
+gst_composite_commit_transition (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
@@ -544,9 +549,9 @@ gst_composite_commit_transition (GstComposite *composite)
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
       /*
-      INFO ("new mode %d, %dx%d applying...",
-	  composite->mode, composite->width, composite->height);
-      */
+         INFO ("new mode %d, %dx%d applying...",
+         composite->mode, composite->width, composite->height);
+       */
       gst_composite_apply_parameters (composite);
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
@@ -555,7 +560,7 @@ gst_composite_commit_transition (GstComposite *composite)
 }
 
 static gboolean
-gst_composite_close_transition (GstComposite *composite)
+gst_composite_close_transition (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
@@ -565,7 +570,7 @@ gst_composite_close_transition (GstComposite *composite)
       //gst_worker_start (GST_WORKER (composite->output));
       /* It's ok to discard the source ID here, the timeout is one-shot. */
       g_timeout_add (200, (GSourceFunc) gst_composite_end_transition,
-	  composite);
+          composite);
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }
@@ -573,17 +578,17 @@ gst_composite_close_transition (GstComposite *composite)
 }
 
 static gboolean
-gst_composite_commit_adjustment (GstComposite *composite)
+gst_composite_commit_adjustment (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
   if (composite->adjusting) {
     GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
     if (composite->adjusting) {
-      GstWorkerClass * worker_class;
+      GstWorkerClass *worker_class;
       worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
       if (!worker_class->reset (GST_WORKER (composite))) {
-	ERROR ("failed to reset composite");
+        ERROR ("failed to reset composite");
       }
     }
     GST_COMPOSITE_UNLOCK_ADJUSTMENT (composite);
@@ -592,7 +597,7 @@ gst_composite_commit_adjustment (GstComposite *composite)
 }
 
 static gboolean
-gst_composite_close_adjustment (GstComposite *composite)
+gst_composite_close_adjustment (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
@@ -605,45 +610,43 @@ gst_composite_close_adjustment (GstComposite *composite)
 }
 
 static void
-gst_composite_alive (GstComposite *composite)
+gst_composite_alive (GstComposite * composite)
 {
   g_return_if_fail (GST_IS_COMPOSITE (composite));
 
   if (composite->transition) {
 #if 0
-    g_timeout_add (10, (GSourceFunc) gst_composite_close_transition,
-	composite);
+    g_timeout_add (10, (GSourceFunc) gst_composite_close_transition, composite);
 #else
     gst_composite_close_transition (composite);
 #endif
   } else if (composite->adjusting) {
-    g_timeout_add (10, (GSourceFunc) gst_composite_close_adjustment,
-	composite);
+    g_timeout_add (10, (GSourceFunc) gst_composite_close_adjustment, composite);
   }
 }
 
 static GstWorkerNullReturn
-gst_composite_null (GstComposite *composite)
+gst_composite_null (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), GST_WORKER_NR_END);
 
   if (composite->transition) {
 #if 0
     g_timeout_add (10, (GSourceFunc) gst_composite_commit_transition,
-	composite);
+        composite);
 #else
     gst_composite_commit_transition (composite);
 #endif
   } else if (composite->adjusting) {
     g_timeout_add (10, (GSourceFunc) gst_composite_commit_adjustment,
-	composite);
+        composite);
   }
 
   return composite->deprecated ? GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
 }
 
 gboolean
-gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
+gst_composite_adjust_pip (GstComposite * composite, gint x, gint y,
     gint w, gint h)
 {
   gboolean result = FALSE;
@@ -659,7 +662,7 @@ gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
     WARN ("last PIP adjustment request is progressing");
     goto end;
   }
-  
+
   composite->b_x = x;
   composite->b_y = y;
 
@@ -673,31 +676,33 @@ gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
   }
 
   element = gst_worker_get_element (GST_WORKER (composite), "mix");
-  iter = gst_element_iterate_sink_pads(element);
+  iter = gst_element_iterate_sink_pads (element);
   while (iter && !done) {
     switch (gst_iterator_next (iter, &value)) {
-    case GST_ITERATOR_OK: {
-      GstPad *pad = g_value_get_object (&value);
-      if (g_strcmp0 (gst_pad_get_name (pad), "sink_1") == 0) {
-	g_object_set (pad, "xpos", composite->b_x,
-	    "ypos", composite->b_y, NULL);
-	done = TRUE;
-	result = TRUE;
+      case GST_ITERATOR_OK:
+      {
+        GstPad *pad = g_value_get_object (&value);
+        if (g_strcmp0 (gst_pad_get_name (pad), "sink_1") == 0) {
+          g_object_set (pad, "xpos", composite->b_x,
+              "ypos", composite->b_y, NULL);
+          done = TRUE;
+          result = TRUE;
+        }
+        g_value_reset (&value);
       }
-      g_value_reset (&value);
-    } break;
-    case GST_ITERATOR_RESYNC:
-      gst_iterator_resync (iter);
-      break;
-    case GST_ITERATOR_DONE:
-      done = TRUE;
-      break;
-    default:
-      /* iterator returned _ERROR or premature end with _OK,
-       * mark an error and exit */
-      done = TRUE;
-      result = FALSE;
-      break;
+        break;
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (iter);
+        break;
+      case GST_ITERATOR_DONE:
+        done = TRUE;
+        break;
+      default:
+        /* iterator returned _ERROR or premature end with _OK,
+         * mark an error and exit */
+        done = TRUE;
+        result = FALSE;
+        break;
     }
   }
 
@@ -709,18 +714,18 @@ gst_composite_adjust_pip (GstComposite *composite, gint x, gint y,
   composite->adjusting = FALSE;
 
   /*
-  if (!result) {
-    WARN ("failed to adjust PIP: %d, %d, %d, %d", x, y, w, h);
-  }
-  */
+     if (!result) {
+     WARN ("failed to adjust PIP: %d, %d, %d, %d", x, y, w, h);
+     }
+   */
 
- end:
+end:
   GST_COMPOSITE_UNLOCK (composite);
   return result;
 }
 
 static gboolean
-gst_composite_retry_transition (GstComposite *composite)
+gst_composite_retry_transition (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
@@ -728,29 +733,29 @@ gst_composite_retry_transition (GstComposite *composite)
     GST_COMPOSITE_LOCK_TRANSITION (composite);
     if (composite->transition) {
       WARN ("new mode %d, %dx%d (error transition)",
-	  composite->mode, composite->width, composite->height);
+          composite->mode, composite->width, composite->height);
       gst_composite_apply_parameters (composite);
       gst_worker_start (GST_WORKER (composite));
     }
     GST_COMPOSITE_UNLOCK_TRANSITION (composite);
   }
-  
+
   return FALSE;
 }
 
 static gboolean
-gst_composite_retry_adjustment (GstComposite *composite)
+gst_composite_retry_adjustment (GstComposite * composite)
 {
   g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
 
   if (composite->adjusting) {
     GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
     if (composite->adjusting) {
-      GstWorkerClass * worker_class;
+      GstWorkerClass *worker_class;
       WARN ("adjusting PIP error, retry..");
       worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
       if (!worker_class->reset (GST_WORKER (composite))) {
-	ERROR ("failed to reset composite");
+        ERROR ("failed to reset composite");
       }
       gst_worker_start (GST_WORKER (composite));
     }
@@ -761,27 +766,26 @@ gst_composite_retry_adjustment (GstComposite *composite)
 }
 
 static void
-gst_composite_error (GstComposite *composite)
+gst_composite_error (GstComposite * composite)
 {
   g_return_if_fail (GST_IS_COMPOSITE (composite));
 
   if (composite->transition) {
-    g_timeout_add (10, (GSourceFunc) gst_composite_retry_transition,
-	composite);
+    g_timeout_add (10, (GSourceFunc) gst_composite_retry_transition, composite);
   } else if (composite->adjusting) {
-    g_timeout_add (10, (GSourceFunc) gst_composite_retry_adjustment,
-	composite);
+    g_timeout_add (10, (GSourceFunc) gst_composite_retry_adjustment, composite);
   }
 }
 
 static gboolean
-gst_composite_message (GstComposite *composite, GstMessage * message)
+gst_composite_message (GstComposite * composite, GstMessage * message)
 {
   switch (GST_MESSAGE_TYPE (message)) {
-  case GST_MESSAGE_ERROR:
-    gst_composite_error (composite);
-    break;
-  default: break;
+    case GST_MESSAGE_ERROR:
+      gst_composite_error (composite);
+      break;
+    default:
+      break;
   }
   return TRUE;
 }
@@ -789,107 +793,130 @@ gst_composite_message (GstComposite *composite, GstMessage * message)
 static void
 gst_composite_class_init (GstCompositeClass * klass)
 {
-  GObjectClass * object_class = G_OBJECT_CLASS (klass);
-  GstWorkerClass * worker_class = GST_WORKER_CLASS (klass);
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
   object_class->dispose = (GObjectFinalizeFunc) gst_composite_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_composite_finalize;
-  object_class->set_property = (GObjectSetPropertyFunc) gst_composite_set_property;
-  object_class->get_property = (GObjectGetPropertyFunc) gst_composite_get_property;
+  object_class->set_property =
+      (GObjectSetPropertyFunc) gst_composite_set_property;
+  object_class->get_property =
+      (GObjectGetPropertyFunc) gst_composite_get_property;
 
   /*
-  gst_composite_signals[SIGNAL_START_OUTPUT] = 
-    g_signal_new ("start-output", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, start_output),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+     gst_composite_signals[SIGNAL_START_OUTPUT] = 
+     g_signal_new ("start-output", G_TYPE_FROM_CLASS (klass),
+     G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, start_output),
+     NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
-  gst_composite_signals[SIGNAL_START_RECORDER] = 
-    g_signal_new ("start-recorder", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, start_recorder),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+     gst_composite_signals[SIGNAL_START_RECORDER] = 
+     g_signal_new ("start-recorder", G_TYPE_FROM_CLASS (klass),
+     G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, start_recorder),
+     NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
-  gst_composite_signals[SIGNAL_END_OUTPUT] = 
-    g_signal_new ("end-output", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_output),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+     gst_composite_signals[SIGNAL_END_OUTPUT] = 
+     g_signal_new ("end-output", G_TYPE_FROM_CLASS (klass),
+     G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_output),
+     NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
 
-  gst_composite_signals[SIGNAL_END_RECORDER] = 
-    g_signal_new ("end-recorder", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_recorder),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
-  */
+     gst_composite_signals[SIGNAL_END_RECORDER] = 
+     g_signal_new ("end-recorder", G_TYPE_FROM_CLASS (klass),
+     G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_recorder),
+     NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+   */
 
-  gst_composite_signals[SIGNAL_END_TRANSITION] = 
-    g_signal_new ("end-transition", G_TYPE_FROM_CLASS (klass),
-	G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_transition),
-	NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0/*1, G_TYPE_INT*/);
+  gst_composite_signals[SIGNAL_END_TRANSITION] =
+      g_signal_new ("end-transition", G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass,
+          end_transition), NULL,
+      NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0 /*1, G_TYPE_INT */ );
 
   g_object_class_install_property (object_class, PROP_MODE,
-      g_param_spec_uint ("mode", "Mode", "Composite Mode",
-          COMPOSE_MODE_0, COMPOSE_MODE__LAST, DEFAULT_COMPOSE_MODE,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("mode", "Mode",
+          "Composite Mode",
+          COMPOSE_MODE_0,
+          COMPOSE_MODE__LAST,
+          DEFAULT_COMPOSE_MODE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_PORT,
-      g_param_spec_uint ("port", "Port", "Sink port",
-          GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
-	  GST_SWITCH_MIN_SINK_PORT,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("port", "Port",
+          "Sink port",
+          GST_SWITCH_MIN_SINK_PORT,
+          GST_SWITCH_MAX_SINK_PORT,
+          GST_SWITCH_MIN_SINK_PORT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_ENCODE_PORT,
-      g_param_spec_uint ("encode", "EncodePort", "Encoding Sink port",
-          GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
-	  GST_SWITCH_MIN_SINK_PORT,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("encode", "EncodePort",
+          "Encoding Sink port",
+          GST_SWITCH_MIN_SINK_PORT,
+          GST_SWITCH_MAX_SINK_PORT,
+          GST_SWITCH_MIN_SINK_PORT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_X,
-      g_param_spec_uint ("ax", "A xpos", "Channel A frame xpos",
-          0, G_MAXINT, 0,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("ax", "A xpos",
+          "Channel A frame xpos",
+          0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_Y,
-      g_param_spec_uint ("ay", "A ypos", "Channel A frame ypos",
-          0, G_MAXINT, 0,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("ay", "A ypos",
+          "Channel A frame ypos",
+          0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_WIDTH,
-      g_param_spec_uint ("awidth", "A Width", "Channel A frame width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("awidth", "A Width",
+          "Channel A frame width",
+          1, G_MAXINT,
+          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_HEIGHT,
-      g_param_spec_uint ("aheight", "A Height", "Channel A frame height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("aheight", "A Height",
+          "Channel A frame height",
+          1, G_MAXINT,
+          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_X,
-      g_param_spec_uint ("bx", "B xpos", "Channel B frame xpos",
-          0, G_MAXINT, 0,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("bx", "B xpos",
+          "Channel B frame xpos",
+          0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_Y,
-      g_param_spec_uint ("by", "B ypos", "Channel B frame ypos",
-          0, G_MAXINT, 0,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("by", "B ypos",
+          "Channel B frame ypos",
+          0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_WIDTH,
-      g_param_spec_uint ("bwidth", "B Width", "Channel B frame width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("bwidth", "B Width",
+          "Channel B frame width",
+          1, G_MAXINT,
+          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_HEIGHT,
-      g_param_spec_uint ("bheight", "B Height", "Channel B frame height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("bheight", "B Height",
+          "Channel B frame height",
+          1, G_MAXINT,
+          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_WIDTH,
-      g_param_spec_uint ("width", "Composite Width", "Output frame width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
-	  G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("width",
+          "Composite Width",
+          "Output frame width", 1,
+          G_MAXINT,
+          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_HEIGHT,
-      g_param_spec_uint ("height", "Composite Height", "Output frame height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
-	  G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("height",
+          "Composite Height",
+          "Output frame height",
+          1, G_MAXINT,
+          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   worker_class->alive = (GstWorkerAliveFunc) gst_composite_alive;
   worker_class->null = (GstWorkerNullFunc) gst_composite_null;
@@ -898,5 +925,5 @@ gst_composite_class_init (GstCompositeClass * klass)
   worker_class->end_worker = (GstWorkerPrepareFunc) gst_composite_end;
   worker_class->message = (GstWorkerMessageFunc) gst_composite_message;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
-    gst_composite_get_pipeline_string;
+      gst_composite_get_pipeline_string;
 }

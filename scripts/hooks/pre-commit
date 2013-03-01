@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # An example hook script to verify what is about to be committed.
 # Called by "git commit" with no arguments.  The hook should
@@ -6,19 +6,28 @@
 # it wants to stop the commit.
 #
 
+function find-indent () {
+    if [[ -d .git && -h scripts/indent ]]; then
+	echo $PWD/scripts/indent
+    else
+	cd .. && {
+	    find-indent
+	    cd - > /dev/null
+	}
+    fi
+}
+
 # If there are whitespace errors, print the offending file names and
 files=$(git diff-index --cached --name-only HEAD --diff-filter=ACMR | grep "\.c$")
-INDENT=indent
+indent=$(find-indent)
 
 for file in $files; do
     nf=`git checkout-index --temp ${file} | cut -f 1`
     newfile=`mktemp /tmp/${nf}.XXXXXX` || exit 1
-    $INDENT ${INDENT_PARAMETERS} \
-	$nf -o $newfile 2>> /dev/null
+    $indent $nf -o $newfile 2>> /dev/null
     # FIXME: Call indent twice as it tends to do line-breaks
     # different for every second call.
-    $INDENT ${INDENT_PARAMETERS} \
-        $newfile 2>> /dev/null
+    $indent $newfile 2>> /dev/null
     diff -u -p "${nf}" "${newfile}"
     r=$?
     rm "${newfile}"
@@ -30,7 +39,7 @@ for file in $files; do
 	echo " Please fix before committing. Don't forget to run git add before trying to commit again.        "
 	echo " If the whole file is to be committed, this should work (run from the top-level directory):      "
 	echo "                                                                                                 "
-	echo "   $INDENT $file; git add $file; git commit						       "
+	echo "   $indent $file; git add $file; git commit						       "
 	echo "                                                                                                 "
 	echo "================================================================================================="
 	exit 1

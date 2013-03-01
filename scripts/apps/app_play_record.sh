@@ -1,7 +1,6 @@
 #
 #  By Duzy Chan <code@duzy.info>, 2012, 2013
 #  
-. ./scripts/common.sh
 . ./scripts/launcher.sh
 
 function main()

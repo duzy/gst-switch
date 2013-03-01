@@ -58,7 +58,7 @@ struct _GstAudioVisualClass
 
 GType gst_audio_visual_get_type (void);
 
-GstClockTime gst_audio_visual_get_endtime (GstAudioVisual *visual);
-gdouble gst_audio_visual_get_value (GstAudioVisual *visual);
+GstClockTime gst_audio_visual_get_endtime (GstAudioVisual * visual);
+gdouble gst_audio_visual_get_value (GstAudioVisual * visual);
 
-#endif//__GST_AUDIO_VISUAL_H__by_Duzy_Chan__
+#endif //__GST_AUDIO_VISUAL_H__by_Duzy_Chan__

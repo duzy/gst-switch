@@ -45,9 +45,9 @@ typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
 struct _GstSwitchServerOpts
 {
-  gchar * test_switch;
-  gchar * record_filename;
-  gchar * controller_address;
+  gchar *test_switch;
+  gchar *record_filename;
+  gchar *controller_address;
   gint video_input_port;
   gint audio_input_port;
   gint control_port;
@@ -111,13 +111,17 @@ GType gst_switch_server_get_type (void);
 gint gst_switch_server_get_composite_sink_port (GstSwitchServer * srv);
 gint gst_switch_server_get_encode_sink_port (GstSwitchServer * srv);
 gint gst_switch_server_get_audio_sink_port (GstSwitchServer * srv);
-GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv, GArray **serves, GArray **types);
+GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
+    GArray ** serves, GArray ** types);
 
-gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode);
-gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port);
-guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy, gint dw, gint dh);
+gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv,
+    gint mode);
+gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
+    gint port);
+guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
+    gint dw, gint dh);
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);
 
 extern GstSwitchServerOpts opts;
 
-#endif//__GST_SWITCH_SERVER_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_SERVER_H__by_Duzy_Chan__

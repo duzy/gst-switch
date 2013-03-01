@@ -1,8 +1,6 @@
 #
 #  By Duzy Chan <code@duzy.info>, 2012, 2013
 #  
-. ./scripts/common.sh
-
 function get-pkg-info()
 {
     dpkg -l $1 | grep $1 | awk '{ print $2 " " $3; }'

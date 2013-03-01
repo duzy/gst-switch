@@ -44,9 +44,10 @@
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
 
-typedef GVariant * (*MethodFunc) (GObject *, GDBusConnection *, GVariant *);
+typedef GVariant *(*MethodFunc) (GObject *, GDBusConnection *, GVariant *);
 typedef struct _MethodTableEntry MethodTableEntry;
-struct _MethodTableEntry {
+struct _MethodTableEntry
+{
   const gchar *name;
   MethodFunc func;
 };
@@ -75,7 +76,9 @@ gboolean gst_switch_controller_is_valid (GstSwitchController *);
 void gst_switch_controller_tell_audio_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_compose_port (GstSwitchController *, gint port);
 void gst_switch_controller_tell_encode_port (GstSwitchController *, gint port);
-void gst_switch_controller_tell_preview_port (GstSwitchController *, gint port, gint serve, gint type);
-void gst_switch_controller_tell_new_mode_onlne (GstSwitchController *, gint mode);
+void gst_switch_controller_tell_preview_port (GstSwitchController *,
+    gint port, gint serve, gint type);
+void gst_switch_controller_tell_new_mode_onlne (GstSwitchController *,
+    gint mode);
 
-#endif//__GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__

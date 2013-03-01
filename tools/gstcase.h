@@ -37,22 +37,24 @@
 typedef struct _GstCase GstCase;
 typedef struct _GstCaseClass GstCaseClass;
 
-typedef enum {
+typedef enum
+{
   GST_CASE_UNKNOWN,
   GST_CASE_COMPOSITE_A,
   GST_CASE_COMPOSITE_B,
-  GST_CASE_COMPOSITE_a, /* composite audio */
+  GST_CASE_COMPOSITE_a,         /* composite audio */
   GST_CASE_PREVIEW,
-  GST_CASE_INPUT_a,  /* audio input */
-  GST_CASE_INPUT_v,  /* video input */
-  GST_CASE_BRANCH_A, /* video branch */
-  GST_CASE_BRANCH_B, /* video branch */
-  GST_CASE_BRANCH_a, /* audio branch */
-  GST_CASE_BRANCH_p, /* preview branch */
+  GST_CASE_INPUT_a,             /* audio input */
+  GST_CASE_INPUT_v,             /* video input */
+  GST_CASE_BRANCH_A,            /* video branch */
+  GST_CASE_BRANCH_B,            /* video branch */
+  GST_CASE_BRANCH_a,            /* audio branch */
+  GST_CASE_BRANCH_p,            /* preview branch */
   GST_CASE__LAST_TYPE = GST_CASE_BRANCH_p
 } GstCaseType;
 
-typedef enum {
+typedef enum
+{
   GST_SERVE_NOTHING,
   GST_SERVE_VIDEO_STREAM,
   GST_SERVE_AUDIO_STREAM,
@@ -83,4 +85,4 @@ struct _GstCaseClass
 
 GType gst_case_get_type (void);
 
-#endif//__GST_CASE_H__by_Duzy_Chan__
+#endif //__GST_CASE_H__by_Duzy_Chan__

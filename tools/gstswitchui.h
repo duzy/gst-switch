@@ -80,4 +80,4 @@ struct _GstSwitchUIClass
 
 GType gst_switch_ui_get_type (void);
 
-#endif//__GST_SWITCH_UI_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_UI_H__by_Duzy_Chan__

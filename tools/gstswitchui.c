@@ -58,31 +58,28 @@ static GOptionEntry entries[] = {
   {NULL}
 };
 
-static const gchar * gst_switch_ui_css = 
-  ".compose {\n"
-  "  border-style: solid;\n"
-  "  border-width: 5px;\n"
-  "  border-radius: 5px;\n"
-  "  border-color: rgba(0,0,0,0.2);\n"
-  "  padding: 0px;\n"
-  "}\n"
-  ".preview_frame {\n"
-  "  border-style: solid;\n"
-  "  border-width: 5px;\n"
-  "  border-radius: 5px;\n"
-  "  border-color: rgba(0,0,0,0.2);\n"
-  "  padding: 0px;\n"
-  "}\n"
-  ".preview_frame:selected {\n"
-  "  border-color: rgba(25,25,200,0.75);\n"
-  "}\n"
-  ".active_audio_frame {\n"
-  "  border-color: rgba(225,25,55,0.75);\n"
-  "}\n"
-  ".active_video_frame {\n"
-  "  border-color: rgba(225,25,55,0.75);\n"
-  "}\n"
-  ;
+static const gchar *gst_switch_ui_css =
+    ".compose {\n"
+    "  border-style: solid;\n"
+    "  border-width: 5px;\n"
+    "  border-radius: 5px;\n"
+    "  border-color: rgba(0,0,0,0.2);\n"
+    "  padding: 0px;\n"
+    "}\n"
+    ".preview_frame {\n"
+    "  border-style: solid;\n"
+    "  border-width: 5px;\n"
+    "  border-radius: 5px;\n"
+    "  border-color: rgba(0,0,0,0.2);\n"
+    "  padding: 0px;\n"
+    "}\n"
+    ".preview_frame:selected {\n"
+    "  border-color: rgba(25,25,200,0.75);\n"
+    "}\n"
+    ".active_audio_frame {\n"
+    "  border-color: rgba(225,25,55,0.75);\n"
+    "}\n"
+    ".active_video_frame {\n" "  border-color: rgba(225,25,55,0.75);\n" "}\n";
 
 static void
 gst_switch_ui_parse_args (int *argc, char **argv[])
@@ -109,7 +106,7 @@ static void
 gst_switch_ui_window_closed (GtkWidget * widget, GdkEvent * event,
     gpointer data)
 {
-  GstSwitchUI * ui = GST_SWITCH_UI (data);
+  GstSwitchUI *ui = GST_SWITCH_UI (data);
   gst_switch_ui_quit (ui);
 }
 
@@ -128,7 +125,7 @@ static gboolean
 gst_switch_ui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
     gpointer data)
 {
-  GstSwitchUI * ui = GST_SWITCH_UI (data);
+  GstSwitchUI *ui = GST_SWITCH_UI (data);
   (void) ui;
   return FALSE;
 }
@@ -137,18 +134,18 @@ static gboolean
 gst_switch_ui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
     gpointer data)
 {
-  GstSwitchUI * ui = GST_SWITCH_UI (data);
+  GstSwitchUI *ui = GST_SWITCH_UI (data);
   (void) ui;
   return FALSE;
 }
 
 #if CUSTOM_FRAME_DRAWING
 static gboolean
-gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
-    GstSwitchUI *ui)
+gst_switch_ui_draw_preview_frame (GtkWidget * widget, cairo_t * cr,
+    GstSwitchUI * ui)
 {
   GtkStyleContext *style;
-  gpointer data= NULL;
+  gpointer data = NULL;
   double x = 0.5, y = 0.5, width, height, radius, degrees;
   style = gtk_widget_get_style_context (widget);
   width = (double) gtk_widget_get_allocated_width (widget) - 0.5;
@@ -157,7 +154,7 @@ gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
   radius = 10.0;
 
   data = g_object_get_data (G_OBJECT (widget), "audio-visual");
-  if (!data) 
+  if (!data)
     data = g_object_get_data (G_OBJECT (widget), "video-display");
 
 #if 0
@@ -168,9 +165,12 @@ gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
   gtk_style_context_restore (style);
 #else
   cairo_new_sub_path (cr);
-  cairo_arc (cr, x + width - radius, y + radius, radius, -90 * degrees, 0 * degrees);
-  cairo_arc (cr, x + width - radius, y + height - radius, radius, 0 * degrees, 90 * degrees);
-  cairo_arc (cr, x + radius, y + height - radius, radius, 90 * degrees, 180 * degrees);
+  cairo_arc (cr, x + width - radius, y + radius, radius, -90 * degrees,
+      0 * degrees);
+  cairo_arc (cr, x + width - radius, y + height - radius, radius, 0 * degrees,
+      90 * degrees);
+  cairo_arc (cr, x + radius, y + height - radius, radius, 90 * degrees,
+      180 * degrees);
   cairo_arc (cr, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
   cairo_close_path (cr);
   if (gtk_widget_get_state_flags (widget) & GTK_STATE_FLAG_SELECTED) {
@@ -178,11 +178,13 @@ gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
   } else if (data && GST_IS_VIDEO_DISP (data)) {
     if (gtk_style_context_has_class (style, "active_video_frame")) {
       cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
-    } else goto default_color;
+    } else
+      goto default_color;
   } else if (data && GST_IS_AUDIO_VISUAL (data)) {
     if (gtk_style_context_has_class (style, "active_audio_frame")) {
       cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
-    } else goto default_color;
+    } else
+      goto default_color;
   } else {
   default_color:
     cairo_set_source_rgba (cr, 0.25, 0.25, 0.25, 0.25);
@@ -194,8 +196,10 @@ gst_switch_ui_draw_preview_frame (GtkWidget *widget, cairo_t *cr,
 }
 #endif
 
-static gboolean gst_switch_ui_key_event (GtkWidget *, GdkEvent *, GstSwitchUI *);
-static gboolean gst_switch_ui_compose_key_event (GtkWidget *, GdkEvent *, GstSwitchUI *);
+static gboolean gst_switch_ui_key_event (GtkWidget *, GdkEvent *,
+    GstSwitchUI *);
+static gboolean gst_switch_ui_compose_key_event (GtkWidget *, GdkEvent *,
+    GstSwitchUI *);
 
 static void
 gst_switch_ui_init (GstSwitchUI * ui)
@@ -217,8 +221,7 @@ gst_switch_ui_init (GstSwitchUI * ui)
 
   ui->css = gtk_css_provider_new ();
   gtk_style_context_add_provider_for_screen (screen,
-      GTK_STYLE_PROVIDER (ui->css),
-      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+      GTK_STYLE_PROVIDER (ui->css), GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
   ui->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size (GTK_WINDOW (ui->window), 640, 480);
@@ -250,9 +253,7 @@ gst_switch_ui_init (GstSwitchUI * ui)
       | GDK_LEAVE_NOTIFY_MASK
       | GDK_BUTTON_PRESS_MASK
       | GDK_BUTTON_RELEASE_MASK
-      | GDK_POINTER_MOTION_MASK
-      | GDK_POINTER_MOTION_HINT_MASK
-      );
+      | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
   g_signal_connect (G_OBJECT (ui->compose_view), "key-press-event",
       G_CALLBACK (gst_switch_ui_compose_key_event), ui);
@@ -263,21 +264,21 @@ gst_switch_ui_init (GstSwitchUI * ui)
   gtk_widget_set_halign (ui->compose_overlay, GTK_ALIGN_START);
   gtk_widget_set_valign (ui->compose_overlay, GTK_ALIGN_START);
   /*
-  gtk_widget_set_events (ui->compose_overlay, GDK_EXPOSURE_MASK
-      | GDK_LEAVE_NOTIFY_MASK
-      | GDK_BUTTON_PRESS_MASK
-      | GDK_BUTTON_RELEASE_MASK
-      | GDK_POINTER_MOTION_MASK
-      | GDK_POINTER_MOTION_HINT_MASK
-      );
-  */
+     gtk_widget_set_events (ui->compose_overlay, GDK_EXPOSURE_MASK
+     | GDK_LEAVE_NOTIFY_MASK
+     | GDK_BUTTON_PRESS_MASK
+     | GDK_BUTTON_RELEASE_MASK
+     | GDK_POINTER_MOTION_MASK
+     | GDK_POINTER_MOTION_HINT_MASK
+     );
+   */
 
   /*
-  GtkWidget *w = gtk_drawing_area_new ();
-  //GtkWidget *w = gtk_event_box_new ();
-  gtk_widget_set_size_request (w, 120, 80);
-  gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 10, 10);
-  */
+     GtkWidget *w = gtk_drawing_area_new ();
+     //GtkWidget *w = gtk_event_box_new ();
+     gtk_widget_set_size_request (w, 120, 80);
+     gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 10, 10);
+   */
 
   ui->status = gtk_label_new (NULL);
   gtk_widget_set_hexpand (ui->status, TRUE);
@@ -305,9 +306,9 @@ gst_switch_ui_init (GstSwitchUI * ui)
       G_CALLBACK (gst_switch_ui_window_closed), ui);
 
   /*
-  g_signal_connect (G_OBJECT (ui->compose_view), "expose-event",
-      G_CALLBACK (gst_switch_ui_compose_view_expose), ui);
-  */
+     g_signal_connect (G_OBJECT (ui->compose_view), "expose-event",
+     G_CALLBACK (gst_switch_ui_compose_view_expose), ui);
+   */
   g_signal_connect (G_OBJECT (ui->compose_view), "motion-notify-event",
       G_CALLBACK (gst_switch_ui_compose_view_motion), ui);
   g_signal_connect (G_OBJECT (ui->compose_view), "button-press-event",
@@ -334,13 +335,14 @@ gst_switch_ui_finalize (GstSwitchUI * ui)
 }
 
 static void
-gst_switch_ui_on_controller_closed (GstSwitchUI * ui, GError *error)
+gst_switch_ui_on_controller_closed (GstSwitchUI * ui, GError * error)
 {
 #if 0
-  GtkWidget * msg = gtk_message_dialog_new (GTK_WINDOW (ui->window),
-      GTK_DIALOG_MODAL, GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
-      "Switch server closed.\n"
-      "%s", error->message);
+  GtkWidget *msg = gtk_message_dialog_new (GTK_WINDOW (ui->window),
+      GTK_DIALOG_MODAL,
+      GTK_MESSAGE_ERROR, GTK_BUTTONS_OK,
+      "Switch server closed.\n" "%s",
+      error->message);
   gtk_widget_show_now (msg);
 #endif
   gtk_main_quit ();
@@ -398,10 +400,14 @@ gst_switch_ui_tick (GstSwitchUI * ui)
     diff = endtime - ui->audio_endtime;
     value = gst_audio_visual_get_value (ui->audio);
     stucked = ((GST_MSECOND * 700) <= diff);
-    if (ui->audio_value == value) ui->audio_stuck_count += 1;
-    else ui->audio_stuck_count = 0;
-    if (!stucked && 3 < ui->audio_stuck_count) stucked = TRUE;
-    if (!stucked) silent = (value <= 0.01);
+    if (ui->audio_value == value)
+      ui->audio_stuck_count += 1;
+    else
+      ui->audio_stuck_count = 0;
+    if (!stucked && 3 < ui->audio_stuck_count)
+      stucked = TRUE;
+    if (!stucked)
+      silent = (value <= 0.01);
     ui->audio_endtime = endtime;
     ui->audio_value = value;
 
@@ -415,18 +421,19 @@ gst_switch_ui_tick (GstSwitchUI * ui)
 
     if (stucked) {
       const gchar *s = g_strdup_printf ("audio stucked at %ld (%f)",
-	  endtime/GST_MSECOND, ui->audio_value);
+          endtime / GST_MSECOND,
+          ui->audio_value);
       gtk_label_set_text (GTK_LABEL (ui->status), s);
       g_free ((gpointer) s);
     }
 
     if (silent) {
       const gchar *s = g_strdup_printf ("audio silent at %ld (%f)",
-	  endtime/GST_MSECOND, ui->audio_value);
+          endtime / GST_MSECOND,
+          ui->audio_value);
       gtk_label_set_text (GTK_LABEL (ui->status), s);
       g_free ((gpointer) s);
     }
-
     //INFO ("audio: %f", ui->audio_value);
   }
   return TRUE;
@@ -446,14 +453,17 @@ gst_switch_ui_run (GstSwitchUI * ui)
 }
 
 static GstVideoDisp *
-gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
+gst_switch_ui_new_video_disp (GstSwitchUI * ui, GtkWidget * view, gint port)
 {
   gchar *name = g_strdup_printf ("video-%d", port);
   GdkWindow *xview = gtk_widget_get_window (view);
   GstVideoDisp *disp = GST_VIDEO_DISP (g_object_new (GST_TYPE_VIDEO_DISP,
-	  "name", name, "port", port,
-	  "handle", (gulong) GDK_WINDOW_XID (xview),
-	  NULL));
+          "name", name, "port",
+          port,
+          "handle",
+          (gulong)
+          GDK_WINDOW_XID (xview),
+          NULL));
   g_free (name);
   g_object_set_data (G_OBJECT (view), "video-display", disp);
   if (!gst_worker_start (GST_WORKER (disp)))
@@ -462,7 +472,7 @@ gst_switch_ui_new_video_disp (GstSwitchUI *ui, GtkWidget *view, gint port)
 }
 
 static GstAudioVisual *
-gst_switch_ui_new_audio_visual_unsafe (GstSwitchUI *ui, GtkWidget *view,
+gst_switch_ui_new_audio_visual_unsafe (GstSwitchUI * ui, GtkWidget * view,
     gulong handle, gint port)
 {
   gchar *name = g_strdup_printf ("visual-%d", port);
@@ -473,9 +483,10 @@ gst_switch_ui_new_audio_visual_unsafe (GstSwitchUI *ui, GtkWidget *view,
     handle = GDK_WINDOW_XID (xview);
   }
 
-  visual = GST_AUDIO_VISUAL (
-      g_object_new (GST_TYPE_AUDIO_VISUAL, "name", name, "port", port,
-	  "handle", handle, "active", (ui->audio_port == port), NULL));
+  visual =
+      GST_AUDIO_VISUAL (g_object_new
+      (GST_TYPE_AUDIO_VISUAL, "name", name, "port", port,
+          "handle", handle, "active", (ui->audio_port == port), NULL));
   g_free (name);
   if (!gst_worker_start (GST_WORKER (visual)))
     ERROR ("failed to start audio visual");
@@ -483,7 +494,7 @@ gst_switch_ui_new_audio_visual_unsafe (GstSwitchUI *ui, GtkWidget *view,
 }
 
 static GstAudioVisual *
-gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
+gst_switch_ui_new_audio_visual (GstSwitchUI * ui, GtkWidget * view, gint port)
 {
   GstAudioVisual *visual = NULL;
   GST_SWITCH_UI_LOCK_AUDIO (ui);
@@ -493,8 +504,8 @@ gst_switch_ui_new_audio_visual (GstSwitchUI *ui, GtkWidget *view, gint port)
 }
 
 static void
-gst_switch_ui_remove_preview (GstSwitchUI *ui, GstWorker *worker,
-    const gchar *name)
+gst_switch_ui_remove_preview (GstSwitchUI * ui, GstWorker * worker,
+    const gchar * name)
 {
   GList *v = NULL;
   GST_SWITCH_UI_LOCK_SELECT (ui);
@@ -504,9 +515,10 @@ gst_switch_ui_remove_preview (GstSwitchUI *ui, GstWorker *worker,
     gpointer data = g_object_get_data (G_OBJECT (frame), name);
     if (data && GST_IS_WORKER (data) && GST_WORKER (data) == worker) {
       if (ui->selected == frame) {
-	GList *nxt = g_list_next (v);
-	if (nxt == NULL) nxt = g_list_previous (v);
-	ui->selected = nxt ? GTK_WIDGET (nxt->data) : NULL;
+        GList *nxt = g_list_next (v);
+        if (nxt == NULL)
+          nxt = g_list_previous (v);
+        ui->selected = nxt ? GTK_WIDGET (nxt->data) : NULL;
       }
       gtk_widget_destroy (frame);
       g_object_unref (worker);
@@ -516,7 +528,7 @@ gst_switch_ui_remove_preview (GstSwitchUI *ui, GstWorker *worker,
 }
 
 static void
-gst_switch_ui_end_video_disp (GstWorker *worker, GstSwitchUI *ui)
+gst_switch_ui_end_video_disp (GstWorker * worker, GstSwitchUI * ui)
 {
   GstVideoDisp *disp = GST_VIDEO_DISP (worker);
   INFO ("video ended: %s, %d", worker->name, disp->port);
@@ -524,7 +536,7 @@ gst_switch_ui_end_video_disp (GstWorker *worker, GstSwitchUI *ui)
 }
 
 static void
-gst_switch_ui_end_audio_visual (GstWorker *worker, GstSwitchUI *ui)
+gst_switch_ui_end_audio_visual (GstWorker * worker, GstSwitchUI * ui)
 {
   GstAudioVisual *visual = GST_AUDIO_VISUAL (worker);
   INFO ("audio ended: %s, %d", worker->name, visual->port);
@@ -536,7 +548,7 @@ gst_switch_ui_end_audio_visual (GstWorker *worker, GstSwitchUI *ui)
 }
 
 static void
-gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
+gst_switch_ui_set_compose_port (GstSwitchUI * ui, gint port)
 {
   GST_SWITCH_UI_LOCK_COMPOSE (ui);
   if (ui->compose) {
@@ -549,8 +561,8 @@ gst_switch_ui_set_compose_port (GstSwitchUI *ui, gint port)
 }
 
 static GstAudioVisual *
-gst_switch_ui_renew_audio_visual (GstSwitchUI *ui, GtkWidget *frame,
-    GstAudioVisual *visual)
+gst_switch_ui_renew_audio_visual (GstSwitchUI * ui, GtkWidget * frame,
+    GstAudioVisual * visual)
 {
   gulong handle = visual->handle;
   gint port = visual->port;
@@ -565,7 +577,7 @@ gst_switch_ui_renew_audio_visual (GstSwitchUI *ui, GtkWidget *frame,
 }
 
 static void
-gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
+gst_switch_ui_set_audio_port (GstSwitchUI * ui, gint port)
 {
   GList *v = NULL;
 
@@ -580,14 +592,14 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
     if (data) {
       GstAudioVisual *visual = GST_AUDIO_VISUAL (data);
       if ((ui->audio_port == visual->port && !visual->active) ||
-	  (/*ui->audio_port != visual->port &&*/  visual->active)) {
-	gtk_style_context_remove_class (style, "active_audio_frame");
-	visual = gst_switch_ui_renew_audio_visual (ui, frame, visual);
-	if (visual->active) {
-	  gtk_style_context_add_class (style, "active_audio_frame");
-	  gst_switch_ui_update (frame);
-	  ui->audio = visual;
-	}
+          ( /*ui->audio_port != visual->port && */ visual->active)) {
+        gtk_style_context_remove_class (style, "active_audio_frame");
+        visual = gst_switch_ui_renew_audio_visual (ui, frame, visual);
+        if (visual->active) {
+          gtk_style_context_add_class (style, "active_audio_frame");
+          gst_switch_ui_update (frame);
+          ui->audio = visual;
+        }
       }
     }
   }
@@ -595,10 +607,9 @@ gst_switch_ui_set_audio_port (GstSwitchUI *ui, gint port)
 }
 
 static void
-gst_switch_ui_mark_active_video (GstSwitchUI *ui, gint port, gint type)
+gst_switch_ui_mark_active_video (GstSwitchUI * ui, gint port, gint type)
 {
-  GList *item = gtk_container_get_children (
-      GTK_CONTAINER (ui->preview_box));
+  GList *item = gtk_container_get_children (GTK_CONTAINER (ui->preview_box));
   for (; item; item = g_list_next (item)) {
     GtkWidget *frame = GTK_WIDGET (item->data);
     gpointer data = g_object_get_data (G_OBJECT (frame), "video-display");
@@ -606,9 +617,9 @@ gst_switch_ui_mark_active_video (GstSwitchUI *ui, gint port, gint type)
       GtkStyleContext *style = gtk_widget_get_style_context (frame);
       GstVideoDisp *disp = GST_VIDEO_DISP (data);
       if (disp->port == port) {
-	gtk_style_context_add_class (style, "active_video_frame");
+        gtk_style_context_add_class (style, "active_video_frame");
       } else if (disp->type == type) {
-	gtk_style_context_remove_class (style, "active_video_frame");
+        gtk_style_context_remove_class (style, "active_video_frame");
       }
       gst_switch_ui_update (frame);
     }
@@ -619,7 +630,7 @@ static gboolean gst_switch_ui_switch_unsafe (GstSwitchUI *, gint);
 static gboolean gst_switch_ui_switch (GstSwitchUI *, gint);
 
 static gboolean
-gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
+gst_switch_ui_preview_click (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
 {
   GstVideoDisp *disp = NULL;
   GstAudioVisual *visual = NULL;
@@ -627,22 +638,25 @@ gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
   gint port = 0;
 
   switch (event->type) {
-  case GDK_BUTTON_PRESS: {
-    while (w) {
-      disp = g_object_get_data (G_OBJECT (w), "video-display");
-      visual = g_object_get_data (G_OBJECT (w), "audio-visual");
-      if (disp) {
-	port = disp->port;
-	break;
-      } else if (visual) {
-	port = visual->port;
-	break;
-      } else {
-	w = gtk_widget_get_parent (w);
+    case GDK_BUTTON_PRESS:
+    {
+      while (w) {
+        disp = g_object_get_data (G_OBJECT (w), "video-display");
+        visual = g_object_get_data (G_OBJECT (w), "audio-visual");
+        if (disp) {
+          port = disp->port;
+          break;
+        } else if (visual) {
+          port = visual->port;
+          break;
+        } else {
+          w = gtk_widget_get_parent (w);
+        }
       }
     }
-  } break;
-  default: break;
+      break;
+    default:
+      break;
   }
 
   (void) port;
@@ -658,61 +672,64 @@ gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
     ui->selected = w;
 
     switch (ev->button) {
-    case 1: // left button
-      newvideotype = GST_CASE_BRANCH_A;
-      break;
-    case 3: // right button
-      if (disp) newvideotype = GST_CASE_BRANCH_B;
-      break;
+      case 1:                  // left button
+        newvideotype = GST_CASE_BRANCH_A;
+        break;
+      case 3:                  // right button
+        if (disp)
+          newvideotype = GST_CASE_BRANCH_B;
+        break;
     }
 
     if (newvideotype != GST_CASE_UNKNOWN) {
       gpointer data;
-      GList *item = gtk_container_get_children (
-	  GTK_CONTAINER (ui->preview_box));
+      GList *item =
+          gtk_container_get_children (GTK_CONTAINER (ui->preview_box));
       for (; item; item = g_list_next (item)) {
-	GtkWidget *frame = GTK_WIDGET (item->data);
-	data = g_object_get_data (G_OBJECT (frame), "video-display");
-	if (frame == ui->selected || data == disp) continue;
-	if (!GST_IS_VIDEO_DISP (data)) continue;
-	if (GST_VIDEO_DISP (data)->type == newvideotype) {
-	  prevdisp = GST_VIDEO_DISP (data);
-	  prevframe = frame;
-	  break;
-	}
+        GtkWidget *frame = GTK_WIDGET (item->data);
+        data = g_object_get_data (G_OBJECT (frame), "video-display");
+        if (frame == ui->selected || data == disp)
+          continue;
+        if (!GST_IS_VIDEO_DISP (data))
+          continue;
+        if (GST_VIDEO_DISP (data)->type == newvideotype) {
+          prevdisp = GST_VIDEO_DISP (data);
+          prevframe = frame;
+          break;
+        }
       }
     }
-    
+
     switch (ev->button) {
-    case 1: // left button
-      if (gst_switch_ui_switch_unsafe (ui, GDK_KEY_A)) {
-	goto swap_video_type;
-      }
-      break;
-    case 3: // right button
-      if (disp && gst_switch_ui_switch_unsafe (ui, GDK_KEY_B)) {
-	goto swap_video_type;
-      }
-      break;
-    swap_video_type:
-      if (disp) {
-	gint t = disp->type;
-	disp->type = newvideotype;
-	if (prevframe && prevdisp) {
-	  GtkStyleContext *style = gtk_widget_get_style_context (prevframe);
-	  switch (t) {
-	  case GST_CASE_BRANCH_A:
-	  case GST_CASE_BRANCH_B:
-	    gtk_style_context_add_class (style, "active_video_frame");
-	    break;
-	  case GST_CASE_BRANCH_p:
-	    gtk_style_context_remove_class (style, "active_video_frame");
-	    break;
-	  }
-	  gst_switch_ui_update (prevframe);
-	  prevdisp->type = t;
-	}
-      }
+      case 1:                  // left button
+        if (gst_switch_ui_switch_unsafe (ui, GDK_KEY_A)) {
+          goto swap_video_type;
+        }
+        break;
+      case 3:                  // right button
+        if (disp && gst_switch_ui_switch_unsafe (ui, GDK_KEY_B)) {
+          goto swap_video_type;
+        }
+        break;
+      swap_video_type:
+        if (disp) {
+          gint t = disp->type;
+          disp->type = newvideotype;
+          if (prevframe && prevdisp) {
+            GtkStyleContext *style = gtk_widget_get_style_context (prevframe);
+            switch (t) {
+              case GST_CASE_BRANCH_A:
+              case GST_CASE_BRANCH_B:
+                gtk_style_context_add_class (style, "active_video_frame");
+                break;
+              case GST_CASE_BRANCH_p:
+                gtk_style_context_remove_class (style, "active_video_frame");
+                break;
+            }
+            gst_switch_ui_update (prevframe);
+            prevdisp->type = t;
+          }
+        }
     }
     ui->selected = previous;
     GST_SWITCH_UI_UNLOCK_SELECT (ui);
@@ -721,7 +738,7 @@ gst_switch_ui_preview_click (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
 }
 
 static void
-gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint serve,
+gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
     gint type)
 {
   GstVideoDisp *disp = NULL;
@@ -731,7 +748,7 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint serve,
   GtkWidget *preview = gtk_drawing_area_new ();
   gtk_widget_set_double_buffered (preview, FALSE);
   gtk_widget_set_size_request (preview, -1, 80);
-  gtk_widget_set_events (preview, GDK_BUTTON_RELEASE_MASK|
+  gtk_widget_set_events (preview, GDK_BUTTON_RELEASE_MASK |
       GDK_BUTTON_PRESS_MASK);
   gtk_container_add (GTK_CONTAINER (frame), preview);
   gtk_container_add (GTK_CONTAINER (ui->preview_box), frame);
@@ -752,79 +769,80 @@ gst_switch_ui_add_preview_port (GstSwitchUI *ui, gint port, gint serve,
       G_CALLBACK (gst_switch_ui_preview_click), ui);
 
   /*
-  GST_CASE_BRANCH_A,
-  GST_CASE_BRANCH_B,
-  GST_CASE_BRANCH_a,
-  GST_CASE_BRANCH_p,
-  */
+     GST_CASE_BRANCH_A,
+     GST_CASE_BRANCH_B,
+     GST_CASE_BRANCH_a,
+     GST_CASE_BRANCH_p,
+   */
 
   switch (serve) {
-  case GST_SERVE_VIDEO_STREAM:
-    disp = gst_switch_ui_new_video_disp (ui, preview, port);
-    disp->type = type;
-    g_object_set_data (G_OBJECT (frame), "video-display", disp);
-    g_signal_connect (G_OBJECT(disp), "end-worker",
-	G_CALLBACK (gst_switch_ui_end_video_disp), ui);
-    switch (type) {
-    case GST_CASE_BRANCH_A:
-    case GST_CASE_BRANCH_B:
-      style = gtk_widget_get_style_context (frame);
-      gtk_style_context_add_class (style, "active_video_frame");
-      gst_switch_ui_mark_active_video (ui, port, type);
+    case GST_SERVE_VIDEO_STREAM:
+      disp = gst_switch_ui_new_video_disp (ui, preview, port);
+      disp->type = type;
+      g_object_set_data (G_OBJECT (frame), "video-display", disp);
+      g_signal_connect (G_OBJECT (disp), "end-worker",
+          G_CALLBACK (gst_switch_ui_end_video_disp), ui);
+      switch (type) {
+        case GST_CASE_BRANCH_A:
+        case GST_CASE_BRANCH_B:
+          style = gtk_widget_get_style_context (frame);
+          gtk_style_context_add_class (style, "active_video_frame");
+          gst_switch_ui_mark_active_video (ui, port, type);
+          break;
+      }
+      gst_switch_ui_update (frame);
       break;
-    }
-    gst_switch_ui_update (frame);
-    break;
-  case GST_SERVE_AUDIO_STREAM:
-    visual = gst_switch_ui_new_audio_visual (ui, preview, port);
-    g_object_set_data (G_OBJECT (frame), "audio-visual", visual);
-    g_signal_connect (G_OBJECT(visual), "end-worker",
-	G_CALLBACK (gst_switch_ui_end_audio_visual), ui);
-    if (visual->active) {
-      style = gtk_widget_get_style_context (frame);
-      gtk_style_context_add_class (style, "active_audio_frame");
-    }
-    gst_switch_ui_update (frame);
-    break;
-  default:
-    gtk_widget_destroy (preview);
-    gtk_widget_destroy (frame);
-    break;
+    case GST_SERVE_AUDIO_STREAM:
+      visual = gst_switch_ui_new_audio_visual (ui, preview, port);
+      g_object_set_data (G_OBJECT (frame), "audio-visual", visual);
+      g_signal_connect (G_OBJECT (visual), "end-worker",
+          G_CALLBACK (gst_switch_ui_end_audio_visual), ui);
+      if (visual->active) {
+        style = gtk_widget_get_style_context (frame);
+        gtk_style_context_add_class (style, "active_audio_frame");
+      }
+      gst_switch_ui_update (frame);
+      break;
+    default:
+      gtk_widget_destroy (preview);
+      gtk_widget_destroy (frame);
+      break;
   }
 }
 
 static void
-gst_switch_ui_select_preview (GstSwitchUI *ui, guint key)
+gst_switch_ui_select_preview (GstSwitchUI * ui, guint key)
 {
   GList *view = NULL, *selected = NULL;
   GtkWidget *previous = NULL;
   GST_SWITCH_UI_LOCK_SELECT (ui);
   view = gtk_container_get_children (GTK_CONTAINER (ui->preview_box));
   if (ui->selected == NULL) {
-    if (view) switch (key) {
-    case GDK_KEY_Up:
-      selected = g_list_last (view);
-      break;
-    case GDK_KEY_Down:
-      selected = view;
-      break;
-    }
+    if (view)
+      switch (key) {
+        case GDK_KEY_Up:
+          selected = g_list_last (view);
+          break;
+        case GDK_KEY_Down:
+          selected = view;
+          break;
+      }
   } else {
     for (; view; view = g_list_next (view)) {
       if (GTK_WIDGET (view->data) == ui->selected) {
-	selected = view;
-	break;
+        selected = view;
+        break;
       }
     }
     if (selected) {
       previous = GTK_WIDGET (selected->data);
       switch (key) {
-      case GDK_KEY_Up:
-	selected = g_list_previous (selected);
-	break;
-      case GDK_KEY_Down:
-	selected = g_list_next (selected);
-	break;
+        case GDK_KEY_Up:
+          selected = g_list_previous (selected);
+          break;
+        case GDK_KEY_Down:
+          selected = g_list_next (selected);
+          break;
       }
     }
   }
@@ -844,7 +862,7 @@ gst_switch_ui_select_preview (GstSwitchUI *ui, guint key)
 }
 
 static gboolean
-gst_switch_ui_switch_unsafe (GstSwitchUI *ui, gint key)
+gst_switch_ui_switch_unsafe (GstSwitchUI * ui, gint key)
 {
   gint port, type;
   gpointer data;
@@ -858,24 +876,24 @@ gst_switch_ui_switch_unsafe (GstSwitchUI *ui, gint key)
   if (data && GST_IS_VIDEO_DISP (data)) {
     port = GST_VIDEO_DISP (data)->port;
     switch (key) {
-    case GDK_KEY_A:
-    case GDK_KEY_a:
-      type = GST_CASE_BRANCH_A;
-      ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'A', port);
-      INFO ("switch-a: %d, %d", port, ok);
-      break;
-    case GDK_KEY_B:
-    case GDK_KEY_b:
-      type = GST_CASE_BRANCH_B;
-      ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'B', port);
-      INFO ("switch-b: %d, %d", port, ok);
-      break;
+      case GDK_KEY_A:
+      case GDK_KEY_a:
+        type = GST_CASE_BRANCH_A;
+        ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'A', port);
+        INFO ("switch-a: %d, %d", port, ok);
+        break;
+      case GDK_KEY_B:
+      case GDK_KEY_b:
+        type = GST_CASE_BRANCH_B;
+        ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'B', port);
+        INFO ("switch-b: %d, %d", port, ok);
+        break;
     }
 
     if (ok) {
       gst_switch_ui_mark_active_video (ui, port, type);
     }
-    
+
     goto end;
   }
 
@@ -883,22 +901,22 @@ gst_switch_ui_switch_unsafe (GstSwitchUI *ui, gint key)
   if (data && GST_IS_AUDIO_VISUAL (data)) {
     port = GST_AUDIO_VISUAL (data)->port;
     switch (key) {
-    case GDK_KEY_A:
-    case GDK_KEY_a:
-      ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'a', port);
-      INFO ("switch-audio: %d, %d", port, ok);
-      break;
+      case GDK_KEY_A:
+      case GDK_KEY_a:
+        ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'a', port);
+        INFO ("switch-audio: %d, %d", port, ok);
+        break;
     }
     goto end;
   }
 
- end:
+end:
   //GST_SWITCH_UI_UNLOCK_SELECT (ui);
   return ok;
 }
 
 static gboolean
-gst_switch_ui_switch (GstSwitchUI *ui, gint key)
+gst_switch_ui_switch (GstSwitchUI * ui, gint key)
 {
   gboolean ok = FALSE;
   GST_SWITCH_UI_LOCK_SELECT (ui);
@@ -908,10 +926,11 @@ gst_switch_ui_switch (GstSwitchUI *ui, gint key)
 }
 
 static void
-gst_switch_ui_next_compose_mode (GstSwitchUI *ui)
+gst_switch_ui_next_compose_mode (GstSwitchUI * ui)
 {
   gboolean ok = FALSE;
-  if (3 < ui->compose_mode) ui->compose_mode = 0;
+  if (3 < ui->compose_mode)
+    ui->compose_mode = 0;
   ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
       ui->compose_mode);
   INFO ("set composite mode: %d (%d)", ui->compose_mode, ok);
@@ -919,23 +938,24 @@ gst_switch_ui_next_compose_mode (GstSwitchUI *ui)
 }
 
 static void
-gst_switch_ui_next_compose_off (GstSwitchUI *ui)
+gst_switch_ui_next_compose_off (GstSwitchUI * ui)
 {
   gboolean ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
       0);
   INFO ("set composite off (%d)", ok);
-  if (ok && ui->compose_mode == 0) ui->compose_mode = 1;
+  if (ok && ui->compose_mode == 0)
+    ui->compose_mode = 1;
 }
 
 static void
-gst_switch_ui_new_record (GstSwitchUI *ui)
+gst_switch_ui_new_record (GstSwitchUI * ui)
 {
   gboolean ok = gst_switch_client_new_record (GST_SWITCH_CLIENT (ui));
   INFO ("new record: %d", ok);
 }
 
 static void
-gst_switch_ui_adjust_pip (GstSwitchUI *ui, gboolean resize, gint key)
+gst_switch_ui_adjust_pip (GstSwitchUI * ui, gboolean resize, gint key)
 {
   const gint step = 1;
   gint dx = 0, dy = 0, dw = 0, dh = 0;
@@ -943,17 +963,33 @@ gst_switch_ui_adjust_pip (GstSwitchUI *ui, gboolean resize, gint key)
 
   if (resize) {
     switch (key) {
-    case GDK_KEY_Left:  dw -= step; break;
-    case GDK_KEY_Right: dw += step; break;
-    case GDK_KEY_Up:    dh -= step; break;
-    case GDK_KEY_Down:  dh += step; break;
+      case GDK_KEY_Left:
+        dw -= step;
+        break;
+      case GDK_KEY_Right:
+        dw += step;
+        break;
+      case GDK_KEY_Up:
+        dh -= step;
+        break;
+      case GDK_KEY_Down:
+        dh += step;
+        break;
     }
   } else {
     switch (key) {
-    case GDK_KEY_Left:  dx -= step; break;
-    case GDK_KEY_Right: dx += step; break;
-    case GDK_KEY_Up:    dy -= step; break;
-    case GDK_KEY_Down:  dy += step; break;
+      case GDK_KEY_Left:
+        dx -= step;
+        break;
+      case GDK_KEY_Right:
+        dx += step;
+        break;
+      case GDK_KEY_Up:
+        dy -= step;
+        break;
+      case GDK_KEY_Down:
+        dy += step;
+        break;
     }
   }
 
@@ -963,65 +999,74 @@ gst_switch_ui_adjust_pip (GstSwitchUI *ui, gboolean resize, gint key)
 }
 
 static gboolean
-gst_switch_ui_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
+gst_switch_ui_key_event (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
 {
   switch (event->type) {
-  case GDK_KEY_PRESS:
-  case GDK_KEY_RELEASE: {
-    GdkEventKey *ke = (GdkEventKey *) event;
-    gboolean mod = ke->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK);
-    switch (ke->keyval) {
-    case GDK_KEY_Up:
-    case GDK_KEY_Down:
-      if (mod) goto adjust_pip;
-      gst_switch_ui_select_preview (ui, ke->keyval);
-      break;
-    case GDK_KEY_Left:
-    case GDK_KEY_Right:
-      if (mod) {
-	gboolean resize;
-      adjust_pip:
-	resize = (ke->state & GDK_SHIFT_MASK) ? TRUE : FALSE;
-	gst_switch_ui_adjust_pip (ui, resize, ke->keyval);
-	return TRUE;
+    case GDK_KEY_PRESS:
+    case GDK_KEY_RELEASE:
+    {
+      GdkEventKey *ke = (GdkEventKey *) event;
+      gboolean mod = ke->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK);
+      switch (ke->keyval) {
+        case GDK_KEY_Up:
+        case GDK_KEY_Down:
+          if (mod)
+            goto adjust_pip;
+          gst_switch_ui_select_preview (ui, ke->keyval);
+          break;
+        case GDK_KEY_Left:
+        case GDK_KEY_Right:
+          if (mod) {
+            gboolean resize;
+          adjust_pip:
+            resize = (ke->state & GDK_SHIFT_MASK) ? TRUE : FALSE;
+            gst_switch_ui_adjust_pip (ui, resize, ke->keyval);
+            return TRUE;
+          }
+          break;
+        case GDK_KEY_A:
+        case GDK_KEY_a:
+        case GDK_KEY_B:
+        case GDK_KEY_b:
+          gst_switch_ui_switch (ui, ke->keyval);
+          break;
+        case GDK_KEY_Tab:
+        {
+          if (200 <= ke->time - ui->tabtime) {
+            ui->tabtime = ke->time;
+            gst_switch_ui_next_compose_mode (ui);
+          }
+        }
+          break;
+        case GDK_KEY_Escape:
+          gst_switch_ui_next_compose_off (ui);
+          break;
+        case GDK_KEY_R:
+        case GDK_KEY_r:
+          gst_switch_ui_new_record (ui);
+          break;
       }
-      break;
-    case GDK_KEY_A:
-    case GDK_KEY_a:
-    case GDK_KEY_B:
-    case GDK_KEY_b:
-      gst_switch_ui_switch (ui, ke->keyval);
-      break;
-    case GDK_KEY_Tab: {
-      if (200 <= ke->time - ui->tabtime) {
-	ui->tabtime = ke->time;
-	gst_switch_ui_next_compose_mode (ui);
-      }
-    } break;
-    case GDK_KEY_Escape:
-      gst_switch_ui_next_compose_off (ui);
-      break;
-    case GDK_KEY_R:
-    case GDK_KEY_r:
-      gst_switch_ui_new_record (ui);
-      break;
     }
-  } break;
-  default: break;
+      break;
+    default:
+      break;
   }
   return FALSE;
 }
 
 static gboolean
-gst_switch_ui_compose_key_event (GtkWidget *w, GdkEvent *event, GstSwitchUI *ui)
+gst_switch_ui_compose_key_event (GtkWidget * w, GdkEvent * event,
+    GstSwitchUI * ui)
 {
   switch (event->type) {
-  case GDK_KEY_PRESS:
-  case GDK_KEY_RELEASE: {
-    GdkEventKey *ke = (GdkEventKey *) event;
-    INFO ("compose-key: %d", ke->keyval);
-  }
-  default: break;
+    case GDK_KEY_PRESS:
+    case GDK_KEY_RELEASE:
+    {
+      GdkEventKey *ke = (GdkEventKey *) event;
+      INFO ("compose-key: %d", ke->keyval);
+    }
+    default:
+      break;
   }
   return FALSE;
 }
@@ -1030,18 +1075,18 @@ static void
 gst_switch_ui_class_init (GstSwitchUIClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
-  GstSwitchClientClass * client_class = GST_SWITCH_CLIENT_CLASS (klass);
+  GstSwitchClientClass *client_class = GST_SWITCH_CLIENT_CLASS (klass);
 
   object_class->finalize = (GObjectFinalizeFunc) gst_switch_ui_finalize;
 
   client_class->connection_closed = (GstSwitchClientConnectionClosedFunc)
-    gst_switch_ui_on_controller_closed;
+      gst_switch_ui_on_controller_closed;
   client_class->set_compose_port = (GstSwitchClientSetComposePortFunc)
-    gst_switch_ui_set_compose_port;
+      gst_switch_ui_set_compose_port;
   client_class->set_audio_port = (GstSwitchClientSetAudioPortFunc)
-    gst_switch_ui_set_audio_port;
+      gst_switch_ui_set_audio_port;
   client_class->add_preview_port = (GstSwitchClientAddPreviewPortFunc)
-    gst_switch_ui_add_preview_port;
+      gst_switch_ui_add_preview_port;
 }
 
 int

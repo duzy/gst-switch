@@ -37,12 +37,18 @@
 typedef struct _GstSwitchClient GstSwitchClient;
 typedef struct _GstSwitchClientClass GstSwitchClientClass;
 
-typedef void (*GstSwitchClientConnectionClosedFunc) (GstSwitchClient *client, GError *error);
-typedef void (*GstSwitchClientSetComposePortFunc) (GstSwitchClient *client, gint port);
-typedef void (*GstSwitchClientSetEncodePortFunc) (GstSwitchClient *client, gint port);
-typedef void (*GstSwitchClientSetAudioPortFunc) (GstSwitchClient *client, gint port);
-typedef void (*GstSwitchClientAddPreviewPortFunc) (GstSwitchClient *client, gint port, gint serve, gint type);
-typedef void (*GstSwitchClientNewModeOnlineFunc) (GstSwitchClient *client, gint port);
+typedef void (*GstSwitchClientConnectionClosedFunc) (GstSwitchClient * client,
+    GError * error);
+typedef void (*GstSwitchClientSetComposePortFunc) (GstSwitchClient * client,
+    gint port);
+typedef void (*GstSwitchClientSetEncodePortFunc) (GstSwitchClient * client,
+    gint port);
+typedef void (*GstSwitchClientSetAudioPortFunc) (GstSwitchClient * client,
+    gint port);
+typedef void (*GstSwitchClientAddPreviewPortFunc) (GstSwitchClient * client,
+    gint port, gint serve, gint type);
+typedef void (*GstSwitchClientNewModeOnlineFunc) (GstSwitchClient * client,
+    gint port);
 
 struct _GstSwitchClient
 {
@@ -61,12 +67,13 @@ struct _GstSwitchClientClass
 
   GHashTable *methods;
 
-  void (*connection_closed) (GstSwitchClient *client, GError *error);
-  void (*set_audio_port) (GstSwitchClient *client, gint port);
-  void (*set_compose_port) (GstSwitchClient *client, gint port);
-  void (*set_encode_port) (GstSwitchClient *client, gint port);
-  void (*add_preview_port) (GstSwitchClient *client, gint port, gint serve, gint type);
-  void (*new_mode_online) (GstSwitchClient *client, gint mode);
+  void (*connection_closed) (GstSwitchClient * client, GError * error);
+  void (*set_audio_port) (GstSwitchClient * client, gint port);
+  void (*set_compose_port) (GstSwitchClient * client, gint port);
+  void (*set_encode_port) (GstSwitchClient * client, gint port);
+  void (*add_preview_port) (GstSwitchClient * client, gint port, gint serve,
+      gint type);
+  void (*new_mode_online) (GstSwitchClient * client, gint mode);
 };
 
 GType gst_switch_client_get_type (void);
@@ -79,9 +86,12 @@ gint gst_switch_client_get_audio_port (GstSwitchClient * client);
 gint gst_switch_client_get_encode_port (GstSwitchClient * client);
 GVariant *gst_switch_client_get_preview_ports (GstSwitchClient * client);
 
-gboolean gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port);
-gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode);
+gboolean gst_switch_client_switch (GstSwitchClient * client, gint channel,
+    gint port);
+gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client,
+    gint mode);
 gboolean gst_switch_client_new_record (GstSwitchClient * client);
-guint gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx, gint dy, gint dw, gint dh);
+guint gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx,
+    gint dy, gint dw, gint dh);
 
-#endif//__GST_SWITCH_CLIENT_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_CLIENT_H__by_Duzy_Chan__

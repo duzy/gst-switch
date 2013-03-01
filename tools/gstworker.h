@@ -38,17 +38,19 @@ typedef struct _GstWorker GstWorker;
 typedef struct _GstWorkerClass GstWorkerClass;
 typedef struct _GstSwitchServer GstSwitchServer;
 
-typedef enum {
+typedef enum
+{
   GST_WORKER_NR_END,
   GST_WORKER_NR_REPLAY,
 } GstWorkerNullReturn;
 
-typedef GString *(*GstWorkerGetPipelineString) (GstWorker *worker, gpointer data);
-typedef GString *(*GstWorkerGetPipelineStringFunc) (GstWorker *worker);
-typedef gboolean (*GstWorkerPrepareFunc) (GstWorker *worker);
-typedef gboolean (*GstWorkerMessageFunc) (GstWorker *worker, GstMessage *);
-typedef GstWorkerNullReturn (*GstWorkerNullFunc) (GstWorker *worker);
-typedef void (*GstWorkerAliveFunc) (GstWorker *worker);
+typedef GString *(*GstWorkerGetPipelineString) (GstWorker * worker,
+    gpointer data);
+typedef GString *(*GstWorkerGetPipelineStringFunc) (GstWorker * worker);
+typedef gboolean (*GstWorkerPrepareFunc) (GstWorker * worker);
+typedef gboolean (*GstWorkerMessageFunc) (GstWorker * worker, GstMessage *);
+typedef GstWorkerNullReturn (*GstWorkerNullFunc) (GstWorker * worker);
+typedef void (*GstWorkerAliveFunc) (GstWorker * worker);
 
 struct _GstWorker
 {
@@ -75,31 +77,31 @@ struct _GstWorkerClass
 {
   GObjectClass base_class;
 
-  void (*prepare_worker) (GstWorker *worker);
-  void (*start_worker) (GstWorker *worker);
-  void (*end_worker) (GstWorker *worker);
-  void (*worker_null) (GstWorker *worker);
+  void (*prepare_worker) (GstWorker * worker);
+  void (*start_worker) (GstWorker * worker);
+  void (*end_worker) (GstWorker * worker);
+  void (*worker_null) (GstWorker * worker);
 
-  gboolean (*missing) (GstWorker *worker, gchar **elements);
-  gboolean (*message)(GstWorker *worker, GstMessage * message);
+    gboolean (*missing) (GstWorker * worker, gchar ** elements);
+    gboolean (*message) (GstWorker * worker, GstMessage * message);
 
-  GString *(*get_pipeline_string) (GstWorker *worker);
-  GstElement *(*create_pipeline) (GstWorker *worker);
-  gboolean (*prepare) (GstWorker *worker);
-  void (*alive) (GstWorker *worker);
-  GstWorkerNullReturn (*null) (GstWorker *worker);
+  GString *(*get_pipeline_string) (GstWorker * worker);
+  GstElement *(*create_pipeline) (GstWorker * worker);
+    gboolean (*prepare) (GstWorker * worker);
+  void (*alive) (GstWorker * worker);
+    GstWorkerNullReturn (*null) (GstWorker * worker);
 
-  gboolean (*reset) (GstWorker *worker);
+    gboolean (*reset) (GstWorker * worker);
 };
 
 GType gst_worker_get_type (void);
 
-gboolean gst_worker_start (GstWorker *worker);
-gboolean gst_worker_stop_force (GstWorker *worker, gboolean force);
+gboolean gst_worker_start (GstWorker * worker);
+gboolean gst_worker_stop_force (GstWorker * worker, gboolean force);
 
 #define gst_worker_stop(worker) (gst_worker_stop_force ((worker), FALSE))
 
 GstElement *gst_worker_get_element_unlocked (GstWorker *, const gchar *);
-GstElement *gst_worker_get_element (GstWorker *, const gchar *name);
+GstElement *gst_worker_get_element (GstWorker *, const gchar * name);
 
-#endif//__GST_WORKER_H__by_Duzy_Chan__
+#endif //__GST_WORKER_H__by_Duzy_Chan__

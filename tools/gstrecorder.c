@@ -82,48 +82,48 @@ gst_recorder_finalize (GstRecorder * rec)
 }
 
 static void
-gst_recorder_get_property (GstRecorder *rec, guint property_id,
-    GValue *value, GParamSpec *pspec)
+gst_recorder_get_property (GstRecorder * rec, guint property_id,
+    GValue * value, GParamSpec * pspec)
 {
   switch (property_id) {
-  case PROP_MODE:
-    g_value_set_uint (value, rec->mode);
-    break;
-  case PROP_PORT:
-    g_value_set_uint (value, rec->sink_port);
-    break;
-  case PROP_WIDTH:
-    g_value_set_uint (value, rec->width);
-    break;
-  case PROP_HEIGHT:
-    g_value_set_uint (value, rec->height);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (rec, property_id, pspec);
-    break;
+    case PROP_MODE:
+      g_value_set_uint (value, rec->mode);
+      break;
+    case PROP_PORT:
+      g_value_set_uint (value, rec->sink_port);
+      break;
+    case PROP_WIDTH:
+      g_value_set_uint (value, rec->width);
+      break;
+    case PROP_HEIGHT:
+      g_value_set_uint (value, rec->height);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (rec, property_id, pspec);
+      break;
   }
 }
 
 static void
-gst_recorder_set_property (GstRecorder *rec, guint property_id,
-    const GValue *value, GParamSpec *pspec)
+gst_recorder_set_property (GstRecorder * rec, guint property_id,
+    const GValue * value, GParamSpec * pspec)
 {
   switch (property_id) {
-  case PROP_MODE:
-    rec->mode = (GstCompositeMode) (g_value_get_uint (value));
-    break;
-  case PROP_PORT:
-    rec->sink_port = g_value_get_uint (value);
-    break;
-  case PROP_WIDTH:
-    rec->width = g_value_get_uint (value);
-    break;
-  case PROP_HEIGHT:
-    rec->height = g_value_get_uint (value);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (rec), property_id, pspec);
-    break;
+    case PROP_MODE:
+      rec->mode = (GstCompositeMode) (g_value_get_uint (value));
+      break;
+    case PROP_PORT:
+      rec->sink_port = g_value_get_uint (value);
+      break;
+    case PROP_WIDTH:
+      rec->width = g_value_get_uint (value);
+      break;
+    case PROP_HEIGHT:
+      rec->height = g_value_get_uint (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (rec), property_id, pspec);
+      break;
   }
 }
 
@@ -143,14 +143,15 @@ gst_recorder_new_filename (GstRecorder * rec)
   tm = localtime (&t);
 
   if (tm == NULL) {
-    static gint num = 0; num += 1;
+    static gint num = 0;
+    num += 1;
     snprintf (stamp, sizeof (stamp), "%d", num);
   } else {
     strftime (stamp, sizeof (stamp), "%F %H%M%S", tm);
   }
 
   if ((dot = g_strrstr (filename, "."))) {
-    const gchar *s = g_strndup (filename, dot-filename);
+    const gchar *s = g_strndup (filename, dot - filename);
     filename = g_strdup_printf ("%s %s%s", s, stamp, dot);
     g_free ((gpointer) s);
   } else {
@@ -179,50 +180,50 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
       "source_video. ! video/x-raw,width=%d,height=%d ",
       rec->width, rec->height);
   /*
-  ASSESS ("assess-record-video-source");
-  */
+     ASSESS ("assess-record-video-source");
+   */
   g_string_append_printf (desc, "! queue2 ");
   /*
-  ASSESS ("assess-record-video-encode-queued");
-  */
+     ASSESS ("assess-record-video-encode-queued");
+   */
   g_string_append_printf (desc, "! vp8enc ");
   /*
-  ASSESS ("assess-record-video-encoded");
-  */
+     ASSESS ("assess-record-video-encoded");
+   */
   g_string_append_printf (desc, "! mux. ");
 
   g_string_append_printf (desc, "source_audio. ");
   /*
-  ASSESS ("assess-record-audio-source");
-  */
+     ASSESS ("assess-record-audio-source");
+   */
   g_string_append_printf (desc, "! queue2 ");
   /*
-  ASSESS ("assess-record-audio-queued");
-  */
+     ASSESS ("assess-record-audio-queued");
+   */
   g_string_append_printf (desc, "! faac ");
   /*
-  ASSESS ("assess-record-audio-encoded");
-  */
+     ASSESS ("assess-record-audio-encoded");
+   */
   g_string_append_printf (desc, "! mux. ");
 
   g_string_append_printf (desc, "avimux name=mux ");
   /*
-  ASSESS ("assess-record-mux-result");
-  */
+     ASSESS ("assess-record-mux-result");
+   */
   g_string_append_printf (desc, "! tee name=result ");
 
   if (filename) {
     g_string_append_printf (desc, "filesink name=disk_sink sync=false "
-	"location=\"%s\" ", filename);
+        "location=\"%s\" ", filename);
     g_free ((gpointer) filename);
     g_string_append_printf (desc, "result. ");
     /*
-    ASSESS ("assess-record-file-to-queue");
-    */
+       ASSESS ("assess-record-file-to-queue");
+     */
     g_string_append_printf (desc, "! queue2 ");
     /*
-    ASSESS ("assess-record-file-to-sink");
-    */
+       ASSESS ("assess-record-file-to-sink");
+     */
     g_string_append_printf (desc, "! disk_sink. ");
   }
 
@@ -230,19 +231,19 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
       "port=%d ", rec->sink_port);
   g_string_append_printf (desc, "result. ");
   /*
-  ASSESS ("assess-record-tcp-to-queue");
-  */
+     ASSESS ("assess-record-tcp-to-queue");
+   */
   g_string_append_printf (desc, "! queue2 ");
   /*
-  ASSESS ("assess-record-tcp-to-sink");
-  */
+     ASSESS ("assess-record-tcp-to-sink");
+   */
   g_string_append_printf (desc, "! gdppay ! tcp_sink. ");
   return desc;
 }
 
 static void
-gst_recorder_client_socket_added (GstElement *element,
-    GSocket *socket, GstRecorder *rec)
+gst_recorder_client_socket_added (GstElement * element,
+    GSocket * socket, GstRecorder * rec)
 {
   g_return_if_fail (G_IS_SOCKET (socket));
 
@@ -250,8 +251,8 @@ gst_recorder_client_socket_added (GstElement *element,
 }
 
 static void
-gst_recorder_client_socket_removed (GstElement *element,
-    GSocket *socket, GstRecorder *rec)
+gst_recorder_client_socket_removed (GstElement * element,
+    GSocket * socket, GstRecorder * rec)
 {
   g_return_if_fail (G_IS_SOCKET (socket));
 
@@ -261,7 +262,7 @@ gst_recorder_client_socket_removed (GstElement *element,
 }
 
 static gboolean
-gst_recorder_prepare (GstRecorder *rec)
+gst_recorder_prepare (GstRecorder * rec)
 {
   GstElement *tcp_sink = NULL;
 
@@ -289,31 +290,42 @@ gst_recorder_class_init (GstRecorderClass * klass)
 
   object_class->dispose = (GObjectFinalizeFunc) gst_recorder_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_recorder_finalize;
-  object_class->set_property = (GObjectSetPropertyFunc) gst_recorder_set_property;
-  object_class->get_property = (GObjectGetPropertyFunc) gst_recorder_get_property;
+  object_class->set_property =
+      (GObjectSetPropertyFunc) gst_recorder_set_property;
+  object_class->get_property =
+      (GObjectGetPropertyFunc) gst_recorder_get_property;
 
   g_object_class_install_property (object_class, PROP_MODE,
-      g_param_spec_uint ("mode", "Mode", "Composite Mode",
-          COMPOSE_MODE_0, COMPOSE_MODE__LAST, COMPOSE_MODE_0,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("mode", "Mode",
+          "Composite Mode",
+          COMPOSE_MODE_0,
+          COMPOSE_MODE__LAST,
+          COMPOSE_MODE_0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_PORT,
-      g_param_spec_uint ("port", "Port", "Sink port",
-          GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
-	  GST_SWITCH_MIN_SINK_PORT,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("port", "Port",
+          "Sink port",
+          GST_SWITCH_MIN_SINK_PORT,
+          GST_SWITCH_MAX_SINK_PORT,
+          GST_SWITCH_MIN_SINK_PORT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_WIDTH,
-      g_param_spec_uint ("width", "Input Width", "Input video frame width",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("width", "Input Width",
+          "Input video frame width",
+          1, G_MAXINT,
+          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_HEIGHT,
-      g_param_spec_uint ("height", "Input Height", "Input video frame height",
-          1, G_MAXINT, GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("height",
+          "Input Height",
+          "Input video frame height",
+          1, G_MAXINT,
+          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
-    gst_recorder_get_pipeline_string;
+      gst_recorder_get_pipeline_string;
 }

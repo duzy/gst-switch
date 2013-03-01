@@ -40,7 +40,7 @@ typedef struct _GstRecorderClass GstRecorderClass;
 struct _GstRecorder
 {
   GstWorker base;
-  
+
   gint sink_port;
   guint width;
   guint height;
@@ -52,9 +52,9 @@ struct _GstRecorderClass
 {
   GstWorkerClass base_class;
 
-  void (*end_recorder) (GstRecorder *cas);
+  void (*end_recorder) (GstRecorder * cas);
 };
 
 GType gst_recorder_get_type (void);
 
-#endif//__GST_RECORDER_H__by_Duzy_Chan__
+#endif //__GST_RECORDER_H__by_Duzy_Chan__

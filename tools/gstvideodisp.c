@@ -45,61 +45,61 @@ extern gboolean verbose;
 G_DEFINE_TYPE (GstVideoDisp, gst_video_disp, GST_TYPE_WORKER);
 
 static void
-gst_video_disp_init (GstVideoDisp *disp)
+gst_video_disp_init (GstVideoDisp * disp)
 {
   //INFO ("init %p", disp);
 }
 
 static void
-gst_video_disp_dispose (GstVideoDisp *disp)
+gst_video_disp_dispose (GstVideoDisp * disp)
 {
   //INFO ("dispose %p", disp);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (disp));
 }
 
 static void
-gst_video_disp_finalize (GstVideoDisp *disp)
+gst_video_disp_finalize (GstVideoDisp * disp)
 {
   if (G_OBJECT_CLASS (parent_class)->finalize)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (disp));
 }
 
 static void
-gst_video_disp_set_property (GstVideoDisp *disp, guint property_id,
-    const GValue *value, GParamSpec *pspec)
+gst_video_disp_set_property (GstVideoDisp * disp, guint property_id,
+    const GValue * value, GParamSpec * pspec)
 {
   switch (property_id) {
-  case PROP_PORT:
-    disp->port = g_value_get_uint (value);
-    break;
-  case PROP_HANDLE:
-    disp->handle = g_value_get_ulong (value);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
-    break;
+    case PROP_PORT:
+      disp->port = g_value_get_uint (value);
+      break;
+    case PROP_HANDLE:
+      disp->handle = g_value_get_ulong (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
+      break;
   }
 }
 
 static void
-gst_video_disp_get_property (GstVideoDisp *disp, guint property_id,
-    GValue *value, GParamSpec *pspec)
+gst_video_disp_get_property (GstVideoDisp * disp, guint property_id,
+    GValue * value, GParamSpec * pspec)
 {
   switch (property_id) {
-  case PROP_PORT:
-    g_value_set_uint (value, disp->port);
-    break;
-  case PROP_HANDLE:
-    g_value_set_ulong (value, disp->handle);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
-    break;
+    case PROP_PORT:
+      g_value_set_uint (value, disp->port);
+      break;
+    case PROP_HANDLE:
+      g_value_set_ulong (value, disp->handle);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (disp), property_id, pspec);
+      break;
   }
 }
 
 static GString *
-gst_video_disp_get_pipeline_string (GstVideoDisp *disp)
+gst_video_disp_get_pipeline_string (GstVideoDisp * disp)
 {
   GString *desc;
 
@@ -117,15 +117,14 @@ gst_video_disp_get_pipeline_string (GstVideoDisp *disp)
 }
 
 static gboolean
-gst_video_disp_prepare (GstVideoDisp *disp)
+gst_video_disp_prepare (GstVideoDisp * disp)
 {
   GstWorker *worker = GST_WORKER (disp);
   GstElement *sink = gst_worker_get_element_unlocked (worker, "sink");
 
   g_return_val_if_fail (GST_IS_ELEMENT (sink), FALSE);
 
-  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (sink),
-      disp->handle);
+  gst_video_overlay_set_window_handle (GST_VIDEO_OVERLAY (sink), disp->handle);
 
   gst_object_unref (sink);
 
@@ -134,27 +133,32 @@ gst_video_disp_prepare (GstVideoDisp *disp)
 }
 
 static void
-gst_video_disp_class_init (GstVideoDispClass *klass)
+gst_video_disp_class_init (GstVideoDispClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
 
   object_class->dispose = (GObjectFinalizeFunc) gst_video_disp_dispose;
   object_class->finalize = (GObjectFinalizeFunc) gst_video_disp_finalize;
-  object_class->set_property = (GObjectSetPropertyFunc) gst_video_disp_set_property;
-  object_class->get_property = (GObjectGetPropertyFunc) gst_video_disp_get_property;
+  object_class->set_property =
+      (GObjectSetPropertyFunc) gst_video_disp_set_property;
+  object_class->get_property =
+      (GObjectGetPropertyFunc) gst_video_disp_get_property;
 
   g_object_class_install_property (object_class, PROP_PORT,
-      g_param_spec_uint ("port", "Port", "Sink port",
-          GST_SWITCH_MIN_SINK_PORT, GST_SWITCH_MAX_SINK_PORT,
-	  GST_SWITCH_MIN_SINK_PORT,
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_uint ("port", "Port",
+          "Sink port",
+          GST_SWITCH_MIN_SINK_PORT,
+          GST_SWITCH_MAX_SINK_PORT,
+          GST_SWITCH_MIN_SINK_PORT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_HANDLE,
-      g_param_spec_ulong ("handle", "Handle", "Window Handle",
-          0, ((gulong)-1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_ulong ("handle", "Handle",
+          "Window Handle", 0,
+          ((gulong) - 1), 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->prepare = (GstWorkerPrepareFunc) gst_video_disp_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
-    gst_video_disp_get_pipeline_string;
+      gst_video_disp_get_pipeline_string;
 }
