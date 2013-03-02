@@ -43,6 +43,10 @@ typedef struct _GstRecorder GstRecorder;
 typedef struct _GstSwitchServerClass GstSwitchServerClass;
 typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
+/**
+ *  GstSwitchServerOpts:
+ *  
+ */
 struct _GstSwitchServerOpts
 {
   gchar *test_switch;
@@ -53,6 +57,10 @@ struct _GstSwitchServerOpts
   gint control_port;
 };
 
+/**
+ *  GstSwitchServer:
+ *  
+ */
 struct _GstSwitchServer
 {
   GObject base;
@@ -102,24 +110,75 @@ struct _GstSwitchServer
   GstClock *clock;
 };
 
+/**
+ *  GstSwitchServerClass:
+ *  
+ */
 struct _GstSwitchServerClass
 {
   GObjectClass base_class;
 };
 
 GType gst_switch_server_get_type (void);
+
+/**
+ *  gst_switch_server_get_composite_sink_port:
+ *
+ *  Get the composite port.
+ */
 gint gst_switch_server_get_composite_sink_port (GstSwitchServer * srv);
+
+/**
+ *  gst_switch_server_get_encode_sink_port:
+ *
+ *  Get the encode port. 
+ */
 gint gst_switch_server_get_encode_sink_port (GstSwitchServer * srv);
+
+/**
+ *  gst_switch_server_get_audio_sink_port:
+ *
+ *  Get the audio port.
+ */
 gint gst_switch_server_get_audio_sink_port (GstSwitchServer * srv);
+
+/**
+ *  gst_switch_server_get_preview_sink_ports:
+ *
+ *  Get the preview ports.
+ */
 GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
     GArray ** serves, GArray ** types);
 
+/**
+ *  gst_switch_server_set_composite_mode:
+ *
+ *  Change a composite mode.
+ */
 gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv,
     gint mode);
+
+/**
+ *  gst_switch_server_switch:
+ *
+ *  Switch the channel to the specific port.
+ */
 gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
     gint port);
+
+/**
+ *  gst_switch_server_adjust_pip:
+ *
+ *  Adjust the PIP position and size.
+ */
 guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
     gint dw, gint dh);
+
+/**
+ *  gst_switch_server_new_record:
+ *
+ *  Start a new recording.
+ */
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);
 
 extern GstSwitchServerOpts opts;

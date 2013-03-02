@@ -47,6 +47,14 @@
 
 #define DEFAULT_COMPOSE_MODE COMPOSE_MODE_3
 
+/**
+ *  GstCompositeMode:
+ *  @COMPOSE_MODE_0:
+ *  @COMPOSE_MODE_1:
+ *  @COMPOSE_MODE_2:
+ *  @COMPOSE_MODE_3:
+ *  @COMPOSE_MODE__LAST:
+ */
 typedef enum
 {
   COMPOSE_MODE_0,               /* none */
@@ -59,6 +67,10 @@ typedef enum
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
 
+/**
+ *  GstComposite
+ *  
+ */
 struct _GstComposite
 {
   GstWorker base;
@@ -91,6 +103,10 @@ struct _GstComposite
   GstWorker *scaler;
 };
 
+/**
+ *  GstCompositeClass:
+ *  
+ */
 struct _GstCompositeClass
 {
   GstWorkerClass base_class;
@@ -100,6 +116,16 @@ struct _GstCompositeClass
 
 GType gst_composite_get_type (void);
 
+/**
+ *  gst_composite_adjust_pip:
+ *  @composite: The GstComposite instance
+ *  @x: the X position of the PIP
+ *  @y: the Y position of the PIP
+ *  @w: the width of the PIP
+ *  @h: the height of the PIP
+ *
+ *  Change the PIP position and size.
+ */
 gboolean gst_composite_adjust_pip (GstComposite * composite,
     gint x, gint y, gint w, gint h);
 

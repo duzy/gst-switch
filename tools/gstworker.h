@@ -44,14 +44,49 @@ typedef enum
   GST_WORKER_NR_REPLAY,
 } GstWorkerNullReturn;
 
+/**
+ *  GstWorkerGetPipelineString:
+ *  @worker: the GstWorker
+ *  @data: user defined data pointer
+ */
 typedef GString *(*GstWorkerGetPipelineString) (GstWorker * worker,
     gpointer data);
+
+/**
+ *  GstWorkerGetPipelineStringFunc:
+ *  @worker: the GstWorker
+ */
 typedef GString *(*GstWorkerGetPipelineStringFunc) (GstWorker * worker);
+
+/**
+ *  GstWorkerPrepareFunc:
+ *  @worker: the GstWorker
+ */
 typedef gboolean (*GstWorkerPrepareFunc) (GstWorker * worker);
-typedef gboolean (*GstWorkerMessageFunc) (GstWorker * worker, GstMessage *);
+
+/**
+ *  GstWorkerMessageFunc:
+ *  @worker: the GstWorker
+ *  @m: the message
+ */
+typedef gboolean (*GstWorkerMessageFunc) (GstWorker * worker, GstMessage *m);
+
+/**
+ *  GstWorkerNullFunc:
+ *  @worker: the GstWorker
+ */
 typedef GstWorkerNullReturn (*GstWorkerNullFunc) (GstWorker * worker);
+
+/**
+ *  GstWorkerAliveFunc:
+ *  @worker: the GstWorker
+ */
 typedef void (*GstWorkerAliveFunc) (GstWorker * worker);
 
+/**
+ *  GstWorker:
+ *  
+ */
 struct _GstWorker
 {
   GObject base;
@@ -73,6 +108,10 @@ struct _GstWorker
   guint watch;
 };
 
+/**
+ *  GstWorkerClass:
+ *  
+ */
 struct _GstWorkerClass
 {
   GObjectClass base_class;
@@ -96,12 +135,45 @@ struct _GstWorkerClass
 
 GType gst_worker_get_type (void);
 
+/**
+ *  gst_worker_start:
+ *
+ *  Start the worker. This will call the derived create_pipeline and the
+ *  virtual "prepare" function.
+ */
 gboolean gst_worker_start (GstWorker * worker);
+
+/**
+ *  gst_worker_stop_force:
+ *  @force: Force stopping the pipeline if TRUE.
+ *
+ *  Stop the pipeline, Pass TRUE to the second argument to make it force stop.
+ */
 gboolean gst_worker_stop_force (GstWorker * worker, gboolean force);
 
+/**
+ *  gst_worker_stop:
+ *
+ *  Same as gst_worker_stop_force (worker, FALSE).
+ */
 #define gst_worker_stop(worker) (gst_worker_stop_force ((worker), FALSE))
 
+/**
+ *  gst_worker_get_element_unlocked:
+ *
+ *  Get element by name without locking the pipeline.
+ *
+ *  Not MT safe.
+ */
 GstElement *gst_worker_get_element_unlocked (GstWorker *, const gchar *);
+
+/**
+ *  gst_worker_get_element:
+ *
+ *  Get element by name with locking the pipeline.
+ *
+ *  MT safe.
+ */
 GstElement *gst_worker_get_element (GstWorker *, const gchar * name);
 
 #endif //__GST_WORKER_H__by_Duzy_Chan__

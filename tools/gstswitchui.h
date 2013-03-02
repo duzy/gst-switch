@@ -41,6 +41,10 @@
 typedef struct _GstSwitchUI GstSwitchUI;
 typedef struct _GstSwitchUIClass GstSwitchUIClass;
 
+/**
+ *  GstSwitchUI:
+ *  
+ */
 struct _GstSwitchUI
 {
   GstSwitchClient base;
@@ -73,6 +77,10 @@ struct _GstSwitchUI
   gint timer;
 };
 
+/**
+ *  GstSwitchUIClass:
+ *  
+ */
 struct _GstSwitchUIClass
 {
   GstSwitchClientClass base_class;

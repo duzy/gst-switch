@@ -46,12 +46,21 @@ typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
 
 typedef GVariant *(*MethodFunc) (GObject *, GDBusConnection *, GVariant *);
 typedef struct _MethodTableEntry MethodTableEntry;
+
+/**
+ *  MethodTableEntry:
+ *  
+ */
 struct _MethodTableEntry
 {
   const gchar *name;
   MethodFunc func;
 };
 
+/**
+ *  GstSwitchController:
+ *  
+ */
 struct _GstSwitchController
 {
   GObject base;
@@ -62,6 +71,10 @@ struct _GstSwitchController
   GList *uis;
 };
 
+/**
+ *  GstSwitchControllerClass:
+ *  
+ */
 struct _GstSwitchControllerClass
 {
   GObjectClass base_class;
@@ -71,13 +84,47 @@ struct _GstSwitchControllerClass
 
 GType gst_switch_controller_get_type (void);
 
+/**
+ *  gst_switch_controller_is_valid:
+ *
+ *  Check if the controller is valid.
+ */
 gboolean gst_switch_controller_is_valid (GstSwitchController *);
 
+/**
+ *  gst_switch_controller_tell_audio_port:
+ *
+ *  Tell the audio port to the clients.
+ */
 void gst_switch_controller_tell_audio_port (GstSwitchController *, gint port);
+
+/**
+ *  gst_switch_controller_tell_compose_port:
+ *
+ *  Tell the compose port to the clients.
+ */
 void gst_switch_controller_tell_compose_port (GstSwitchController *, gint port);
+
+/**
+ *  gst_switch_controller_tell_encode_port:
+ *
+ *  Tell the encode port to the clients.
+ */
 void gst_switch_controller_tell_encode_port (GstSwitchController *, gint port);
+
+/**
+ *  gst_switch_controller_tell_preview_port:
+ *
+ *  Tell the preview port to the clients.
+ */
 void gst_switch_controller_tell_preview_port (GstSwitchController *,
     gint port, gint serve, gint type);
+
+/**
+ *  gst_switch_controller_tell_new_mode_onlne:
+ *
+ *  Tell the clients that new composite mode is online.
+ */
 void gst_switch_controller_tell_new_mode_onlne (GstSwitchController *,
     gint mode);
 

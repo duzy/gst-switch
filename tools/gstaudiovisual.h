@@ -36,6 +36,10 @@
 typedef struct _GstAudioVisual GstAudioVisual;
 typedef struct _GstAudioVisualClass GstAudioVisualClass;
 
+/**
+ *  GstAudioVisual:
+ *  
+ */
 struct _GstAudioVisual
 {
   GstWorker base;
@@ -51,6 +55,10 @@ struct _GstAudioVisual
   gdouble value;
 };
 
+/**
+ *  GstAudioVisualClass:
+ *  
+ */
 struct _GstAudioVisualClass
 {
   GstWorkerClass base_class;
@@ -58,7 +66,20 @@ struct _GstAudioVisualClass
 
 GType gst_audio_visual_get_type (void);
 
+/**
+ *  gst_audio_visual_get_endtime:
+ *  @visual: the GstAudioVisual instance
+ *
+ *  Get the endtime of the current audio sample value.
+ */
 GstClockTime gst_audio_visual_get_endtime (GstAudioVisual * visual);
+
+/**
+ *  gst_audio_visual_get_value:
+ *  @visual: the GstAudioVisual instance
+ *
+ *  Get the current audio sample value.
+ */
 gdouble gst_audio_visual_get_value (GstAudioVisual * visual);
 
 #endif //__GST_AUDIO_VISUAL_H__by_Duzy_Chan__

@@ -37,6 +37,10 @@
 
 typedef struct _GstRecorderClass GstRecorderClass;
 
+/**
+ *  GstRecorder:
+ *  
+ */
 struct _GstRecorder
 {
   GstWorker base;
@@ -48,6 +52,10 @@ struct _GstRecorder
   GstCompositeMode mode;
 };
 
+/**
+ *  GstRecorderClass:
+ *  
+ */
 struct _GstRecorderClass
 {
   GstWorkerClass base_class;

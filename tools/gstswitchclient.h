@@ -50,6 +50,10 @@ typedef void (*GstSwitchClientAddPreviewPortFunc) (GstSwitchClient * client,
 typedef void (*GstSwitchClientNewModeOnlineFunc) (GstSwitchClient * client,
     gint port);
 
+/**
+ *  GstSwitchClient:
+ *  
+ */
 struct _GstSwitchClient
 {
   GObject base;
@@ -61,6 +65,10 @@ struct _GstSwitchClient
   gboolean changing_composite_mode;
 };
 
+/**
+ *  GstSwitchClientClass:
+ *  
+ */
 struct _GstSwitchClientClass
 {
   GObjectClass base_class;
@@ -78,19 +86,78 @@ struct _GstSwitchClientClass
 
 GType gst_switch_client_get_type (void);
 
+/**
+ *  gst_switch_client_is_connected:
+ *
+ *  Check if the client is connected to the gst-switch server.
+ */
 gboolean gst_switch_client_is_connected (GstSwitchClient * client);
+
+/**
+ *  gst_switch_client_connect:
+ *
+ *  Connect the client with the gst-switch server.
+ */
 gboolean gst_switch_client_connect (GstSwitchClient * client);
+
+/**
+ *  gst_switch_client_get_compose_port:
+ *
+ *  Get the compose port number.
+ */
 gint gst_switch_client_get_compose_port (GstSwitchClient * client);
+
+/**
+ *  gst_switch_client_get_encode_port:
+ *
+ *  Get the encode port number.
+ */
 gint gst_switch_client_get_encode_port (GstSwitchClient * client);
+
+/**
+ *  gst_switch_client_get_audio_port:
+ *
+ *  The the audio port number.
+ */
 gint gst_switch_client_get_audio_port (GstSwitchClient * client);
-gint gst_switch_client_get_encode_port (GstSwitchClient * client);
+
+/**
+ *  gst_switch_client_get_preview_ports:
+ *
+ *  The all preview ports.
+ */
 GVariant *gst_switch_client_get_preview_ports (GstSwitchClient * client);
 
+/**
+ *  gst_switch_client_switch:
+ *  @channel: The channel to be switched, 'A', 'B', 'a'
+ *  @port: The target port number
+ *
+ *  Switch the channel to the target port.
+ */
 gboolean gst_switch_client_switch (GstSwitchClient * client, gint channel,
     gint port);
+
+/**
+ *  gst_switch_client_set_composite_mode:
+ *
+ *  Set the current composite mode.
+ */
 gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client,
     gint mode);
+
+/**
+ *  gst_switch_client_new_record:
+ *
+ *  Start a new recording.
+ */
 gboolean gst_switch_client_new_record (GstSwitchClient * client);
+
+/**
+ *  gst_switch_client_adjust_pip:
+ *
+ *  Adjust the PIP.
+ */
 guint gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx,
     gint dy, gint dw, gint dh);
 

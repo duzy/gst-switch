@@ -37,6 +37,21 @@
 typedef struct _GstCase GstCase;
 typedef struct _GstCaseClass GstCaseClass;
 
+/**
+ *  GstCaseType:
+ *  @GST_CASE_UNKNOWN:
+ *  @GST_CASE_COMPOSITE_A:
+ *  @GST_CASE_COMPOSITE_B:
+ *  @GST_CASE_COMPOSITE_a:
+ *  @GST_CASE_PREVIEW:
+ *  @GST_CASE_INPUT_a:
+ *  @GST_CASE_INPUT_v:
+ *  @GST_CASE_BRANCH_A:
+ *  @GST_CASE_BRANCH_B:
+ *  @GST_CASE_BRANCH_a:
+ *  @GST_CASE_BRANCH_p:
+ *  @GST_CASE__LAST_TYPE:
+ */
 typedef enum
 {
   GST_CASE_UNKNOWN,
@@ -53,6 +68,12 @@ typedef enum
   GST_CASE__LAST_TYPE = GST_CASE_BRANCH_p
 } GstCaseType;
 
+/**
+ *  GstSwitchServeStreamType:
+ *  @GST_SERVE_NOTHING:
+ *  @GST_SERVE_VIDEO_STREAM:
+ *  @GST_SERVE_AUDIO_STREAM:
+ */
 typedef enum
 {
   GST_SERVE_NOTHING,
@@ -60,6 +81,10 @@ typedef enum
   GST_SERVE_AUDIO_STREAM,
 } GstSwitchServeStreamType;
 
+/**
+ *  GstCase:
+ *  
+ */
 struct _GstCase
 {
   GstWorker base;
@@ -78,6 +103,10 @@ struct _GstCase
   guint b_height;
 };
 
+/**
+ *  GstCaseClass:
+ *  
+ */
 struct _GstCaseClass
 {
   GstWorkerClass base_class;
