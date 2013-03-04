@@ -83,7 +83,7 @@ typedef enum
 
 /**
  *  GstCase:
- *  
+ *  @base: the parent object
  */
 struct _GstCase
 {
@@ -105,7 +105,7 @@ struct _GstCase
 
 /**
  *  GstCaseClass:
- *  
+ *  @base_class: the parent class
  */
 struct _GstCaseClass
 {

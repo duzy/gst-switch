@@ -49,10 +49,10 @@
 
 /**
  *  GstCompositeMode:
- *  @COMPOSE_MODE_0:
- *  @COMPOSE_MODE_1:
- *  @COMPOSE_MODE_2:
- *  @COMPOSE_MODE_3:
+ *  @COMPOSE_MODE_0: for compose mode 0 (no composite)
+ *  @COMPOSE_MODE_1: for compose mode 1 (PIP)
+ *  @COMPOSE_MODE_2: for compose mode 2 (side-by-side 7:3)
+ *  @COMPOSE_MODE_3: for compose mode 3 (side-by-side 1:1)
  *  @COMPOSE_MODE__LAST:
  */
 typedef enum
@@ -69,7 +69,27 @@ typedef struct _GstCompositeClass GstCompositeClass;
 
 /**
  *  GstComposite
- *  
+ *  @base: the parent object
+ *  @mode: the composite mode, see @GstCompositeMode
+ *  @lock: lock for composite object
+ *  @transition_lock: lock for transition of modes 
+ *  @adjustment_lock: lock for PIP adjustment
+ *  @sink_port: sink port number
+ *  @encode_sink_port: encode port number
+ *  @a_x: X position of A video
+ *  @a_y: Y position of A video
+ *  @a_width: width of A video
+ *  @a_height: height of A video
+ *  @b_x: X position of B video
+ *  @b_y: Y position of B video
+ *  @b_width: width of B video
+ *  @b_height: height of B video
+ *  @width: output width
+ *  @height: output height
+ *  @adjusting: the status of adjusting PIP
+ *  @transition: the status of transiting modes
+ *  @deprecated: (deprecated)
+ *  @scaler: the scaller for A/B videos
  */
 struct _GstComposite
 {
@@ -125,6 +145,8 @@ GType gst_composite_get_type (void);
  *  @h: the height of the PIP
  *
  *  Change the PIP position and size.
+ *
+ *  @return: PIP has been changed succefully 
  */
 gboolean gst_composite_adjust_pip (GstComposite * composite,
     gint x, gint y, gint w, gint h);
