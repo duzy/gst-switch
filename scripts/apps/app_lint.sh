@@ -19,9 +19,15 @@ function do-splint ()
 
 function do-scan-build ()
 {
+    local stage=$(gst-stage)
+    local sb="/store/open/llvm/tools/clang/tools/scan-build/scan-build"
+    if [[ ! -f $sb ]]; then
+	sb="scan-build"
+    fi
+    sb="scan-build"
     mkdir -p lint
-    scan-build -v -stats -analyze-headers \
-	-enable-checker core.AdjustedReturnValue \
+    $sb ./configure --prefix=$stage
+    $sb -v -stats -analyze-headers \
 	-enable-checker core.AttributeNonNull \
 	-enable-checker core.CallAndMessage \
 	-enable-checker core.DivideZero \
@@ -37,8 +43,10 @@ function do-scan-build ()
 	-enable-checker core.uninitialized.CapturedBlockVariable \
 	-enable-checker core.uninitialized.UndefReturn \
 	-enable-checker deadcode.DeadStores \
-	-enable-checker deadcode.IdempotentOperations \
 	-o lint "$@" make
+
+    #-enable-checker core.AdjustedReturnValue \
+    #-enable-checker deadcode.IdempotentOperations \
 }
 
 function main ()

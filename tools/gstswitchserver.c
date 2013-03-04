@@ -1421,7 +1421,6 @@ error_prepare_recorder:
   }
 }
 
-
 int
 main (int argc, char *argv[])
 {
