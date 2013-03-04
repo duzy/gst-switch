@@ -49,7 +49,8 @@ typedef struct _MethodTableEntry MethodTableEntry;
 
 /**
  *  MethodTableEntry:
- *  
+ *  @name: the remote method name
+ *  @func: the bound function
  */
 struct _MethodTableEntry
 {
@@ -59,7 +60,11 @@ struct _MethodTableEntry
 
 /**
  *  GstSwitchController:
- *  
+ *  @base: the parent object
+ *  @server: the GstSwitchServer instance
+ *  @bus_server: the dbus server instance
+ *  @uis_lock: the lock for @uis
+ *  @uis: the client list
  */
 struct _GstSwitchController
 {
@@ -73,7 +78,8 @@ struct _GstSwitchController
 
 /**
  *  GstSwitchControllerClass:
- *  
+ *  @base_class: the parent class
+ *  @methods: the remote method table
  */
 struct _GstSwitchControllerClass
 {
@@ -86,13 +92,18 @@ GType gst_switch_controller_get_type (void);
 
 /**
  *  gst_switch_controller_is_valid:
+ *  @controller: the GstSwitchController instance
  *
  *  Check if the controller is valid.
+ *
+ *  @return TRUE is the controller is valid connected to the dbus server
  */
 gboolean gst_switch_controller_is_valid (GstSwitchController *);
 
 /**
  *  gst_switch_controller_tell_audio_port:
+ *  @controller: the GstSwitchController instance
+ *  @port: the port number
  *
  *  Tell the audio port to the clients.
  */
@@ -100,6 +111,8 @@ void gst_switch_controller_tell_audio_port (GstSwitchController *, gint port);
 
 /**
  *  gst_switch_controller_tell_compose_port:
+ *  @controller: the GstSwitchController instance
+ *  @port: the port number
  *
  *  Tell the compose port to the clients.
  */
@@ -107,6 +120,8 @@ void gst_switch_controller_tell_compose_port (GstSwitchController *, gint port);
 
 /**
  *  gst_switch_controller_tell_encode_port:
+ *  @controller: the GstSwitchController instance
+ *  @port: the port number
  *
  *  Tell the encode port to the clients.
  */
@@ -114,6 +129,10 @@ void gst_switch_controller_tell_encode_port (GstSwitchController *, gint port);
 
 /**
  *  gst_switch_controller_tell_preview_port:
+ *  @controller: the GstSwitchController instance
+ *  @port: the port number
+ *  @serve: value of GstSwitchServeStreamType
+ *  @type: value of GstCaseType
  *
  *  Tell the preview port to the clients.
  */
@@ -122,6 +141,8 @@ void gst_switch_controller_tell_preview_port (GstSwitchController *,
 
 /**
  *  gst_switch_controller_tell_new_mode_onlne:
+ *  @controller: the GstSwitchController instance
+ *  @mode: the new mode changed
  *
  *  Tell the clients that new composite mode is online.
  */

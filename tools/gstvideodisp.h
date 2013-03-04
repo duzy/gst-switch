@@ -36,6 +36,13 @@
 typedef struct _GstVideoDisp GstVideoDisp;
 typedef struct _GstVideoDispClass GstVideoDispClass;
 
+/**
+ *  GstVideoDisp:
+ *  @base: the parent object
+ *  @port: the port number
+ *  @type: video type
+ *  @handle: the X window handle for rendering the video
+ */
 struct _GstVideoDisp
 {
   GstWorker base;
@@ -44,6 +51,10 @@ struct _GstVideoDisp
   gulong handle;
 };
 
+/**
+ *  GstVideoDispClass:
+ *  @base_class: the parent class
+ */
 struct _GstVideoDispClass
 {
   GstWorkerClass base_class;

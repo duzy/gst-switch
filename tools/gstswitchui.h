@@ -43,7 +43,7 @@ typedef struct _GstSwitchUIClass GstSwitchUIClass;
 
 /**
  *  GstSwitchUI:
- *  
+ *  @base: the parent object
  */
 struct _GstSwitchUI
 {
@@ -79,7 +79,7 @@ struct _GstSwitchUI
 
 /**
  *  GstSwitchUIClass:
- *  
+ *  @base_class: the parent calss
  */
 struct _GstSwitchUIClass
 {

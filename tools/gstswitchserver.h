@@ -237,6 +237,8 @@ guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
  *  gst_switch_server_new_record:
  *
  *  Start a new recording.
+ *  
+ *  @return: TRUE if succeeded.
  */
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);
 

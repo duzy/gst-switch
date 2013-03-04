@@ -125,7 +125,8 @@ struct _GstComposite
 
 /**
  *  GstCompositeClass:
- *  
+ *  @base_class: the parent class
+ *  @end_transition: signal handler of "end-transition"
  */
 struct _GstCompositeClass
 {
