@@ -39,17 +39,17 @@ typedef struct _GstCaseClass GstCaseClass;
 
 /**
  *  GstCaseType:
- *  @GST_CASE_UNKNOWN:
- *  @GST_CASE_COMPOSITE_A:
- *  @GST_CASE_COMPOSITE_B:
- *  @GST_CASE_COMPOSITE_a:
- *  @GST_CASE_PREVIEW:
- *  @GST_CASE_INPUT_a:
- *  @GST_CASE_INPUT_v:
- *  @GST_CASE_BRANCH_A:
- *  @GST_CASE_BRANCH_B:
- *  @GST_CASE_BRANCH_a:
- *  @GST_CASE_BRANCH_p:
+ *  @GST_CASE_UNKNOWN: unknown case
+ *  @GST_CASE_COMPOSITE_A: special case for composite channel A
+ *  @GST_CASE_COMPOSITE_B: special case for composite channel B
+ *  @GST_CASE_COMPOSITE_a: special case for composite channel audio
+ *  @GST_CASE_PREVIEW: special case for previews
+ *  @GST_CASE_INPUT_a: special case for audio input
+ *  @GST_CASE_INPUT_v: special case for video input
+ *  @GST_CASE_BRANCH_A: special case for branching channel A to output
+ *  @GST_CASE_BRANCH_B: special case for branching channel B to output
+ *  @GST_CASE_BRANCH_a: special case for branching active audio to output
+ *  @GST_CASE_BRANCH_p: special case for branching preview to output
  *  @GST_CASE__LAST_TYPE:
  */
 typedef enum
@@ -70,9 +70,9 @@ typedef enum
 
 /**
  *  GstSwitchServeStreamType:
- *  @GST_SERVE_NOTHING:
- *  @GST_SERVE_VIDEO_STREAM:
- *  @GST_SERVE_AUDIO_STREAM:
+ *  @GST_SERVE_NOTHING: the case is serving nothing
+ *  @GST_SERVE_VIDEO_STREAM: the case is serving video stream
+ *  @GST_SERVE_AUDIO_STREAM: the case is serving audio stream
  */
 typedef enum
 {

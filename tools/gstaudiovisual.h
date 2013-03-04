@@ -70,7 +70,9 @@ GType gst_audio_visual_get_type (void);
  *  gst_audio_visual_get_endtime:
  *  @visual: the GstAudioVisual instance
  *
- *  Get the endtime of the current audio sample value.
+ *  Get the endtime of the last audio sample value.
+ *
+ *  @return: the endtime of the last audio sample
  */
 GstClockTime gst_audio_visual_get_endtime (GstAudioVisual * visual);
 
@@ -79,6 +81,8 @@ GstClockTime gst_audio_visual_get_endtime (GstAudioVisual * visual);
  *  @visual: the GstAudioVisual instance
  *
  *  Get the current audio sample value.
+ *
+ *  @return: the value of the last audio sample
  */
 gdouble gst_audio_visual_get_value (GstAudioVisual * visual);
 

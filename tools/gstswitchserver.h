@@ -45,7 +45,11 @@ typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
 /**
  *  GstSwitchServerOpts:
- *  
+ *  @record_filename: the recording filename
+ *  @controller_address: the dbus address for the controller
+ *  @video_input_port: the video input TCP port
+ *  @audio_input_port: the audio input TCP port
+ *  @control_port: (discarded)
  */
 struct _GstSwitchServerOpts
 {
@@ -59,7 +63,42 @@ struct _GstSwitchServerOpts
 
 /**
  *  GstSwitchServer:
- *  
+ *  @base: the parent object
+ *  @host: the server host name, e.g. localhost
+ *  @main_loop: the main loop
+ *  @main_loop_lock: the lock for the @main_loop
+ *  @exit_code: the exit code in cases of force quit.
+ *  @cancellable: 
+ *  @video_acceptor_lock: the lock for the video acceptor
+ *  @video_acceptor: the video acceptor thread
+ *  @video_acceptor_socket: the vidoe acceptor socekt
+ *  @video_acceptor_port: the video acceptor port number
+ *  @audio_acceptor_lock: the lock for the audio acceptor
+ *  @audio_acceptor: the audio acceptor thread
+ *  @audio_acceptor_socket: the audio acceptor socket
+ *  @audio_acceptor_port: the audio acceptor port
+ *  @controller_lock: the lock for controller
+ *  @controller_thread: the controller thread (deprecated)
+ *  @controller_socket: the controller socket (deprecated)
+ *  @controller_port: the controller port number (deprecated)
+ *  @controller: the controller instance
+ *  @alloc_port_lock: the lock for @alloc_port_count
+ *  @alloc_port_count: port allocation counter
+ *  @serve_lock: the lock for serving new inputs
+ *  @cases_lock: the lock for the @cases
+ *  @cases: the case list
+ *  @composite: the composite instance
+ *  @new_composite_mode: the new composite mode to be applied
+ *  @output: the output instance
+ *  @recorder_lock: the lock for the @recorder
+ *  @recorder: the recorder instance
+ *  @pip_lock the lock for PIP
+ *  @pip_x: the PIP x position
+ *  @pip_y: the PIP y position
+ *  @pip_w: the PIP width
+ *  @pip_h: the PIP height
+ *  @clock_lock: the lock for @clock
+ *  @clock: a system clock
  */
 struct _GstSwitchServer
 {
@@ -112,7 +151,7 @@ struct _GstSwitchServer
 
 /**
  *  GstSwitchServerClass:
- *  
+ *  @base_calss: the parent class
  */
 struct _GstSwitchServerClass
 {
@@ -123,29 +162,42 @@ GType gst_switch_server_get_type (void);
 
 /**
  *  gst_switch_server_get_composite_sink_port:
+ *  @srv: the GstSwitchServer instance
  *
  *  Get the composite port.
+ *  
+ *  @return: the composite sink port
  */
 gint gst_switch_server_get_composite_sink_port (GstSwitchServer * srv);
 
 /**
  *  gst_switch_server_get_encode_sink_port:
+ *  @srv: the GstSwitchServer instance
  *
- *  Get the encode port. 
+ *  Get the encode port.
+ *
+ *  @return: the encode sink port number
  */
 gint gst_switch_server_get_encode_sink_port (GstSwitchServer * srv);
 
 /**
  *  gst_switch_server_get_audio_sink_port:
+ *  @srv: the GstSwitchServer instance
  *
  *  Get the audio port.
+ *
+ *  @return: the audio sink port number.
  */
 gint gst_switch_server_get_audio_sink_port (GstSwitchServer * srv);
 
 /**
  *  gst_switch_server_get_preview_sink_ports:
+ *  @serves: (output) the preview serve types.
+ *  @types: (output) the preview types.
  *
  *  Get the preview ports.
+ *
+ *  @return: The array of preview ports.
  */
 GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
     GArray ** serves, GArray ** types);
@@ -154,6 +206,8 @@ GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
  *  gst_switch_server_set_composite_mode:
  *
  *  Change a composite mode.
+ *
+ *  @return: TRUE if succeeded.
  */
 gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv,
     gint mode);
@@ -162,6 +216,8 @@ gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv,
  *  gst_switch_server_switch:
  *
  *  Switch the channel to the specific port.
+ *
+ *  @return: TRUE if succeeded.
  */
 gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
     gint port);
@@ -170,6 +226,9 @@ gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
  *  gst_switch_server_adjust_pip:
  *
  *  Adjust the PIP position and size.
+ *
+ *  @return: a unsigned number of indicating which compononent (x,y,w,h) has
+ *           been changed
  */
 guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
     gint dw, gint dh);
