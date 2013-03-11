@@ -105,6 +105,11 @@ static const gchar introspection_xml[] =
   "    <property type='i' name='Num' access='read'/>"
 */
 
+/**
+ * gst_switch_controller_method_match:
+ *
+ * Helper function for matching remoting method names.
+ */
 static gboolean
 gst_switch_controller_method_match (const gchar * key,
     MethodTableEntry * entry, const gchar * match)
@@ -114,6 +119,11 @@ gst_switch_controller_method_match (const gchar * key,
   return FALSE;
 }
 
+/**
+ * gst_switch_controller_do_method_call:
+ *
+ * Performing a remoting method call from a gst-switch client.
+ */
 static void
 gst_switch_controller_do_method_call (GDBusConnection * connection,
     const gchar * sender,
@@ -151,6 +161,11 @@ error_no_method:
   }
 }
 
+/**
+ * gst_switch_controller_do_get_property:
+ *
+ * Fetching the controller property remotely (it's useless currently).
+ */
 static GVariant *
 gst_switch_controller_do_get_property (GDBusConnection * connection,
     const gchar * sender,
@@ -171,6 +186,11 @@ gst_switch_controller_do_get_property (GDBusConnection * connection,
   return ret;
 }
 
+/**
+ * gst_switch_controller_do_set_property:
+ *
+ * Setting the property of controller remotely (it's useless currently).
+ */
 static gboolean
 gst_switch_controller_do_set_property (GDBusConnection * connection,
     const gchar * sender,
@@ -183,6 +203,13 @@ gst_switch_controller_do_set_property (GDBusConnection * connection,
   return FALSE;
 }
 
+/**
+ * gst_switch_controller_interface_vtable:
+ *
+ * The remoting virtual table.
+ *
+ * @see GDBusInterfaceVTable.
+ */
 static const GDBusInterfaceVTable gst_switch_controller_interface_vtable = {
   gst_switch_controller_do_method_call,
   gst_switch_controller_do_get_property,
@@ -244,6 +271,11 @@ gst_switch_controller_export (GstSwitchController * controller)
 }
 #endif
 
+/**
+ * gst_switch_controller_emit_ui_signal:
+ *
+ * Perform sending remote signals to connected clients.
+ */
 static void
 gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
     const gchar * signame, GVariant * parameters)
@@ -277,6 +309,11 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
   GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 }
 
+/**
+ * gst_switch_controller_on_connection_closed:
+ *
+ * Invoked to cleanup when a connected client is closed.
+ */
 static void
 gst_switch_controller_on_connection_closed (GDBusConnection * connection,
     gboolean vanished, GError * error, gpointer user_data)
@@ -299,6 +336,11 @@ gst_switch_controller_on_connection_closed (GDBusConnection * connection,
       g_list_length (controller->uis));
 }
 
+/**
+ * gst_switch_controller_on_new_connection:
+ *
+ * Invoked when a new incomming client connection is established.
+ */
 static gboolean
 gst_switch_controller_on_new_connection (GDBusServer * server,
     GDBusConnection * connection, gpointer user_data)
@@ -346,6 +388,11 @@ error_register_object:
   }
 }
 
+/**
+ * gst_switch_controller_authorize_authenticated_peer:
+ *
+ * Authorizing new dbus connection.
+ */
 static gboolean
 gst_switch_controller_authorize_authenticated_peer (GDBusAuthObserver *
     observer,
@@ -355,6 +402,13 @@ gst_switch_controller_authorize_authenticated_peer (GDBusAuthObserver *
   return TRUE;
 }
 
+/**
+ * gst_switch_controller_init:
+ *
+ * Initializing the GstSwitchController.
+ *
+ * @see GObject
+ */
 static void
 gst_switch_controller_init (GstSwitchController * controller)
 {
@@ -404,6 +458,13 @@ error_new_server:
   }
 }
 
+/**
+ * gst_switch_controller_finalize:
+ *
+ * Destroying the GstSwitchController.
+ *
+ * @see GObject
+ */
 static void
 gst_switch_controller_finalize (GstSwitchController * controller)
 {
@@ -423,6 +484,14 @@ gst_switch_controller_finalize (GstSwitchController * controller)
 
 }
 
+/**
+ * gst_switch_controller_is_valid:
+ *  @controller: the GstSwitchController instance
+ *  @return TRUE is the controller is valid connected to the dbus server
+ *
+ *  Check if the controller is valid.
+ *
+ */
 gboolean
 gst_switch_controller_is_valid (GstSwitchController * controller)
 {
@@ -433,6 +502,11 @@ gst_switch_controller_is_valid (GstSwitchController * controller)
   return valid;
 }
 
+/**
+ * gst_switch_controller_call_ui:
+ *
+ * Invoke a remote method on a connected client.
+ */
 static GVariant *
 gst_switch_controller_call_ui (GstSwitchController * controller,
     GDBusConnection * connection,
@@ -465,6 +539,11 @@ error_call_sync:
   }
 }
 
+/**
+ * gst_switch_controller_call_uis:
+ *
+ * Invoke a remote method on all connected clients.
+ */
 static void
 gst_switch_controller_call_uis (GstSwitchController * controller,
     const gchar * method_name,
@@ -525,6 +604,12 @@ gst_switch_controller_test_ui (GstSwitchController * controller,
 }
 #endif
 
+/**
+ * gst_switch_controller_set_ui_audio_port:
+ *
+ * Convenient wrapper method for calling remoting method "set_audio_port"
+ * on all clients.
+ */
 static void
 gst_switch_controller_set_ui_audio_port (GstSwitchController * controller,
     gint port)
@@ -533,6 +618,12 @@ gst_switch_controller_set_ui_audio_port (GstSwitchController * controller,
       g_variant_new ("(i)", port), G_VARIANT_TYPE ("()"));
 }
 
+/**
+ * gst_switch_controller_set_ui_compose_port:
+ *
+ * Convenient wrapper for calling remoting method "set_compose_port" on
+ * all clients.
+ */
 static void
 gst_switch_controller_set_ui_compose_port (GstSwitchController * controller,
     gint port)
@@ -541,6 +632,12 @@ gst_switch_controller_set_ui_compose_port (GstSwitchController * controller,
       g_variant_new ("(i)", port), G_VARIANT_TYPE ("()"));
 }
 
+/**
+ * gst_switch_controller_set_ui_encode_port:
+ *
+ * Convenient wrapper for calling remoting method "set_encode_port" on all
+ * clients.
+ */
 static void
 gst_switch_controller_set_ui_encode_port (GstSwitchController * controller,
     gint port)
@@ -549,6 +646,12 @@ gst_switch_controller_set_ui_encode_port (GstSwitchController * controller,
       g_variant_new ("(i)", port), G_VARIANT_TYPE ("()"));
 }
 
+/**
+ * gst_switch_controller_add_ui_preview_port:
+ *
+ * Convenient wrapper for calling remoting method "add_preview_port" on all
+ * clients.
+ */
 static void
 gst_switch_controller_add_ui_preview_port (GstSwitchController * controller,
     gint port, gint serve, gint type)
@@ -557,6 +660,13 @@ gst_switch_controller_add_ui_preview_port (GstSwitchController * controller,
       g_variant_new ("(iii)", port, serve, type), G_VARIANT_TYPE ("()"));
 }
 
+/**
+ * gst_switch_controller_get_property:
+ *
+ * Fetching a GstSwitchController object's property.
+ *
+ * @see GObject
+ */
 static void
 gst_switch_controller_get_property (GstSwitchController * controller,
     guint prop_id, GValue * value, GParamSpec * pspec)
@@ -568,6 +678,13 @@ gst_switch_controller_get_property (GstSwitchController * controller,
   }
 }
 
+/**
+ * gst_switch_controller_set_property:
+ *
+ * Setting a GstSwitchController object's property.
+ *
+ * @see GObject.
+ */
 static void
 gst_switch_controller_set_property (GstSwitchController * controller,
     guint prop_id, const GValue * value, GParamSpec * pspec)
@@ -579,6 +696,13 @@ gst_switch_controller_set_property (GstSwitchController * controller,
   }
 }
 
+/**
+ * gst_switch_controller_tell_audio_port:
+ *  @controller: the GstSwitchController instance
+ *  @port: the port number
+ *
+ *  Tell the audio port to the clients.
+ */
 void
 gst_switch_controller_tell_audio_port (GstSwitchController * controller,
     gint port)
@@ -588,6 +712,13 @@ gst_switch_controller_tell_audio_port (GstSwitchController * controller,
   gst_switch_controller_set_ui_audio_port (controller, port);
 }
 
+/**
+ * gst_switch_controller_tell_compose_port:
+ *  @controller: the GstSwitchController instance
+ *  @port: the port number
+ *
+ *  Tell the compose port to the clients.
+ */
 void
 gst_switch_controller_tell_compose_port (GstSwitchController * controller,
     gint port)
@@ -597,6 +728,13 @@ gst_switch_controller_tell_compose_port (GstSwitchController * controller,
   gst_switch_controller_set_ui_compose_port (controller, port);
 }
 
+/**
+ * gst_switch_controller_tell_encode_port:
+ *  @controller: the GstSwitchController instance
+ *  @port: the port number
+ *
+ *  Tell the encode port to the clients.
+ */
 void
 gst_switch_controller_tell_encode_port (GstSwitchController * controller,
     gint port)
@@ -606,6 +744,15 @@ gst_switch_controller_tell_encode_port (GstSwitchController * controller,
   gst_switch_controller_set_ui_encode_port (controller, port);
 }
 
+/**
+ * gst_switch_controller_tell_preview_port:
+ *  @controller: the GstSwitchController instance
+ *  @port: the port number
+ *  @serve: value of GstSwitchServeStreamType
+ *  @type: value of GstCaseType
+ *
+ *  Tell the preview port to the clients.
+ */
 void
 gst_switch_controller_tell_preview_port (GstSwitchController * controller,
     gint port, gint serve, gint type)
@@ -615,6 +762,13 @@ gst_switch_controller_tell_preview_port (GstSwitchController * controller,
   gst_switch_controller_add_ui_preview_port (controller, port, serve, type);
 }
 
+/**
+ * gst_switch_controller_tell_new_mode_onlne:
+ *  @controller: the GstSwitchController instance
+ *  @mode: the new mode changed
+ *
+ *  Tell the clients that new composite mode is online.
+ */
 void
 gst_switch_controller_tell_new_mode_onlne (GstSwitchController * controller,
     gint mode)
@@ -635,6 +789,11 @@ gst_switch_controller__test (GstSwitchController * controller,
 }
 #endif //ENABLE_TEST
 
+/**
+ * gst_switch_controller__get_compose_port:
+ *
+ * Remoting method stub of "get_compose_port".
+ */
 static GVariant *
 gst_switch_controller__get_compose_port (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
@@ -646,6 +805,11 @@ gst_switch_controller__get_compose_port (GstSwitchController * controller,
   return g_variant_new ("(i)", port);
 }
 
+/**
+ * gst_switch_controller__get_encode_port:
+ *
+ * Remoting method stub of "get_encode_port".
+ */
 static GVariant *
 gst_switch_controller__get_encode_port (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
@@ -657,6 +821,11 @@ gst_switch_controller__get_encode_port (GstSwitchController * controller,
   return g_variant_new ("(i)", port);
 }
 
+/**
+ * gst_switch_controller__get_audio_port:
+ *
+ * Remoting method stub of "get_audio_port".
+ */
 static GVariant *
 gst_switch_controller__get_audio_port (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
@@ -668,6 +837,11 @@ gst_switch_controller__get_audio_port (GstSwitchController * controller,
   return g_variant_new ("(i)", port);
 }
 
+/**
+ * gst_switch_controller__get_preview_ports:
+ *
+ * Remoting method stub of "get_preview_ports".
+ */
 static GVariant *
 gst_switch_controller__get_preview_ports (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
@@ -707,6 +881,11 @@ gst_switch_controller__get_preview_ports (GstSwitchController * controller,
   return result;
 }
 
+/**
+ * gst_switch_controller__set_composite_mode:
+ *
+ * Remoting method stub of "set_composite_mode".
+ */
 static GVariant *
 gst_switch_controller__set_composite_mode (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
@@ -722,6 +901,11 @@ gst_switch_controller__set_composite_mode (GstSwitchController * controller,
   return result;
 }
 
+/**
+ * gst_switch_controller__new_record:
+ *
+ * Remoting method stub of "new_record".
+ */
 static GVariant *
 gst_switch_controller__new_record (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
@@ -735,6 +919,11 @@ gst_switch_controller__new_record (GstSwitchController * controller,
   return result;
 }
 
+/**
+ * gst_switch_controller__adjust_pip:
+ *
+ * Remoting method stub of "adjust_pip".
+ */
 static GVariant *
 gst_switch_controller__adjust_pip (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
@@ -750,6 +939,11 @@ gst_switch_controller__adjust_pip (GstSwitchController * controller,
   return result;
 }
 
+/**
+ * gst_switch_controller__switch:
+ *
+ * Remoting method stub of "switch".
+ */
 static GVariant *
 gst_switch_controller__switch (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
@@ -765,6 +959,11 @@ gst_switch_controller__switch (GstSwitchController * controller,
   return result;
 }
 
+/**
+ * gst_switch_controller_method_table:
+ *
+ * Remoting method table of the gst-switch controller.
+ */
 static MethodTableEntry gst_switch_controller_method_table[] = {
 #if ENABLE_TEST
   {"test", (MethodFunc) gst_switch_controller__test},
@@ -782,6 +981,11 @@ static MethodTableEntry gst_switch_controller_method_table[] = {
   {NULL, NULL}
 };
 
+/**
+ * gst_switch_controller_class_init:
+ *
+ * Initialize the GstSwitchControllerClass.
+ */
 static void
 gst_switch_controller_class_init (GstSwitchControllerClass * klass)
 {

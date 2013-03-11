@@ -89,6 +89,11 @@ static GOptionEntry entries[] = {
   {NULL}
 };
 
+/**
+ * gst_switch_server_parse_args:
+ *
+ * Parsing commiand line parameters.
+ */
 static void
 gst_switch_server_parse_args (int *argc, char **argv[])
 {
@@ -106,6 +111,11 @@ gst_switch_server_parse_args (int *argc, char **argv[])
   g_option_context_free (context);
 }
 
+/**
+ * gst_switch_server_init:
+ *
+ * Initialize the GstSwitchServer instance.
+ */
 static void
 gst_switch_server_init (GstSwitchServer * srv)
 {
@@ -146,6 +156,12 @@ gst_switch_server_init (GstSwitchServer * srv)
   g_mutex_init (&srv->clock_lock);
 }
 
+/**
+ * gst_switch_server_finalize:
+ *
+ * Destroying the GstSwitchServer instance.
+ * 
+ */
 static void
 gst_switch_server_finalize (GstSwitchServer * srv)
 {
@@ -220,6 +236,11 @@ gst_switch_server_finalize (GstSwitchServer * srv)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (srv));
 }
 
+/**
+ * gst_switch_server_class_init:
+ *
+ * Initializet the GstSwitchServerClass.
+ */
 static void
 gst_switch_server_class_init (GstSwitchServerClass * klass)
 {
@@ -227,6 +248,11 @@ gst_switch_server_class_init (GstSwitchServerClass * klass)
   object_class->finalize = (GObjectFinalizeFunc) gst_switch_server_finalize;
 }
 
+/**
+ * gst_switch_server_quit:
+ *
+ * Force terminating the server. 
+ */
 static void
 gst_switch_server_quit (GstSwitchServer * srv, gint exit_code)
 {
@@ -236,6 +262,11 @@ gst_switch_server_quit (GstSwitchServer * srv, gint exit_code)
   GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP (srv);
 }
 
+/**
+ * gst_switch_server_alloc_port:
+ *
+ * Allocate a new port number.
+ */
 static gint
 gst_switch_server_alloc_port (GstSwitchServer * srv)
 {
@@ -250,6 +281,11 @@ gst_switch_server_alloc_port (GstSwitchServer * srv)
   return port;
 }
 
+/**
+ * gst_switch_server_revoke_port:
+ *
+ * This is intended to revoke a allocated port number.
+ */
 static void
 gst_switch_server_revoke_port (GstSwitchServer * srv, int port)
 {
@@ -261,6 +297,11 @@ gst_switch_server_revoke_port (GstSwitchServer * srv, int port)
   g_mutex_unlock (&srv->alloc_port_lock);
 }
 
+/**
+ * gst_switch_server_end_case:
+ *
+ * Invoked when a %GstCase is ended.
+ */
 static void
 gst_switch_server_end_case (GstCase * cas, GstSwitchServer * srv)
 {
@@ -306,6 +347,11 @@ gst_switch_server_end_case (GstCase * cas, GstSwitchServer * srv)
     gst_switch_server_revoke_port (srv, caseport);
 }
 
+/**
+ * gst_switch_server_start_case:
+ *
+ * Start a new %GstCase.
+ */
 static void
 gst_switch_server_start_case (GstCase * cas, GstSwitchServer * srv)
 {
@@ -334,6 +380,11 @@ gst_switch_server_start_case (GstCase * cas, GstSwitchServer * srv)
   }
 }
 
+/**
+ * gst_switch_server_suggest_case_type:
+ *
+ * Get a proper GstCase type according to the stream type.
+ */
 static GstCaseType
 gst_switch_server_suggest_case_type (GstSwitchServer * srv,
     GstSwitchServeStreamType serve_type)
@@ -413,6 +464,11 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
   return type;
 }
 
+/**
+ * gst_switch_server_serve:
+ *
+ * The gst-switch-srv serving thread.
+ */
 static void
 gst_switch_server_serve (GstSwitchServer * srv, GSocket * client,
     GstSwitchServeStreamType serve_type)
@@ -567,6 +623,11 @@ error_start_workcase:
   }
 }
 
+/**
+ * gst_switch_server_allow_tcp_control:
+ *
+ * (deprecated)
+ */
 static void
 gst_switch_server_allow_tcp_control (GstSwitchServer * srv, GSocket * client)
 {
@@ -574,6 +635,14 @@ gst_switch_server_allow_tcp_control (GstSwitchServer * srv, GSocket * client)
   g_object_unref (client);
 }
 
+/**
+ * gst_switch_server_listen:
+ * @port: The port number to listen on.
+ * @bound_port: The local bound port number of the socket.
+ * @return: The socket instance.
+ *
+ * Create a new socket on the specific port and listen on the created socket.
+ */
 static GSocket *
 gst_switch_server_listen (GstSwitchServer * srv, gint port, gint * bound_port)
 {
@@ -678,6 +747,11 @@ socket_listen_failed:
   }
 }
 
+/**
+ * gst_switch_server_video_acceptor:
+ *
+ * Thread for accepting video inputs.
+ */
 static gpointer
 gst_switch_server_video_acceptor (GstSwitchServer * srv)
 {
@@ -710,6 +784,11 @@ gst_switch_server_video_acceptor (GstSwitchServer * srv)
   return NULL;
 }
 
+/**
+ * gst_switch_server_audio_acceptor:
+ *
+ * Thread for accepting audio inputs.
+ */
 static gpointer
 gst_switch_server_audio_acceptor (GstSwitchServer * srv)
 {
@@ -742,6 +821,13 @@ gst_switch_server_audio_acceptor (GstSwitchServer * srv)
   return NULL;
 }
 
+/**
+ * gst_switch_server_controller:
+ *
+ * The controller serving thread.
+ *
+ * (Deprecated.)
+ */
 static gpointer
 gst_switch_server_controller (GstSwitchServer * srv)
 {
@@ -772,6 +858,11 @@ gst_switch_server_controller (GstSwitchServer * srv)
   return NULL;
 }
 
+/**
+ * gst_switch_server_prepare_bus_controller:
+ *
+ * Preparing the dbus controller.
+ */
 static void
 gst_switch_server_prepare_bus_controller (GstSwitchServer * srv)
 {
@@ -790,6 +881,14 @@ gst_switch_server_prepare_bus_controller (GstSwitchServer * srv)
   }
 }
 
+/**
+ * gst_switch_server_get_composite_sink_port:
+ *  @srv: the GstSwitchServer instance
+ *  @return: the composite sink port
+ *
+ *  Get the composite port.
+ *  
+ */
 gint
 gst_switch_server_get_composite_sink_port (GstSwitchServer * srv)
 {
@@ -802,6 +901,14 @@ gst_switch_server_get_composite_sink_port (GstSwitchServer * srv)
   return port;
 }
 
+/**
+ * gst_switch_server_get_encode_sink_port:
+ *  @srv: the GstSwitchServer instance
+ *  @return: the encode sink port number
+ *
+ *  Get the encode port.
+ *
+ */
 gint
 gst_switch_server_get_encode_sink_port (GstSwitchServer * srv)
 {
@@ -814,6 +921,14 @@ gst_switch_server_get_encode_sink_port (GstSwitchServer * srv)
   return port;
 }
 
+/**
+ * gst_switch_server_get_audio_sink_port:
+ *  @srv: the GstSwitchServer instance
+ *
+ *  Get the audio port.
+ *
+ *  @return: the audio sink port number.
+ */
 gint
 gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
 {
@@ -830,6 +945,15 @@ gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
   return port;
 }
 
+/**
+ * gst_switch_server_get_preview_sink_ports:
+ *  @serves: (output) the preview serve types.
+ *  @types: (output) the preview types.
+ *  @return: The array of preview ports.
+ *
+ *  Get the preview ports.
+ *
+ */
 GArray *
 gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
     GArray ** s, GArray ** t)
@@ -862,6 +986,13 @@ gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
   return a;
 }
 
+/**
+ * gst_switch_server_set_composite_mode:
+ *  @return: TRUE if succeeded.
+ *
+ *  Change a composite mode.
+ *
+ */
 gboolean
 gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
 {
@@ -897,6 +1028,13 @@ gst_switch_server_start_audio (GstCase * cas, GstSwitchServer * srv)
   gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
 }
 
+/**
+ * gst_switch_server_new_record:
+ *  @return: TRUE if succeeded.
+ *
+ *  Start a new recording.
+ *  
+ */
 gboolean
 gst_switch_server_new_record (GstSwitchServer * srv)
 {
@@ -926,6 +1064,14 @@ gst_switch_server_new_record (GstSwitchServer * srv)
   return result;
 }
 
+/**
+ * gst_switch_server_adjust_pip:
+ *  @return: a unsigned number of indicating which compononent (x,y,w,h) has
+ *           been changed
+ *
+ *  Adjust the PIP position and size.
+ *
+ */
 guint
 gst_switch_server_adjust_pip (GstSwitchServer * srv,
     gint dx, gint dy, gint dw, gint dh)
@@ -966,6 +1112,13 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
 static void gst_switch_server_worker_start (GstWorker *, GstSwitchServer *);
 static void gst_switch_server_worker_null (GstWorker *, GstSwitchServer *);
 
+/**
+ * gst_switch_server_switch:
+ *  @return: TRUE if succeeded.
+ *
+ *  Switch the channel to the specific port.
+ *
+ */
 gboolean
 gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
 {
@@ -1124,6 +1277,11 @@ error_start_work:
   }
 }
 
+/**
+ * gst_switch_server_worker_start:
+ *
+ * Invoked when a worker is started.
+ */
 static void
 gst_switch_server_worker_start (GstWorker * worker, GstSwitchServer * srv)
 {
@@ -1138,6 +1296,11 @@ gst_switch_server_worker_start (GstWorker * worker, GstSwitchServer * srv)
   g_print ("online: %s @%lld\n", worker->name, (long long int) t);
 }
 
+/**
+ * gst_switch_server_worker_null:
+ *
+ * Invoked when a worker is trunning into NULL. 
+ */
 static void
 gst_switch_server_worker_null (GstWorker * worker, GstSwitchServer * srv)
 {
@@ -1152,6 +1315,11 @@ gst_switch_server_worker_null (GstWorker * worker, GstSwitchServer * srv)
   g_print ("offline: %s @%lld\n", worker->name, (long long int) t);
 }
 
+/**
+ * gst_switch_server_start_output:
+ *
+ * Start the composite output worker.
+ */
 static void
 gst_switch_server_start_output (GstWorker * worker, GstSwitchServer * srv)
 {
@@ -1165,6 +1333,11 @@ gst_switch_server_start_output (GstWorker * worker, GstSwitchServer * srv)
   GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
 }
 
+/**
+ * gst_switch_server_start_recorder:
+ *
+ * Start the recorder worker.
+ */
 static void
 gst_switch_server_start_recorder (GstWorker * worker, GstSwitchServer * srv)
 {
@@ -1178,6 +1351,11 @@ gst_switch_server_start_recorder (GstWorker * worker, GstSwitchServer * srv)
   GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
 }
 
+/**
+ * gst_switch_server_end_transition:
+ *
+ * The composite worker has finished a transition of modes.
+ */
 static void
 gst_switch_server_end_transition (GstWorker * worker, GstSwitchServer * srv)
 {
@@ -1191,6 +1369,11 @@ gst_switch_server_end_transition (GstWorker * worker, GstSwitchServer * srv)
   GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
 }
 
+/**
+ * gst_switch_server_output_client_socket_added:
+ *
+ * Invoekd when a client socket is added.
+ */
 static void
 gst_switch_server_output_client_socket_added (GstElement * element,
     GSocket * socket, GstSwitchServer * srv)
@@ -1200,6 +1383,12 @@ gst_switch_server_output_client_socket_added (GstElement * element,
   //INFO ("client-socket-added: %d", g_socket_get_fd (socket));
 }
 
+/**
+ * gst_switch_server_output_client_socket_removed:
+ *
+ * Invoked when a client socket is removed on the output port. The socket
+ * is required to be freed manually here.
+ */
 static void
 gst_switch_server_output_client_socket_removed (GstElement * element,
     GSocket * socket, GstSwitchServer * srv)
@@ -1211,6 +1400,12 @@ gst_switch_server_output_client_socket_removed (GstElement * element,
   g_socket_close (socket, NULL);
 }
 
+/**
+ * gst_switch_server_prepare_composite:
+ * @return TRUE if the composite worker is prepared.
+ *
+ * Preparing the composite worker.
+ */
 static gboolean
 gst_switch_server_prepare_composite (GstSwitchServer * srv,
     GstCompositeMode mode)
@@ -1265,6 +1460,12 @@ error_start_composite:
   }
 }
 
+/**
+ * gst_switch_server_get_output_string:
+ * @return The composite output pipeline string, needs freeing after used
+ *
+ * Fetching the composite output pipeline.
+ */
 static GString *
 gst_switch_server_get_output_string (GstWorker * worker, GstSwitchServer * srv)
 {
@@ -1288,6 +1489,11 @@ gst_switch_server_get_output_string (GstWorker * worker, GstSwitchServer * srv)
   return desc;
 }
 
+/**
+ * gst_switch_server_prepare_output:
+ *
+ * Preparing the composite output worker.
+ */
 static void
 gst_switch_server_prepare_output (GstWorker * worker, GstSwitchServer * srv)
 {
@@ -1305,6 +1511,12 @@ gst_switch_server_prepare_output (GstWorker * worker, GstSwitchServer * srv)
   gst_object_unref (sink);
 }
 
+/**
+ * gst_switch_server_create_output:
+ * @return TRUE if the composite output worker is created.
+ *
+ * Create the composite output worker.
+ */
 static gboolean
 gst_switch_server_create_output (GstSwitchServer * srv)
 {
@@ -1327,6 +1539,12 @@ gst_switch_server_create_output (GstSwitchServer * srv)
   return TRUE;
 }
 
+/**
+ * gst_switch_server_create_recorder:
+ * @return TRUE if the recorder is created successfully.
+ *
+ * Creating the recorder.
+ */
 static gboolean
 gst_switch_server_create_recorder (GstSwitchServer * srv)
 {
@@ -1357,6 +1575,11 @@ gboolean timeout(gpointer user_data) {
   return FALSE;
 } */
 
+/**
+ * gst_switch_server_run:
+ *
+ * Running the GstSwitchServer instance.
+ */
 static void
 gst_switch_server_run (GstSwitchServer * srv)
 {

@@ -159,87 +159,17 @@ struct _GstSwitchServerClass
 };
 
 GType gst_switch_server_get_type (void);
-
-/**
- *  gst_switch_server_get_composite_sink_port:
- *  @srv: the GstSwitchServer instance
- *
- *  Get the composite port.
- *  
- *  @return: the composite sink port
- */
 gint gst_switch_server_get_composite_sink_port (GstSwitchServer * srv);
-
-/**
- *  gst_switch_server_get_encode_sink_port:
- *  @srv: the GstSwitchServer instance
- *
- *  Get the encode port.
- *
- *  @return: the encode sink port number
- */
 gint gst_switch_server_get_encode_sink_port (GstSwitchServer * srv);
-
-/**
- *  gst_switch_server_get_audio_sink_port:
- *  @srv: the GstSwitchServer instance
- *
- *  Get the audio port.
- *
- *  @return: the audio sink port number.
- */
 gint gst_switch_server_get_audio_sink_port (GstSwitchServer * srv);
-
-/**
- *  gst_switch_server_get_preview_sink_ports:
- *  @serves: (output) the preview serve types.
- *  @types: (output) the preview types.
- *
- *  Get the preview ports.
- *
- *  @return: The array of preview ports.
- */
 GArray *gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
     GArray ** serves, GArray ** types);
-
-/**
- *  gst_switch_server_set_composite_mode:
- *
- *  Change a composite mode.
- *
- *  @return: TRUE if succeeded.
- */
 gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv,
     gint mode);
-
-/**
- *  gst_switch_server_switch:
- *
- *  Switch the channel to the specific port.
- *
- *  @return: TRUE if succeeded.
- */
 gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
     gint port);
-
-/**
- *  gst_switch_server_adjust_pip:
- *
- *  Adjust the PIP position and size.
- *
- *  @return: a unsigned number of indicating which compononent (x,y,w,h) has
- *           been changed
- */
 guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
     gint dw, gint dh);
-
-/**
- *  gst_switch_server_new_record:
- *
- *  Start a new recording.
- *  
- *  @return: TRUE if succeeded.
- */
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);
 
 extern GstSwitchServerOpts opts;

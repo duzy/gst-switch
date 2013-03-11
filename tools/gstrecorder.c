@@ -56,6 +56,11 @@ extern gboolean verbose;
 
 G_DEFINE_TYPE (GstRecorder, gst_recorder, GST_TYPE_WORKER);
 
+/**
+ * gst_recorder_init:
+ *
+ * Initialize the GstRecorder instance.
+ */
 static void
 gst_recorder_init (GstRecorder * rec)
 {
@@ -67,6 +72,13 @@ gst_recorder_init (GstRecorder * rec)
   //INFO ("init %p", rec);
 }
 
+/**
+ * gst_recorder_dispose:
+ *
+ * Invoked to unref objects.
+ *
+ * @see GObject
+ */
 static void
 gst_recorder_dispose (GstRecorder * rec)
 {
@@ -74,6 +86,13 @@ gst_recorder_dispose (GstRecorder * rec)
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (rec));
 }
 
+/**
+ * gst_recorder_finalize:
+ *
+ * Destroying the GstRecorder instance.
+ *
+ * @see GObject
+ */
 static void
 gst_recorder_finalize (GstRecorder * rec)
 {
@@ -81,6 +100,13 @@ gst_recorder_finalize (GstRecorder * rec)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (rec));
 }
 
+/**
+ * gst_recorder_get_property:
+ *
+ * Fetching the GstRecorder property.
+ *
+ * @see GObject
+ */
 static void
 gst_recorder_get_property (GstRecorder * rec, guint property_id,
     GValue * value, GParamSpec * pspec)
@@ -104,6 +130,13 @@ gst_recorder_get_property (GstRecorder * rec, guint property_id,
   }
 }
 
+/**
+ * gst_recorder_set_property:
+ *
+ * Changing the GstRecorder properties.
+ *
+ * @see GObject
+ */
 static void
 gst_recorder_set_property (GstRecorder * rec, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -127,6 +160,12 @@ gst_recorder_set_property (GstRecorder * rec, guint property_id,
   }
 }
 
+/**
+ * gst_recorder_new_filename:
+ * @return the file name string, need to be freed after used
+ *
+ * This is used to genearte a new recording file name for the recorder.
+ */
 static const gchar *
 gst_recorder_new_filename (GstRecorder * rec)
 {
@@ -161,6 +200,12 @@ gst_recorder_new_filename (GstRecorder * rec)
   return filename;
 }
 
+/**
+ * gst_recorder_get_pipeline_string:
+ * @return The recorder pipeline string, needs freeing when used
+ *
+ * Fetching the recorder pipeline invoked by the GstWorker.
+ */
 static GString *
 gst_recorder_get_pipeline_string (GstRecorder * rec)
 {
@@ -241,6 +286,11 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
   return desc;
 }
 
+/**
+ * gst_recorder_client_socket_added:
+ *
+ * Invoked when client socket added on the encoding out port.
+ */
 static void
 gst_recorder_client_socket_added (GstElement * element,
     GSocket * socket, GstRecorder * rec)
@@ -250,6 +300,12 @@ gst_recorder_client_socket_added (GstElement * element,
   INFO ("client-socket-added: %d", g_socket_get_fd (socket));
 }
 
+/**
+ * gst_recorder_client_socket_removed:
+ *
+ * Invoked when the client socket on the encoding out port is closed. We need
+ * to manually close the socket to avoid FD leaks.
+ */
 static void
 gst_recorder_client_socket_removed (GstElement * element,
     GSocket * socket, GstRecorder * rec)
@@ -261,6 +317,12 @@ gst_recorder_client_socket_removed (GstElement * element,
   g_socket_close (socket, NULL);
 }
 
+/**
+ * gst_recorder_prepare:
+ * @return TRUE indicating the recorder is prepared, FALSE otherwise.
+ *
+ * Invoked when the GstWorker is preparing the pipeline.
+ */
 static gboolean
 gst_recorder_prepare (GstRecorder * rec)
 {
@@ -282,6 +344,11 @@ gst_recorder_prepare (GstRecorder * rec)
   return TRUE;
 }
 
+/**
+ * gst_recorder_class_init:
+ *
+ * Initialize the GstRecorderClass.
+ */
 static void
 gst_recorder_class_init (GstRecorderClass * klass)
 {

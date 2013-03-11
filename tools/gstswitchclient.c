@@ -160,6 +160,14 @@ gst_switch_client_get_compose_port (GstSwitchClient * client)
   return port;
 }
 
+/**
+ * gst_switch_client_get_encode_port:
+ *  @client: the GstSwitchClient instance
+ *  @return: the encode port number
+ *
+ *  Get the encode port number.
+ *  
+ */
 gint
 gst_switch_client_get_encode_port (GstSwitchClient * client)
 {
@@ -173,6 +181,14 @@ gst_switch_client_get_encode_port (GstSwitchClient * client)
   return port;
 }
 
+/**
+ * gst_switch_client_get_audio_port:
+ *  @client: the GstSwitchClient instance
+ *  @return: the audio port number
+ *
+ *  The the audio port number.
+ *  
+ */
 gint
 gst_switch_client_get_audio_port (GstSwitchClient * client)
 {
@@ -185,6 +201,14 @@ gst_switch_client_get_audio_port (GstSwitchClient * client)
   return port;
 }
 
+/**
+ * gst_switch_client_get_preview_ports:
+ *  @client: the GstSwitchClient instance
+ *  @return: The preview ports of type GVariant
+ *
+ *  The all preview ports.
+ *
+ */
 GVariant *
 gst_switch_client_get_preview_ports (GstSwitchClient * client)
 {
@@ -192,6 +216,16 @@ gst_switch_client_get_preview_ports (GstSwitchClient * client)
       NULL, G_VARIANT_TYPE ("(s)"));
 }
 
+/**
+ * gst_switch_client_switch:
+ *  @client: the GstSwitchClient instance
+ *  @channel: The channel to be switched, 'A', 'B', 'a'
+ *  @port: The target port number
+ *  @return: TRUE when requested.
+ *
+ *  Switch the channel to the target port.
+ *  
+ */
 gboolean
 gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
 {
@@ -207,6 +241,14 @@ gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
   return result;
 }
 
+/**
+ * gst_switch_client_set_composite_mode:
+ *  @client: the GstSwitchClient instance
+ *  @return: TRUE when requested.
+ *
+ *  Set the current composite mode.
+ *  
+ */
 gboolean
 gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
 {
@@ -234,6 +276,14 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
   return result;
 }
 
+/**
+ * gst_switch_client_new_record:
+ *  @client: the GstSwitchClient instance
+ *  @return: TRUE when requested.
+ *
+ *  Start a new recording.
+ *
+ */
 gboolean
 gst_switch_client_new_record (GstSwitchClient * client)
 {
@@ -248,6 +298,19 @@ gst_switch_client_new_record (GstSwitchClient * client)
   return result;
 }
 
+/**
+ * gst_switch_client_adjust_pip:
+ *  @client: the GstSwitchClient instance
+ *  @dx: x position to be adjusted
+ *  @dy: y position to be adjusted
+ *  @dw: w position to be adjusted
+ *  @dh: h position to be adjusted
+ *  @return: a unsign integer indicating which components are changed of per
+ *           bit.
+ *
+ *  Adjust the PIP.
+ *
+ */
 guint
 gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx, gint dy,
     gint dw, gint dh)
@@ -264,6 +327,11 @@ gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx, gint dy,
   return result;
 }
 
+/**
+ * gst_switch_client_method_match:
+ *
+ * Predictor for matching the remoting method names.
+ */
 static gboolean
 gst_switch_client_method_match (const gchar * key, MethodTableEntry * entry,
     const gchar * match)
@@ -273,6 +341,11 @@ gst_switch_client_method_match (const gchar * key, MethodTableEntry * entry,
   return FALSE;
 }
 
+/**
+ * gst_switch_client_do_method_call:
+ *
+ * Performing a remoting method call (typically invoked by the gst-switch-srv)
+ */
 static void
 gst_switch_client_do_method_call (GDBusConnection * connection,
     const gchar * sender,
@@ -310,6 +383,11 @@ error_no_method:
   }
 }
 
+/**
+ * gst_switch_client_do_get_property:
+ *
+ * Fetching property remotely (it's useless currently).
+ */
 static GVariant *
 gst_switch_client_do_get_property (GDBusConnection * connection,
     const gchar * sender,
@@ -322,6 +400,11 @@ gst_switch_client_do_get_property (GDBusConnection * connection,
   return ret;
 }
 
+/**
+ * gst_switch_client_do_set_property:
+ *
+ * Setting property remotely (it's currently useless).
+ */
 static gboolean
 gst_switch_client_do_set_property (GDBusConnection * connection,
     const gchar * sender,
@@ -340,6 +423,11 @@ static const GDBusInterfaceVTable gst_switch_client_interface_vtable = {
   gst_switch_client_do_set_property
 };
 
+/**
+ * gst_switch_client_on_signal_received:
+ *
+ * Remote signal handler (useless currently).
+ */
 static void
 gst_switch_client_on_signal_received (GDBusConnection * connection,
     const gchar * sender_name,
@@ -354,6 +442,11 @@ gst_switch_client_on_signal_received (GDBusConnection * connection,
   INFO ("signal: %s, %s", sender_name, signal_name);
 }
 
+/**
+ * gst_switch_client_on_controller_closed:
+ *
+ * Invoked when the remote controller is closed.
+ */
 static void
 gst_switch_client_on_controller_closed (GDBusConnection * connection,
     gboolean vanished, GError * error, gpointer user_data)
@@ -365,6 +458,11 @@ gst_switch_client_on_controller_closed (GDBusConnection * connection,
     (*klass->connection_closed) (client, error);
 }
 
+/**
+ * gst_switch_client_connect_controller:
+ *
+ * Invoked when the remote controller is connected.
+ */
 static void
 gst_switch_client_connect_controller (GstSwitchClient * client)
 {
@@ -429,6 +527,14 @@ error_subscribe:
   }
 }
 
+/**
+ * gst_switch_client_is_connected:
+ *  @client: the GstSwitchClient instance
+ *  @return: TRUE when requested.
+ *
+ *  Check if the client is connected to the gst-switch server.
+ *  
+ */
 gboolean
 gst_switch_client_is_connected (GstSwitchClient * client)
 {
@@ -440,6 +546,14 @@ gst_switch_client_is_connected (GstSwitchClient * client)
   return result;
 }
 
+/**
+ * gst_switch_client_connect:
+ *  @client: the GstSwitchClient instance
+ *  @return: TRUE when requested.
+ *
+ *  Connect the client with the gst-switch server.
+ *  
+ */
 gboolean
 gst_switch_client_connect (GstSwitchClient * client)
 {
@@ -460,6 +574,14 @@ gst_switch_client_connect (GstSwitchClient * client)
   return gst_switch_client_is_connected (client);
 }
 
+/**
+ * gst_switch_client_get_compose_port:
+ *  @client: the GstSwitchClient instance
+ *  @return: the compose port number
+ *
+ *  Get the compose port number.
+ *  
+ */
 static void
 gst_switch_client_set_compose_port (GstSwitchClient * client, gint port)
 {
@@ -470,6 +592,11 @@ gst_switch_client_set_compose_port (GstSwitchClient * client, gint port)
     (*klass->set_compose_port) (client, port);
 }
 
+/**
+ * gst_switch_client_set_encode_port:
+ *
+ * Setting the encode port number remotely.
+ */
 static void
 gst_switch_client_set_encode_port (GstSwitchClient * client, gint port)
 {
@@ -479,6 +606,11 @@ gst_switch_client_set_encode_port (GstSwitchClient * client, gint port)
     (*klass->set_encode_port) (client, port);
 }
 
+/**
+ * gst_switch_client_set_audio_port:
+ *
+ * Setting the audio port number remotely.
+ */
 static void
 gst_switch_client_set_audio_port (GstSwitchClient * client, gint port)
 {
@@ -488,6 +620,11 @@ gst_switch_client_set_audio_port (GstSwitchClient * client, gint port)
     (*klass->set_audio_port) (client, port);
 }
 
+/**
+ * gst_switch_client_add_preview_port:
+ *
+ * The remote controller is adding a new preview port.
+ */
 static void
 gst_switch_client_add_preview_port (GstSwitchClient * client, gint port,
     gint serve, gint type)
@@ -498,6 +635,11 @@ gst_switch_client_add_preview_port (GstSwitchClient * client, gint port,
     (*klass->add_preview_port) (client, port, serve, type);
 }
 
+/**
+ * gst_switch_client_new_mode_online:
+ *
+ * The remote controller is telling about the new composite mode online.
+ */
 static void
 gst_switch_client_new_mode_online (GstSwitchClient * client, gint mode)
 {
@@ -534,6 +676,11 @@ gst_switch_client__test (GstSwitchClient * client,
 }
 #endif //ENABLE_TEST
 
+/**
+ * gst_switch_client__set_audio_port:
+ *
+ * Remoting method stub of "set_audio_port".
+ */
 static GVariant *
 gst_switch_client__set_audio_port (GstSwitchClient * client,
     GDBusConnection * connection, GVariant * parameters)
@@ -545,6 +692,11 @@ gst_switch_client__set_audio_port (GstSwitchClient * client,
   return NULL;
 }
 
+/**
+ * gst_switch_client__set_compose_port:
+ *
+ * Remoting method stub of "set_compose_port".
+ */
 static GVariant *
 gst_switch_client__set_compose_port (GstSwitchClient * client,
     GDBusConnection * connection, GVariant * parameters)
@@ -556,6 +708,11 @@ gst_switch_client__set_compose_port (GstSwitchClient * client,
   return NULL;
 }
 
+/**
+ * gst_switch_client__set_encode_port:
+ *
+ * Remoting method stub of "set_encode_port".
+ */
 static GVariant *
 gst_switch_client__set_encode_port (GstSwitchClient * client,
     GDBusConnection * connection, GVariant * parameters)
@@ -567,6 +724,11 @@ gst_switch_client__set_encode_port (GstSwitchClient * client,
   return NULL;
 }
 
+/**
+ * gst_switch_client__add_preview_port:
+ *
+ * Remoting method stub of "add_preview_port".
+ */
 static GVariant *
 gst_switch_client__add_preview_port (GstSwitchClient * client,
     GDBusConnection * connection, GVariant * parameters)
@@ -580,6 +742,11 @@ gst_switch_client__add_preview_port (GstSwitchClient * client,
   return NULL;
 }
 
+/**
+ * gst_switch_client__new_mode_online:
+ *
+ * Remoting method stub of "new_mode_online".
+ */
 static GVariant *
 gst_switch_client__new_mode_online (GstSwitchClient * client,
     GDBusConnection * connection, GVariant * parameters)
@@ -591,6 +758,11 @@ gst_switch_client__new_mode_online (GstSwitchClient * client,
   return NULL;
 }
 
+/**
+ * gst_switch_client_method_table:
+ *
+ * Remoting method table.
+ */
 static MethodTableEntry gst_switch_client_method_table[] = {
 #if ENABLE_TEST
   {"test", (MethodFunc) gst_switch_client__test},
@@ -603,6 +775,11 @@ static MethodTableEntry gst_switch_client_method_table[] = {
   {NULL, NULL}
 };
 
+/**
+ * gst_switch_client_class_init:
+ *
+ * Initialize the GstSwitchClientClass.
+ */
 static void
 gst_switch_client_class_init (GstSwitchClientClass * klass)
 {
