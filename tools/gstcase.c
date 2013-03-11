@@ -60,6 +60,13 @@ extern gboolean verbose;
 #define gst_case_parent_class parent_class
 G_DEFINE_TYPE (GstCase, gst_case, GST_TYPE_WORKER);
 
+/**
+ * gst_case_init:
+ *
+ * Initialize the GstCase instance.
+ *
+ * @see GObject
+ */
 static void
 gst_case_init (GstCase * cas)
 {
@@ -79,6 +86,13 @@ gst_case_init (GstCase * cas)
   //INFO ("init %p", cas);
 }
 
+/**
+ * gst_case_dispose:
+ *
+ * Disposing from it's parent object.
+ *
+ * @see GObject
+ */
 static void
 gst_case_dispose (GstCase * cas)
 {
@@ -107,6 +121,13 @@ gst_case_dispose (GstCase * cas)
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (cas));
 }
 
+/**
+ * gst_case_finalize:
+ *
+ * Destroying the GstCase instance.
+ *
+ * @see GObject
+ */
 static void
 gst_case_finalize (GstCase * cas)
 {
@@ -114,6 +135,13 @@ gst_case_finalize (GstCase * cas)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (cas));
 }
 
+/**
+ * gst_case_get_property:
+ *
+ * Getting GstCase property.
+ *
+ * @see GObject
+ */
 static void
 gst_case_get_property (GstCase * cas, guint property_id,
     GValue * value, GParamSpec * pspec)
@@ -161,6 +189,13 @@ gst_case_get_property (GstCase * cas, guint property_id,
   }
 }
 
+/**
+ * gst_case_set_property:
+ *
+ * Setting GstCase property.
+ *
+ * @see GObject
+ */
 static void
 gst_case_set_property (GstCase * cas, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -223,6 +258,12 @@ gst_case_set_property (GstCase * cas, guint property_id,
   }
 }
 
+/**
+ * gst_case_get_pipeline_string:
+ * @return A GString instance representing the pipeline string.
+ *
+ * Retreiving the GstCase pipeline string, it's invoked by GstWorker.
+ */
 static GString *
 gst_case_get_pipeline_string (GstCase * cas)
 {
@@ -390,6 +431,11 @@ gst_case_get_pipeline_string (GstCase * cas)
   return desc;
 }
 
+/**
+ * gst_case_client_socket_added:
+ *
+ * Invoked when a client socket is added.
+ */
 static void
 gst_case_client_socket_added (GstElement * element,
     GSocket * socket, GstCase * cas)
@@ -399,6 +445,11 @@ gst_case_client_socket_added (GstElement * element,
   //INFO ("client-socket-added: %d", g_socket_get_fd (socket));
 }
 
+/**
+ * gst_case_client_socket_removed:
+ *
+ * Invoked when a client socket is removed.
+ */
 static void
 gst_case_client_socket_removed (GstElement * element,
     GSocket * socket, GstCase * cas)
@@ -410,6 +461,11 @@ gst_case_client_socket_removed (GstElement * element,
   g_socket_close (socket, NULL);
 }
 
+/**
+ * gst_case_prepare:
+ *
+ * Invoked by GstWorker when preparing the pipeline.
+ */
 static gboolean
 gst_case_prepare (GstCase * cas)
 {
@@ -455,6 +511,11 @@ gst_case_prepare (GstCase * cas)
   return TRUE;
 }
 
+/**
+ * gst_case_class_init:
+ *
+ * Initialize GstCaseClass.
+ */
 static void
 gst_case_class_init (GstCaseClass * klass)
 {
