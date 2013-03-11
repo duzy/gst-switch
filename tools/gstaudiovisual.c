@@ -46,6 +46,13 @@ extern gboolean verbose;
 
 G_DEFINE_TYPE (GstAudioVisual, gst_audio_visual, GST_TYPE_WORKER);
 
+/**
+ * gst_audio_visual_init:
+ *
+ * Initialize GstAudioVisual instance.
+ *
+ * @see GObject
+ */
 static void
 gst_audio_visual_init (GstAudioVisual * visual)
 {
@@ -61,6 +68,13 @@ gst_audio_visual_init (GstAudioVisual * visual)
   INFO ("init %p", visual);
 }
 
+/**
+ * gst_audio_visual_dispose:
+ *
+ * Free GstAudioVisual while detaching from it's parent.
+ *
+ * @see GObject
+ */
 static void
 gst_audio_visual_dispose (GstAudioVisual * visual)
 {
@@ -68,6 +82,13 @@ gst_audio_visual_dispose (GstAudioVisual * visual)
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (visual));
 }
 
+/**
+ * gst_audio_visual_finalize:
+ *
+ * Destroying GstAudioVisual instance.
+ *
+ * @see GObject
+ */
 static void
 gst_audio_visual_finalize (GstAudioVisual * visual)
 {
@@ -80,6 +101,13 @@ gst_audio_visual_finalize (GstAudioVisual * visual)
   INFO ("Audio visual finalized");
 }
 
+/**
+ * gst_audio_visual_set_property:
+ *
+ * Setting GstAudioVisual properties.
+ *
+ * @see GObject
+ */
 static void
 gst_audio_visual_set_property (GstAudioVisual * visual, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -100,6 +128,13 @@ gst_audio_visual_set_property (GstAudioVisual * visual, guint property_id,
   }
 }
 
+/**
+ * gst_audio_visual_get_property:
+ *
+ * Retrieves properties of GstAudioVisual.
+ *
+ * @see GObject.
+ */
 static void
 gst_audio_visual_get_property (GstAudioVisual * visual, guint property_id,
     GValue * value, GParamSpec * pspec)
@@ -120,6 +155,14 @@ gst_audio_visual_get_property (GstAudioVisual * visual, guint property_id,
   }
 }
 
+/**
+ *  gst_audio_visual_get_endtime:
+ *  @visual: the GstAudioVisual instance
+ *
+ *  Get the endtime of the last audio sample value.
+ *
+ *  @return: the endtime of the last audio sample
+ */
 GstClockTime
 gst_audio_visual_get_endtime (GstAudioVisual * visual)
 {
@@ -130,6 +173,13 @@ gst_audio_visual_get_endtime (GstAudioVisual * visual)
   return endtime;
 }
 
+/**
+ *  gst_audio_visual_get_value:
+ *  @visual: the GstAudioVisual instance
+ *  @return: the value of the last audio sample
+ *
+ *  Get the current audio sample value.
+ */
 gdouble
 gst_audio_visual_get_value (GstAudioVisual * visual)
 {
@@ -140,6 +190,13 @@ gst_audio_visual_get_value (GstAudioVisual * visual)
   return value;
 }
 
+/**
+ * gst_audio_visual_missing:
+ * @elements: names of missing elements
+ * @return: TRUE if suggesting the parent to retry with something else.
+ *
+ * Handling elements missing situations.
+ */
 static gboolean
 gst_audio_visual_missing (GstWorker * worker, gchar ** elements)
 {
@@ -154,6 +211,12 @@ gst_audio_visual_missing (GstWorker * worker, gchar ** elements)
   return retry;
 }
 
+/**
+ * gst_audio_visual_get_pipeline_string:
+ * @return: a GString instance of the pipeline string, need to free after used
+ *
+ * Getting the pipeline strings invoked by the parent class.
+ */
 static GString *
 gst_audio_visual_get_pipeline_string (GstAudioVisual * visual)
 {
@@ -183,6 +246,12 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual * visual)
   return desc;
 }
 
+/**
+ * gst_audio_visual_prepare:
+ * @return: TRUE if everything prepared.
+ *
+ * Preparing the GstAudioVisual instance. This is invoked by the parent class.
+ */
 static gboolean
 gst_audio_visual_prepare (GstAudioVisual * visual)
 {
@@ -194,6 +263,13 @@ gst_audio_visual_prepare (GstAudioVisual * visual)
   return TRUE;
 }
 
+/**
+ * gst_audio_visual_message:
+ * @return %FALSE if no further messages are going to be received, %TRUE to
+ *	receive all further messages.
+ *
+ * Handling pipeline messages.
+ */
 static gboolean
 gst_audio_visual_message (GstAudioVisual * visual, GstMessage * message)
 {
@@ -283,6 +359,11 @@ gst_audio_visual_message (GstAudioVisual * visual, GstMessage * message)
   return TRUE;
 }
 
+/**
+ * gst_audio_visual_class_init:
+ *
+ * Initializing GstAudioVisualClass.
+ */
 static void
 gst_audio_visual_class_init (GstAudioVisualClass * klass)
 {
