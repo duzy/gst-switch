@@ -136,19 +136,6 @@ struct _GstCompositeClass
 };
 
 GType gst_composite_get_type (void);
-
-/**
- *  gst_composite_adjust_pip:
- *  @composite: The GstComposite instance
- *  @x: the X position of the PIP
- *  @y: the Y position of the PIP
- *  @w: the width of the PIP
- *  @h: the height of the PIP
- *
- *  Change the PIP position and size.
- *
- *  @return: PIP has been changed succefully 
- */
 gboolean gst_composite_adjust_pip (GstComposite * composite,
     gint x, gint y, gint w, gint h);
 

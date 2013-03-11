@@ -72,6 +72,13 @@ G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 static void gst_composite_set_mode (GstComposite *, GstCompositeMode);
 static void gst_composite_start_transition (GstComposite *);
 
+/**
+ * gst_composite_init:
+ * 
+ * Initialize the GstComposite instance.
+ *
+ * @see GObject
+ */
 static void
 gst_composite_init (GstComposite * composite)
 {
@@ -94,6 +101,13 @@ gst_composite_init (GstComposite * composite)
   //INFO ("init %p", composite);
 }
 
+/**
+ * gst_composite_dispose:
+ *
+ * Disposing from it's parent class.
+ *
+ * @see GObject
+ */
 static void
 gst_composite_dispose (GstComposite * composite)
 {
@@ -107,6 +121,11 @@ gst_composite_dispose (GstComposite * composite)
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (composite));
 }
 
+/**
+ * gst_composite_finalize:
+ *
+ * Destroying the GstComposite instance.
+ */
 static void
 gst_composite_finalize (GstComposite * composite)
 {
@@ -119,6 +138,13 @@ gst_composite_finalize (GstComposite * composite)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (composite));
 }
 
+/**
+ * gst_composite_set_mode:
+ *
+ * Changing the composite mode.
+ *
+ * @see %GstCompositeMode
+ */
 static void
 gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
 {
@@ -192,12 +218,24 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   gst_composite_start_transition (composite);
 }
 
+/**
+ * gst_composite_ready_for_transition:
+ * @return TRUE if okay to do new transition.
+ *
+ * Predictor telling if it's ready for transition.
+ */
 static gboolean
 gst_composite_ready_for_transition (GstComposite * composite)
 {
   return !composite->transition;
 }
 
+/**
+ * gst_composite_start_transition:
+ *
+ * Start the new transtition request, this will set the %transition flag into
+ * TRUE.
+ */
 static void
 gst_composite_start_transition (GstComposite * composite)
 {
@@ -216,6 +254,13 @@ gst_composite_start_transition (GstComposite * composite)
   GST_COMPOSITE_UNLOCK_TRANSITION (composite);
 }
 
+/**
+ * gst_composite_set_property:
+ *
+ * Setting the GstComposite property.
+ *
+ * @see GObject
+ */
 static void
 gst_composite_set_property (GstComposite * composite, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -268,6 +313,13 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
   }
 }
 
+/**
+ * gst_composite_get_property:
+ *
+ * Fetching the GstComposite property.
+ *
+ * @see GObject
+ */
 static void
 gst_composite_get_property (GstComposite * composite, guint property_id,
     GValue * value, GParamSpec * pspec)
@@ -319,6 +371,12 @@ gst_composite_get_property (GstComposite * composite, guint property_id,
   }
 }
 
+/**
+ * gst_composite_apply_parameters:
+ *
+ * Applying new composite parameters such as PIP position. This is actually
+ * resetting the composite pipeline with the new parameters.
+ */
 static void
 gst_composite_apply_parameters (GstComposite * composite)
 {
@@ -349,6 +407,12 @@ gst_composite_apply_parameters (GstComposite * composite)
    */
 }
 
+/**
+ * gst_composite_get_pipeline_string:
+ *
+ * Fetching the composite pipeline string, it's invoked by %GstWorker when
+ * preparing the worker.
+ */
 static GString *
 gst_composite_get_pipeline_string (GstComposite * composite)
 {
@@ -445,6 +509,15 @@ gst_composite_get_pipeline_string (GstComposite * composite)
   return desc;
 }
 
+/**
+ * gst_composite_get_scaler_string:
+ *
+ * Getting the scaler pipeline string.
+ *
+ * <b>The Scaler Pipeline</b>
+ *     The scaler pipeline is tending to scale the A/B inputs into the proper
+ *     video size for composite.
+ */
 static GString *
 gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
 {
@@ -481,6 +554,12 @@ gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
   return desc;
 }
 
+/**
+ * gst_composite_prepare:
+ * @return TRUE if the composite pipeline is well prepared.
+ *
+ * Prepare the composite pipeline.
+ */
 static gboolean
 gst_composite_prepare (GstComposite * composite)
 {
@@ -502,6 +581,11 @@ gst_composite_prepare (GstComposite * composite)
   return TRUE;
 }
 
+/**
+ * gst_composite_start:
+ *
+ * This is invokved when the composite pipeline started.
+ */
 static void
 gst_composite_start (GstComposite * composite)
 {
@@ -510,6 +594,11 @@ gst_composite_start (GstComposite * composite)
   gst_worker_start (composite->scaler);
 }
 
+/**
+ * gst_composite_end:
+ *
+ * This is invoked when the composite pipeline is ended.
+ */
 static void
 gst_composite_end (GstComposite * composite)
 {
@@ -518,6 +607,14 @@ gst_composite_end (GstComposite * composite)
   gst_worker_stop (composite->scaler);
 }
 
+/**
+ * gst_composite_end_transition:
+ * @return Always return FALSE to allow glib to free the event source.
+ *
+ * Invoked when the transition is finished.
+ *
+ * @see %gst_composite_commit_transition
+ */
 static gboolean
 gst_composite_end_transition (GstComposite * composite)
 {
@@ -540,6 +637,14 @@ gst_composite_end_transition (GstComposite * composite)
   return FALSE;
 }
 
+/**
+ * gst_composite_commit_transition:
+ * @return Always return FALSE to tell glib to cleanup the event source.
+ *
+ * Commit a transition request.
+ *
+ * @see %gst_composite_end_transition
+ */
 static gboolean
 gst_composite_commit_transition (GstComposite * composite)
 {
@@ -559,6 +664,14 @@ gst_composite_commit_transition (GstComposite * composite)
   return FALSE;
 }
 
+/**
+ * gst_composite_close_transition:
+ *
+ * Invoked when the composite pipeline is coming alive. This will emit
+ * %gst_composite_end_transition.
+ *
+ * @see %gst_composite_end_transition
+ */
 static gboolean
 gst_composite_close_transition (GstComposite * composite)
 {
@@ -577,6 +690,12 @@ gst_composite_close_transition (GstComposite * composite)
   return FALSE;
 }
 
+/**
+ * gst_composite_commit_adjustment:
+ * @return Always FALSE to tell glib to cleanup the timeout source.
+ *
+ * Commit a PIP adjustment request.
+ */
 static gboolean
 gst_composite_commit_adjustment (GstComposite * composite)
 {
@@ -596,6 +715,13 @@ gst_composite_commit_adjustment (GstComposite * composite)
   return FALSE;
 }
 
+/**
+ * gst_composite_close_adjustment:
+ * @return Always return false to let glib to cleanup timeout source
+ *
+ * Invoked when composite pipeline is coming alive and it's currently
+ * adjusting the PIP.
+ */
 static gboolean
 gst_composite_close_adjustment (GstComposite * composite)
 {
@@ -609,6 +735,11 @@ gst_composite_close_adjustment (GstComposite * composite)
   return FALSE;
 }
 
+/**
+ * gst_composite_alive:
+ *
+ * Invoked when the compisite pipeline is online.
+ */
 static void
 gst_composite_alive (GstComposite * composite)
 {
@@ -625,6 +756,11 @@ gst_composite_alive (GstComposite * composite)
   }
 }
 
+/**
+ * gst_composite_null:
+ *
+ * Invoked when the composite pipeline is going NULL.
+ */
 static GstWorkerNullReturn
 gst_composite_null (GstComposite * composite)
 {
@@ -645,6 +781,17 @@ gst_composite_null (GstComposite * composite)
   return composite->deprecated ? GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
 }
 
+/**
+ * gst_composite_adjust_pip:
+ *  @composite: The GstComposite instance
+ *  @x: the X position of the PIP
+ *  @y: the Y position of the PIP
+ *  @w: the width of the PIP
+ *  @h: the height of the PIP
+ *  @return: PIP has been changed succefully 
+ *
+ *  Change the PIP position and size.
+ */
 gboolean
 gst_composite_adjust_pip (GstComposite * composite, gint x, gint y,
     gint w, gint h)
@@ -724,6 +871,13 @@ end:
   return result;
 }
 
+/**
+ * gst_composite_retry_transition:
+ * @return Always FALSE to allow glib to cleanup the timeout source
+ *
+ * This is invoked when the pipeline's getting errors to retry the transition
+ * request.
+ */
 static gboolean
 gst_composite_retry_transition (GstComposite * composite)
 {
@@ -743,6 +897,13 @@ gst_composite_retry_transition (GstComposite * composite)
   return FALSE;
 }
 
+/**
+ * gst_composite_retry_adjustment:
+ * @return Always FALSE to allow glib to cleanup the timeout source
+ *
+ * This is invoked when the pipeline is reporting errors and requiring PIP
+ * adjustment.
+ */
 static gboolean
 gst_composite_retry_adjustment (GstComposite * composite)
 {
@@ -765,6 +926,11 @@ gst_composite_retry_adjustment (GstComposite * composite)
   return FALSE;
 }
 
+/**
+ * gst_composite_error:
+ *
+ * Handling the composite pipeline errors.
+ */
 static void
 gst_composite_error (GstComposite * composite)
 {
@@ -777,6 +943,14 @@ gst_composite_error (GstComposite * composite)
   }
 }
 
+/**
+ * gst_composite_message:
+ *
+ * Handling the composite pipeline messages. It's current only taking care
+ * of GST_MESSAGE_ERROR.
+ *
+ * @see GstMessage
+ */
 static gboolean
 gst_composite_message (GstComposite * composite, GstMessage * message)
 {
@@ -790,6 +964,11 @@ gst_composite_message (GstComposite * composite, GstMessage * message)
   return TRUE;
 }
 
+/**
+ * gst_composite_class_init:
+ *
+ * Initialize the GstCompositeClass.
+ */
 static void
 gst_composite_class_init (GstCompositeClass * klass)
 {
