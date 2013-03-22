@@ -47,17 +47,18 @@ function prepare-prerequisites()
 	autoconf \
 	automake \
 	autopoint \
-	libtool \
-	libtoolize \
-	pkg-config \
-	zlib1g-dev \
-	libtag1-dev \
 	libbz2-dev \
-	libmjpegtools-dev \
-	libvpx-dev \
-	libgtk-3-dev \
+	libdv4-dev \
 	libfaac-dev \
 	libfaad-dev \
+	libgtk-3-dev \
+	libmjpegtools-dev \
+	libtag1-dev \
+	libtool \
+	libtoolize \
+	libvpx-dev \
+	pkg-config \
+	zlib1g-dev \
 	gtk-doc-tools \
 	yasm \
 	bison \
