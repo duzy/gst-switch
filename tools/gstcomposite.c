@@ -533,8 +533,11 @@ gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
   g_string_append_printf (desc,
       "source_a. ! video/x-raw,width=%d,height=%d ",
       composite->width, composite->height);
+  g_string_append_printf (desc, "! queue2 ");
   g_string_append_printf (desc,
-      "! queue2 ! videoscale ! video/x-raw,width=%d,height=%d ! sink_a. ",
+      "! videoconvert ! facedetect2 ! speakertrack ! videoconvert ");
+  g_string_append_printf (desc,
+      "! videoscale ! video/x-raw,width=%d,height=%d ! sink_a. ",
       composite->a_width, composite->a_height);
 
   if (composite->mode == COMPOSE_MODE_0) {
@@ -547,8 +550,11 @@ gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
     g_string_append_printf (desc,
         "source_b. ! video/x-raw,width=%d,height=%d ",
         composite->width, composite->height);
+    g_string_append_printf (desc, "! queue2 ");
     g_string_append_printf (desc,
-        "! queue2 ! videoscale ! video/x-raw,width=%d,height=%d ! sink_b. ",
+        "! videoconvert ! facedetect2 ! speakertrack ! videoconvert ");
+    g_string_append_printf (desc,
+        "! videoscale ! video/x-raw,width=%d,height=%d ! sink_b. ",
         composite->b_width, composite->b_height);
   }
   return desc;
@@ -1100,8 +1106,8 @@ gst_composite_class_init (GstCompositeClass * klass)
   worker_class->alive = (GstWorkerAliveFunc) gst_composite_alive;
   worker_class->null = (GstWorkerNullFunc) gst_composite_null;
   worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
-  worker_class->start_worker = (GstWorkerPrepareFunc) gst_composite_start;
-  worker_class->end_worker = (GstWorkerPrepareFunc) gst_composite_end;
+  worker_class->start_worker = (GstWorkerAliveFunc) gst_composite_start;
+  worker_class->end_worker = (GstWorkerAliveFunc) gst_composite_end;
   worker_class->message = (GstWorkerMessageFunc) gst_composite_message;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
       gst_composite_get_pipeline_string;

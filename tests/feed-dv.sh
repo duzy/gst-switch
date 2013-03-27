@@ -4,9 +4,9 @@
 #  
 . ./tests/test.sh
 
-pattern=$1
-width=$2
-height=$3
+dvfile="$1"
+width="$2"
+height="$3"
 
 if [[ "x$pattern" == "x" ]]; then
     pattern=0
@@ -26,6 +26,7 @@ fi
 
 launch -v \
     --gst-debug-no-color \
-    videotestsrc pattern=$pattern \
-    ! video/x-raw,width=$width,height=$height \
+    filesrc location="$dvfile" \
+    ! dvdemux name=dmx ! dvdec ! videoconvert \
+    ! videoscale ! video/x-raw,format=I420,width=$width,height=$height \
     ! gdppay ! tcpclientsink port=3000
