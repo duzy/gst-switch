@@ -17,7 +17,8 @@ command controls.
 
 #### Video Input
 
-The video input port is *3000*. 
+The video input port is *3000*. Supported input video format: I420
+(video/x-raw), 1280x720 (for debug mode, the video size could be 300x200).
 
 #### Audio Input Port
 
