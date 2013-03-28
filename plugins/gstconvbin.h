@@ -44,6 +44,9 @@ typedef enum {
   GST_CONV_BIN_PAD_FLAG_LAST = (GST_BIN_FLAG_LAST << 2),
 } GstConvBinFlags;
 
+/**
+ * @deprecated
+ */
 struct _GstConvBin {
   GstBin base;
 
@@ -52,6 +55,9 @@ struct _GstConvBin {
   gchar * autosink;
 };
 
+/**
+ * @deprecated
+ */
 struct _GstConvBinClass {
   GstBinClass base_class;
 };

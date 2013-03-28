@@ -46,9 +46,9 @@ typedef struct _GstAudioVisualClass GstAudioVisualClass;
  *  @param active TRUE if the audio is active. A active audio will be sinked to
  *           the real hardware speaker, e.g. ALSA
  *  @param renewing (deprecated)
- *  @param endtime_lock the lock for @endtime
+ *  @param endtime_lock the lock for %endtime
  *  @param endtime the endtime of the last audo sample
- *  @param value_lock the lock for @value
+ *  @param value_lock the lock for %value
  *  @param value the value of the last audio sample
  */
 struct _GstAudioVisual

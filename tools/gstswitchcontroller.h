@@ -59,11 +59,11 @@ struct _MethodTableEntry
 };
 
 /**
- *  GstSwitchController:
+ *  @brief GstSwitchController
  *  @param base the parent object
  *  @param server the GstSwitchServer instance
  *  @param bus_server the dbus server instance
- *  @param uis_lock the lock for @uis
+ *  @param uis_lock the lock for %uis
  *  @param uis the client list
  */
 struct _GstSwitchController

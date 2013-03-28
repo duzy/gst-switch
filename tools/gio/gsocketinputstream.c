@@ -38,6 +38,10 @@ enum
   PROP_SOCKET
 };
 
+/**
+ * @brief socket input stream private stuff
+ * @internal
+ */
 struct _GSocketInputStreamXPrivate
 {
   GSocket *socket;
@@ -50,54 +54,48 @@ struct _GSocketInputStreamXPrivate
 };
 
 static void
-g_socket_input_stream_get_property (GObject    *object,
-                                    guint       prop_id,
-                                    GValue     *value,
-                                    GParamSpec *pspec)
+g_socket_input_stream_get_property (GObject * object,
+    guint prop_id, GValue * value, GParamSpec * pspec)
 {
   GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
 
-  switch (prop_id)
-    {
-      case PROP_SOCKET:
-        g_value_set_object (value, stream->priv->socket);
-        break;
+  switch (prop_id) {
+    case PROP_SOCKET:
+      g_value_set_object (value, stream->priv->socket);
+      break;
 
-      default:
-        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+  }
 }
 
 static void
-g_socket_input_stream_set_property (GObject      *object,
-                                    guint         prop_id,
-                                    const GValue *value,
-                                    GParamSpec   *pspec)
+g_socket_input_stream_set_property (GObject * object,
+    guint prop_id, const GValue * value, GParamSpec * pspec)
 {
   GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
 
-  switch (prop_id)
-    {
-      case PROP_SOCKET:
-        stream->priv->socket = g_value_dup_object (value);
-        break;
+  switch (prop_id) {
+    case PROP_SOCKET:
+      stream->priv->socket = g_value_dup_object (value);
+      break;
 
-      default:
-        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-    }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+  }
 }
 
 static void
-g_socket_input_stream_finalize (GObject *object)
+g_socket_input_stream_finalize (GObject * object)
 {
   GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
 
   if (stream->priv->socket) {
     GError *error = NULL;
     /*
-    g_print ("%s:%d: %s, %d\n", __FILE__, __LINE__, __FUNCTION__,
-	g_socket_get_fd (stream->priv->socket));
-    */
+       g_print ("%s:%d: %s, %d\n", __FILE__, __LINE__, __FUNCTION__,
+       g_socket_get_fd (stream->priv->socket));
+     */
     g_socket_close (stream->priv->socket, &error);
     if (error) {
       //ERROR ("%s", error->message);
@@ -110,21 +108,17 @@ g_socket_input_stream_finalize (GObject *object)
 }
 
 static gssize
-g_socket_input_stream_read (GInputStream  *stream,
-                            void          *buffer,
-                            gsize          count,
-                            GCancellable  *cancellable,
-                            GError       **error)
+g_socket_input_stream_read (GInputStream * stream,
+    void *buffer, gsize count, GCancellable * cancellable, GError ** error)
 {
   GSocketInputStreamX *input_stream = G_SOCKET_INPUT_STREAM (stream);
 
   return g_socket_receive_with_blocking (input_stream->priv->socket,
-					 buffer, count, TRUE,
-					 cancellable, error);
+      buffer, count, TRUE, cancellable, error);
 }
 
 static void
-g_socket_input_stream_class_init (GSocketInputStreamXClass *klass)
+g_socket_input_stream_class_init (GSocketInputStreamXClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GInputStreamClass *ginputstream_class = G_INPUT_STREAM_CLASS (klass);
@@ -138,21 +132,24 @@ g_socket_input_stream_class_init (GSocketInputStreamXClass *klass)
   ginputstream_class->read_fn = g_socket_input_stream_read;
 
   g_object_class_install_property (gobject_class, PROP_SOCKET,
-				   g_param_spec_object ("socket",
-							"socket",
-							"The socket that this stream wraps",
-							G_TYPE_SOCKET, G_PARAM_CONSTRUCT_ONLY |
-							G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_object ("socket",
+          "socket",
+          "The socket that this stream wraps",
+          G_TYPE_SOCKET, G_PARAM_CONSTRUCT_ONLY |
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 }
 
 static void
-g_socket_input_stream_init (GSocketInputStreamX *stream)
+g_socket_input_stream_init (GSocketInputStreamX * stream)
 {
-  stream->priv = G_TYPE_INSTANCE_GET_PRIVATE (stream, G_TYPE_SOCKET_INPUT_STREAM, GSocketInputStreamXPrivate);
+  stream->priv =
+      G_TYPE_INSTANCE_GET_PRIVATE (stream, G_TYPE_SOCKET_INPUT_STREAM,
+      GSocketInputStreamXPrivate);
 }
 
 GSocketInputStreamX *
-_g_socket_input_stream_new (GSocket *socket)
+_g_socket_input_stream_new (GSocket * socket)
 {
-  return G_SOCKET_INPUT_STREAM (g_object_new (G_TYPE_SOCKET_INPUT_STREAM, "socket", socket, NULL));
+  return G_SOCKET_INPUT_STREAM (g_object_new (G_TYPE_SOCKET_INPUT_STREAM,
+          "socket", socket, NULL));
 }

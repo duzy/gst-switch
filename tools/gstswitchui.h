@@ -44,7 +44,7 @@ typedef struct _GstSwitchUI GstSwitchUI;
 typedef struct _GstSwitchUIClass GstSwitchUIClass;
 
 /**
- *  GstSwitchUI:
+ *  @brief GstSwitchUI
  */
 struct _GstSwitchUI
 {
@@ -79,7 +79,7 @@ struct _GstSwitchUI
 };
 
 /**
- *  GstSwitchUIClass:
+ *  @brief GstSwitchUIClass
  */
 struct _GstSwitchUIClass
 {

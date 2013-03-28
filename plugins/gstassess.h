@@ -39,6 +39,9 @@ G_BEGIN_DECLS
 typedef struct _GstAssess GstAssess;
 typedef struct _GstAssessClass GstAssessClass;
 
+/**
+ * @brief Helper class for assessment.
+ */
 struct _GstAssess {
   GstBaseTransform base;
   GMutex lock;
@@ -49,6 +52,9 @@ struct _GstAssess {
   GstPad *srcpad;
 };
 
+/**
+ * @brief GstAssessClass
+ */
 struct _GstAssessClass {
   GstBaseTransformClass base_class;
 };

@@ -45,6 +45,9 @@ typedef enum {
   GST_TCP_MIX_SRC_FLAG_LAST  = (GST_ELEMENT_FLAG_LAST << 2)
 } GstTCPMixSrcFlags;
 
+/**
+ * @deprecated
+ */
 struct _GstTCPMixSrc {
   GstElement base;
 
@@ -63,6 +66,9 @@ struct _GstTCPMixSrc {
   gchar * autosink;
 };
 
+/**
+ * @deprecated
+ */
 struct _GstTCPMixSrcClass {
   GstElementClass base_class;
 

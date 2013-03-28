@@ -65,7 +65,7 @@ typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
 
 /**
- *  @class GstComposite
+ *  @brief The GstComposite class.
  *  @param base the parent object
  *  @param mode the composite mode, @see GstCompositeMode
  *  @param lock lock for composite object

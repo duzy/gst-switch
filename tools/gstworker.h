@@ -47,70 +47,70 @@ typedef enum
 } GstWorkerNullReturn;
 
 /**
- *  GstWorkerGetPipelineString:
- *  @param worker the GstWorker
- *  @param data user defined data pointer
+ *  @brief getting pipeline string function
+ *  @param worker the GstWorker instance
+ *  @param user defined data pointer
  */
 typedef GString *(*GstWorkerGetPipelineString) (GstWorker * worker,
     gpointer data);
 
 /**
- *  GstWorkerGetPipelineStringFunc:
- *  @param worker the GstWorker
+ *  @brief getting pipeline string callback function
+ *  @param worker the GstWorker instance
  */
 typedef GString *(*GstWorkerGetPipelineStringFunc) (GstWorker * worker);
 
 /**
- *  GstWorkerPrepareFunc:
- *  @param worker the GstWorker
+ *  @brief worker preparation callback function
+ *  @param worker the GstWorker instance
  */
 typedef gboolean (*GstWorkerPrepareFunc) (GstWorker * worker);
 
 /**
- *  GstWorkerMessageFunc:
+ *  @brief worker message callback function
  *  @param worker the GstWorker
  *  @param m the message
  */
 typedef gboolean (*GstWorkerMessageFunc) (GstWorker * worker, GstMessage *m);
 
 /**
- *  GstWorkerNullFunc:
+ *  @brief worker null state callback function
  *  @param worker the GstWorker
  */
 typedef GstWorkerNullReturn (*GstWorkerNullFunc) (GstWorker * worker);
 
 /**
- *  GstWorkerAliveFunc:
+ *  @brief worker alive callback function
  *  @param worker the GstWorker
  */
 typedef void (*GstWorkerAliveFunc) (GstWorker * worker);
 
 /**
- *  GstWorker:
+ *  @brief GstWorker
  */
 struct _GstWorker
 {
-  GObject base;
+  GObject base; /*!< */
 
-  gchar *name;
+  gchar *name; /*!< */
 
-  GstSwitchServer *server;
+  GstSwitchServer *server; /*!< */
 
-  GMutex pipeline_lock;
-  GstElement *pipeline;
-  GstBus *bus;
+  GMutex pipeline_lock; /*!< */
+  GstElement *pipeline; /*!< */
+  GstBus *bus; /*!< */
 
-  GstWorkerGetPipelineString pipeline_func;
-  gpointer pipeline_func_data;
-  GString *pipeline_string;
+  GstWorkerGetPipelineString pipeline_func; /*!< */
+  gpointer pipeline_func_data; /*!< */
+  GString *pipeline_string; /*!< */
 
-  gboolean auto_replay;
-  gboolean paused_for_buffering;
-  guint watch;
+  gboolean auto_replay; /*!< */
+  gboolean paused_for_buffering; /*!< */
+  guint watch; /*!< */
 };
 
 /**
- *  @class GstWorkerClass
+ *  @brief GstWorkerClass
  */
 struct _GstWorkerClass
 {
@@ -188,7 +188,7 @@ GType gst_worker_get_type (void);
  *  Start the worker. This will call the derived create_pipeline and the
  *  virtual "prepare" function.
  *
- *  @param return TRUE if worker prepared and started.
+ *  @return TRUE if worker prepared and started.
  */
 gboolean gst_worker_start (GstWorker * worker);
 
@@ -199,7 +199,7 @@ gboolean gst_worker_start (GstWorker * worker);
  *
  *  Stop the pipeline, Pass TRUE to the second argument to make it force stop.
  *
- *  @param return TRUE if stop request sent.
+ *  @return TRUE if stop request sent.
  */
 gboolean gst_worker_stop_force (GstWorker * worker, gboolean force);
 
@@ -209,21 +209,22 @@ gboolean gst_worker_stop_force (GstWorker * worker, gboolean force);
  *
  *  Same as gst_worker_stop_force (worker, FALSE).
  *
- *  @param return TRUE if stop request sent.
+ *  @return TRUE if stop request sent.
  */
 #define gst_worker_stop(worker) (gst_worker_stop_force ((worker), FALSE))
 
 /**
  *  gst_worker_get_element_unlocked:
  *  @param worker the GstWorker instance
+ *  @param name the name of the element
  *
  *  Get element by name without locking the pipeline.
  *
  *  Not MT safe.
  *
- *  @param return the element of the name or NULL if not found.
+ *  @return the element of the name or NULL if not found.
  */
-GstElement *gst_worker_get_element_unlocked (GstWorker *, const gchar *);
+GstElement *gst_worker_get_element_unlocked (GstWorker *worker, const gchar *name);
 
 /**
  *  gst_worker_get_element:
@@ -234,8 +235,8 @@ GstElement *gst_worker_get_element_unlocked (GstWorker *, const gchar *);
  *
  *  MT safe.
  *
- *  @param return the element of the name or NULL if not found.
+ *  @return the element of the name or NULL if not found.
  */
-GstElement *gst_worker_get_element (GstWorker *, const gchar * name);
+GstElement *gst_worker_get_element (GstWorker *worker, const gchar * name);
 
 #endif //__GST_WORKER_H__by_Duzy_Chan__

@@ -925,7 +925,7 @@ gst_switch_server_get_encode_sink_port (GstSwitchServer * srv)
 
 /**
  * gst_switch_server_get_audio_sink_port:
- *  @srv: the GstSwitchServer instance
+ *  @param srv the GstSwitchServer instance
  *
  *  Get the audio port.
  *
@@ -949,8 +949,8 @@ gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
 
 /**
  * gst_switch_server_get_preview_sink_ports:
- *  @serves: (output) the preview serve types.
- *  @types: (output) the preview types.
+ *  @param serves (output) the preview serve types.
+ *  @param types (output) the preview types.
  *  @return: The array of preview ports.
  *
  *  Get the preview ports.

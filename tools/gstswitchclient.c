@@ -165,7 +165,7 @@ gst_switch_client_get_compose_port (GstSwitchClient * client)
 /**
  * gst_switch_client_get_encode_port:
  *  @param client the GstSwitchClient instance
- *  @param return the encode port number
+ *  @return the encode port number
  *
  *  Get the encode port number.
  *  
@@ -186,7 +186,7 @@ gst_switch_client_get_encode_port (GstSwitchClient * client)
 /**
  * gst_switch_client_get_audio_port:
  *  @param client the GstSwitchClient instance
- *  @param return the audio port number
+ *  @return the audio port number
  *
  *  The the audio port number.
  *  
@@ -206,7 +206,7 @@ gst_switch_client_get_audio_port (GstSwitchClient * client)
 /**
  * gst_switch_client_get_preview_ports:
  *  @param client the GstSwitchClient instance
- *  @param return The preview ports of type GVariant
+ *  @return The preview ports of type GVariant
  *
  *  The all preview ports.
  *
@@ -223,7 +223,7 @@ gst_switch_client_get_preview_ports (GstSwitchClient * client)
  *  @param client the GstSwitchClient instance
  *  @param channel The channel to be switched, 'A', 'B', 'a'
  *  @param port The target port number
- *  @param return TRUE when requested.
+ *  @return TRUE when requested.
  *
  *  Switch the channel to the target port.
  *  
@@ -246,7 +246,8 @@ gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
 /**
  * gst_switch_client_set_composite_mode:
  *  @param client the GstSwitchClient instance
- *  @param return TRUE when requested.
+ *  @param mode new composite mode
+ *  @return TRUE when requested.
  *
  *  Set the current composite mode.
  *  
@@ -281,7 +282,7 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
 /**
  * gst_switch_client_new_record:
  *  @param client the GstSwitchClient instance
- *  @param return TRUE when requested.
+ *  @return TRUE when requested.
  *
  *  Start a new recording.
  *
@@ -307,7 +308,7 @@ gst_switch_client_new_record (GstSwitchClient * client)
  *  @param dy y position to be adjusted
  *  @param dw w position to be adjusted
  *  @param dh h position to be adjusted
- *  @param return a unsign integer indicating which components are changed of per
+ *  @return a unsign integer indicating which components are changed of per
  *           bit.
  *
  *  Adjust the PIP.
@@ -532,7 +533,7 @@ error_subscribe:
 /**
  * gst_switch_client_is_connected:
  *  @param client the GstSwitchClient instance
- *  @param return TRUE when requested.
+ *  @return TRUE when requested.
  *
  *  Check if the client is connected to the gst-switch server.
  *  
@@ -551,7 +552,7 @@ gst_switch_client_is_connected (GstSwitchClient * client)
 /**
  * gst_switch_client_connect:
  *  @param client the GstSwitchClient instance
- *  @param return TRUE when requested.
+ *  @return TRUE when requested.
  *
  *  Connect the client with the gst-switch server.
  *  
@@ -579,7 +580,7 @@ gst_switch_client_connect (GstSwitchClient * client)
 /**
  * gst_switch_client_get_compose_port:
  *  @param client the GstSwitchClient instance
- *  @param return the compose port number
+ *  @return the compose port number
  *
  *  Get the compose port number.
  *  
