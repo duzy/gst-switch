@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

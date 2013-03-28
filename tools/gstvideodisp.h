@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifndef __GST_VIDEO_DISP_H__by_Duzy_Chan__
 #define __GST_VIDEO_DISP_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
@@ -38,10 +40,10 @@ typedef struct _GstVideoDispClass GstVideoDispClass;
 
 /**
  *  GstVideoDisp:
- *  @base: the parent object
- *  @port: the port number
- *  @type: video type
- *  @handle: the X window handle for rendering the video
+ *  @param base the parent object
+ *  @param port the port number
+ *  @param type video type
+ *  @param handle the X window handle for rendering the video
  */
 struct _GstVideoDisp
 {
@@ -53,7 +55,6 @@ struct _GstVideoDisp
 
 /**
  *  GstVideoDispClass:
- *  @base_class: the parent class
  */
 struct _GstVideoDispClass
 {

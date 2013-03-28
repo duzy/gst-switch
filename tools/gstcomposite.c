@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -59,24 +61,25 @@ enum
 enum
 {
   SIGNAL_END_TRANSITION,
-  SIGNAL__LAST,
+  SIGNAL__LAST,                 /*!< @internal */
 };
 
 static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
 
 extern gboolean verbose;
 
+/*!< @internal */
 #define gst_composite_parent_class parent_class
+
+/*!< @internal */
 G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
 
 static void gst_composite_set_mode (GstComposite *, GstCompositeMode);
 static void gst_composite_start_transition (GstComposite *);
 
 /**
- * gst_composite_init:
- * 
  * Initialize the GstComposite instance.
- *
+ * 
  * @see GObject
  */
 static void
@@ -783,12 +786,12 @@ gst_composite_null (GstComposite * composite)
 
 /**
  * gst_composite_adjust_pip:
- *  @composite: The GstComposite instance
- *  @x: the X position of the PIP
- *  @y: the Y position of the PIP
- *  @w: the width of the PIP
- *  @h: the height of the PIP
- *  @return: PIP has been changed succefully 
+ *  @param composite The GstComposite instance
+ *  @param x the X position of the PIP
+ *  @param y the Y position of the PIP
+ *  @param w the width of the PIP
+ *  @param h the height of the PIP
+ *  @return PIP has been changed succefully 
  *
  *  Change the PIP position and size.
  */

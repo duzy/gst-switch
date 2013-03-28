@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -32,6 +34,7 @@
 #include <gst/video/videooverlay.h>
 #include <math.h>
 
+/*!< @internal */
 #define parent_class gst_audio_visual_parent_class
 
 enum
@@ -42,8 +45,10 @@ enum
   PROP_ACTIVE,
 };
 
+/*!< @internal */
 extern gboolean verbose;
 
+/*!< @internal */
 G_DEFINE_TYPE (GstAudioVisual, gst_audio_visual, GST_TYPE_WORKER);
 
 /**
@@ -157,11 +162,11 @@ gst_audio_visual_get_property (GstAudioVisual * visual, guint property_id,
 
 /**
  *  gst_audio_visual_get_endtime:
- *  @visual: the GstAudioVisual instance
+ *  @param visual the GstAudioVisual instance
  *
  *  Get the endtime of the last audio sample value.
  *
- *  @return: the endtime of the last audio sample
+ *  @return the endtime of the last audio sample
  */
 GstClockTime
 gst_audio_visual_get_endtime (GstAudioVisual * visual)
@@ -175,8 +180,8 @@ gst_audio_visual_get_endtime (GstAudioVisual * visual)
 
 /**
  *  gst_audio_visual_get_value:
- *  @visual: the GstAudioVisual instance
- *  @return: the value of the last audio sample
+ *  @param visual the GstAudioVisual instance
+ *  @return the value of the last audio sample
  *
  *  Get the current audio sample value.
  */
@@ -192,8 +197,9 @@ gst_audio_visual_get_value (GstAudioVisual * visual)
 
 /**
  * gst_audio_visual_missing:
- * @elements: names of missing elements
- * @return: TRUE if suggesting the parent to retry with something else.
+ * @param worker the GstWorker instance
+ * @param elements names of missing elements
+ * @return TRUE if suggesting the parent to retry with something else.
  *
  * Handling elements missing situations.
  */
@@ -213,7 +219,7 @@ gst_audio_visual_missing (GstWorker * worker, gchar ** elements)
 
 /**
  * gst_audio_visual_get_pipeline_string:
- * @return: a GString instance of the pipeline string, need to free after used
+ * @return a GString instance of the pipeline string, need to free after used
  *
  * Getting the pipeline strings invoked by the parent class.
  */
@@ -248,7 +254,7 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual * visual)
 
 /**
  * gst_audio_visual_prepare:
- * @return: TRUE if everything prepared.
+ * @return TRUE if everything prepared.
  *
  * Preparing the GstAudioVisual instance. This is invoked by the parent class.
  */
