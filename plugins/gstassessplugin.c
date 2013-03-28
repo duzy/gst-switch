@@ -53,8 +53,7 @@
 static gboolean
 plugin_init (GstPlugin * plugin)
 {
-  if (!gst_element_register (plugin, "assess", GST_RANK_NONE,
-	  GST_TYPE_ASSESS)) {
+  if (!gst_element_register (plugin, "assess", GST_RANK_NONE, GST_TYPE_ASSESS)) {
     return FALSE;
   }
 

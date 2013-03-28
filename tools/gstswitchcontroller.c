@@ -488,7 +488,7 @@ gst_switch_controller_finalize (GstSwitchController * controller)
 
 /**
  * gst_switch_controller_is_valid:
- *  @controller: the GstSwitchController instance
+ *  @param controller the GstSwitchController instance
  *  @return TRUE is the controller is valid connected to the dbus server
  *
  *  Check if the controller is valid.
@@ -700,8 +700,8 @@ gst_switch_controller_set_property (GstSwitchController * controller,
 
 /**
  * gst_switch_controller_tell_audio_port:
- *  @controller: the GstSwitchController instance
- *  @port: the port number
+ *  @param controller the GstSwitchController instance
+ *  @param port the port number
  *
  *  Tell the audio port to the clients.
  */
@@ -716,8 +716,8 @@ gst_switch_controller_tell_audio_port (GstSwitchController * controller,
 
 /**
  * gst_switch_controller_tell_compose_port:
- *  @controller: the GstSwitchController instance
- *  @port: the port number
+ *  @param controller the GstSwitchController instance
+ *  @param port the port number
  *
  *  Tell the compose port to the clients.
  */
@@ -732,8 +732,8 @@ gst_switch_controller_tell_compose_port (GstSwitchController * controller,
 
 /**
  * gst_switch_controller_tell_encode_port:
- *  @controller: the GstSwitchController instance
- *  @port: the port number
+ *  @param controller the GstSwitchController instance
+ *  @param port the port number
  *
  *  Tell the encode port to the clients.
  */
@@ -748,10 +748,10 @@ gst_switch_controller_tell_encode_port (GstSwitchController * controller,
 
 /**
  * gst_switch_controller_tell_preview_port:
- *  @controller: the GstSwitchController instance
- *  @port: the port number
- *  @serve: value of GstSwitchServeStreamType
- *  @type: value of GstCaseType
+ *  @param controller the GstSwitchController instance
+ *  @param port the port number
+ *  @param serve value of GstSwitchServeStreamType
+ *  @param type value of GstCaseType
  *
  *  Tell the preview port to the clients.
  */
@@ -766,8 +766,8 @@ gst_switch_controller_tell_preview_port (GstSwitchController * controller,
 
 /**
  * gst_switch_controller_tell_new_mode_onlne:
- *  @controller: the GstSwitchController instance
- *  @mode: the new mode changed
+ *  @param controller the GstSwitchController instance
+ *  @param mode the new mode changed
  *
  *  Tell the clients that new composite mode is online.
  */

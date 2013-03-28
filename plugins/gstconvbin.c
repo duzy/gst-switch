@@ -46,16 +46,16 @@ GST_DEBUG_CATEGORY_STATIC (gst_conv_bin_debug);
 #define GST_CONV_BIN_UNLOCK(obj) (g_mutex_unlock (&(obj)->lock))
 
 static GstStaticPadTemplate gst_conv_bin_sink_factory =
-  GST_STATIC_PAD_TEMPLATE ("sink_%u",
-      GST_PAD_SINK,
-      GST_PAD_REQUEST,
-      GST_STATIC_CAPS_ANY);
+GST_STATIC_PAD_TEMPLATE ("sink_%u",
+    GST_PAD_SINK,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS_ANY);
 
 static GstStaticPadTemplate gst_conv_bin_src_factory =
-  GST_STATIC_PAD_TEMPLATE ("src_%u",
-      GST_PAD_SRC,
-      GST_PAD_REQUEST,
-      GST_STATIC_CAPS_ANY);
+GST_STATIC_PAD_TEMPLATE ("src_%u",
+    GST_PAD_SRC,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS_ANY);
 
 enum
 {
@@ -67,43 +67,43 @@ enum
 G_DEFINE_TYPE (GstConvBin, gst_conv_bin, GST_TYPE_BIN);
 
 static void
-gst_conv_bin_set_property (GstConvBin *conv, guint prop_id,
-    const GValue *value, GParamSpec * spec)
+gst_conv_bin_set_property (GstConvBin * conv, guint prop_id,
+    const GValue * value, GParamSpec * spec)
 {
   switch (prop_id) {
-  case PROP_AUTOSINK:
-    g_free (conv->autosink);
-    conv->autosink = g_strdup (g_value_get_string (value));
-    break;
-  case PROP_CONVERTER:
-    g_free (conv->converter);
-    conv->converter = g_strdup (g_value_get_string (value));
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (conv), prop_id, spec);
-    break;
+    case PROP_AUTOSINK:
+      g_free (conv->autosink);
+      conv->autosink = g_strdup (g_value_get_string (value));
+      break;
+    case PROP_CONVERTER:
+      g_free (conv->converter);
+      conv->converter = g_strdup (g_value_get_string (value));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (conv), prop_id, spec);
+      break;
   }
 }
 
 static void
-gst_conv_bin_get_property (GstConvBin *conv, guint prop_id,
-    GValue *value, GParamSpec * spec)
+gst_conv_bin_get_property (GstConvBin * conv, guint prop_id,
+    GValue * value, GParamSpec * spec)
 {
   switch (prop_id) {
-  case PROP_AUTOSINK:
-    g_value_set_string (value, conv->autosink);
-    break;
-  case PROP_CONVERTER:
-    g_value_set_string (value, conv->converter);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (conv), prop_id, spec);
-    break;
+    case PROP_AUTOSINK:
+      g_value_set_string (value, conv->autosink);
+      break;
+    case PROP_CONVERTER:
+      g_value_set_string (value, conv->converter);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (conv), prop_id, spec);
+      break;
   }
 }
 
 static void
-gst_conv_bin_init (GstConvBin *conv)
+gst_conv_bin_init (GstConvBin * conv)
 {
   conv->converter = NULL;
   conv->autosink = NULL;
@@ -112,7 +112,7 @@ gst_conv_bin_init (GstConvBin *conv)
 }
 
 static void
-gst_conv_bin_finalize (GstConvBin *conv)
+gst_conv_bin_finalize (GstConvBin * conv)
 {
   g_free (conv->converter);
   g_free (conv->autosink);
@@ -122,13 +122,14 @@ gst_conv_bin_finalize (GstConvBin *conv)
   G_OBJECT_CLASS (conv)->finalize (G_OBJECT (conv));
 }
 
-static void gst_conv_bin_autosink (GstConvBin * conv)
+static void
+gst_conv_bin_autosink (GstConvBin * conv)
 {
-  GstElement * target = NULL, * baseconv;
-  GstBin * parent;
-  GstPad * basepad, * srcpad, * pp;
-  GList * item;
-  gchar * name;
+  GstElement *target = NULL, *baseconv;
+  GstBin *parent;
+  GstPad *basepad, *srcpad, *pp;
+  GList *item;
+  gchar *name;
   gint num;
 
   if (!conv->autosink)
@@ -140,20 +141,19 @@ static void gst_conv_bin_autosink (GstConvBin * conv)
   if (!target)
     goto done;
 
-  for (item = GST_ELEMENT_PADS (conv), num = 0;
-       item; item = g_list_next (item)) {
+  for (item = GST_ELEMENT_PADS (conv), num = 0; item; item = g_list_next (item)) {
     if (GST_PAD_IS_SRC (GST_PAD (item->data))) {
       ++num;
     }
   }
 
   for (item = GST_BIN_CHILDREN (GST_BIN (conv));
-       item; item = g_list_next (item)) {
+      item; item = g_list_next (item)) {
     baseconv = GST_ELEMENT (item->data);
     basepad = gst_element_get_static_pad (baseconv, "src");
 
     if (basepad && (gst_pad_is_linked (basepad) ||
-	    GST_OBJECT_FLAG_IS_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED)))
+            GST_OBJECT_FLAG_IS_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED)))
       continue;
 
     name = g_strdup_printf ("src_%u", num);
@@ -165,20 +165,20 @@ static void gst_conv_bin_autosink (GstConvBin * conv)
     pp = gst_element_get_request_pad (target, "sink_%u");
     if (!pp) {
       GST_ERROR_OBJECT (target, "get request pad %s.sink_%%u",
-	  GST_ELEMENT_NAME (target));
+          GST_ELEMENT_NAME (target));
       continue;
     }
 
     GST_DEBUG_OBJECT (conv, "Autosink %s.%s",
-	GST_ELEMENT_NAME (target), GST_PAD_NAME (pp));
+        GST_ELEMENT_NAME (target), GST_PAD_NAME (pp));
 
     INFO ("autosink %s.%s -> %s.%s",
-	GST_ELEMENT_NAME (conv), GST_PAD_NAME (srcpad),
-	GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
-  
+        GST_ELEMENT_NAME (conv), GST_PAD_NAME (srcpad),
+        GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+
     if (GST_PAD_LINK_FAILED (gst_pad_link (srcpad, pp))) {
       GST_ERROR_OBJECT (srcpad, "Failed autosink %s.%s",
-	  GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
+          GST_ELEMENT_NAME (GST_PAD_PARENT (pp)), GST_PAD_NAME (pp));
     }
 
     gst_pad_set_active (srcpad, TRUE);
@@ -189,47 +189,51 @@ static void gst_conv_bin_autosink (GstConvBin * conv)
       }
     }
   }
-  
- done:
+
+done:
   return;
 }
 
 static GstPad *
-gst_conv_bin_request_new_pad (GstElement *element,
+gst_conv_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * unused, const GstCaps * caps)
 {
-  GstConvBin * conv = GST_CONV_BIN (element);
+  GstConvBin *conv = GST_CONV_BIN (element);
   GstPadDirection dir = GST_PAD_TEMPLATE_DIRECTION (templ);
-  GstPad * pad = NULL, * basepad = NULL;
-  GstElement * baseconv = NULL;
-  gchar * name = NULL;
-  GList * item = NULL;
+  GstPad *pad = NULL, *basepad = NULL;
+  GstElement *baseconv = NULL;
+  gchar *name = NULL;
+  GList *item = NULL;
   gint num = 0;
 
   if (conv->converter == NULL)
     goto error_no_converter_name;
 
   INFO ("requesting: %s.%s",
-      GST_ELEMENT_NAME (conv),
-      GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
+      GST_ELEMENT_NAME (conv), GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
 
   GST_CONV_BIN_LOCK (conv);
 
   for (item = GST_BIN_CHILDREN (GST_BIN (conv)), num = 0;
-       item; item = g_list_next (item)) {
+      item; item = g_list_next (item)) {
     ++num;
 
     if (!basepad) {
-      GstPad * p = NULL;
-      gchar * s = NULL;
+      GstPad *p = NULL;
+      gchar *s = NULL;
       switch (dir) {
-      case GST_PAD_SINK: s = "sink"; break;
-      case GST_PAD_SRC:  s = "src";  break;
-      default: break;
+        case GST_PAD_SINK:
+          s = "sink";
+          break;
+        case GST_PAD_SRC:
+          s = "src";
+          break;
+        default:
+          break;
       }
       p = gst_element_get_static_pad (GST_ELEMENT (item->data), s);
       if (!GST_PAD_IS_LINKED (p))
-	basepad = p;
+        basepad = p;
     }
   }
 
@@ -250,22 +254,21 @@ gst_conv_bin_request_new_pad (GstElement *element,
 
   if (!basepad) {
     switch (dir) {
-    case GST_PAD_SINK:
-      basepad = gst_element_get_static_pad (baseconv, "sink");
-      break;
-    case GST_PAD_SRC:
-      basepad = gst_element_get_static_pad (baseconv, "src");
-      break;
-    default:
-      basepad = NULL;
-      break;
+      case GST_PAD_SINK:
+        basepad = gst_element_get_static_pad (baseconv, "sink");
+        break;
+      case GST_PAD_SRC:
+        basepad = gst_element_get_static_pad (baseconv, "src");
+        break;
+      default:
+        basepad = NULL;
+        break;
     }
   }
   if (!basepad)
     goto error_no_basepad;
 
-  for (item = GST_ELEMENT_PADS (conv), num = 0;
-       item; item = g_list_next (item)) {
+  for (item = GST_ELEMENT_PADS (conv), num = 0; item; item = g_list_next (item)) {
     if (GST_PAD_DIRECTION (GST_PAD (item->data)) == dir)
       ++num;
   }
@@ -284,13 +287,13 @@ gst_conv_bin_request_new_pad (GstElement *element,
     GST_OBJECT_FLAG_SET (basepad, GST_CONV_BIN_PAD_FLAG_GHOSTED);
 
     GST_DEBUG_OBJECT (pad, "Requested %s.%s",
-	GST_ELEMENT_NAME (baseconv), GST_PAD_NAME (basepad));
+        GST_ELEMENT_NAME (baseconv), GST_PAD_NAME (basepad));
 
     /*
-    INFO ("requested %s.%s on %s.%s",
-	GST_ELEMENT_NAME (conv), GST_PAD_NAME (pad),
-	GST_ELEMENT_NAME (baseconv), GST_PAD_NAME (basepad));
-    */
+       INFO ("requested %s.%s on %s.%s",
+       GST_ELEMENT_NAME (conv), GST_PAD_NAME (pad),
+       GST_ELEMENT_NAME (baseconv), GST_PAD_NAME (basepad));
+     */
   } else {
     gst_object_unref (pad);
   }
@@ -300,20 +303,20 @@ gst_conv_bin_request_new_pad (GstElement *element,
   return pad;
 
   /* Handing Errors */
- error_no_converter_name:
+error_no_converter_name:
   {
     GST_ERROR_OBJECT (conv, "No underlayer converter name");
     return NULL;
   }
 
- error_no_converter:
+error_no_converter:
   {
     GST_CONV_BIN_UNLOCK (conv);
     GST_ERROR_OBJECT (conv, "No converter '%s'", conv->converter);
     return NULL;
   }
 
- error_bin_add:
+error_bin_add:
   {
     gst_object_unref (baseconv);
     GST_CONV_BIN_UNLOCK (conv);
@@ -321,12 +324,12 @@ gst_conv_bin_request_new_pad (GstElement *element,
     return NULL;
   }
 
- error_no_basepad:
+error_no_basepad:
   {
     gst_object_unref (baseconv);
     GST_CONV_BIN_UNLOCK (conv);
     GST_ERROR_OBJECT (conv, "No basepad for %s",
-	GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
+        GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
     return NULL;
   }
 }
@@ -334,7 +337,7 @@ gst_conv_bin_request_new_pad (GstElement *element,
 static void
 gst_conv_bin_release_pad (GstElement * element, GstPad * pad)
 {
-  GstConvBin * conv = GST_CONV_BIN (element);
+  GstConvBin *conv = GST_CONV_BIN (element);
   GST_CONV_BIN_LOCK (conv);
   gst_pad_set_active (pad, FALSE);
   gst_element_remove_pad (element, pad);
@@ -353,24 +356,26 @@ gst_conv_bin_state_changed (GstElement *element, GstState oldstate,
 */
 
 static void
-gst_conv_bin_class_init (GstConvBinClass *klass)
+gst_conv_bin_class_init (GstConvBinClass * klass)
 {
-  GObjectClass * object_class = G_OBJECT_CLASS (klass);
-  GstElementClass * element_class = GST_ELEMENT_CLASS (klass);
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
 
-  object_class->set_property = (GObjectSetPropertyFunc) gst_conv_bin_set_property;
-  object_class->get_property = (GObjectGetPropertyFunc) gst_conv_bin_get_property;
+  object_class->set_property =
+      (GObjectSetPropertyFunc) gst_conv_bin_set_property;
+  object_class->get_property =
+      (GObjectGetPropertyFunc) gst_conv_bin_get_property;
   object_class->finalize = (GObjectFinalizeFunc) gst_conv_bin_finalize;
 
   g_object_class_install_property (object_class, PROP_AUTOSINK,
       g_param_spec_string ("autosink", "Autosink",
-	  "Specify the element name for autosink", "",
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          "Specify the element name for autosink", "",
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_CONVERTER,
       g_param_spec_string ("converter", "Base Converter",
-	  "Convert N inputs using a specified base converter.", "",
-	  G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          "Convert N inputs using a specified base converter.", "",
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gst_element_class_set_static_metadata (element_class,
       "Convert Bin", "Bin",

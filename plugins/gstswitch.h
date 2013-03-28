@@ -43,12 +43,18 @@ typedef enum {
   GST_SWITCH_FLAG_LAST = (GST_BIN_FLAG_LAST << 2)
 } GstSwitchFlags;
 
+/**
+ * @deprecated
+ */
 struct _GstSwitch {
   GstBin base;
   GMutex lock;
   gchar *cases_string;
 };
 
+/**
+ * @deprecated
+ */
 struct _GstSwitchClass {
   GstBinClass base_class;
 };

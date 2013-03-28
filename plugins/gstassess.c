@@ -36,7 +36,11 @@ GST_DEBUG_CATEGORY_STATIC (gst_assess_debug);
 #define ASSESS_POINT_LOCK(ap) (g_mutex_lock (&(ap)->lock))
 #define ASSESS_POINT_UNLOCK(ap) (g_mutex_unlock (&(ap)->lock))
 
-typedef struct _GstAssessPoint {
+/**
+ * @brief Helper class for assessment.
+ */
+typedef struct _GstAssessPoint
+{
   GMutex lock;
   guint number;
   guint sequence;
@@ -45,37 +49,46 @@ typedef struct _GstAssessPoint {
   GstClockTime pts;
   GstClockTime dts;
   GstClockTime duration;
-  guint64 running_time; /* measured in milliseconds */
+  guint64 running_time;         /* measured in milliseconds */
   guint64 offset, offset_end;
   guint64 buffer_count;
 } GstAssessPoint;
 
-typedef struct _GstAssessDB {
+/**
+ * @deprecated
+ */
+typedef struct _GstAssessDB
+{
   GstClock *clock;
   guint timer;
   GHashTable *hash;
 } GstAssessDB;
 
-typedef struct _GstAssessMeta {
-    GstMeta base;
-    guint sequence;
+/**
+ * @deprecated
+ */
+typedef struct _GstAssessMeta
+{
+  GstMeta base;
+  guint sequence;
 } GstAssessMeta;
 
 static GMutex assess_db_lock = { 0 };
 static GstAssessDB assess_db = { 0 };
+
 //static GType assess_meta_api;
 
 static GstStaticPadTemplate gst_assess_sink_factory =
-  GST_STATIC_PAD_TEMPLATE ("sink",
-      GST_PAD_SINK,
-      GST_PAD_REQUEST,
-      GST_STATIC_CAPS_ANY);
+GST_STATIC_PAD_TEMPLATE ("sink",
+    GST_PAD_SINK,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS_ANY);
 
 static GstStaticPadTemplate gst_assess_src_factory =
-  GST_STATIC_PAD_TEMPLATE ("src",
-      GST_PAD_SRC,
-      GST_PAD_REQUEST,
-      GST_STATIC_CAPS_ANY);
+GST_STATIC_PAD_TEMPLATE ("src",
+    GST_PAD_SRC,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS_ANY);
 
 enum
 {
@@ -88,39 +101,45 @@ G_DEFINE_TYPE (GstAssess, gst_assess, GST_TYPE_BASE_TRANSFORM);
 
 #define GST_ASSESS_META_IMPL "GstSwitchAssessMetaImpl"
 
-gboolean gst_assess_meta_init (GstMeta *meta, gpointer params,
-    GstBuffer *buffer)
+gboolean
+gst_assess_meta_init (GstMeta * meta, gpointer params, GstBuffer * buffer)
 {
-    GstAssessMeta *assess_meta = (GstAssessMeta *) meta;
-    assess_meta->sequence = 0;
-    INFO ("%s", __FUNCTION__);
-    return TRUE;
+  GstAssessMeta *assess_meta = (GstAssessMeta *) meta;
+  assess_meta->sequence = 0;
+  INFO ("%s", __FUNCTION__);
+  return TRUE;
 }
 
-void gst_assess_meta_free (GstMeta *meta, GstBuffer *buffer)
+void
+gst_assess_meta_free (GstMeta * meta, GstBuffer * buffer)
 {
-    //g_free (meta);
-    INFO ("%s", __FUNCTION__);
+  //g_free (meta);
+  INFO ("%s", __FUNCTION__);
 }
 
-gboolean gst_assess_meta_transform (GstBuffer *transbuf,
-    GstMeta *meta, GstBuffer *buffer, GQuark type, gpointer data)
+gboolean
+gst_assess_meta_transform (GstBuffer * transbuf,
+    GstMeta * meta, GstBuffer * buffer, GQuark type, gpointer data)
 {
-    //GstAssessMeta *assess_meta = (GstAssessMeta *) meta;
-    INFO ("%s", __FUNCTION__);
-    return TRUE;
+  //GstAssessMeta *assess_meta = (GstAssessMeta *) meta;
+  INFO ("%s", __FUNCTION__);
+  return TRUE;
 }
 
-static gint assess_compare_name(gconstpointer a,
-    gconstpointer b, gpointer user_data)
+static gint
+assess_compare_name (gconstpointer a, gconstpointer b, gpointer user_data)
 {
   GHashTable *assess_point_hash = user_data;
   GstAssessPoint *ap1 = g_hash_table_lookup (assess_point_hash, a);
   GstAssessPoint *ap2 = g_hash_table_lookup (assess_point_hash, b);
-  if (ap1->number < ap2->number) return -1;
-  if (ap1->number > ap2->number) return 1;
-  if (ap1->pts < ap2->pts) return -1;
-  if (ap1->pts > ap2->pts) return 1;
+  if (ap1->number < ap2->number)
+    return -1;
+  if (ap1->number > ap2->number)
+    return 1;
+  if (ap1->pts < ap2->pts)
+    return -1;
+  if (ap1->pts > ap2->pts)
+    return 1;
   return 0;
 }
 
@@ -135,36 +154,36 @@ assess_db_timeout (gpointer data)
   g_print ("========== %d pipelines ==========\n", g_list_length (keys));
   for (key = keys; key; key = g_list_next (key)) {
     const gchar *s = (gchar *) key->data, *ss = NULL;
-    assess_point_hash  = g_hash_table_lookup (assess_db.hash, s);
+    assess_point_hash = g_hash_table_lookup (assess_db.hash, s);
     names = g_hash_table_get_keys (assess_point_hash);
-    names = g_list_sort_with_data (names, assess_compare_name, assess_point_hash);
+    names =
+        g_list_sort_with_data (names, assess_compare_name, assess_point_hash);
     /*
-    g_print ("%s\n", s);
-    */
+       g_print ("%s\n", s);
+     */
     for (name = names; name; name = g_list_next (name)) {
-      GstAssessPoint *assess_point = g_hash_table_lookup (
-	  assess_point_hash, name->data);
+      GstAssessPoint *assess_point =
+          g_hash_table_lookup (assess_point_hash, name->data);
       const int padlen = ASSESS_NAME_LENGTH - strlen (assess_point->name);
       if (0 < padlen)
-	ss = g_strnfill (padlen, ' ');
+        ss = g_strnfill (padlen, ' ');
       else
-	ss = g_strdup ("");
+        ss = g_strdup ("");
       g_print ("\t%d\t%s%s\tats=%lld, " //"\t%d\t%s%s\tsequence=%d,ats=%lld, "
-	  "pts=%lld, dts=%lld, duration=%lld, "
-	  "buffers=%lld, time=%lldms, offset=%lld"
-	  "\n",
-	  assess_point->number, assess_point->name, ss,
-	  //assess_point->sequence,
-	  (long long int) (assess_point->ats /*/ GST_MSECOND*/),
-	  (assess_point->pts == GST_CLOCK_TIME_NONE ? -1 :
-	      (long long int) (assess_point->pts /*/ GST_MSECOND*/)),
-	  (assess_point->dts == GST_CLOCK_TIME_NONE ? -1 :
-	      (long long int) (assess_point->dts /*/ GST_MSECOND*/)),
-	  (assess_point->duration == GST_CLOCK_TIME_NONE ? -1 :
-	      (long long int) (assess_point->duration /*/ GST_MSECOND*/)),
-	  (long long int) assess_point->buffer_count,
-	  (long long int) assess_point->running_time,
-	  (long long int) assess_point->offset);
+          "pts=%lld, dts=%lld, duration=%lld, "
+          "buffers=%lld, time=%lldms, offset=%lld"
+          "\n", assess_point->number, assess_point->name, ss,
+          //assess_point->sequence,
+          (long long int) (assess_point->ats /*/ GST_MSECOND */ ),
+          (assess_point->pts == GST_CLOCK_TIME_NONE ? -1 :
+              (long long int) (assess_point->pts /*/ GST_MSECOND */ )),
+          (assess_point->dts == GST_CLOCK_TIME_NONE ? -1 :
+              (long long int) (assess_point->dts /*/ GST_MSECOND */ )),
+          (assess_point->duration == GST_CLOCK_TIME_NONE ? -1 :
+              (long long int) (assess_point->duration /*/ GST_MSECOND */ )),
+          (long long int) assess_point->buffer_count,
+          (long long int) assess_point->running_time,
+          (long long int) assess_point->offset);
       g_free ((gpointer) ss);
     }
     g_list_free (names);
@@ -174,14 +193,14 @@ assess_db_timeout (gpointer data)
   return ret;
 }
 
-static void 
-gst_assess_init (GstAssess *assess)
+static void
+gst_assess_init (GstAssess * assess)
 {
   g_mutex_init (&assess->lock);
 }
 
 static void
-gst_assess_dispose (GstAssess *assess)
+gst_assess_dispose (GstAssess * assess)
 {
   GstElement *pipeline = NULL;
   GHashTable *assess_point_hash = NULL;
@@ -197,7 +216,7 @@ gst_assess_dispose (GstAssess *assess)
 
   if (assess_db.hash) {
     assess_point_hash = g_hash_table_lookup (assess_db.hash,
-	GST_ELEMENT_NAME (pipeline));
+        GST_ELEMENT_NAME (pipeline));
     if (assess_point_hash) {
       g_hash_table_remove (assess_point_hash, GST_ELEMENT_NAME (assess));
     }
@@ -205,12 +224,12 @@ gst_assess_dispose (GstAssess *assess)
 
   ASSESS_DB_UNLOCK ();
 
- end:
+end:
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (assess));
 }
 
 static void
-gst_assess_finalize (GstAssess *assess)
+gst_assess_finalize (GstAssess * assess)
 {
   g_mutex_clear (&assess->lock);
 
@@ -218,30 +237,30 @@ gst_assess_finalize (GstAssess *assess)
 }
 
 static void
-gst_assess_set_property (GstAssess *assess, guint prop_id,
+gst_assess_set_property (GstAssess * assess, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
   switch (prop_id) {
-  case PROP_N:
-    assess->number = g_value_get_uint (value);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (assess), prop_id, pspec);
-    break;
+    case PROP_N:
+      assess->number = g_value_get_uint (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (assess), prop_id, pspec);
+      break;
   }
 }
 
 static void
-gst_assess_get_property (GstAssess *assess, guint prop_id,
+gst_assess_get_property (GstAssess * assess, guint prop_id,
     GValue * value, GParamSpec * pspec)
 {
   switch (prop_id) {
-  case PROP_N:
-    g_value_set_uint (value, assess->number);
-    break;
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (assess), prop_id, pspec);
-    break;
+    case PROP_N:
+      g_value_set_uint (value, assess->number);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (assess), prop_id, pspec);
+      break;
   }
 }
 
@@ -262,7 +281,7 @@ gst_assess_stop (GstBaseTransform * trans)
 }
 
 static GstFlowReturn
-gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
+gst_assess_transform (GstBaseTransform * trans, GstBuffer * buffer)
 {
   GstAssess *this = NULL;
   GstElement *pipeline = NULL;
@@ -283,9 +302,9 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
       GST_ELEMENT_NAME (pipeline));
   if (assess_point_hash == NULL) {
     assess_point_hash = g_hash_table_new_full (g_str_hash, g_str_equal,
-	g_free, g_free);
+        g_free, g_free);
     g_hash_table_insert (assess_db.hash,
-	g_strdup (GST_ELEMENT_NAME (pipeline)),	assess_point_hash);
+        g_strdup (GST_ELEMENT_NAME (pipeline)), assess_point_hash);
   }
 
   assess_point = g_hash_table_lookup (assess_point_hash,
@@ -320,17 +339,17 @@ gst_assess_transform (GstBaseTransform *trans, GstBuffer *buffer)
   if (GST_CLOCK_TIME_NONE != GST_BUFFER_DURATION (buffer)) {
     assess_point->running_time += GST_BUFFER_DURATION (buffer) / GST_MSECOND;
   }
-  
+
   ASSESS_POINT_UNLOCK (assess_point);
 
- end:
+end:
   gst_object_unref (pipeline_clock);
   ret = GST_FLOW_OK;
   return ret;
 }
 
 static gboolean
-gst_assess_sink_event (GstBaseTransform *trans, GstEvent *event)
+gst_assess_sink_event (GstBaseTransform * trans, GstEvent * event)
 {
   GstAssess *this = GST_ASSESS (trans);
   gboolean ret = TRUE;
@@ -348,27 +367,27 @@ gst_assess_change_state (GstElement * element, GstStateChange transition)
   (void) this;
 
   switch (transition) {
-  case GST_STATE_CHANGE_READY_TO_PAUSED:
-    break;
-  default:
-    break;
+    case GST_STATE_CHANGE_READY_TO_PAUSED:
+      break;
+    default:
+      break;
   }
 
   ret = GST_ELEMENT_CLASS (parent_class)->change_state (element, transition);
 
   switch (transition) {
-  case GST_STATE_CHANGE_PAUSED_TO_READY:
-    //gst_assess_reset (this);
-    break;
-  default:
-    break;
+    case GST_STATE_CHANGE_PAUSED_TO_READY:
+      //gst_assess_reset (this);
+      break;
+    default:
+      break;
   }
 
   return ret;
 }
 
 static void
-gst_assess_class_init (GstAssessClass *klass)
+gst_assess_class_init (GstAssessClass * klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GstElementClass *element_class = GST_ELEMENT_CLASS (klass);
@@ -381,7 +400,7 @@ gst_assess_class_init (GstAssessClass *klass)
 
   g_object_class_install_property (object_class, PROP_N,
       g_param_spec_uint ("n", "N", "Number",
-          0, (guint) -1, -1, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          0, (guint) - 1, -1, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gst_element_class_set_static_metadata (element_class,
       "Stream Assessment", "Element",
@@ -406,20 +425,20 @@ gst_assess_class_init (GstAssessClass *klass)
   if (assess_db.hash == NULL) {
     ASSESS_DB_LOCK ();
     /*
-    const gchar *tags[] = { "assess", NULL };
-    assess_meta_api = gst_meta_api_type_register ("GstSwitchAssessMeta",
-	&tags[0]);
-    gst_meta_register (assess_meta_api, GST_ASSESS_META_IMPL,
-	sizeof (GstAssessMeta), gst_assess_meta_init,
-	gst_assess_meta_free, gst_assess_meta_transform);
-    */
-    
+       const gchar *tags[] = { "assess", NULL };
+       assess_meta_api = gst_meta_api_type_register ("GstSwitchAssessMeta",
+       &tags[0]);
+       gst_meta_register (assess_meta_api, GST_ASSESS_META_IMPL,
+       sizeof (GstAssessMeta), gst_assess_meta_init,
+       gst_assess_meta_free, gst_assess_meta_transform);
+     */
+
     if (assess_db.hash == NULL) {
       assess_db.clock = gst_system_clock_obtain ();
       assess_db.hash = g_hash_table_new_full (g_str_hash, g_str_equal,
-	  g_free, (GDestroyNotify) g_hash_table_destroy);
+          g_free, (GDestroyNotify) g_hash_table_destroy);
       assess_db.timer = g_timeout_add (5000,
-	  (GSourceFunc) assess_db_timeout, NULL);
+          (GSourceFunc) assess_db_timeout, NULL);
     }
     ASSESS_DB_UNLOCK ();
   }

@@ -55,17 +55,16 @@ static gboolean
 plugin_init (GstPlugin * plugin)
 {
   if (!gst_element_register (plugin, "tcpmixsrc", GST_RANK_NONE,
-	  GST_TYPE_TCP_MIX_SRC)) {
+          GST_TYPE_TCP_MIX_SRC)) {
     return FALSE;
   }
 
   if (!gst_element_register (plugin, "convbin", GST_RANK_NONE,
-	  GST_TYPE_CONV_BIN)) {
+          GST_TYPE_CONV_BIN)) {
     return FALSE;
   }
 
-  if (!gst_element_register (plugin, "switch", GST_RANK_NONE,
-	  GST_TYPE_SWITCH)) {
+  if (!gst_element_register (plugin, "switch", GST_RANK_NONE, GST_TYPE_SWITCH)) {
     return FALSE;
   }
 

@@ -39,11 +39,17 @@ typedef struct _GSocketInputStreamXPrivate                   GSocketInputStreamX
 typedef struct _GSocketInputStreamXClass                     GSocketInputStreamXClass;
 typedef struct _GSocketInputStreamX                          GSocketInputStreamX;
 
+/**
+ * @brief Upward comatible with GSocketInputStreamClass
+ */
 struct _GSocketInputStreamXClass
 {
   GInputStreamClass parent_class;
 };
 
+/**
+ * @brief Upward compatible with GSocketInputStream
+ */
 struct _GSocketInputStreamX
 {
   GInputStream parent_instance;

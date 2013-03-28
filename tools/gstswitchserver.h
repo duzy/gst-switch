@@ -68,7 +68,7 @@ struct _GstSwitchServerOpts
  *  @param base the parent object
  *  @param host the server host name, e.g. localhost
  *  @param main_loop the main loop
- *  @param main_loop_lock the lock for the @main_loop
+ *  @param main_loop_lock the lock for the %main_loop
  *  @param exit_code the exit code in cases of force quit.
  *  @param cancellable 
  *  @param video_acceptor_lock the lock for the video acceptor
@@ -84,22 +84,22 @@ struct _GstSwitchServerOpts
  *  @param controller_socket the controller socket (deprecated)
  *  @param controller_port the controller port number (deprecated)
  *  @param controller the controller instance
- *  @param alloc_port_lock the lock for @alloc_port_count
+ *  @param alloc_port_lock the lock for %alloc_port_count
  *  @param alloc_port_count port allocation counter
  *  @param serve_lock the lock for serving new inputs
- *  @param cases_lock the lock for the @cases
+ *  @param cases_lock the lock for the %cases
  *  @param cases the case list
  *  @param composite the composite instance
  *  @param new_composite_mode the new composite mode to be applied
  *  @param output the output instance
- *  @param recorder_lock the lock for the @recorder
+ *  @param recorder_lock the lock for the %recorder
  *  @param recorder the recorder instance
- *  @pip_lock the lock for PIP
+ *  @param pip_lock the lock for PIP
  *  @param pip_x the PIP x position
  *  @param pip_y the PIP y position
  *  @param pip_w the PIP width
  *  @param pip_h the PIP height
- *  @param clock_lock the lock for @clock
+ *  @param clock_lock the lock for %clock
  *  @param clock a system clock
  */
 struct _GstSwitchServer
