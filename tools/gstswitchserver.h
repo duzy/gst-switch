@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifndef __GST_SWITCH_SERVER_H__by_Duzy_Chan__
 #define __GST_SWITCH_SERVER_H__by_Duzy_Chan__ 1
 #include <gio/gio.h>
@@ -45,11 +47,11 @@ typedef struct _GstSwitchServerOpts GstSwitchServerOpts;
 
 /**
  *  GstSwitchServerOpts:
- *  @record_filename: the recording filename
- *  @controller_address: the dbus address for the controller
- *  @video_input_port: the video input TCP port
- *  @audio_input_port: the audio input TCP port
- *  @control_port: (discarded)
+ *  @param record_filename the recording filename
+ *  @param controller_address the dbus address for the controller
+ *  @param video_input_port the video input TCP port
+ *  @param audio_input_port the audio input TCP port
+ *  @param control_port (discarded)
  */
 struct _GstSwitchServerOpts
 {
@@ -63,42 +65,42 @@ struct _GstSwitchServerOpts
 
 /**
  *  GstSwitchServer:
- *  @base: the parent object
- *  @host: the server host name, e.g. localhost
- *  @main_loop: the main loop
- *  @main_loop_lock: the lock for the @main_loop
- *  @exit_code: the exit code in cases of force quit.
- *  @cancellable: 
- *  @video_acceptor_lock: the lock for the video acceptor
- *  @video_acceptor: the video acceptor thread
- *  @video_acceptor_socket: the vidoe acceptor socekt
- *  @video_acceptor_port: the video acceptor port number
- *  @audio_acceptor_lock: the lock for the audio acceptor
- *  @audio_acceptor: the audio acceptor thread
- *  @audio_acceptor_socket: the audio acceptor socket
- *  @audio_acceptor_port: the audio acceptor port
- *  @controller_lock: the lock for controller
- *  @controller_thread: the controller thread (deprecated)
- *  @controller_socket: the controller socket (deprecated)
- *  @controller_port: the controller port number (deprecated)
- *  @controller: the controller instance
- *  @alloc_port_lock: the lock for @alloc_port_count
- *  @alloc_port_count: port allocation counter
- *  @serve_lock: the lock for serving new inputs
- *  @cases_lock: the lock for the @cases
- *  @cases: the case list
- *  @composite: the composite instance
- *  @new_composite_mode: the new composite mode to be applied
- *  @output: the output instance
- *  @recorder_lock: the lock for the @recorder
- *  @recorder: the recorder instance
+ *  @param base the parent object
+ *  @param host the server host name, e.g. localhost
+ *  @param main_loop the main loop
+ *  @param main_loop_lock the lock for the @main_loop
+ *  @param exit_code the exit code in cases of force quit.
+ *  @param cancellable 
+ *  @param video_acceptor_lock the lock for the video acceptor
+ *  @param video_acceptor the video acceptor thread
+ *  @param video_acceptor_socket the vidoe acceptor socekt
+ *  @param video_acceptor_port the video acceptor port number
+ *  @param audio_acceptor_lock the lock for the audio acceptor
+ *  @param audio_acceptor the audio acceptor thread
+ *  @param audio_acceptor_socket the audio acceptor socket
+ *  @param audio_acceptor_port the audio acceptor port
+ *  @param controller_lock the lock for controller
+ *  @param controller_thread the controller thread (deprecated)
+ *  @param controller_socket the controller socket (deprecated)
+ *  @param controller_port the controller port number (deprecated)
+ *  @param controller the controller instance
+ *  @param alloc_port_lock the lock for @alloc_port_count
+ *  @param alloc_port_count port allocation counter
+ *  @param serve_lock the lock for serving new inputs
+ *  @param cases_lock the lock for the @cases
+ *  @param cases the case list
+ *  @param composite the composite instance
+ *  @param new_composite_mode the new composite mode to be applied
+ *  @param output the output instance
+ *  @param recorder_lock the lock for the @recorder
+ *  @param recorder the recorder instance
  *  @pip_lock the lock for PIP
- *  @pip_x: the PIP x position
- *  @pip_y: the PIP y position
- *  @pip_w: the PIP width
- *  @pip_h: the PIP height
- *  @clock_lock: the lock for @clock
- *  @clock: a system clock
+ *  @param pip_x the PIP x position
+ *  @param pip_y the PIP y position
+ *  @param pip_w the PIP width
+ *  @param pip_h the PIP height
+ *  @param clock_lock the lock for @clock
+ *  @param clock a system clock
  */
 struct _GstSwitchServer
 {
@@ -151,7 +153,7 @@ struct _GstSwitchServer
 
 /**
  *  GstSwitchServerClass:
- *  @base_calss: the parent class
+ *  @param base_calss the parent class
  */
 struct _GstSwitchServerClass
 {

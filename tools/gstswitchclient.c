@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -162,8 +164,8 @@ gst_switch_client_get_compose_port (GstSwitchClient * client)
 
 /**
  * gst_switch_client_get_encode_port:
- *  @client: the GstSwitchClient instance
- *  @return: the encode port number
+ *  @param client the GstSwitchClient instance
+ *  @param return the encode port number
  *
  *  Get the encode port number.
  *  
@@ -183,8 +185,8 @@ gst_switch_client_get_encode_port (GstSwitchClient * client)
 
 /**
  * gst_switch_client_get_audio_port:
- *  @client: the GstSwitchClient instance
- *  @return: the audio port number
+ *  @param client the GstSwitchClient instance
+ *  @param return the audio port number
  *
  *  The the audio port number.
  *  
@@ -203,8 +205,8 @@ gst_switch_client_get_audio_port (GstSwitchClient * client)
 
 /**
  * gst_switch_client_get_preview_ports:
- *  @client: the GstSwitchClient instance
- *  @return: The preview ports of type GVariant
+ *  @param client the GstSwitchClient instance
+ *  @param return The preview ports of type GVariant
  *
  *  The all preview ports.
  *
@@ -218,10 +220,10 @@ gst_switch_client_get_preview_ports (GstSwitchClient * client)
 
 /**
  * gst_switch_client_switch:
- *  @client: the GstSwitchClient instance
- *  @channel: The channel to be switched, 'A', 'B', 'a'
- *  @port: The target port number
- *  @return: TRUE when requested.
+ *  @param client the GstSwitchClient instance
+ *  @param channel The channel to be switched, 'A', 'B', 'a'
+ *  @param port The target port number
+ *  @param return TRUE when requested.
  *
  *  Switch the channel to the target port.
  *  
@@ -243,8 +245,8 @@ gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
 
 /**
  * gst_switch_client_set_composite_mode:
- *  @client: the GstSwitchClient instance
- *  @return: TRUE when requested.
+ *  @param client the GstSwitchClient instance
+ *  @param return TRUE when requested.
  *
  *  Set the current composite mode.
  *  
@@ -278,8 +280,8 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
 
 /**
  * gst_switch_client_new_record:
- *  @client: the GstSwitchClient instance
- *  @return: TRUE when requested.
+ *  @param client the GstSwitchClient instance
+ *  @param return TRUE when requested.
  *
  *  Start a new recording.
  *
@@ -300,12 +302,12 @@ gst_switch_client_new_record (GstSwitchClient * client)
 
 /**
  * gst_switch_client_adjust_pip:
- *  @client: the GstSwitchClient instance
- *  @dx: x position to be adjusted
- *  @dy: y position to be adjusted
- *  @dw: w position to be adjusted
- *  @dh: h position to be adjusted
- *  @return: a unsign integer indicating which components are changed of per
+ *  @param client the GstSwitchClient instance
+ *  @param dx x position to be adjusted
+ *  @param dy y position to be adjusted
+ *  @param dw w position to be adjusted
+ *  @param dh h position to be adjusted
+ *  @param return a unsign integer indicating which components are changed of per
  *           bit.
  *
  *  Adjust the PIP.
@@ -529,8 +531,8 @@ error_subscribe:
 
 /**
  * gst_switch_client_is_connected:
- *  @client: the GstSwitchClient instance
- *  @return: TRUE when requested.
+ *  @param client the GstSwitchClient instance
+ *  @param return TRUE when requested.
  *
  *  Check if the client is connected to the gst-switch server.
  *  
@@ -548,8 +550,8 @@ gst_switch_client_is_connected (GstSwitchClient * client)
 
 /**
  * gst_switch_client_connect:
- *  @client: the GstSwitchClient instance
- *  @return: TRUE when requested.
+ *  @param client the GstSwitchClient instance
+ *  @param return TRUE when requested.
  *
  *  Connect the client with the gst-switch server.
  *  
@@ -576,8 +578,8 @@ gst_switch_client_connect (GstSwitchClient * client)
 
 /**
  * gst_switch_client_get_compose_port:
- *  @client: the GstSwitchClient instance
- *  @return: the compose port number
+ *  @param client the GstSwitchClient instance
+ *  @param return the compose port number
  *
  *  Get the compose port number.
  *  

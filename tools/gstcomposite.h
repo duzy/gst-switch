@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifndef __GST_COMPOSITE_H__by_Duzy_Chan__
 #define __GST_COMPOSITE_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
@@ -48,19 +50,14 @@
 #define DEFAULT_COMPOSE_MODE COMPOSE_MODE_3
 
 /**
- *  GstCompositeMode:
- *  @COMPOSE_MODE_0: for compose mode 0 (no composite)
- *  @COMPOSE_MODE_1: for compose mode 1 (PIP)
- *  @COMPOSE_MODE_2: for compose mode 2 (side-by-side 7:3)
- *  @COMPOSE_MODE_3: for compose mode 3 (side-by-side 1:1)
- *  @COMPOSE_MODE__LAST:
+ *  @enum GstCompositeMode:
  */
 typedef enum
 {
-  COMPOSE_MODE_0,               /* none */
-  COMPOSE_MODE_1,               /* picture-in-picture */
-  COMPOSE_MODE_2,               /* side-by-side (preview) */
-  COMPOSE_MODE_3,               /* side-by-side (equal) */
+  COMPOSE_MODE_0,               /*!< none */
+  COMPOSE_MODE_1,               /*!< picture-in-picture */
+  COMPOSE_MODE_2,               /*!< side-by-side (preview) */
+  COMPOSE_MODE_3,               /*!< side-by-side (equal) */
   COMPOSE_MODE__LAST = COMPOSE_MODE_3
 } GstCompositeMode;
 
@@ -68,28 +65,28 @@ typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
 
 /**
- *  GstComposite
- *  @base: the parent object
- *  @mode: the composite mode, see @GstCompositeMode
- *  @lock: lock for composite object
- *  @transition_lock: lock for transition of modes 
- *  @adjustment_lock: lock for PIP adjustment
- *  @sink_port: sink port number
- *  @encode_sink_port: encode port number
- *  @a_x: X position of A video
- *  @a_y: Y position of A video
- *  @a_width: width of A video
- *  @a_height: height of A video
- *  @b_x: X position of B video
- *  @b_y: Y position of B video
- *  @b_width: width of B video
- *  @b_height: height of B video
- *  @width: output width
- *  @height: output height
- *  @adjusting: the status of adjusting PIP
- *  @transition: the status of transiting modes
- *  @deprecated: (deprecated)
- *  @scaler: the scaller for A/B videos
+ *  @class GstComposite
+ *  @param base the parent object
+ *  @param mode the composite mode, @see GstCompositeMode
+ *  @param lock lock for composite object
+ *  @param transition_lock lock for transition of modes 
+ *  @param adjustment_lock lock for PIP adjustment
+ *  @param sink_port sink port number
+ *  @param encode_sink_port encode port number
+ *  @param a_x X position of A video
+ *  @param a_y Y position of A video
+ *  @param a_width width of A video
+ *  @param a_height height of A video
+ *  @param b_x X position of B video
+ *  @param b_y Y position of B video
+ *  @param b_width width of B video
+ *  @param b_height height of B video
+ *  @param width output width
+ *  @param height output height
+ *  @param adjusting the status of adjusting PIP
+ *  @param transition the status of transiting modes
+ *  @param deprecated (deprecated)
+ *  @param scaler the scaller for A/B videos
  */
 struct _GstComposite
 {
@@ -125,8 +122,8 @@ struct _GstComposite
 
 /**
  *  GstCompositeClass:
- *  @base_class: the parent class
- *  @end_transition: signal handler of "end-transition"
+ *  @param base_class the parent class
+ *  @param end_transition signal handler of "end-transition"
  */
 struct _GstCompositeClass
 {

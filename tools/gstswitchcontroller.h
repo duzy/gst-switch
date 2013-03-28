@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifndef __GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__
 #define __GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__ 1
 #include <gio/gio.h>
@@ -48,23 +50,21 @@ typedef GVariant *(*MethodFunc) (GObject *, GDBusConnection *, GVariant *);
 typedef struct _MethodTableEntry MethodTableEntry;
 
 /**
- *  MethodTableEntry:
- *  @name: the remote method name
- *  @func: the bound function
+ *  @brief Remote method table entry.
  */
 struct _MethodTableEntry
 {
-  const gchar *name;
-  MethodFunc func;
+  const gchar *name; /*!< the remote method name */
+  MethodFunc func; /*!< the bound function */
 };
 
 /**
  *  GstSwitchController:
- *  @base: the parent object
- *  @server: the GstSwitchServer instance
- *  @bus_server: the dbus server instance
- *  @uis_lock: the lock for @uis
- *  @uis: the client list
+ *  @param base the parent object
+ *  @param server the GstSwitchServer instance
+ *  @param bus_server the dbus server instance
+ *  @param uis_lock the lock for @uis
+ *  @param uis the client list
  */
 struct _GstSwitchController
 {
@@ -78,8 +78,8 @@ struct _GstSwitchController
 
 /**
  *  GstSwitchControllerClass:
- *  @base_class: the parent class
- *  @methods: the remote method table
+ *  @param base_class the parent class
+ *  @param methods the remote method table
  */
 struct _GstSwitchControllerClass
 {

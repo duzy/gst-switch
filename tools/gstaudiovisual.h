@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifndef __GST_AUDIO_VISUAL_H__by_Duzy_Chan__
 #define __GST_AUDIO_VISUAL_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
@@ -38,16 +40,16 @@ typedef struct _GstAudioVisualClass GstAudioVisualClass;
 
 /**
  *  GstAudioVisual:
- *  @base: the parent object
- *  @port: the port number
- *  @handle: the X window handle for displaying the audio visualization
- *  @active: TRUE if the audio is active. A active audio will be sinked to
+ *  @param base the parent object
+ *  @param port the port number
+ *  @param handle the X window handle for displaying the audio visualization
+ *  @param active TRUE if the audio is active. A active audio will be sinked to
  *           the real hardware speaker, e.g. ALSA
- *  @renewing: (deprecated)
- *  @endtime_lock: the lock for @endtime
- *  @endtime: the endtime of the last audo sample
- *  @value_lock: the lock for @value
- *  @value: the value of the last audio sample
+ *  @param renewing (deprecated)
+ *  @param endtime_lock the lock for @endtime
+ *  @param endtime the endtime of the last audo sample
+ *  @param value_lock the lock for @value
+ *  @param value the value of the last audio sample
  */
 struct _GstAudioVisual
 {
@@ -66,7 +68,7 @@ struct _GstAudioVisual
 
 /**
  *  GstAudioVisualClass:
- *  @base_class: the parent class
+ *  @param base_class the parent class
  */
 struct _GstAudioVisualClass
 {

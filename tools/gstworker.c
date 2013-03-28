@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -45,9 +47,10 @@ enum
   SIGNAL_START_WORKER,
   SIGNAL_END_WORKER,
   SIGNAL_WORKER_NULL,
-  SIGNAL__LAST,
+  SIGNAL__LAST,                 /*!< @internal */
 };
 
+/*!< @internal */
 static guint gst_worker_signals[SIGNAL__LAST] = { 0 };
 
 extern gboolean verbose;
@@ -56,7 +59,10 @@ extern gboolean verbose;
 guint assess_number = 0;
 #endif //ENABLE_ASSESSMENT
 
+/*!< @internal */
 #define gst_worker_parent_class parent_class
+
+/*!< @internal */
 G_DEFINE_TYPE (GstWorker, gst_worker, G_TYPE_OBJECT);
 
 static void

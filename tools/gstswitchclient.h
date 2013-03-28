@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifndef __GST_SWITCH_CLIENT_H__by_Duzy_Chan__
 #define __GST_SWITCH_CLIENT_H__by_Duzy_Chan__ 1
 #include <gst/gst.h>

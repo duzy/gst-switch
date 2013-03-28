@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifndef __GST_SWITCH_UI_H__by_Duzy_Chan__
 #define __GST_SWITCH_UI_H__by_Duzy_Chan__ 1
 #include <gdk/gdkx.h>
@@ -43,7 +45,6 @@ typedef struct _GstSwitchUIClass GstSwitchUIClass;
 
 /**
  *  GstSwitchUI:
- *  @base: the parent object
  */
 struct _GstSwitchUI
 {
@@ -79,7 +80,6 @@ struct _GstSwitchUI
 
 /**
  *  GstSwitchUIClass:
- *  @base_class: the parent calss
  */
 struct _GstSwitchUIClass
 {

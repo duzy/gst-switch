@@ -23,6 +23,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*! @file */
+
 #ifndef __GST_RECORDER_H__by_Duzy_Chan__
 #define __GST_RECORDER_H__by_Duzy_Chan__ 1
 #include "gstworker.h"
@@ -39,11 +41,11 @@ typedef struct _GstRecorderClass GstRecorderClass;
 
 /**
  *  GstRecorder:
- *  @base: the parent object
- *  @sink_port: the encode sink port
- *  @width: the video width
- *  @height: the video height
- *  @mode: the composite mode which is the same as in GstComposite
+ *  @param base the parent object
+ *  @param sink_port the encode sink port
+ *  @param width the video width
+ *  @param height the video height
+ *  @param mode the composite mode which is the same as in GstComposite
  */
 struct _GstRecorder
 {
@@ -58,8 +60,8 @@ struct _GstRecorder
 
 /**
  *  GstRecorderClass:
- *  @base_class: the parent class
- *  @end_recorder: the "end-recorder" signal handler
+ *  @param base_class the parent class
+ *  @param end_recorder the "end-recorder" signal handler
  */
 struct _GstRecorderClass
 {
