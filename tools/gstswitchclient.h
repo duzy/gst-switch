@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,8 +53,9 @@ typedef void (*GstSwitchClientNewModeOnlineFunc) (GstSwitchClient * client,
     gint port);
 
 /**
- *  GstSwitchClient:
- *  
+ *  @class GstSwitchClient
+ *  @struct _GstSwitchClient
+ *  @brief The GstSwitch client.
  */
 struct _GstSwitchClient
 {
@@ -68,8 +69,9 @@ struct _GstSwitchClient
 };
 
 /**
- *  GstSwitchClientClass:
- *  
+ *  @class GstSwitchClientClass
+ *  @struct _GstSwitchClientClass
+ *  @brief The class of GstSwitchClient
  */
 struct _GstSwitchClientClass
 {

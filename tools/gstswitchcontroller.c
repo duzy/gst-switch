@@ -108,9 +108,8 @@ static const gchar introspection_xml[] =
 */
 
 /**
- * gst_switch_controller_method_match:
- *
- * Helper function for matching remoting method names.
+ * @brief Helper function for matching remoting method names.
+ * @memberof GstSwitchController
  */
 static gboolean
 gst_switch_controller_method_match (const gchar * key,
@@ -122,9 +121,8 @@ gst_switch_controller_method_match (const gchar * key,
 }
 
 /**
- * gst_switch_controller_do_method_call:
- *
- * Performing a remoting method call from a gst-switch client.
+ * @brief Performing a remoting method call from a gst-switch client.
+ * @memberof GstSwitchController
  */
 static void
 gst_switch_controller_do_method_call (GDBusConnection * connection,
@@ -164,9 +162,8 @@ error_no_method:
 }
 
 /**
- * gst_switch_controller_do_get_property:
- *
- * Fetching the controller property remotely (it's useless currently).
+ * @brief Fetching the controller property remotely (it's useless currently).
+ * @memberof GstSwitchController
  */
 static GVariant *
 gst_switch_controller_do_get_property (GDBusConnection * connection,
@@ -189,9 +186,8 @@ gst_switch_controller_do_get_property (GDBusConnection * connection,
 }
 
 /**
- * gst_switch_controller_do_set_property:
- *
- * Setting the property of controller remotely (it's useless currently).
+ * @brief Setting the property of controller remotely (it's useless currently).
+ * @memberof GstSwitchController
  */
 static gboolean
 gst_switch_controller_do_set_property (GDBusConnection * connection,
@@ -206,10 +202,7 @@ gst_switch_controller_do_set_property (GDBusConnection * connection,
 }
 
 /**
- * gst_switch_controller_interface_vtable:
- *
- * The remoting virtual table.
- *
+ * @brief The remoting virtual table.
  * @see GDBusInterfaceVTable.
  */
 static const GDBusInterfaceVTable gst_switch_controller_interface_vtable = {
@@ -274,9 +267,8 @@ gst_switch_controller_export (GstSwitchController * controller)
 #endif
 
 /**
- * gst_switch_controller_emit_ui_signal:
- *
- * Perform sending remote signals to connected clients.
+ * @brief Perform sending remote signals to connected clients.
+ * @memberof GstSwitchController
  */
 static void
 gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
@@ -312,9 +304,8 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_on_connection_closed:
- *
- * Invoked to cleanup when a connected client is closed.
+ * @brief Invoked to cleanup when a connected client is closed.
+ * @memberof GstSwitchController
  */
 static void
 gst_switch_controller_on_connection_closed (GDBusConnection * connection,
@@ -339,9 +330,8 @@ gst_switch_controller_on_connection_closed (GDBusConnection * connection,
 }
 
 /**
- * gst_switch_controller_on_new_connection:
- *
- * Invoked when a new incomming client connection is established.
+ * @brief Invoked when a new incomming client connection is established.
+ * @memberof GstSwitchController
  */
 static gboolean
 gst_switch_controller_on_new_connection (GDBusServer * server,
@@ -391,9 +381,8 @@ error_register_object:
 }
 
 /**
- * gst_switch_controller_authorize_authenticated_peer:
- *
- * Authorizing new dbus connection.
+ * @brief Authorizing new dbus connection.
+ * @memberof GstSwitchController
  */
 static gboolean
 gst_switch_controller_authorize_authenticated_peer (GDBusAuthObserver *
@@ -405,10 +394,8 @@ gst_switch_controller_authorize_authenticated_peer (GDBusAuthObserver *
 }
 
 /**
- * gst_switch_controller_init:
- *
- * Initializing the GstSwitchController.
- *
+ * @brief Initializing the GstSwitchController.
+ * @memberof GstSwitchController
  * @see GObject
  */
 static void
@@ -461,10 +448,8 @@ error_new_server:
 }
 
 /**
- * gst_switch_controller_finalize:
- *
- * Destroying the GstSwitchController.
- *
+ * @brief Destroying the GstSwitchController.
+ * @memberof GstSwitchController
  * @see GObject
  */
 static void
@@ -487,12 +472,10 @@ gst_switch_controller_finalize (GstSwitchController * controller)
 }
 
 /**
- * gst_switch_controller_is_valid:
- *  @param controller the GstSwitchController instance
- *  @return TRUE is the controller is valid connected to the dbus server
- *
- *  Check if the controller is valid.
- *
+ * @brief Check if the controller is valid.
+ * @param controller the GstSwitchController instance
+ * @return TRUE is the controller is valid connected to the dbus server
+ * @memberof GstSwitchController
  */
 gboolean
 gst_switch_controller_is_valid (GstSwitchController * controller)
@@ -505,9 +488,8 @@ gst_switch_controller_is_valid (GstSwitchController * controller)
 }
 
 /**
- * gst_switch_controller_call_ui:
- *
- * Invoke a remote method on a connected client.
+ * @brief Invoke a remote method on a connected client.
+ * @memberof GstSwitchController
  */
 static GVariant *
 gst_switch_controller_call_ui (GstSwitchController * controller,
@@ -542,9 +524,8 @@ error_call_sync:
 }
 
 /**
- * gst_switch_controller_call_uis:
- *
- * Invoke a remote method on all connected clients.
+ * @brief Invoke a remote method on all connected clients.
+ * @memberof GstSwitchController
  */
 static void
 gst_switch_controller_call_uis (GstSwitchController * controller,
@@ -607,10 +588,9 @@ gst_switch_controller_test_ui (GstSwitchController * controller,
 #endif
 
 /**
- * gst_switch_controller_set_ui_audio_port:
- *
  * Convenient wrapper method for calling remoting method "set_audio_port"
  * on all clients.
+ * @memberof GstSwitchController
  */
 static void
 gst_switch_controller_set_ui_audio_port (GstSwitchController * controller,
@@ -621,10 +601,9 @@ gst_switch_controller_set_ui_audio_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_set_ui_compose_port:
- *
  * Convenient wrapper for calling remoting method "set_compose_port" on
  * all clients.
+ * @memberof GstSwitchController
  */
 static void
 gst_switch_controller_set_ui_compose_port (GstSwitchController * controller,
@@ -635,8 +614,7 @@ gst_switch_controller_set_ui_compose_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_set_ui_encode_port:
- *
+ * @memberof GstSwitchController
  * Convenient wrapper for calling remoting method "set_encode_port" on all
  * clients.
  */
@@ -649,8 +627,8 @@ gst_switch_controller_set_ui_encode_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_add_ui_preview_port:
- *
+ * @memberof GstSwitchController
+ * 
  * Convenient wrapper for calling remoting method "add_preview_port" on all
  * clients.
  */
@@ -663,7 +641,7 @@ gst_switch_controller_add_ui_preview_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_get_property:
+ * @memberof GstSwitchController
  *
  * Fetching a GstSwitchController object's property.
  *
@@ -681,7 +659,7 @@ gst_switch_controller_get_property (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_set_property:
+ * @memberof GstSwitchController
  *
  * Setting a GstSwitchController object's property.
  *
@@ -699,9 +677,9 @@ gst_switch_controller_set_property (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_tell_audio_port:
- *  @param controller the GstSwitchController instance
- *  @param port the port number
+ * @memberof GstSwitchController
+ * @param controller the GstSwitchController instance
+ * @param port the port number
  *
  *  Tell the audio port to the clients.
  */
@@ -715,9 +693,9 @@ gst_switch_controller_tell_audio_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_tell_compose_port:
- *  @param controller the GstSwitchController instance
- *  @param port the port number
+ * @memberof GstSwitchController
+ * @param controller the GstSwitchController instance
+ * @param port the port number
  *
  *  Tell the compose port to the clients.
  */
@@ -731,7 +709,7 @@ gst_switch_controller_tell_compose_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_tell_encode_port:
+ *  @memberof GstSwitchController
  *  @param controller the GstSwitchController instance
  *  @param port the port number
  *
@@ -747,7 +725,7 @@ gst_switch_controller_tell_encode_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_tell_preview_port:
+ *  @memberof GstSwitchController
  *  @param controller the GstSwitchController instance
  *  @param port the port number
  *  @param serve value of GstSwitchServeStreamType
@@ -765,7 +743,7 @@ gst_switch_controller_tell_preview_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_tell_new_mode_onlne:
+ *  @memberof GstSwitchController
  *  @param controller the GstSwitchController instance
  *  @param mode the new mode changed
  *
@@ -792,8 +770,8 @@ gst_switch_controller__test (GstSwitchController * controller,
 #endif //ENABLE_TEST
 
 /**
- * gst_switch_controller__get_compose_port:
- *
+ * @memberof GstSwitchController
+ *  
  * Remoting method stub of "get_compose_port".
  */
 static GVariant *
@@ -808,7 +786,7 @@ gst_switch_controller__get_compose_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller__get_encode_port:
+ * @memberof GstSwitchController
  *
  * Remoting method stub of "get_encode_port".
  */
@@ -824,7 +802,7 @@ gst_switch_controller__get_encode_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller__get_audio_port:
+ * @memberof GstSwitchController
  *
  * Remoting method stub of "get_audio_port".
  */
@@ -840,7 +818,7 @@ gst_switch_controller__get_audio_port (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller__get_preview_ports:
+ * @memberof GstSwitchController
  *
  * Remoting method stub of "get_preview_ports".
  */
@@ -884,7 +862,7 @@ gst_switch_controller__get_preview_ports (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller__set_composite_mode:
+ * @memberof GstSwitchController
  *
  * Remoting method stub of "set_composite_mode".
  */
@@ -904,7 +882,7 @@ gst_switch_controller__set_composite_mode (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller__new_record:
+ * @memberof GstSwitchController
  *
  * Remoting method stub of "new_record".
  */
@@ -922,7 +900,7 @@ gst_switch_controller__new_record (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller__adjust_pip:
+ * @memberof GstSwitchController
  *
  * Remoting method stub of "adjust_pip".
  */
@@ -942,7 +920,7 @@ gst_switch_controller__adjust_pip (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller__switch:
+ * @memberof GstSwitchController
  *
  * Remoting method stub of "switch".
  */
@@ -962,7 +940,6 @@ gst_switch_controller__switch (GstSwitchController * controller,
 }
 
 /**
- * gst_switch_controller_method_table:
  *
  * Remoting method table of the gst-switch controller.
  */
@@ -984,9 +961,9 @@ static MethodTableEntry gst_switch_controller_method_table[] = {
 };
 
 /**
- * gst_switch_controller_class_init:
- *
- * Initialize the GstSwitchControllerClass.
+ * @brief Initialize the GstSwitchControllerClass.
+ * @param klass
+ * @memberof GstSwitchControllerClass
  */
 static void
 gst_switch_controller_class_init (GstSwitchControllerClass * klass)

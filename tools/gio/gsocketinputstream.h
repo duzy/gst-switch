@@ -1,4 +1,4 @@
-/* GIO - GLib Input, Output and Streaming Library
+/* GIO - GLib Input, Output and Streaming Library                  -*- c -*-
  *
  * Copyright © 2008 Christian Kellner, Samuel Cormier-Iijima
  * Copyright © 2009 Codethink Limited

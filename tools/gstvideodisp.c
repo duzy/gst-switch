@@ -46,12 +46,22 @@ extern gboolean verbose;
 
 G_DEFINE_TYPE (GstVideoDisp, gst_video_disp, GST_TYPE_WORKER);
 
+/**
+ * @brief
+ * @param disp The GstVideoDisp instance.
+ * @memberof GstVideoDisp
+ */
 static void
 gst_video_disp_init (GstVideoDisp * disp)
 {
   //INFO ("init %p", disp);
 }
 
+/**
+ * @brief
+ * @param disp The GstVideoDisp instance.
+ * @memberof GstVideoDisp
+ */
 static void
 gst_video_disp_dispose (GstVideoDisp * disp)
 {
@@ -59,6 +69,11 @@ gst_video_disp_dispose (GstVideoDisp * disp)
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (disp));
 }
 
+/**
+ * @brief
+ * @param disp The GstVideoDisp instance.
+ * @memberof GstVideoDisp
+ */
 static void
 gst_video_disp_finalize (GstVideoDisp * disp)
 {
@@ -66,6 +81,14 @@ gst_video_disp_finalize (GstVideoDisp * disp)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (disp));
 }
 
+/**
+ * @brief
+ * @param disp The GstVideoDisp instance.
+ * @param property_id
+ * @param value
+ * @param pspec
+ * @memberof GstVideoDisp
+ */
 static void
 gst_video_disp_set_property (GstVideoDisp * disp, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -83,6 +106,14 @@ gst_video_disp_set_property (GstVideoDisp * disp, guint property_id,
   }
 }
 
+/**
+ * @brief
+ * @param disp The GstVideoDisp instance.
+ * @param property_id
+ * @param value
+ * @param pspec
+ * @memberof GstVideoDisp
+ */
 static void
 gst_video_disp_get_property (GstVideoDisp * disp, guint property_id,
     GValue * value, GParamSpec * pspec)
@@ -100,6 +131,11 @@ gst_video_disp_get_property (GstVideoDisp * disp, guint property_id,
   }
 }
 
+/**
+ * @brief
+ * @param disp The GstVideoDisp instance.
+ * @memberof GstVideoDisp
+ */
 static GString *
 gst_video_disp_get_pipeline_string (GstVideoDisp * disp)
 {
@@ -118,6 +154,11 @@ gst_video_disp_get_pipeline_string (GstVideoDisp * disp)
   return desc;
 }
 
+/**
+ * @brief
+ * @param disp The GstVideoDisp instance.
+ * @memberof GstVideoDisp
+ */
 static gboolean
 gst_video_disp_prepare (GstVideoDisp * disp)
 {
@@ -134,6 +175,11 @@ gst_video_disp_prepare (GstVideoDisp * disp)
   return TRUE;
 }
 
+/**
+ * @brief
+ * @param klass The GstVideoDispClass instance.
+ * @memberof GstVideoDispClass
+ */
 static void
 gst_video_disp_class_init (GstVideoDispClass * klass)
 {

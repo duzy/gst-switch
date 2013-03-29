@@ -17,6 +17,11 @@
  * Boston, MA 02110-1335, USA.
  */
 
+/*!
+ * @file
+ * @deprecated
+ */
+
 /**
  * SECTION:element-gsttcpmixsrc
  *
@@ -117,31 +122,32 @@ typedef struct _GstTCPMixSrcPadClass GstTCPMixSrcPadClass;
 typedef struct _GstTCPMixSrcPad GstTCPMixSrcPad;
 
 /**
- * @deprecated
+ * @deprecated Not used!
  */
 struct _GstTCPMixSrcPadClass
 {
-  GstPadClass base_class;
+  GstPadClass base_class;       /*!< The base class. */
 };
 
 /**
- * @deprecated
+ * @deprecated Not used!
  */
 struct _GstTCPMixSrcPad
 {
-  GstPad base;
+  GstPad base;                  /*!< The base object. */
 
-  GCancellable *cancellable;
+  GCancellable *cancellable;    /*!< @deprecated */
 
-  GMutex client_lock;
-  GCond has_client;
-  GSocket *client;
+  GMutex client_lock;           /*!< @deprecated */
+  GCond has_client;             /*!< @deprecated */
+  GSocket *client;              /*!< @deprecated */
 
-  gboolean running;
+  gboolean running;             /*!< @deprecated */
 
-  GstElement *fillsrc;
+  GstElement *fillsrc;          /*!< @deprecated */
 };
 
+/*!< @deprecated */
 GType gst_tcp_mix_src_pad_get_type (void);
 
 G_DEFINE_TYPE (GstTCPMixSrcPad, gst_tcp_mix_src_pad, GST_TYPE_PAD);

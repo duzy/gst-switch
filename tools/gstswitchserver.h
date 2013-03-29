@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without

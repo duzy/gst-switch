@@ -1,4 +1,4 @@
-/* GStreamer
+/* GStreamer							      -*- c -*-
  * Copyright (C) 2012 Duzy Chan <code@duzy.info>
  *
  * This library is free software; you can redistribute it and/or
@@ -75,6 +75,9 @@ struct _GstTCPMixSrcClass {
   void (*new_client) (GstElement *element, GstPad *pad);
 };
 
+/**
+ * @deprecated
+ */
 GType gst_tcp_mix_src_get_type (void);
 
 G_END_DECLS

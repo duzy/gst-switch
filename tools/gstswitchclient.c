@@ -69,6 +69,10 @@ static const gchar introspection_xml[] =
 
 extern gboolean verbose;
 
+/**
+ * @brief Initialize instances of GstSwitchClient.
+ * @memberof GstSwitchClient
+ */
 static void
 gst_switch_client_init (GstSwitchClient * client)
 {
@@ -76,6 +80,10 @@ gst_switch_client_init (GstSwitchClient * client)
   g_mutex_init (&client->composite_mode_lock);
 }
 
+/**
+ * @brief Destroy instances of GstSwitchClient.
+ * @memberof GstSwitchClient
+ */
 static void
 gst_switch_client_finalize (GstSwitchClient * client)
 {
@@ -86,6 +94,10 @@ gst_switch_client_finalize (GstSwitchClient * client)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (client));
 }
 
+/**
+ * @brief Call remote method of the controller.
+ * @memberof GstSwitchClient
+ */
 static GVariant *
 gst_switch_client_call_controller (GstSwitchClient * client,
     const gchar * method_name,
@@ -149,6 +161,10 @@ gst_switch_client_controller_test (GstSwitchClient * client, const gchar * s)
 }
 #endif //ENABLE_TEST
 
+/**
+ * @brief The the compose port number.
+ * @memberof GstSwitchClient
+ */
 gint
 gst_switch_client_get_compose_port (GstSwitchClient * client)
 {
@@ -163,7 +179,7 @@ gst_switch_client_get_compose_port (GstSwitchClient * client)
 }
 
 /**
- * gst_switch_client_get_encode_port:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
  *  @return the encode port number
  *
@@ -184,7 +200,7 @@ gst_switch_client_get_encode_port (GstSwitchClient * client)
 }
 
 /**
- * gst_switch_client_get_audio_port:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
  *  @return the audio port number
  *
@@ -204,7 +220,7 @@ gst_switch_client_get_audio_port (GstSwitchClient * client)
 }
 
 /**
- * gst_switch_client_get_preview_ports:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
  *  @return The preview ports of type GVariant
  *
@@ -219,7 +235,7 @@ gst_switch_client_get_preview_ports (GstSwitchClient * client)
 }
 
 /**
- * gst_switch_client_switch:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
  *  @param channel The channel to be switched, 'A', 'B', 'a'
  *  @param port The target port number
@@ -244,7 +260,7 @@ gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
 }
 
 /**
- * gst_switch_client_set_composite_mode:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
  *  @param mode new composite mode
  *  @return TRUE when requested.
@@ -280,7 +296,7 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
 }
 
 /**
- * gst_switch_client_new_record:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
  *  @return TRUE when requested.
  *
@@ -302,7 +318,7 @@ gst_switch_client_new_record (GstSwitchClient * client)
 }
 
 /**
- * gst_switch_client_adjust_pip:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
  *  @param dx x position to be adjusted
  *  @param dy y position to be adjusted
@@ -331,7 +347,7 @@ gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx, gint dy,
 }
 
 /**
- * gst_switch_client_method_match:
+ * @memberof GstSwitchClient
  *
  * Predictor for matching the remoting method names.
  */
@@ -345,7 +361,7 @@ gst_switch_client_method_match (const gchar * key, MethodTableEntry * entry,
 }
 
 /**
- * gst_switch_client_do_method_call:
+ * @memberof GstSwitchClient
  *
  * Performing a remoting method call (typically invoked by the gst-switch-srv)
  */
@@ -387,7 +403,7 @@ error_no_method:
 }
 
 /**
- * gst_switch_client_do_get_property:
+ * @memberof GstSwitchClient
  *
  * Fetching property remotely (it's useless currently).
  */
@@ -404,7 +420,7 @@ gst_switch_client_do_get_property (GDBusConnection * connection,
 }
 
 /**
- * gst_switch_client_do_set_property:
+ * @memberof GstSwitchClient
  *
  * Setting property remotely (it's currently useless).
  */
@@ -427,7 +443,7 @@ static const GDBusInterfaceVTable gst_switch_client_interface_vtable = {
 };
 
 /**
- * gst_switch_client_on_signal_received:
+ * @memberof GstSwitchClient
  *
  * Remote signal handler (useless currently).
  */
@@ -446,7 +462,7 @@ gst_switch_client_on_signal_received (GDBusConnection * connection,
 }
 
 /**
- * gst_switch_client_on_controller_closed:
+ * @memberof GstSwitchClient
  *
  * Invoked when the remote controller is closed.
  */
@@ -462,7 +478,7 @@ gst_switch_client_on_controller_closed (GDBusConnection * connection,
 }
 
 /**
- * gst_switch_client_connect_controller:
+ * @memberof GstSwitchClient
  *
  * Invoked when the remote controller is connected.
  */
@@ -531,7 +547,7 @@ error_subscribe:
 }
 
 /**
- * gst_switch_client_is_connected:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
  *  @return TRUE when requested.
  *
@@ -550,12 +566,11 @@ gst_switch_client_is_connected (GstSwitchClient * client)
 }
 
 /**
- * gst_switch_client_connect:
+ *  @brief Connect the client with the gst-switch server.
  *  @param client the GstSwitchClient instance
  *  @return TRUE when requested.
+ *  @memberof GstSwitchClient
  *
- *  Connect the client with the gst-switch server.
- *  
  */
 gboolean
 gst_switch_client_connect (GstSwitchClient * client)
@@ -578,8 +593,9 @@ gst_switch_client_connect (GstSwitchClient * client)
 }
 
 /**
- * gst_switch_client_get_compose_port:
+ *  @memberof GstSwitchClient
  *  @param client the GstSwitchClient instance
+ *  @param port
  *  @return the compose port number
  *
  *  Get the compose port number.
@@ -779,9 +795,9 @@ static MethodTableEntry gst_switch_client_method_table[] = {
 };
 
 /**
- * gst_switch_client_class_init:
- *
- * Initialize the GstSwitchClientClass.
+ * @brief Initialize the GstSwitchClientClass.
+ * @param klass
+ * @memberof GstSwitchClientClass
  */
 static void
 gst_switch_client_class_init (GstSwitchClientClass * klass)

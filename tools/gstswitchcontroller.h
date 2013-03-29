@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,34 +59,29 @@ struct _MethodTableEntry
 };
 
 /**
- *  @brief GstSwitchController
- *  @param base the parent object
- *  @param server the GstSwitchServer instance
- *  @param bus_server the dbus server instance
- *  @param uis_lock the lock for %uis
- *  @param uis the client list
+ *  @class GstSwitchController
+ *  @struct _GstSwitchController
+ *  @brief GstSwitch controller.
  */
-struct _GstSwitchController
+typedef struct _GstSwitchController
 {
-  GObject base;
-
-  GstSwitchServer *server;
-  GDBusServer *bus_server;
-  GMutex uis_lock;
-  GList *uis;
-};
+  GObject base; /*!< the parent object */
+  GstSwitchServer *server; /*!< the GstSwitchServer instance */
+  GDBusServer *bus_server; /*!< the dbus server instance */
+  GMutex uis_lock; /*!< the lock for %uis */
+  GList *uis; /*!< the client list */
+} GstSwitchController;
 
 /**
- *  GstSwitchControllerClass:
- *  @param base_class the parent class
- *  @param methods the remote method table
+ *  @class GstSwitchControllerClass
+ *  @struct _GstSwitchControllerClass
+ *  @brief The class of GstSwitchController.
  */
-struct _GstSwitchControllerClass
+typedef struct _GstSwitchControllerClass
 {
-  GObjectClass base_class;
-
-  GHashTable *methods;
-};
+  GObjectClass base_class; /*!< the parent class */
+  GHashTable *methods; /*!< the remote method table */
+} GstSwitchControllerClass;
 
 GType gst_switch_controller_get_type (void);
 

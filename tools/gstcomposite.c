@@ -537,8 +537,10 @@ gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
       "source_a. ! video/x-raw,width=%d,height=%d ",
       composite->width, composite->height);
   g_string_append_printf (desc, "! queue2 ");
-  g_string_append_printf (desc,
-      "! videoconvert ! facedetect2 ! speakertrack ! videoconvert ");
+  /*
+     g_string_append_printf (desc,
+     "! videoconvert ! facedetect2 ! speakertrack ! videoconvert ");
+   */
   g_string_append_printf (desc,
       "! videoscale ! video/x-raw,width=%d,height=%d ! sink_a. ",
       composite->a_width, composite->a_height);
@@ -554,8 +556,10 @@ gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
         "source_b. ! video/x-raw,width=%d,height=%d ",
         composite->width, composite->height);
     g_string_append_printf (desc, "! queue2 ");
-    g_string_append_printf (desc,
-        "! videoconvert ! facedetect2 ! speakertrack ! videoconvert ");
+    /*
+       g_string_append_printf (desc,
+       "! videoconvert ! facedetect2 ! speakertrack ! videoconvert ");
+     */
     g_string_append_printf (desc,
         "! videoscale ! video/x-raw,width=%d,height=%d ! sink_b. ",
         composite->b_width, composite->b_height);

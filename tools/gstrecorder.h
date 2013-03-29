@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,36 +40,35 @@
 typedef struct _GstRecorderClass GstRecorderClass;
 
 /**
- *  GstRecorder:
- *  @param base the parent object
- *  @param sink_port the encode sink port
- *  @param width the video width
- *  @param height the video height
- *  @param mode the composite mode which is the same as in GstComposite
+ *  @class GstRecorder
+ *  @struct _GstRecorder
+ *  @brief Recorder for recording composite result.
  */
 struct _GstRecorder
 {
-  GstWorker base;
+  GstWorker base; /*!< the parent object */
 
-  gint sink_port;
-  guint width;
-  guint height;
+  gint sink_port; /*!< the encode sink port */
+  guint width; /*!< the video width */
+  guint height; /*!< the video height */
 
-  GstCompositeMode mode;
+  GstCompositeMode mode; /*!< the composite mode which is the same as in GstComposite */
 };
 
 /**
- *  GstRecorderClass:
- *  @param base_class the parent class
- *  @param end_recorder the "end-recorder" signal handler
+ *  @class GstRecorderClass
+ *  @struct _GstRecorderClass
+ *  @brief The class of GstRecorder.
  */
 struct _GstRecorderClass
 {
-  GstWorkerClass base_class;
-
-  void (*end_recorder) (GstRecorder * cas);
+  GstWorkerClass base_class; /*!< The base class. */
 };
 
+/**
+ *  @internal Use GST_TYPE_RECORDER instead.
+ *  @see GST_TYPE_RECORDER
+ */
 GType gst_recorder_get_type (void);
 
 #endif //__GST_RECORDER_H__by_Duzy_Chan__

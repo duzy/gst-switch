@@ -1,4 +1,4 @@
-bin_PROGRAMS = gst-switch-srv gst-switch-ui
+bin_PROGRAMS = gst-switch-srv gst-switch-ui gst-switch-cap
 
 if GCOV_ENABLED
 # --coverage
@@ -28,6 +28,14 @@ gst_switch_ui_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) $(GCOV_CFLAGS) \
 gst_switch_ui_LDFLAGS = $(GCOV_LFLAGS) $(GST_LIBS) $(GST_BASE_LIBS) \
   $(GST_PLUGINS_BASE_LIBS) $(GSTPB_BASE_LIBS)
 gst_switch_ui_LDADD = $(GST_LIBS) $(X_LIBS) $(LIBM) $(GTK_LIBS) $(GLIB_LIBS)
+
+gst_switch_cap_SOURCES = gstworker.c gstswitchcapture.c
+gst_switch_cap_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) $(GCOV_CFLAGS) \
+  $(GST_PLUGINS_BASE_CFLAGS) $(X_CFLAGS) $(GTK_CFLAGS) \
+  -DLOG_PREFIX="\"./tools\""
+gst_switch_cap_LDFLAGS = $(GCOV_LFLAGS) $(GST_LIBS) $(GST_BASE_LIBS) \
+  $(GST_PLUGINS_BASE_LIBS) $(GSTPB_BASE_LIBS)
+gst_switch_cap_LDADD = $(GST_LIBS) $(X_LIBS) $(LIBM) $(GTK_LIBS) $(GLIB_LIBS)
 
 if GCOV_ENABLED
 coverage:

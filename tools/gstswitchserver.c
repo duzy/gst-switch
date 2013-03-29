@@ -948,13 +948,11 @@ gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
 }
 
 /**
- * gst_switch_server_get_preview_sink_ports:
- *  @param serves (output) the preview serve types.
- *  @param types (output) the preview types.
+ *  @brief Get the preview ports.
+ *  @param srv
+ *  @param s (output) the preview serve types.
+ *  @param t (output) the preview types.
  *  @return: The array of preview ports.
- *
- *  Get the preview ports.
- *
  */
 GArray *
 gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,

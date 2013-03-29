@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,26 +39,26 @@ typedef struct _GstVideoDisp GstVideoDisp;
 typedef struct _GstVideoDispClass GstVideoDispClass;
 
 /**
- *  GstVideoDisp:
- *  @param base the parent object
- *  @param port the port number
- *  @param type video type
- *  @param handle the X window handle for rendering the video
+ *  @class GstVideoDisp
+ *  @struct _GstVideoDisp
+ *  @brief Display video on UI.
  */
 struct _GstVideoDisp
 {
-  GstWorker base;
-
-  gint port, type;
-  gulong handle;
+  GstWorker base; /*!< The parent object. */
+  gint port; /*!< The port number. */
+  gint type; /*!< The video type. */
+  gulong handle; /*!< The X Window handle for displaying the video. */
 };
 
 /**
- *  GstVideoDispClass:
+ *  @class GstVideoDispClass
+ *  @struct _GstVideoDispClass
+ *  @brief The class of GstVideoDisp.
  */
 struct _GstVideoDispClass
 {
-  GstWorkerClass base_class;
+  GstWorkerClass base_class; /*!< The base class. */
 };
 
 GType gst_video_disp_get_type (void);
