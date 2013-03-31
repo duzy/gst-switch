@@ -92,7 +92,7 @@ gst_switch_ui_parse_args (int *argc, char **argv[])
   GOptionContext *context;
   GError *error = NULL;
   context = g_option_context_new ("");
-  g_option_context_add_main_entries (context, entries, "gst-switch");
+  g_option_context_add_main_entries (context, entries, "gst-switch-ui");
   g_option_context_add_group (context, gst_init_get_option_group ());
   if (!g_option_context_parse (context, argc, argv, &error)) {
     g_print ("option parsing failed: %s\n", error->message);
@@ -166,7 +166,12 @@ gst_switch_ui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
     gpointer data)
 {
   GstSwitchUI *ui = GST_SWITCH_UI (data);
-  (void) ui;
+  gboolean ok =
+      gst_switch_client_click_video (GST_SWITCH_CLIENT (ui), (gint) event->x,
+      (gint) event->y);
+
+  INFO ("select: (%d, %d), (%d)", (gint) event->x, (gint) event->y, ok);
+
   return FALSE;
 }
 
@@ -504,7 +509,10 @@ gst_switch_ui_tick (GstSwitchUI * ui)
 static void
 gst_switch_ui_run (GstSwitchUI * ui)
 {
-  gst_switch_client_connect (GST_SWITCH_CLIENT (ui));
+  if (!gst_switch_client_connect (GST_SWITCH_CLIENT (ui), CLIENT_ROLE_UI)) {
+    ERROR ("failed to connect to controller");
+    return;
+  }
 
   ui->timer = g_timeout_add (200, (GSourceFunc) gst_switch_ui_tick, ui);
 

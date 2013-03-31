@@ -37,11 +37,14 @@
 #define GST_IS_SWITCH_CONTROLLER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_CONTROLLER))
 #define GST_IS_SWITCH_CONTROLLER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_CONTROLLER))
 
+// tcp:host=server.example.org,port=77777
 #define SWITCH_CONTROLLER_ADDRESS	"unix:abstract=gstswitch"
-#define SWITCH_CONTROLLER_OBJECT_NAME	 "info.duzy.gst_switch.SwitchControllerInterface"
-#define SWITCH_CONTROLLER_OBJECT_PATH	"/info/duzy/gst_switch/SwitchController"
-#define SWITCH_CLIENT_OBJECT_NAME	 "info.duzy.gst_switch.SwitchClientInterface"
-#define SWITCH_CLIENT_OBJECT_PATH	"/info/duzy/gst_switch/SwitchClient"
+#define SWITCH_CONTROLLER_OBJECT_NAME	 "info.duzy.gst.switch.SwitchControllerInterface"
+#define SWITCH_CONTROLLER_OBJECT_PATH	"/info/duzy/gst/switch/SwitchController"
+#define SWITCH_UI_OBJECT_NAME		 "info.duzy.gst.switch.SwitchUIInterface"
+#define SWITCH_UI_OBJECT_PATH		"/info/duzy/gst/switch/SwitchUI"
+#define SWITCH_CAPTURE_OBJECT_NAME	 "info.duzy.gst.switch.SwitchCaptureInterface"
+#define SWITCH_CAPTURE_OBJECT_PATH	"/info/duzy/gst/switch/SwitchCapture"
 
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
@@ -69,7 +72,9 @@ typedef struct _GstSwitchController
   GstSwitchServer *server; /*!< the GstSwitchServer instance */
   GDBusServer *bus_server; /*!< the dbus server instance */
   GMutex uis_lock; /*!< the lock for %uis */
+  GMutex captures_lock; /*!< the lock for %captures */
   GList *uis; /*!< the client list */
+  GList *captures; /*!< the capture client list */
 } GstSwitchController;
 
 /**

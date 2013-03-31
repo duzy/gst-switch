@@ -957,9 +957,9 @@ gst_composite_error (GstComposite * composite)
 }
 
 /**
- * gst_composite_message:
+ * @brief Pipeline message handling.
  *
- * Handling the composite pipeline messages. It's current only taking care
+ * Handle the composite pipeline messages. It's current only taking care
  * of GST_MESSAGE_ERROR.
  *
  * @see GstMessage

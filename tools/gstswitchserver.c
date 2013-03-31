@@ -1277,6 +1277,13 @@ error_start_work:
   }
 }
 
+gboolean
+gst_switch_server_click_video (GstSwitchServer * srv, gint x, gint y)
+{
+  INFO ("click_video: %d, %d", x, y);
+  return FALSE;
+}
+
 /**
  * gst_switch_server_worker_start:
  *

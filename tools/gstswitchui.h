@@ -46,13 +46,11 @@ typedef struct _GstSwitchUIClass GstSwitchUIClass;
 /**
  *  @class GstSwitchUI
  *  @struct _GstSwitchUI
- *  @brief The gst-switch-ui.
+ *  @brief The gst-switch-ui program.
  */
 struct _GstSwitchUI
 {
   GstSwitchClient base;
-
-  GDBusConnection *controller;
 
   GtkCssProvider *css;
 

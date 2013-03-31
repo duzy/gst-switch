@@ -53,6 +53,8 @@ struct _GstAudioVisual
 		    *   the real hardware speaker, e.g. ALSA
 		    **/
 
+  gboolean renewing; /*!< Used by GstSwitchUI. */
+
   GMutex endtime_lock; /*!< the lock for %endtime */
   GstClockTime endtime; /*!< the endtime of the last audo sample */
   GMutex value_lock; /*!< the lock for %value */

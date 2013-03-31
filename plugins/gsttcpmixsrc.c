@@ -17,11 +17,6 @@
  * Boston, MA 02110-1335, USA.
  */
 
-/*!
- * @file
- * @deprecated
- */
-
 /**
  * SECTION:element-gsttcpmixsrc
  *

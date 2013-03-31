@@ -51,6 +51,18 @@ typedef void (*GstSwitchClientAddPreviewPortFunc) (GstSwitchClient * client,
     gint port, gint serve, gint type);
 typedef void (*GstSwitchClientNewModeOnlineFunc) (GstSwitchClient * client,
     gint port);
+typedef void (*GstSwitchClientSelectFaceFunc) (GstSwitchClient * client,
+    gint x, gint y);
+
+/**
+ * @enum GstSwitchClientRole
+ * @brief The role of a client.
+ */
+typedef enum {
+  CLIENT_ROLE_NONE, /*!< the client is trivial */
+  CLIENT_ROLE_UI, /*!< the client is acting as a UI */
+  CLIENT_ROLE_CAPTURE, /*!< the client is acting as a capture */
+} GstSwitchClientRole;
 
 /**
  *  @class GstSwitchClient
@@ -60,6 +72,8 @@ typedef void (*GstSwitchClientNewModeOnlineFunc) (GstSwitchClient * client,
 struct _GstSwitchClient
 {
   GObject base;
+
+  GstSwitchClientRole role;
 
   GMutex controller_lock;
   GDBusConnection *controller;
@@ -83,15 +97,16 @@ struct _GstSwitchClientClass
   void (*set_audio_port) (GstSwitchClient * client, gint port);
   void (*set_compose_port) (GstSwitchClient * client, gint port);
   void (*set_encode_port) (GstSwitchClient * client, gint port);
-  void (*add_preview_port) (GstSwitchClient * client, gint port, gint serve,
-      gint type);
+  void (*add_preview_port) (GstSwitchClient * client, gint port, gint serve, gint type);
   void (*new_mode_online) (GstSwitchClient * client, gint mode);
+
+  void (*select_face) (GstSwitchClient * client, gint x, gint y);
 };
 
 GType gst_switch_client_get_type (void);
 
 gboolean gst_switch_client_is_connected (GstSwitchClient * client);
-gboolean gst_switch_client_connect (GstSwitchClient * client);
+gboolean gst_switch_client_connect (GstSwitchClient * client, GstSwitchClientRole role);
 gint gst_switch_client_get_compose_port (GstSwitchClient * client);
 gint gst_switch_client_get_encode_port (GstSwitchClient * client);
 gint gst_switch_client_get_audio_port (GstSwitchClient * client);
@@ -100,6 +115,8 @@ gboolean gst_switch_client_switch (GstSwitchClient * client, gint channel,
     gint port);
 gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client,
     gint mode);
+gboolean gst_switch_client_click_video (GstSwitchClient * client,
+    gint x, gint y);
 gboolean gst_switch_client_new_record (GstSwitchClient * client);
 guint gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx,
     gint dy, gint dw, gint dh);
