@@ -127,33 +127,21 @@ gst_switch_ui_window_closed (GtkWidget * widget, GdkEvent * event,
   gst_switch_ui_quit (ui);
 }
 
-/*
-static gboolean
-gst_switch_ui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
-    gpointer data)
-{
-  GstSwitchUI * ui = GST_SWITCH_UI (data);
-  (void) ui;
-  return FALSE;
-}
-*/
-
-static gboolean
-gst_switch_ui_compose_overlay_expose (GtkWidget * widget,
-    GdkEventExpose * event, gpointer data)
+static void
+gst_switch_ui_compose_draw (GstElement * overlay, cairo_t * cr,
+    guint64 timestamp, guint64 duration, gpointer data)
 {
   GstSwitchUI *ui = GST_SWITCH_UI (data);
-  cairo_t *cr = NULL;
-  cr = gdk_cairo_create (gtk_widget_get_window (widget));
+  gint x, y, w, h, n;
+  cairo_set_source_rgba (cr, 0.8, 0.1, 0.1, 0.8);
 
-  cairo_move_to (cr, 30, 30);
-  cairo_show_text (cr, "overlay");
+  for (n = 0; ui->faces && n < g_variant_n_children (ui->faces); ++n) {
+    g_variant_get_child (ui->faces, 0, "(iiii)", &x, &y, &w, &h);
+    cairo_rectangle (cr, x, y, w, h);
+  }
 
-  cairo_destroy (cr);
-  (void) ui;
-
-  INFO ("expose overlay");
-  return FALSE;                 // TRUE;
+  cairo_set_line_width (cr, 0.7);
+  cairo_stroke (cr);
 }
 
 /**
@@ -314,37 +302,24 @@ gst_switch_ui_init (GstSwitchUI * ui)
       | GDK_BUTTON_RELEASE_MASK
       | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
-  g_signal_connect (G_OBJECT (ui->compose_view), "key-press-event",
+  /*
+     g_signal_connect (ui->compose_view, "draw",
+     G_CALLBACK (gst_switch_ui_compose_draw), ui);
+   */
+  g_signal_connect (ui->compose_view, "key-press-event",
       G_CALLBACK (gst_switch_ui_compose_key_event), ui);
+  g_signal_connect (ui->compose_view, "motion-notify-event",
+      G_CALLBACK (gst_switch_ui_compose_view_motion), ui);
+  g_signal_connect (ui->compose_view, "button-press-event",
+      G_CALLBACK (gst_switch_ui_compose_view_press), ui);
 
   ui->compose_overlay = gtk_fixed_new ();
   style = gtk_widget_get_style_context (ui->compose_overlay);
   gtk_style_context_add_class (style, "compose");
   gtk_widget_set_halign (ui->compose_overlay, GTK_ALIGN_START);
   gtk_widget_set_valign (ui->compose_overlay, GTK_ALIGN_START);
-  /*
-     gtk_widget_set_events (ui->compose_overlay, GDK_EXPOSURE_MASK
-     | GDK_LEAVE_NOTIFY_MASK
-     | GDK_BUTTON_PRESS_MASK
-     | GDK_BUTTON_RELEASE_MASK
-     | GDK_POINTER_MOTION_MASK
-     | GDK_POINTER_MOTION_HINT_MASK
-     );
-   */
 
-  GtkWidget *w = gtk_drawing_area_new ();
-  gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 10, 10);
-  gtk_widget_set_size_request (w, 100, 100);
-  /*
-     gtk_widget_set_events (w, GDK_EXPOSURE_MASK
-     | GDK_BUTTON_PRESS_MASK
-     | GDK_BUTTON_RELEASE_MASK
-     );
-   */
-  g_signal_connect (w, "expose-event",
-      G_CALLBACK (gst_switch_ui_compose_overlay_expose), ui);
-  g_signal_connect (w, "key-press-event",
-      G_CALLBACK (gst_switch_ui_compose_key_event), ui);
+  //gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 5, 5);
 
   ui->status = gtk_label_new (NULL);
   gtk_widget_set_hexpand (ui->status, TRUE);
@@ -371,17 +346,13 @@ gst_switch_ui_init (GstSwitchUI * ui)
   g_signal_connect (G_OBJECT (ui->window), "delete-event",
       G_CALLBACK (gst_switch_ui_window_closed), ui);
 
-  /*
-     g_signal_connect (G_OBJECT (ui->compose_view), "expose-event",
-     G_CALLBACK (gst_switch_ui_compose_view_expose), ui);
-   */
-  g_signal_connect (G_OBJECT (ui->compose_view), "motion-notify-event",
-      G_CALLBACK (gst_switch_ui_compose_view_motion), ui);
-  g_signal_connect (G_OBJECT (ui->compose_view), "button-press-event",
-      G_CALLBACK (gst_switch_ui_compose_view_press), ui);
-
   gtk_css_provider_load_from_data (ui->css, gst_switch_ui_css, -1, &error);
   g_assert_no_error (error);
+
+  /*
+     gtk_widget_show_all (ui->window);
+     gtk_widget_realize (ui->window);
+   */
 }
 
 /**
@@ -692,6 +663,8 @@ gst_switch_ui_end_audio_visual (GstWorker * worker, GstSwitchUI * ui)
 static void
 gst_switch_ui_set_compose_port (GstSwitchUI * ui, gint port)
 {
+  GstElement *overlay = NULL;
+
   GST_SWITCH_UI_LOCK_COMPOSE (ui);
   if (ui->compose) {
     gst_worker_stop (GST_WORKER (ui->compose));
@@ -699,6 +672,11 @@ gst_switch_ui_set_compose_port (GstSwitchUI * ui, gint port)
   }
 
   ui->compose = gst_switch_ui_new_video_disp (ui, ui->compose_view, port);
+  overlay = gst_worker_get_element (GST_WORKER (ui->compose), "overlay");
+  if (overlay) {
+    g_signal_connect (overlay, "draw",
+        G_CALLBACK (gst_switch_ui_compose_draw), ui);
+  }
   GST_SWITCH_UI_UNLOCK_COMPOSE (ui);
 }
 
@@ -988,10 +966,12 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
 }
 
 static void
-gst_switch_ui_show_face_marker (GstSwitchUI * ui,
-    gint x, gint y, gint w, gint h)
+gst_switch_ui_show_face_marker (GstSwitchUI * ui, GVariant * faces)
 {
-  INFO ("ShowFaceMarker: [(%d, %d), %d,%d]", x, y, w, h);
+  // TODO: lock "faces"
+  GVariant *v = ui->faces;
+  ui->faces = faces;
+  g_variant_unref (v);
 }
 
 /**
@@ -1341,6 +1321,22 @@ int
 main (int argc, char *argv[])
 {
   GstSwitchUI *ui;
+
+  /*
+     GVariantBuilder *vb = g_variant_builder_new(G_VARIANT_TYPE_ARRAY);
+     g_variant_builder_add (vb, "(iiii)", 1, 2, 3, 4);
+     g_variant_builder_add (vb, "(iiii)", 1, 2, 3, 4);
+     g_variant_builder_add (vb, "(iiii)", 1, 2, 3, 4);
+
+     GVariant *v = g_variant_builder_end (vb);
+     g_print ("%s: ", g_variant_get_type_string (v));
+     g_print (g_variant_print (v, FALSE));
+     g_print ("\n");
+
+     gint x, y, w, h;
+     g_variant_get_child (v, 0, "(iiii)", &x, &y, &w, &h);
+     g_print ("%d: %d, %d, %d, %d\n", g_variant_n_children (v), x, y, w, h);
+   */
 
   gst_switch_ui_parse_args (&argc, &argv);
   gtk_init (&argc, &argv);

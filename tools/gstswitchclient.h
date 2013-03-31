@@ -54,7 +54,7 @@ typedef void (*GstSwitchClientNewModeOnlineFunc) (GstSwitchClient * client,
 typedef void (*GstSwitchClientSelectFaceFunc) (GstSwitchClient * client,
     gint x, gint y);
 typedef void (*GstSwitchClientShowFaceMarkerFunc) (GstSwitchClient * client,
-    gint x, gint y, gint w, gint h);
+    GVariant *faces);
 
 /**
  * @enum GstSwitchClientRole
@@ -102,7 +102,7 @@ struct _GstSwitchClientClass
   void (*add_preview_port) (GstSwitchClient * client, gint port, gint serve, gint type);
   void (*new_mode_online) (GstSwitchClient * client, gint mode);
   void (*select_face) (GstSwitchClient * client, gint x, gint y);
-  void (*show_face_marker) (GstSwitchClient * client, gint x, gint y, gint w, gint h);
+  void (*show_face_marker) (GstSwitchClient * client, GVariant *faces);
 };
 
 GType gst_switch_client_get_type (void);
@@ -120,7 +120,7 @@ gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client,
 gboolean gst_switch_client_click_video (GstSwitchClient * client,
     gint x, gint y);
 gboolean gst_switch_client_mark_face_remotely (GstSwitchClient * client,
-    gint x, gint y, gint w, gint h);
+    GVariant *faces);
 gboolean gst_switch_client_new_record (GstSwitchClient * client);
 guint gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx,
     gint dy, gint dw, gint dh);

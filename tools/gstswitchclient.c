@@ -71,10 +71,7 @@ static const gchar introspection_xml[] =
        "    </method>"
      */
     "    <method name='show_face_marker'>"
-    "      <arg type='i' name='x' direction='in'/>"
-    "      <arg type='i' name='y' direction='in'/>"
-    "      <arg type='i' name='w' direction='in'/>"
-    "      <arg type='i' name='h' direction='in'/>"
+    "      <arg type='a(iiii)' name='faces' direction='in'/>"
     "    </method>"
     "  </interface>"
     "  <interface name='" SWITCH_CAPTURE_OBJECT_NAME "'>"
@@ -154,14 +151,14 @@ gst_switch_client_call_controller (GstSwitchClient * client,
   /* ERRORS */
 error_no_controller_connection:
   {
-    ERROR ("No controller connection");
+    ERROR ("No controller connection (%s)", method_name);
     GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
     return NULL;
   }
 
 error_call_sync:
   {
-    ERROR ("%s", error->message);
+    ERROR ("%s (%s)", error->message, method_name);
     g_error_free (error);
     GST_SWITCH_CLIENT_UNLOCK_CONTROLLER (client);
     return NULL;
@@ -276,8 +273,7 @@ gst_switch_client_face_detected (GstSwitchClient * client,
 */
 
 static void
-gst_switch_client_show_face_marker (GstSwitchClient * client,
-    gint x, gint y, gint w, gint h)
+gst_switch_client_show_face_marker (GstSwitchClient * client, GVariant * faces)
 {
   GstSwitchClientClass *klass =
       GST_SWITCH_CLIENT_CLASS (G_OBJECT_GET_CLASS (client));
@@ -285,7 +281,7 @@ gst_switch_client_show_face_marker (GstSwitchClient * client,
   //INFO ("mark: %d, %d, %d, %d", x, y, w, h);
 
   if (klass->show_face_marker)
-    (*klass->show_face_marker) (client, x, y, w, h);
+    (*klass->show_face_marker) (client, faces);
 }
 
 /**
@@ -305,14 +301,16 @@ gst_switch_client_click_video (GstSwitchClient * client, gint x, gint y)
 
 gboolean
 gst_switch_client_mark_face_remotely (GstSwitchClient * client,
-    gint x, gint y, gint w, gint h)
+    GVariant * faces)
 {
   gboolean result = FALSE;
+  GVariant *v = g_variant_new_tuple (&faces, 1);
   GVariant *value = gst_switch_client_call_controller (client, "mark_face",
-      g_variant_new ("(iiii)", x, y, w, h), G_VARIANT_TYPE ("(b)"));
+      v, G_VARIANT_TYPE ("(b)"));
   if (value) {
     g_variant_get (value, "(b)", &result);
   }
+  //g_variant_unref (faces);
   return result;
 }
 
@@ -907,10 +905,9 @@ static GVariant *
 gst_switch_client__show_face_marker (GstSwitchClient * client,
     GDBusConnection * connection, GVariant * parameters)
 {
-  gint x, y, w, h = 0;
-  g_variant_get (parameters, "(iiii)", &x, &y, &w, &h);
   //INFO ("compose: %d", port);
-  gst_switch_client_show_face_marker (client, x, y, w, h);
+  gst_switch_client_show_face_marker (client,
+      g_variant_get_child_value (parameters, 0));
   return NULL;
 }
 

@@ -173,7 +173,7 @@ gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
 gboolean gst_switch_server_click_video (GstSwitchServer * srv,
     gint x, gint y);
 gboolean gst_switch_server_mark_face (GstSwitchServer * srv,
-    gint x, gint y, gint w, gint h);
+    GVariant *faces);
 guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
     gint dw, gint dh);
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);

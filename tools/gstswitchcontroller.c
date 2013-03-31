@@ -89,10 +89,7 @@ static const gchar introspection_xml[] =
     "      <arg type='b' name='result' direction='out'/>"
     "    </method>"
     "    <method name='mark_face'>"
-    "      <arg type='i' name='x' direction='in'/>"
-    "      <arg type='i' name='y' direction='in'/>"
-    "      <arg type='i' name='w' direction='in'/>"
-    "      <arg type='i' name='h' direction='in'/>"
+    "      <arg type='a(iiii)' name='faces' direction='in'/>"
     "      <arg type='b' name='result' direction='out'/>"
     "    </method>"
     "    <signal name='audio_port'>"
@@ -843,11 +840,11 @@ gst_switch_controller_select_face (GstSwitchController * controller,
 
 gboolean
 gst_switch_controller_show_face_marker (GstSwitchController * controller,
-    gint x, gint y, gint w, gint h)
+    GVariant * faces)
 {
+  GVariant *v = g_variant_new_tuple (&faces, 1);
   gst_switch_controller_call_clients (controller, CLIENT_ROLE_UI,
-      "show_face_marker", g_variant_new ("(iiii)", x, y, w, h),
-      G_VARIANT_TYPE ("()"));
+      "show_face_marker", v, G_VARIANT_TYPE ("()"));
   return TRUE;
 }
 
@@ -1052,10 +1049,10 @@ gst_switch_controller__mark_face (GstSwitchController * controller,
 {
   GVariant *result = NULL;
   gboolean ok = FALSE;
-  gint x, y, w, h;
-  g_variant_get (parameters, "(iiii)", &x, &y, &w, &h);
+  //gint size = g_variant_n_children (parameters);
   if (controller->server) {
-    ok = gst_switch_server_mark_face (controller->server, x, y, w, h);
+    ok = gst_switch_server_mark_face (controller->server,
+        g_variant_get_child_value (parameters, 0));
     result = g_variant_new ("(b)", ok);
   }
   return result;

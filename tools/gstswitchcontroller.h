@@ -100,7 +100,7 @@ void gst_switch_controller_tell_new_mode_onlne (GstSwitchController *,
     gint mode);
 gboolean gst_switch_controller_select_face (GstSwitchController *controller,
     gint x, gint y);
-gboolean gst_switch_controller_show_face_marker (GstSwitchController *controller,
-    gint x, gint y, gint w, gint h);
+gboolean gst_switch_controller_show_face_marker (
+    GstSwitchController *controller, GVariant *faces);
 
 #endif //__GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__

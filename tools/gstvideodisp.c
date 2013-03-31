@@ -149,6 +149,8 @@ gst_video_disp_get_pipeline_string (GstVideoDisp * disp)
       "port=%d ", disp->port);
   g_string_append_printf (desc, "! gdpdepay ");
   g_string_append_printf (desc, "! videoconvert ");
+  g_string_append_printf (desc, "! cairooverlay name=overlay ");
+  g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! xvimagesink name=sink ");
 
   return desc;

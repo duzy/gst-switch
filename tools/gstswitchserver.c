@@ -1285,11 +1285,10 @@ gst_switch_server_click_video (GstSwitchServer * srv, gint x, gint y)
 }
 
 gboolean
-gst_switch_server_mark_face (GstSwitchServer * srv,
-    gint x, gint y, gint w, gint h)
+gst_switch_server_mark_face (GstSwitchServer * srv, GVariant * faces)
 {
   // TODO: scale and adjust x, y, w, h
-  return gst_switch_controller_show_face_marker (srv->controller, x, y, w, h);
+  return gst_switch_controller_show_face_marker (srv->controller, faces);
 }
 
 /**

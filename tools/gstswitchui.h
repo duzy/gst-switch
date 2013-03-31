@@ -76,6 +76,8 @@ struct _GstSwitchUI
   guint32 tabtime;
   gint compose_mode;
   gint timer;
+
+  GVariant *faces;
 };
 
 /**
