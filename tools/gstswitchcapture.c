@@ -49,6 +49,7 @@
 typedef struct _GstSwitchCaptureWorker
 {
   GstWorker base;
+  GstSwitchCapture *capture;
 } GstSwitchCaptureWorker;
 
 /**
@@ -119,7 +120,7 @@ gst_switch_capture_pipeline (GstWorker * worker, GstSwitchCapture * capture)
   g_string_append_printf (desc,
       "! videoscale ! video/x-raw,width=150,height=100 ");
   g_string_append_printf (desc, "! videoconvert ");
-  g_string_append_printf (desc, "! facedetect2 ! speakertrack ");
+  g_string_append_printf (desc, "! facedetect2 ! speakertrack name=tracker ");
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! xvimagesink ");
 
@@ -202,7 +203,7 @@ gst_switch_capture_run (GstSwitchCapture * capture)
     ERROR ("failed to connect to controller");
     return;
   }
-  gst_worker_start (capture->worker);
+  gst_worker_start (GST_WORKER (capture->worker));
   g_main_loop_run (capture->mainloop);
 }
 
@@ -231,6 +232,8 @@ gst_switch_capture_init (GstSwitchCapture * capture)
   capture->worker =
       GST_SWITCH_CAPTURE_WORKER (g_object_new (GST_TYPE_SWITCH_CAPTURE_WORKER,
           "name", "capture", NULL));
+
+  capture->worker->capture = capture;
 
   capture->worker->base.pipeline_func =
       (GstWorkerGetPipelineString) gst_switch_capture_pipeline;
@@ -271,7 +274,17 @@ gst_switch_capture_finalize (GstSwitchCapture * capture)
 static void
 gst_switch_capture_select_face (GstSwitchCapture * capture, gint x, gint y)
 {
-  INFO ("select face: %d, %d", x, y);
+  GstWorker *worker = GST_WORKER (capture->worker);
+  GstElement *element = gst_worker_get_element (worker, "tracker");
+  if (element) {
+    GstStructure *st = gst_structure_new ("select",
+        "x", G_TYPE_INT, x, "y", G_TYPE_INT, y, NULL);
+    GstEvent *ev = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM, st);
+    gboolean okay = gst_element_send_event (element, ev);
+    INFO ("select face: %d, %d (selected: %d)", x, y, okay);
+  } else {
+    ERROR ("select face: %d, %d (No tracker!)", x, y);
+  }
 }
 
 static void
@@ -295,6 +308,41 @@ gst_switch_capture_worker_error (GstSwitchCaptureWorker * captureworker,
   ERROR ("%d: %s", error->code, error->message);
 }
 
+static void
+gst_switch_capture_worker_mark_face_remote (GstSwitchCaptureWorker *
+    captureworker, guint x, guint y, guint w, guint h)
+{
+  gboolean okay =
+      gst_switch_client_mark_face_remotely (GST_SWITCH_CLIENT
+      (captureworker->capture), x, y, w, h);
+  g_print ("mark: face[(%d,%d), %d,%d] (okay: %d)\n", x, y, w, h, okay);
+}
+
+static void
+gst_switch_capture_worker_faces_detected (GstSwitchCaptureWorker *
+    captureworker, const GValue * faces, GstMessage * message)
+{
+  const guint size = gst_value_list_get_size (faces);
+  int n;
+  //g_print ("%s: faces=%d\n", GST_MESSAGE_SRC_NAME (message), size);
+  for (n = 0; n < size; ++n) {
+    const GValue *face_value = gst_value_list_get_value (faces, n);
+    if (G_VALUE_HOLDS_BOXED (face_value)) {
+      GstStructure *face = (GstStructure *) g_value_get_boxed (face_value);
+      if (GST_IS_STRUCTURE (face)) {
+        guint x, y, w, h;
+        gst_structure_get_uint (face, "x", &x);
+        gst_structure_get_uint (face, "y", &y);
+        gst_structure_get_uint (face, "width", &w);
+        gst_structure_get_uint (face, "height", &h);
+        g_print ("%s: face[%d]=[(%d,%d), %d,%d]\n",
+            GST_MESSAGE_SRC_NAME (message), n, x, y, w, h);
+        gst_switch_capture_worker_mark_face_remote (captureworker, x, y, w, h);
+      }
+    }
+  }
+}
+
 static gboolean
 gst_switch_capture_worker_message (GstSwitchCaptureWorker * captureworker,
     GstMessage * message)
@@ -302,11 +350,23 @@ gst_switch_capture_worker_message (GstSwitchCaptureWorker * captureworker,
   switch (GST_MESSAGE_TYPE (message)) {
     case GST_MESSAGE_ERROR:{
       GError *error = NULL;
-      gchar *debug;
+      gchar *debug = NULL;
       gst_message_parse_error (message, &error, &debug);
       gst_switch_capture_worker_error (captureworker, error, debug);
     }
       break;
+
+    case GST_MESSAGE_ELEMENT:{
+      const GstStructure *st = (const GstStructure *)
+          gst_message_get_structure (message);
+      const GValue *faces = (const GValue *)
+          gst_structure_get_value (st, "faces");
+      if (faces)
+        gst_switch_capture_worker_faces_detected (captureworker, faces,
+            message);
+    }
+      break;
+
     default:
       break;
   }

@@ -63,13 +63,14 @@ static const gchar introspection_xml[] =
     "      <arg type='i' name='type' direction='in'/>"
     "    </method>"
     "    <method name='new_mode_online'>"
-    "      <arg type='i' name='mode' direction='in'/>"
-    "    </method>"
-    "    <method name='click_video'>"
-    "      <arg type='i' name='x' direction='in'/>"
-    "      <arg type='i' name='y' direction='in'/>"
-    "    </method>"
-    "    <method name='face_detected'>"
+    "      <arg type='i' name='mode' direction='in'/>" "    </method>"
+    /*
+       "    <method name='click_video'>"
+       "      <arg type='i' name='x' direction='in'/>"
+       "      <arg type='i' name='y' direction='in'/>"
+       "    </method>"
+     */
+    "    <method name='show_face_marker'>"
     "      <arg type='i' name='x' direction='in'/>"
     "      <arg type='i' name='y' direction='in'/>"
     "      <arg type='i' name='w' direction='in'/>"
@@ -82,14 +83,16 @@ static const gchar introspection_xml[] =
     "    </method>"
     "    <method name='select_face'>"
     "      <arg type='i' name='x' direction='in'/>"
-    "      <arg type='i' name='y' direction='in'/>"
-    "    </method>"
-    "    <method name='face_detected'>"
-    "      <arg type='i' name='x' direction='in'/>"
-    "      <arg type='i' name='y' direction='in'/>"
-    "      <arg type='i' name='w' direction='in'/>"
-    "      <arg type='i' name='h' direction='in'/>"
-    "    </method>" "  </interface>" "</node>";
+    "      <arg type='i' name='y' direction='in'/>" "    </method>"
+    /*
+       "    <method name='face_detected'>"
+       "      <arg type='i' name='x' direction='in'/>"
+       "      <arg type='i' name='y' direction='in'/>"
+       "      <arg type='i' name='w' direction='in'/>"
+       "      <arg type='i' name='h' direction='in'/>"
+       "    </method>"
+     */
+    "  </interface>" "</node>";
 
 extern gboolean verbose;
 
@@ -263,11 +266,26 @@ gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
   return result;
 }
 
+/*
 void
 gst_switch_client_face_detected (GstSwitchClient * client,
     gint x, gint y, gint w, gint h)
 {
   INFO ("face: %d, %d, %d, %d", x, y, w, h);
+}
+*/
+
+static void
+gst_switch_client_show_face_marker (GstSwitchClient * client,
+    gint x, gint y, gint w, gint h)
+{
+  GstSwitchClientClass *klass =
+      GST_SWITCH_CLIENT_CLASS (G_OBJECT_GET_CLASS (client));
+
+  //INFO ("mark: %d, %d, %d, %d", x, y, w, h);
+
+  if (klass->show_face_marker)
+    (*klass->show_face_marker) (client, x, y, w, h);
 }
 
 /**
@@ -279,6 +297,19 @@ gst_switch_client_click_video (GstSwitchClient * client, gint x, gint y)
   gboolean result = FALSE;
   GVariant *value = gst_switch_client_call_controller (client, "click_video",
       g_variant_new ("(ii)", x, y), G_VARIANT_TYPE ("(b)"));
+  if (value) {
+    g_variant_get (value, "(b)", &result);
+  }
+  return result;
+}
+
+gboolean
+gst_switch_client_mark_face_remotely (GstSwitchClient * client,
+    gint x, gint y, gint w, gint h)
+{
+  gboolean result = FALSE;
+  GVariant *value = gst_switch_client_call_controller (client, "mark_face",
+      g_variant_new ("(iiii)", x, y, w, h), G_VARIANT_TYPE ("(b)"));
   if (value) {
     g_variant_get (value, "(b)", &result);
   }
@@ -363,8 +394,7 @@ gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx, gint dy,
   guint result = 0;
   GVariant *value = gst_switch_client_call_controller (client,
       "adjust_pip",
-      g_variant_new ("(iiii)", dx, dy, dw,
-          dh),
+      g_variant_new ("(iiii)", dx, dy, dw, dh),
       G_VARIANT_TYPE ("(u)"));
   if (value) {
     g_variant_get (value, "(u)", &result);
@@ -860,6 +890,7 @@ gst_switch_client__new_mode_online (GstSwitchClient * client,
   return NULL;
 }
 
+/*
 static GVariant *
 gst_switch_client__face_detected (GstSwitchClient * client,
     GDBusConnection * connection, GVariant * parameters)
@@ -870,10 +901,23 @@ gst_switch_client__face_detected (GstSwitchClient * client,
   gst_switch_client_face_detected (client, x, y, w, h);
   return NULL;
 }
+*/
+
+static GVariant *
+gst_switch_client__show_face_marker (GstSwitchClient * client,
+    GDBusConnection * connection, GVariant * parameters)
+{
+  gint x, y, w, h = 0;
+  g_variant_get (parameters, "(iiii)", &x, &y, &w, &h);
+  //INFO ("compose: %d", port);
+  gst_switch_client_show_face_marker (client, x, y, w, h);
+  return NULL;
+}
 
 /**
  * Remoting method stub of "video_click".
  */
+/*
 static GVariant *
 gst_switch_client__click_video (GstSwitchClient * client,
     GDBusConnection * connection, GVariant * parameters)
@@ -884,6 +928,7 @@ gst_switch_client__click_video (GstSwitchClient * client,
   gst_switch_client_click_video (client, x, y);
   return NULL;
 }
+*/
 
 /**
  * Remoting method stub of "select_face".
@@ -911,9 +956,10 @@ static MethodTableEntry gst_switch_client_method_table[] = {
   {"set_encode_port", (MethodFunc) gst_switch_client__set_encode_port},
   {"add_preview_port", (MethodFunc) gst_switch_client__add_preview_port},
   {"new_mode_online", (MethodFunc) gst_switch_client__new_mode_online},
-  {"face_detected", (MethodFunc) gst_switch_client__face_detected},
-  {"click_video", (MethodFunc) gst_switch_client__click_video},
+  //{"face_detected", (MethodFunc) gst_switch_client__face_detected},
+  //{"click_video", (MethodFunc) gst_switch_client__click_video},
   {"select_face", (MethodFunc) gst_switch_client__select_face},
+  {"show_face_marker", (MethodFunc) gst_switch_client__show_face_marker},
   {NULL, NULL}
 };
 

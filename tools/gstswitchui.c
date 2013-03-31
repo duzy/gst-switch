@@ -138,6 +138,24 @@ gst_switch_ui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
 }
 */
 
+static gboolean
+gst_switch_ui_compose_overlay_expose (GtkWidget * widget,
+    GdkEventExpose * event, gpointer data)
+{
+  GstSwitchUI *ui = GST_SWITCH_UI (data);
+  cairo_t *cr = NULL;
+  cr = gdk_cairo_create (gtk_widget_get_window (widget));
+
+  cairo_move_to (cr, 30, 30);
+  cairo_show_text (cr, "overlay");
+
+  cairo_destroy (cr);
+  (void) ui;
+
+  INFO ("expose overlay");
+  return FALSE;                 // TRUE;
+}
+
 /**
  * @brief
  * @param widget
@@ -314,12 +332,19 @@ gst_switch_ui_init (GstSwitchUI * ui)
      );
    */
 
+  GtkWidget *w = gtk_drawing_area_new ();
+  gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 10, 10);
+  gtk_widget_set_size_request (w, 100, 100);
   /*
-     GtkWidget *w = gtk_drawing_area_new ();
-     //GtkWidget *w = gtk_event_box_new ();
-     gtk_widget_set_size_request (w, 120, 80);
-     gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 10, 10);
+     gtk_widget_set_events (w, GDK_EXPOSURE_MASK
+     | GDK_BUTTON_PRESS_MASK
+     | GDK_BUTTON_RELEASE_MASK
+     );
    */
+  g_signal_connect (w, "expose-event",
+      G_CALLBACK (gst_switch_ui_compose_overlay_expose), ui);
+  g_signal_connect (w, "key-press-event",
+      G_CALLBACK (gst_switch_ui_compose_key_event), ui);
 
   ui->status = gtk_label_new (NULL);
   gtk_widget_set_hexpand (ui->status, TRUE);
@@ -962,6 +987,13 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
   }
 }
 
+static void
+gst_switch_ui_show_face_marker (GstSwitchUI * ui,
+    gint x, gint y, gint w, gint h)
+{
+  INFO ("ShowFaceMarker: [(%d, %d), %d,%d]", x, y, w, h);
+}
+
 /**
  * @brief
  * @param ui The GstSwitchUI instance.
@@ -1298,6 +1330,8 @@ gst_switch_ui_class_init (GstSwitchUIClass * klass)
       gst_switch_ui_set_audio_port;
   client_class->add_preview_port = (GstSwitchClientAddPreviewPortFunc)
       gst_switch_ui_add_preview_port;
+  client_class->show_face_marker = (GstSwitchClientShowFaceMarkerFunc)
+      gst_switch_ui_show_face_marker;
 }
 
 /**

@@ -1280,8 +1280,16 @@ error_start_work:
 gboolean
 gst_switch_server_click_video (GstSwitchServer * srv, gint x, gint y)
 {
-  INFO ("click_video: %d, %d", x, y);
-  return FALSE;
+  // TODO: scale and adjust x and y
+  return gst_switch_controller_select_face (srv->controller, x, y);
+}
+
+gboolean
+gst_switch_server_mark_face (GstSwitchServer * srv,
+    gint x, gint y, gint w, gint h)
+{
+  // TODO: scale and adjust x, y, w, h
+  return gst_switch_controller_show_face_marker (srv->controller, x, y, w, h);
 }
 
 /**

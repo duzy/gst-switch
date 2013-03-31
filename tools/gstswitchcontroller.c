@@ -88,6 +88,13 @@ static const gchar introspection_xml[] =
     "      <arg type='i' name='y' direction='in'/>"
     "      <arg type='b' name='result' direction='out'/>"
     "    </method>"
+    "    <method name='mark_face'>"
+    "      <arg type='i' name='x' direction='in'/>"
+    "      <arg type='i' name='y' direction='in'/>"
+    "      <arg type='i' name='w' direction='in'/>"
+    "      <arg type='i' name='h' direction='in'/>"
+    "      <arg type='b' name='result' direction='out'/>"
+    "    </method>"
     "    <signal name='audio_port'>"
     "      <arg type='i' name='port'/>"
     "    </signal>"
@@ -399,7 +406,7 @@ gst_switch_controller_on_new_connection (GDBusServer * server,
   guint register_id = 0;
   GError *error = NULL;
 
-  INFO ("new-connection...");
+  //INFO ("new-connection...");
 
   register_id = g_dbus_connection_register_object (connection, SWITCH_CONTROLLER_OBJECT_PATH, introspection_data->interfaces[0], &gst_switch_controller_interface_vtable, controller,   /* user_data */
       NULL,                     /* user_data_free_func */
@@ -824,6 +831,26 @@ gst_switch_controller_tell_new_mode_onlne (GstSwitchController * controller,
       "new_mode_online", g_variant_new ("(i)", mode), G_VARIANT_TYPE ("()"));
 }
 
+gboolean
+gst_switch_controller_select_face (GstSwitchController * controller,
+    gint x, gint y)
+{
+  //INFO ("click: %d, %d", x, y);
+  gst_switch_controller_call_clients (controller, CLIENT_ROLE_CAPTURE,
+      "select_face", g_variant_new ("(ii)", x, y), G_VARIANT_TYPE ("()"));
+  return TRUE;
+}
+
+gboolean
+gst_switch_controller_show_face_marker (GstSwitchController * controller,
+    gint x, gint y, gint w, gint h)
+{
+  gst_switch_controller_call_clients (controller, CLIENT_ROLE_UI,
+      "show_face_marker", g_variant_new ("(iiii)", x, y, w, h),
+      G_VARIANT_TYPE ("()"));
+  return TRUE;
+}
+
 /**
  * @memberof GstSwitchController
  *  
@@ -1015,6 +1042,26 @@ gst_switch_controller__click_video (GstSwitchController * controller,
 }
 
 /**
+ * @memberof GstSwitchController
+ *
+ * Remoting method stub of "click_video".
+ */
+static GVariant *
+gst_switch_controller__mark_face (GstSwitchController * controller,
+    GDBusConnection * connection, GVariant * parameters)
+{
+  GVariant *result = NULL;
+  gboolean ok = FALSE;
+  gint x, y, w, h;
+  g_variant_get (parameters, "(iiii)", &x, &y, &w, &h);
+  if (controller->server) {
+    ok = gst_switch_server_mark_face (controller->server, x, y, w, h);
+    result = g_variant_new ("(b)", ok);
+  }
+  return result;
+}
+
+/**
  *
  * Remoting method table of the gst-switch controller.
  */
@@ -1029,6 +1076,7 @@ static MethodTableEntry gst_switch_controller_method_table[] = {
   {"new_record", (MethodFunc) gst_switch_controller__new_record},
   {"adjust_pip", (MethodFunc) gst_switch_controller__adjust_pip},
   {"click_video", (MethodFunc) gst_switch_controller__click_video},
+  {"mark_face", (MethodFunc) gst_switch_controller__mark_face},
   {"switch", (MethodFunc) gst_switch_controller__switch},
   {NULL, NULL}
 };
