@@ -118,7 +118,8 @@ gst_switch_capture_pipeline (GstWorker * worker, GstSwitchCapture * capture)
 
   g_string_append_printf (desc, "video. ! queue2 ");
   g_string_append_printf (desc,
-      "! videoscale ! video/x-raw,width=150,height=100 ");
+      "! videoscale ! video/x-raw,width=%d,height=%d ",
+      GST_SWITCH_FACEDETECT_FRAME_WIDTH, GST_SWITCH_FACEDETECT_FRAME_HEIGHT);
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! facedetect2 ! speakertrack name=tracker ");
   g_string_append_printf (desc, "! videoconvert ");

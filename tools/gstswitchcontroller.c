@@ -86,6 +86,8 @@ static const gchar introspection_xml[] =
     "    <method name='click_video'>"
     "      <arg type='i' name='x' direction='in'/>"
     "      <arg type='i' name='y' direction='in'/>"
+    "      <arg type='i' name='fw' direction='in'/>"
+    "      <arg type='i' name='fh' direction='in'/>"
     "      <arg type='b' name='result' direction='out'/>"
     "    </method>"
     "    <method name='mark_face'>"
@@ -1029,10 +1031,10 @@ gst_switch_controller__click_video (GstSwitchController * controller,
 {
   GVariant *result = NULL;
   gboolean ok = FALSE;
-  gint x, y;
-  g_variant_get (parameters, "(ii)", &x, &y);
+  gint x, y, vw, vh;
+  g_variant_get (parameters, "(iiii)", &x, &y, &vw, &vh);
   if (controller->server) {
-    ok = gst_switch_server_click_video (controller->server, x, y);
+    ok = gst_switch_server_click_video (controller->server, x, y, vw, vh);
     result = g_variant_new ("(b)", ok);
   }
   return result;

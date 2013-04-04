@@ -172,9 +172,10 @@ gst_switch_ui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
     gpointer data)
 {
   GstSwitchUI *ui = GST_SWITCH_UI (data);
-  gboolean ok =
-      gst_switch_client_click_video (GST_SWITCH_CLIENT (ui), (gint) event->x,
-      (gint) event->y);
+  gint vw = gtk_widget_get_allocated_width (widget);
+  gint vh = gtk_widget_get_allocated_height (widget);
+  gboolean ok = gst_switch_client_click_video (GST_SWITCH_CLIENT (ui),
+      (gint) event->x, (gint) event->y, vw, vh);
 
   INFO ("select: (%d, %d), (%d)", (gint) event->x, (gint) event->y, ok);
 

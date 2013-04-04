@@ -1278,17 +1278,61 @@ error_start_work:
 }
 
 gboolean
-gst_switch_server_click_video (GstSwitchServer * srv, gint x, gint y)
+gst_switch_server_click_video (GstSwitchServer * srv,
+    gint x, gint y, gint vw, gint vh)
 {
-  // TODO: scale and adjust x and y
+  const double cw = srv->composite->a_width;
+  const double ch = srv->composite->a_height;
+  double rx = 1.0, ry = 1.0, x1, y1, dx, dy,
+      sw = GST_SWITCH_FACEDETECT_FRAME_WIDTH,
+      sh = GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+
+  // convert to video space
+  rx = cw / ((double) vw);
+  ry = ch / ((double) vh);
+  x1 = rx * ((double) x);
+  y1 = ry * ((double) y);
+
+  // conert to detect space
+  rx = sw / cw;
+  ry = sh / ch;
+  dx = rx * ((double) srv->composite->a_x);
+  dy = ry * ((double) srv->composite->a_y);
+  x = (gint) (dx + rx * x1 + 0.5);
+  y = (gint) (dy + ry * y1 + 0.5);
   return gst_switch_controller_select_face (srv->controller, x, y);
 }
 
 gboolean
 gst_switch_server_mark_face (GstSwitchServer * srv, GVariant * faces)
 {
-  // TODO: scale and adjust x, y, w, h
-  return gst_switch_controller_show_face_marker (srv->controller, faces);
+  const int size = g_variant_n_children (faces);
+  const double cw = srv->composite->a_width;
+  const double ch = srv->composite->a_height;
+  double rx = 1.0, ry = 1.0, dx, dy,
+      sw = GST_SWITCH_FACEDETECT_FRAME_WIDTH,
+      sh = GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+  GVariantBuilder *vb = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
+  int x, y, w, h, n;
+  gboolean res;
+
+  rx = sw / cw;
+  ry = sh / ch;
+  dx = rx * ((double) srv->composite->a_x);
+  dy = ry * ((double) srv->composite->a_y);
+  for (n = 0; n < size; ++n) {
+    g_variant_get_child (faces, n, "(iiii)", &x, &y, &w, &h);
+    x = rx * ((double) x) + 0.5 + dx;
+    y = ry * ((double) y) + 0.5 + dy;
+    w = rx * ((double) w) + 0.5;
+    h = ry * ((double) h) + 0.5;
+    g_variant_builder_add (vb, "(iiii)", x, y, w, h);
+  }
+
+  res = gst_switch_controller_show_face_marker (srv->controller,
+      g_variant_builder_end (vb));
+  g_variant_builder_unref (vb);
+  return res;
 }
 
 /**

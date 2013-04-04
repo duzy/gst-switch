@@ -171,7 +171,7 @@ gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv,
 gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
     gint port);
 gboolean gst_switch_server_click_video (GstSwitchServer * srv,
-    gint x, gint y);
+    gint x, gint y, gint fw, gint fh);
 gboolean gst_switch_server_mark_face (GstSwitchServer * srv,
     GVariant *faces);
 guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,

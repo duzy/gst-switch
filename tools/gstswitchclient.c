@@ -288,11 +288,12 @@ gst_switch_client_show_face_marker (GstSwitchClient * client, GVariant * faces)
  * User click on the video.
  */
 gboolean
-gst_switch_client_click_video (GstSwitchClient * client, gint x, gint y)
+gst_switch_client_click_video (GstSwitchClient * client,
+    gint x, gint y, gint vw, gint vh)
 {
   gboolean result = FALSE;
   GVariant *value = gst_switch_client_call_controller (client, "click_video",
-      g_variant_new ("(ii)", x, y), G_VARIANT_TYPE ("(b)"));
+      g_variant_new ("(iiii)", x, y, vw, vh), G_VARIANT_TYPE ("(b)"));
   if (value) {
     g_variant_get (value, "(b)", &result);
   }

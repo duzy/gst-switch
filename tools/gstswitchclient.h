@@ -118,7 +118,7 @@ gboolean gst_switch_client_switch (GstSwitchClient * client, gint channel,
 gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client,
     gint mode);
 gboolean gst_switch_client_click_video (GstSwitchClient * client,
-    gint x, gint y);
+    gint x, gint y, gint fw, gint fh);
 gboolean gst_switch_client_mark_face_remotely (GstSwitchClient * client,
     GVariant *faces);
 gboolean gst_switch_client_new_record (GstSwitchClient * client);
