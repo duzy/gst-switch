@@ -36,6 +36,7 @@
 #include "gstrecorder.h"
 #include "gstcase.h"
 #include "./gio/gsocketinputstream.h"
+#include "../logutils.h"
 
 #define GST_SWITCH_SERVER_DEFAULT_HOST "localhost"
 #define GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT	3000
@@ -1279,28 +1280,60 @@ error_start_work:
 
 gboolean
 gst_switch_server_click_video (GstSwitchServer * srv,
-    gint x, gint y, gint vw, gint vh)
+    gint avx, gint avy, gint avw, gint avh)
 {
-  const double cw = srv->composite->a_width;
-  const double ch = srv->composite->a_height;
-  double rx = 1.0, ry = 1.0, x1, y1, dx, dy,
-      sw = GST_SWITCH_FACEDETECT_FRAME_WIDTH,
-      sh = GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+  const double w = (double) srv->composite->width;
+  const double h = (double) srv->composite->height;
+  const double ax = (double) srv->composite->a_x;
+  const double ay = (double) srv->composite->a_y;
+  const double aw = (double) srv->composite->a_width;
+  const double ah = (double) srv->composite->a_height;
+  const double bx = (double) srv->composite->b_x;
+  const double by = (double) srv->composite->b_y;
+  const double bw = (double) srv->composite->b_width;
+  const double bh = (double) srv->composite->b_height;
+  const double sw = (double) GST_SWITCH_FACEDETECT_FRAME_WIDTH;
+  const double sh = (double) GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+  const double r = w / h;
+  double vx = (double) avx;
+  double vy = (double) avy;
+  double vw = (double) avw;
+  double vh = (double) avh;
+  double vr = vw / vh;
+  double rx = 1.0, ry = 1.0, x1 = .0, y1 = .0;
+  char chan = '?';
 
   // convert to video space
-  rx = cw / ((double) vw);
-  ry = ch / ((double) vh);
-  x1 = rx * ((double) x);
-  y1 = ry * ((double) y);
+  if (vr < r) {
+    rx = ry = w / vw;
+    vy -= (vh - (vw * h) / w) / 2;
+  } else {
+    rx = ry = h / vh;
+    vx -= (vw - (vh * w) / h) / 2;
+  }
+
+  x1 = rx * vx;
+  y1 = ry * vy;
+
+  if (bx <= x1 && x1 <= bx + bw && by <= y1 && y1 <= by + bh) {
+    chan = 'B', x1 -= bx, y1 -= by;
+  } else if (ax <= x1 && x1 <= ax + aw && ay <= y1 && y1 <= ay + ah) {
+    chan = 'A', x1 -= ax, y1 -= ay;
+  }
+
+  g_print ("select-face: %c, (%d, %d)\n", chan, (gint) x1, (gint) y1);
 
   // conert to detect space
-  rx = sw / cw;
-  ry = sh / ch;
-  dx = rx * ((double) srv->composite->a_x);
-  dy = ry * ((double) srv->composite->a_y);
-  x = (gint) (dx + rx * x1 + 0.5);
-  y = (gint) (dy + ry * y1 + 0.5);
-  return gst_switch_controller_select_face (srv->controller, x, y);
+  rx = sw / w, ry = sh / h;
+  avx = (gint) (rx * x1 + 0.5);
+  avy = (gint) (ry * y1 + 0.5);
+
+  if (chan == 'A') {
+    return gst_switch_controller_select_face (srv->controller, avx, avy);
+  } else if (chan == 'B') {
+    //return gst_switch_controller_select_face (srv->controller, avx, avy);
+  }
+  return 0;
 }
 
 gboolean
