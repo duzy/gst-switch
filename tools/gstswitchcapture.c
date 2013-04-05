@@ -309,18 +309,6 @@ gst_switch_capture_worker_error (GstSwitchCaptureWorker * captureworker,
   ERROR ("%d: %s", error->code, error->message);
 }
 
-/*
-static void
-gst_switch_capture_worker_mark_face_remote (GstSwitchCaptureWorker *
-    captureworker, guint x, guint y, guint w, guint h)
-{
-  gboolean okay =
-      gst_switch_client_mark_face_remotely (GST_SWITCH_CLIENT
-      (captureworker->capture), x, y, w, h);
-  g_print ("mark: face[(%d,%d), %d,%d] (okay: %d)\n", x, y, w, h, okay);
-}
-*/
-
 static void
 gst_switch_capture_worker_faces_detected (GstSwitchCaptureWorker *
     captureworker, const GValue * faces, GstMessage * message)
@@ -344,7 +332,6 @@ gst_switch_capture_worker_faces_detected (GstSwitchCaptureWorker *
         gst_structure_get_uint (face, "height", &h);
         g_print ("%s: face[%d]=[(%d,%d), %d,%d]\n",
             GST_MESSAGE_SRC_NAME (message), n, x, y, w, h);
-        //gst_switch_capture_worker_mark_face_remote (captureworker, x, y, w, h);
         g_variant_builder_add (vb, "(iiii)", x, y, w, h);
       }
     }
@@ -354,7 +341,9 @@ gst_switch_capture_worker_faces_detected (GstSwitchCaptureWorker *
       (captureworker->capture), g_variant_builder_end (vb));
   g_variant_builder_unref (vb);
 
-  g_print ("mark: faces (%d) (okay: %d)\n", size, okay);
+  /*
+     g_print ("mark: faces (%d) (okay: %d)\n", size, okay);
+   */
 }
 
 static gboolean
