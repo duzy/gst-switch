@@ -50,6 +50,10 @@
 #define GST_SWITCH_UI_UNLOCK_COMPOSE(ui) (g_mutex_unlock (&(ui)->compose_lock))
 #define GST_SWITCH_UI_LOCK_SELECT(ui) (g_mutex_lock (&(ui)->select_lock))
 #define GST_SWITCH_UI_UNLOCK_SELECT(ui) (g_mutex_unlock (&(ui)->select_lock))
+#define GST_SWITCH_UI_LOCK_FACES(ui) (g_mutex_lock (&(ui)->faces_lock))
+#define GST_SWITCH_UI_UNLOCK_FACES(ui) (g_mutex_unlock (&(ui)->faces_lock))
+#define GST_SWITCH_UI_LOCK_TRACKING(ui) (g_mutex_lock (&(ui)->tracking_lock))
+#define GST_SWITCH_UI_UNLOCK_TRACKING(ui) (g_mutex_unlock (&(ui)->tracking_lock))
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, GST_TYPE_SWITCH_CLIENT);
 
@@ -133,14 +137,24 @@ gst_switch_ui_compose_draw (GstElement * overlay, cairo_t * cr,
 {
   GstSwitchUI *ui = GST_SWITCH_UI (data);
   gint x, y, w, h, n;
-  cairo_set_source_rgba (cr, 0.8, 0.1, 0.1, 0.8);
 
+  cairo_set_line_width (cr, 0.6);
+  cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 0.8);
+  GST_SWITCH_UI_LOCK_FACES (ui);
   for (n = 0; ui->faces && n < g_variant_n_children (ui->faces); ++n) {
     g_variant_get_child (ui->faces, 0, "(iiii)", &x, &y, &w, &h);
     cairo_rectangle (cr, x, y, w, h);
   }
+  GST_SWITCH_UI_UNLOCK_FACES (ui);
+  cairo_stroke (cr);
 
-  cairo_set_line_width (cr, 0.7);
+  cairo_set_source_rgba (cr, 0.9, 0.1, 0.1, 0.8);
+  GST_SWITCH_UI_LOCK_TRACKING (ui);
+  for (n = 0; ui->tracking && n < g_variant_n_children (ui->tracking); ++n) {
+    g_variant_get_child (ui->tracking, 0, "(iiii)", &x, &y, &w, &h);
+    cairo_rectangle (cr, x, y, w, h);
+  }
+  GST_SWITCH_UI_UNLOCK_TRACKING (ui);
   cairo_stroke (cr);
 }
 
@@ -263,6 +277,8 @@ gst_switch_ui_init (GstSwitchUI * ui)
   g_mutex_init (&ui->audio_lock);
   g_mutex_init (&ui->compose_lock);
   g_mutex_init (&ui->select_lock);
+  g_mutex_init (&ui->faces_lock);
+  g_mutex_init (&ui->tracking_lock);
 
   display = gdk_display_get_default ();
   screen = gdk_display_get_default_screen (display);
@@ -369,9 +385,16 @@ gst_switch_ui_finalize (GstSwitchUI * ui)
 
   g_object_unref (ui->css);
 
+  if (ui->faces)
+    g_variant_unref (ui->faces);
+  if (ui->tracking)
+    g_variant_unref (ui->tracking);
+
   g_mutex_clear (&ui->audio_lock);
   g_mutex_clear (&ui->compose_lock);
   g_mutex_clear (&ui->select_lock);
+  g_mutex_clear (&ui->faces_lock);
+  g_mutex_clear (&ui->tracking_lock);
 
   if (G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize) (G_OBJECT (ui));
@@ -969,10 +992,23 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
 static void
 gst_switch_ui_show_face_marker (GstSwitchUI * ui, GVariant * faces)
 {
-  // TODO: lock "faces"
-  GVariant *v = ui->faces;
-  ui->faces = faces;
-  g_variant_unref (v);
+  GVariant *v = NULL;
+  GST_SWITCH_UI_LOCK_FACES (ui);
+  v = ui->faces, ui->faces = faces;
+  if (v)
+    g_variant_unref (v);
+  GST_SWITCH_UI_UNLOCK_FACES (ui);
+}
+
+static void
+gst_switch_ui_show_track_marker (GstSwitchUI * ui, GVariant * tracking)
+{
+  GVariant *v = NULL;
+  GST_SWITCH_UI_LOCK_TRACKING (ui);
+  v = ui->tracking, ui->tracking = tracking;
+  if (v)
+    g_variant_unref (v);
+  GST_SWITCH_UI_UNLOCK_TRACKING (ui);
 }
 
 /**
@@ -1313,6 +1349,8 @@ gst_switch_ui_class_init (GstSwitchUIClass * klass)
       gst_switch_ui_add_preview_port;
   client_class->show_face_marker = (GstSwitchClientShowFaceMarkerFunc)
       gst_switch_ui_show_face_marker;
+  client_class->show_track_marker = (GstSwitchClientShowFaceMarkerFunc)
+      gst_switch_ui_show_track_marker;
 }
 
 /**

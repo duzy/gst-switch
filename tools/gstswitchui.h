@@ -77,7 +77,9 @@ struct _GstSwitchUI
   gint compose_mode;
   gint timer;
 
+  GMutex faces_lock, tracking_lock;
   GVariant *faces;
+  GVariant *tracking;
 };
 
 /**

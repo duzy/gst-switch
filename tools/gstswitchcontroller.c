@@ -92,7 +92,9 @@ static const gchar introspection_xml[] =
     "    </method>"
     "    <method name='mark_face'>"
     "      <arg type='a(iiii)' name='faces' direction='in'/>"
-    "      <arg type='b' name='result' direction='out'/>"
+    "    </method>"
+    "    <method name='mark_tracking'>"
+    "      <arg type='a(iiii)' name='faces' direction='in'/>"
     "    </method>"
     "    <signal name='audio_port'>"
     "      <arg type='i' name='port'/>"
@@ -639,6 +641,7 @@ gst_switch_controller_call_clients (GstSwitchController * controller,
         connection, role, method_name, parameters, reply_type);
     if (value) {
       // ...
+      g_variant_unref (value);
     }
 
     ui = g_list_next (ui);
@@ -840,14 +843,22 @@ gst_switch_controller_select_face (GstSwitchController * controller,
   return TRUE;
 }
 
-gboolean
+void
 gst_switch_controller_show_face_marker (GstSwitchController * controller,
     GVariant * faces)
 {
   GVariant *v = g_variant_new_tuple (&faces, 1);
   gst_switch_controller_call_clients (controller, CLIENT_ROLE_UI,
       "show_face_marker", v, G_VARIANT_TYPE ("()"));
-  return TRUE;
+}
+
+void
+gst_switch_controller_show_track_marker (GstSwitchController * controller,
+    GVariant * faces)
+{
+  GVariant *v = g_variant_new_tuple (&faces, 1);
+  gst_switch_controller_call_clients (controller, CLIENT_ROLE_UI,
+      "show_track_marker", v, G_VARIANT_TYPE ("()"));
 }
 
 /**
@@ -1050,12 +1061,23 @@ gst_switch_controller__mark_face (GstSwitchController * controller,
     GDBusConnection * connection, GVariant * parameters)
 {
   GVariant *result = NULL;
-  gboolean ok = FALSE;
   //gint size = g_variant_n_children (parameters);
   if (controller->server) {
-    ok = gst_switch_server_mark_face (controller->server,
-        g_variant_get_child_value (parameters, 0));
-    result = g_variant_new ("(b)", ok);
+    gst_switch_server_mark_face (controller->server,
+        g_variant_get_child_value (parameters, 0), FALSE);
+  }
+  return result;
+}
+
+static GVariant *
+gst_switch_controller__mark_tracking (GstSwitchController * controller,
+    GDBusConnection * connection, GVariant * parameters)
+{
+  GVariant *result = NULL;
+  //gint size = g_variant_n_children (parameters);
+  if (controller->server) {
+    gst_switch_server_mark_face (controller->server,
+        g_variant_get_child_value (parameters, 0), TRUE);
   }
   return result;
 }
@@ -1076,6 +1098,7 @@ static MethodTableEntry gst_switch_controller_method_table[] = {
   {"adjust_pip", (MethodFunc) gst_switch_controller__adjust_pip},
   {"click_video", (MethodFunc) gst_switch_controller__click_video},
   {"mark_face", (MethodFunc) gst_switch_controller__mark_face},
+  {"mark_tracking", (MethodFunc) gst_switch_controller__mark_tracking},
   {"switch", (MethodFunc) gst_switch_controller__switch},
   {NULL, NULL}
 };

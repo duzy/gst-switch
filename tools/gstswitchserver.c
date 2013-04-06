@@ -1292,8 +1292,8 @@ gst_switch_server_click_video (GstSwitchServer * srv,
   const double by = (double) srv->composite->b_y;
   const double bw = (double) srv->composite->b_width;
   const double bh = (double) srv->composite->b_height;
-  const double sw = (double) GST_SWITCH_FACEDETECT_FRAME_WIDTH;
-  const double sh = (double) GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+  //const double sw = (double) GST_SWITCH_FACEDETECT_FRAME_WIDTH;
+  //const double sh = (double) GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
   const double r = w / h;
   double vx = (double) avx;
   double vy = (double) avy;
@@ -1337,8 +1337,9 @@ gst_switch_server_click_video (GstSwitchServer * srv,
   return 0;
 }
 
-gboolean
-gst_switch_server_mark_face (GstSwitchServer * srv, GVariant * faces)
+void
+gst_switch_server_mark_face (GstSwitchServer * srv, GVariant * faces,
+    gboolean tracking)
 {
   const int size = g_variant_n_children (faces);
   const double cw = srv->composite->a_width;
@@ -1348,7 +1349,6 @@ gst_switch_server_mark_face (GstSwitchServer * srv, GVariant * faces)
       sh = GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
   GVariantBuilder *vb = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
   int x, y, w, h, n;
-  gboolean res;
 
   rx = sw / cw;
   ry = sh / ch;
@@ -1363,10 +1363,14 @@ gst_switch_server_mark_face (GstSwitchServer * srv, GVariant * faces)
     g_variant_builder_add (vb, "(iiii)", x, y, w, h);
   }
 
-  res = gst_switch_controller_show_face_marker (srv->controller,
-      g_variant_builder_end (vb));
+  if (tracking) {
+    gst_switch_controller_show_track_marker (srv->controller,
+        g_variant_builder_end (vb));
+  } else {
+    gst_switch_controller_show_face_marker (srv->controller,
+        g_variant_builder_end (vb));
+  }
   g_variant_builder_unref (vb);
-  return res;
 }
 
 /**

@@ -103,6 +103,7 @@ struct _GstSwitchClientClass
   void (*new_mode_online) (GstSwitchClient * client, gint mode);
   void (*select_face) (GstSwitchClient * client, gint x, gint y);
   void (*show_face_marker) (GstSwitchClient * client, GVariant *faces);
+  void (*show_track_marker) (GstSwitchClient * client, GVariant *faces);
 };
 
 GType gst_switch_client_get_type (void);
@@ -119,8 +120,10 @@ gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client,
     gint mode);
 gboolean gst_switch_client_click_video (GstSwitchClient * client,
     gint x, gint y, gint fw, gint fh);
-gboolean gst_switch_client_mark_face_remotely (GstSwitchClient * client,
+void gst_switch_client_mark_face_remotely (GstSwitchClient * client,
     GVariant *faces);
+void gst_switch_client_mark_tracking_remotely (GstSwitchClient * client,
+    GVariant *tracking);
 gboolean gst_switch_client_new_record (GstSwitchClient * client);
 guint gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx,
     gint dy, gint dw, gint dh);

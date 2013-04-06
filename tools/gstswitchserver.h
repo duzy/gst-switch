@@ -172,8 +172,8 @@ gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
     gint port);
 gboolean gst_switch_server_click_video (GstSwitchServer * srv,
     gint x, gint y, gint fw, gint fh);
-gboolean gst_switch_server_mark_face (GstSwitchServer * srv,
-    GVariant *faces);
+void gst_switch_server_mark_face (GstSwitchServer * srv,
+    GVariant *faces, gboolean tracking);
 guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
     gint dw, gint dh);
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);

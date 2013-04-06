@@ -316,7 +316,6 @@ gst_switch_capture_worker_faces_detected (GstSwitchCaptureWorker *
 {
   const guint size = gst_value_list_get_size (faces);
   GVariantBuilder *vb = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
-  gboolean okay;
   int n;
 
   //g_print ("%s: faces=%d\n", GST_MESSAGE_SRC_NAME (message), size);
@@ -331,20 +330,37 @@ gst_switch_capture_worker_faces_detected (GstSwitchCaptureWorker *
         gst_structure_get_uint (face, "y", &y);
         gst_structure_get_uint (face, "width", &w);
         gst_structure_get_uint (face, "height", &h);
-        g_print ("%s: face[%d]=[(%d,%d), %d,%d]\n",
-            GST_MESSAGE_SRC_NAME (message), n, x, y, w, h);
+        /*
+           g_print ("%s: face(%d)=[(%d,%d), %d,%d]\n",
+           GST_MESSAGE_SRC_NAME (message), n, x, y, w, h);
+         */
         g_variant_builder_add (vb, "(iiii)", x, y, w, h);
       }
     }
   }
 
-  okay = gst_switch_client_mark_face_remotely (GST_SWITCH_CLIENT
+  gst_switch_client_mark_face_remotely (GST_SWITCH_CLIENT
       (captureworker->capture), g_variant_builder_end (vb));
   g_variant_builder_unref (vb);
 
   /*
-     g_print ("mark: faces (%d) (okay: %d)\n", size, okay);
+     g_print ("mark: faces (%d)\n", size);
    */
+}
+
+static void
+gst_switch_capture_worker_face_tracking (GstSwitchCaptureWorker *
+    captureworker, guint x, guint y, guint w, guint h, GstMessage * message)
+{
+  GVariantBuilder *vb = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
+
+  g_variant_builder_add (vb, "(iiii)", x, y, w, h);
+
+  gst_switch_client_mark_tracking_remotely (GST_SWITCH_CLIENT
+      (captureworker->capture), g_variant_builder_end (vb));
+  g_variant_builder_unref (vb);
+
+  INFO ("track: (%d, %d), %dx%d", x, y, w, h);
 }
 
 static gboolean
@@ -363,11 +379,20 @@ gst_switch_capture_worker_message (GstSwitchCaptureWorker * captureworker,
     case GST_MESSAGE_ELEMENT:{
       const GstStructure *st = (const GstStructure *)
           gst_message_get_structure (message);
-      const GValue *faces = (const GValue *)
-          gst_structure_get_value (st, "faces");
-      if (faces)
-        gst_switch_capture_worker_faces_detected (captureworker, faces,
-            message);
+      if (gst_structure_has_name (st, "facedetect")) {
+        const GValue *faces = gst_structure_get_value (st, "faces");
+        if (faces)
+          gst_switch_capture_worker_faces_detected (captureworker,
+              faces, message);
+      } else if (gst_structure_has_name (st, "facetrack")) {
+        guint x, y, w, h;
+        gst_structure_get_uint (st, "x", &x);
+        gst_structure_get_uint (st, "y", &y);
+        gst_structure_get_uint (st, "width", &w);
+        gst_structure_get_uint (st, "height", &h);
+        gst_switch_capture_worker_face_tracking (captureworker,
+            x, y, w, h, message);
+      }
     }
       break;
 

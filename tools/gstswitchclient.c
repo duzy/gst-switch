@@ -73,6 +73,9 @@ static const gchar introspection_xml[] =
     "    <method name='show_face_marker'>"
     "      <arg type='a(iiii)' name='faces' direction='in'/>"
     "    </method>"
+    "    <method name='show_track_marker'>"
+    "      <arg type='a(iiii)' name='faces' direction='in'/>"
+    "    </method>"
     "  </interface>"
     "  <interface name='" SWITCH_CAPTURE_OBJECT_NAME "'>"
     "    <method name='role'>"
@@ -178,6 +181,7 @@ gst_switch_client_get_compose_port (GstSwitchClient * client)
       NULL, G_VARIANT_TYPE ("(i)"));
   if (value) {
     g_variant_get (value, "(i)", &port);
+    g_variant_unref (value);
   }
   return port;
 }
@@ -199,6 +203,7 @@ gst_switch_client_get_encode_port (GstSwitchClient * client)
       NULL, G_VARIANT_TYPE ("(i)"));
   if (value) {
     g_variant_get (value, "(i)", &port);
+    g_variant_unref (value);
   }
   return port;
 }
@@ -219,6 +224,7 @@ gst_switch_client_get_audio_port (GstSwitchClient * client)
       NULL, G_VARIANT_TYPE ("(i)"));
   if (value) {
     g_variant_get (value, "(i)", &port);
+    g_variant_unref (value);
   }
   return port;
 }
@@ -259,6 +265,7 @@ gst_switch_client_switch (GstSwitchClient * client, gint channel, gint port)
       G_VARIANT_TYPE ("(b)"));
   if (value) {
     g_variant_get (value, "(b)", &result);
+    g_variant_unref (value);
   }
   return result;
 }
@@ -284,6 +291,18 @@ gst_switch_client_show_face_marker (GstSwitchClient * client, GVariant * faces)
     (*klass->show_face_marker) (client, faces);
 }
 
+static void
+gst_switch_client_show_track_marker (GstSwitchClient * client, GVariant * faces)
+{
+  GstSwitchClientClass *klass =
+      GST_SWITCH_CLIENT_CLASS (G_OBJECT_GET_CLASS (client));
+
+  //INFO ("mark: %d, %d, %d, %d", x, y, w, h);
+
+  if (klass->show_track_marker)
+    (*klass->show_track_marker) (client, faces);
+}
+
 /**
  * User click on the video.
  */
@@ -296,23 +315,37 @@ gst_switch_client_click_video (GstSwitchClient * client,
       g_variant_new ("(iiii)", x, y, vw, vh), G_VARIANT_TYPE ("(b)"));
   if (value) {
     g_variant_get (value, "(b)", &result);
+    g_variant_unref (value);
   }
   return result;
 }
 
-gboolean
+void
 gst_switch_client_mark_face_remotely (GstSwitchClient * client,
     GVariant * faces)
 {
-  gboolean result = FALSE;
   GVariant *v = g_variant_new_tuple (&faces, 1);
-  GVariant *value = gst_switch_client_call_controller (client, "mark_face",
-      v, G_VARIANT_TYPE ("(b)"));
+  GVariant *value = gst_switch_client_call_controller (client,
+      "mark_face", v, G_VARIANT_TYPE ("()"));
   if (value) {
-    g_variant_get (value, "(b)", &result);
+    //g_variant_get (value, "(b)", &result);
+    g_variant_unref (value);
   }
   //g_variant_unref (faces);
-  return result;
+}
+
+void
+gst_switch_client_mark_tracking_remotely (GstSwitchClient * client,
+    GVariant * tracking)
+{
+  GVariant *v = g_variant_new_tuple (&tracking, 1);
+  GVariant *value = gst_switch_client_call_controller (client,
+      "mark_tracking", v, G_VARIANT_TYPE ("()"));
+  if (value) {
+    //g_variant_get (value, "(b)", &result);
+    g_variant_unref (value);
+  }
+  //g_variant_unref (faces);
 }
 
 /**
@@ -343,6 +376,7 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
       if (value) {
         g_variant_get (value, "(b)", &result);
         client->changing_composite_mode = result;
+        g_variant_unref (value);
       }
     }
     GST_SWITCH_CLIENT_UNLOCK_COMPOSITE_MODE (client);
@@ -369,6 +403,7 @@ gst_switch_client_new_record (GstSwitchClient * client)
       G_VARIANT_TYPE ("(b)"));
   if (value) {
     g_variant_get (value, "(b)", &result);
+    g_variant_unref (value);
   }
   return result;
 }
@@ -397,6 +432,7 @@ gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx, gint dy,
       G_VARIANT_TYPE ("(u)"));
   if (value) {
     g_variant_get (value, "(u)", &result);
+    g_variant_unref (value);
   }
   return result;
 }
@@ -912,6 +948,15 @@ gst_switch_client__show_face_marker (GstSwitchClient * client,
   return NULL;
 }
 
+static GVariant *
+gst_switch_client__show_track_marker (GstSwitchClient * client,
+    GDBusConnection * connection, GVariant * parameters)
+{
+  gst_switch_client_show_track_marker (client,
+      g_variant_get_child_value (parameters, 0));
+  return NULL;
+}
+
 /**
  * Remoting method stub of "video_click".
  */
@@ -958,6 +1003,7 @@ static MethodTableEntry gst_switch_client_method_table[] = {
   //{"click_video", (MethodFunc) gst_switch_client__click_video},
   {"select_face", (MethodFunc) gst_switch_client__select_face},
   {"show_face_marker", (MethodFunc) gst_switch_client__show_face_marker},
+  {"show_track_marker", (MethodFunc) gst_switch_client__show_track_marker},
   {NULL, NULL}
 };
 
