@@ -328,7 +328,6 @@ gst_switch_client_mark_face_remotely (GstSwitchClient * client,
   GVariant *value = gst_switch_client_call_controller (client,
       "mark_face", v, G_VARIANT_TYPE ("()"));
   if (value) {
-    //g_variant_get (value, "(b)", &result);
     g_variant_unref (value);
   }
   //g_variant_unref (faces);
@@ -342,7 +341,6 @@ gst_switch_client_mark_tracking_remotely (GstSwitchClient * client,
   GVariant *value = gst_switch_client_call_controller (client,
       "mark_tracking", v, G_VARIANT_TYPE ("()"));
   if (value) {
-    //g_variant_get (value, "(b)", &result);
     g_variant_unref (value);
   }
   //g_variant_unref (faces);
