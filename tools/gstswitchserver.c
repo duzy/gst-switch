@@ -1324,7 +1324,8 @@ gst_switch_server_click_video (GstSwitchServer * srv,
   g_print ("select-face: %c, (%d, %d)\n", chan, (gint) x1, (gint) y1);
 
   // conert to detect space
-  rx = sw / w, ry = sh / h;
+  //rx = sw / w, ry = sh / h; FIXME: This final (x,y) is not accurate.
+  rx = 1.0, ry = 1.0;
   avx = (gint) (rx * x1 + 0.5);
   avy = (gint) (ry * y1 + 0.5);
 
