@@ -57,7 +57,6 @@ function prepare-prerequisites()
 	libtool \
 	libtoolize \
 	libvpx-dev \
-	libopencv-dev \
 	pkg-config \
 	zlib1g-dev \
 	gtk-doc-tools \
@@ -68,8 +67,6 @@ function prepare-prerequisites()
     do
 	install-prerequisite $name
     done
-
-    install-git-libvpx
 }
 
 function goto-gst-root()
@@ -114,54 +111,16 @@ function clone-gst-project()
     clone-project git://anongit.freedesktop.org/gstreamer $1
 }
 
-function get-project-build-options()
-{
-    local project=$1
-    case $project in
-	gst-plugins-good)
-	    echo --enable-experimental
-	    ;;
-    esac
-}
-
-function build-project()
-{
-    local project=$1
-    local stage=$(gst-stage)
-    local backdir=$PWD
-    cd $project
-    printf "Building $project...\n"
-    
-    local options=$(get-project-build-options $project)
-    ./autogen.sh --prefix=$stage $options || {
-	printf "Failed to do autogen!!!\n"
-	exit -1
-    }
-
-    [[ -f Makefile ]] || {
-	printf "Configure $project failed, no Makefile generated!!!\n"
-	exit -1
-    }
-    make clean || true
-    make ${options[make-args]} && make ${options[make-args]} install
-    cd $backdir
-}
-
-function build-gst-project()
-{
-    local project=$1
-    local stage=$(gst-stage)
-    build-project $project
-    for i in stage/lib/pkgconfig/gstreamer-*; do
-	sudo ln -svf $PWD/$i /usr/lib/pkgconfig
-    done
-}
-
-function prepare-gst-projects()
+function update-gst-projects()
 {
     for name in $@; do
-	clone-gst-project $name
-	build-gst-project $name
+	if [[ -d $name ]]; then
+	    cd $name || { exit -1 }
+	    git update
+	    cd - > /dev/null
+	else
+	    clone-$where-project $name -b $branch
+	fi
     done
 }
 
@@ -191,25 +150,15 @@ function main()
     declare -A options="( $(parse-options $@) )"
     local back=$PWD
     local stage=$(gst-stage)
-    local force=no
+    local where=duzy
+    local branch=speakertrack
 
-    if  [[ ! -f $stage/bin/gst-launch-1.0 ]] ||
-	[[ "x${options[force]}" == "xyes" ]]; then
-	prepare-prerequisites
-	goto-gst-root
-	prepare-gst-projects \
-	    gstreamer \
-	    gst-plugins-base \
-	    gst-plugins-good \
-	    gst-plugins-bad \
-	    gst-plugins-ugly
-    fi
+    #prepare-prerequisites
 
-    if  [[ -f $back/../gst-switch/scripts/app_stage.sh ]] &&
-	[[ -s $back/../gst-switch/scripts/stage ]]; then
-	cd $back && build-project .
-    else
-	clone-duzy-project gst-switch
-	build-project gst-switch
-    fi
+    goto-gst-root && update-gst-projects \
+	gstreamer \
+	gst-plugins-base \
+	gst-plugins-good \
+	gst-plugins-bad \
+	gst-plugins-ugly
 }

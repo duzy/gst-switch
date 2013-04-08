@@ -69,9 +69,15 @@ G_DEFINE_TYPE (GstSwitchCaptureWorker, gst_switch_capture_worker,
     GST_TYPE_WORKER);
 
 gboolean verbose = FALSE;
+const char *device = "/dev/ttyUSB0";
+const char *protocol = "visca";
 
 static GOptionEntry options[] = {
   {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", NULL},
+  {"device", 'd', 0, G_OPTION_ARG_STRING, &device,
+      "PTZ camera control device", "DEVICE"},
+  {"protocol", 'p', 0, G_OPTION_ARG_STRING, &protocol,
+      "PTZ camera control protocol", "NAME"},
   {NULL}
 };
 
@@ -122,7 +128,9 @@ gst_switch_capture_pipeline (GstWorker * worker, GstSwitchCapture * capture)
       GST_SWITCH_FACEDETECT_FRAME_WIDTH, GST_SWITCH_FACEDETECT_FRAME_HEIGHT);
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! facedetect2 "
-      "! speakertrack name=tracker ! camcontrol name=camctl ");
+      "! speakertrack name=tracker ");
+  g_string_append_printf (desc, "! camcontrol name=camctl "
+      "device=%s protocol=%s ", device, protocol);
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! xvimagesink ");
 

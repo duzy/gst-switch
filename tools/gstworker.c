@@ -194,7 +194,7 @@ gst_worker_get_property (GstWorker * worker, guint property_id,
   switch (property_id) {
     case PROP_NAME:
     {
-      worker->name = g_strdup (g_value_get_string (value));
+      g_value_set_string (value, worker->name);
       break;
     }
     default:
