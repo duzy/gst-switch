@@ -205,11 +205,14 @@ function main()
 	    gst-plugins-ugly
     fi
 
-    if  [[ -f $back/../gst-switch/scripts/app_stage.sh ]] &&
-	[[ -s $back/../gst-switch/scripts/stage ]]; then
+    echo $PWD
+
+    if  [[ -f scripts/apps/app_stage.sh ]] &&
+	[[ -s scripts/stage ]]; then
 	cd $back && build-project .
     else
 	clone-duzy-project gst-switch
 	build-project gst-switch
+	true
     fi
 }
