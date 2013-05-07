@@ -195,7 +195,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   int n, m;
 
   ptz->x = ptz->y = ptz->z = 0;
-  ptz->controller = gst_cam_controller_new ("visca");
+  ptz->controller = gst_cam_controller_new (ptz_control_protocol);
   gst_cam_controller_open (ptz->controller, ptz_device_name);
 
   ptz->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
