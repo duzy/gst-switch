@@ -62,6 +62,8 @@ function prepare-prerequisites()
 	libogg-dev \
 	libvorbis-dev \
 	libopencv-dev \
+	libcv-dev \
+	libhighgui-dev \
 	pkg-config \
 	zlib1g-dev \
 	gtk-doc-tools \
