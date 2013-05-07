@@ -64,6 +64,7 @@ function prepare-prerequisites()
 	libopencv-dev \
 	libcv-dev \
 	libhighgui-dev \
+	libv4l-dev \
 	pkg-config \
 	zlib1g-dev \
 	gtk-doc-tools \
