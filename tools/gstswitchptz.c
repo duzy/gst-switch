@@ -33,6 +33,7 @@
 
 gboolean verbose;
 const char *ptz_device_name = "/dev/ttyUSB0";
+const char *ptz_video_name = "/dev/video0";
 const char *ptz_control_protocol = "visca";
 
 G_DEFINE_TYPE (GstSwitchPTZ, gst_switch_ptz, GST_TYPE_WORKER);
@@ -367,11 +368,10 @@ static GString *
 gst_switch_ptz_get_pipeline (GstSwitchPTZ * ptz)
 {
   GString *desc;
-  const gchar *device = "/dev/video0";
 
   desc = g_string_new ("");
 
-  g_string_append_printf (desc, "v4l2src device=%s ", device);
+  g_string_append_printf (desc, "v4l2src device=%s ", ptz_video_name);
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! xvimagesink name=sink ");
   return desc;
@@ -413,6 +413,8 @@ static GOptionEntry entries[] = {
       "PTZ camera control device", "DEVICE"},
   {"protocol", 'p', 0, G_OPTION_ARG_STRING, &ptz_control_protocol,
       "PTZ camera control protocol", "NAME"},
+  {"video", 'p', 0, G_OPTION_ARG_STRING, &ptz_video_name,
+      "Camera video name (default /dev/video0)", "NAME"},
   {NULL}
 };
 
