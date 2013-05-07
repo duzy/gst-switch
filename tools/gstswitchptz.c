@@ -32,6 +32,8 @@
 #include "gstswitchptz.h"
 
 gboolean verbose;
+const char *ptz_device_name = "/dev/ttyUSB0";
+const char *ptz_control_protocol = "visca";
 
 G_DEFINE_TYPE (GstSwitchPTZ, gst_switch_ptz, GST_TYPE_WORKER);
 
@@ -194,6 +196,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
 
   ptz->x = ptz->y = ptz->z = 0;
   ptz->controller = gst_cam_controller_new ("visca");
+  gst_cam_controller_open (ptz->controller, ptz_device_name);
 
   ptz->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size (GTK_WINDOW (ptz->window), 640, 480);
@@ -208,7 +211,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   scrollwin = gtk_scrolled_window_new (NULL, NULL);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollwin),
       GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_widget_set_size_request (scrollwin, 230, -1);
+  gtk_widget_set_size_request (scrollwin, 100, -1);
   gtk_widget_set_vexpand (scrollwin, TRUE);
   gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollwin),
       box_control);
@@ -241,7 +244,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
     for (m = 0; m < 3; ++m) {
       GtkWidget *btn = control_buttons[m][n] = gtk_button_new ();
       gtk_grid_attach (GTK_GRID (control_grid), btn, n, m, 1, 1);
-      gtk_widget_set_size_request (scrollwin, 30, 30);
+      gtk_widget_set_size_request (btn, 110, 110);
       gtk_button_set_label (GTK_BUTTON (btn), control_labels[m][n]);
     }
   }
@@ -384,6 +387,10 @@ gst_switch_ptz_class_init (GstSwitchPTZClass * klass)
 
 static GOptionEntry entries[] = {
   {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", NULL},
+  {"device", 'd', 0, G_OPTION_ARG_STRING, &ptz_device_name,
+      "PTZ camera control device", "DEVICE"},
+  {"protocol", 'p', 0, G_OPTION_ARG_STRING, &ptz_control_protocol,
+      "PTZ camera control protocol", "NAME"},
   {NULL}
 };
 
