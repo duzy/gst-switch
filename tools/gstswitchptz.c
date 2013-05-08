@@ -413,7 +413,7 @@ static GOptionEntry entries[] = {
       "PTZ camera control device", "DEVICE"},
   {"protocol", 'p', 0, G_OPTION_ARG_STRING, &ptz_control_protocol,
       "PTZ camera control protocol", "NAME"},
-  {"video", 'p', 0, G_OPTION_ARG_STRING, &ptz_video_name,
+  {"video", 'v', 0, G_OPTION_ARG_STRING, &ptz_video_name,
       "Camera video name (default /dev/video0)", "NAME"},
   {NULL}
 };

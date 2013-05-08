@@ -59,6 +59,7 @@ function prepare-prerequisites()
 	libtoolize \
 	libvpx-dev \
 	libxv-dev \
+	libx11-dev \
 	libogg-dev \
 	libvorbis-dev \
 	libopencv-dev \
