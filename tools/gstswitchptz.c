@@ -71,10 +71,12 @@ gst_switch_ptz_fix_coords (GstSwitchPTZ * ptz)
     ptz->z = 99;
 }
 
+#define STEP 5
+
 static void
 gst_switch_ptz_button_clicked_left (GtkButton * button, GstSwitchPTZ * ptz)
 {
-  ptz->x -= 5;
+  ptz->x -= STEP;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_pan (ptz->controller,
@@ -86,8 +88,8 @@ gst_switch_ptz_button_clicked_left (GtkButton * button, GstSwitchPTZ * ptz)
 static void
 gst_switch_ptz_button_clicked_left_top (GtkButton * button, GstSwitchPTZ * ptz)
 {
-  ptz->x -= 5;
-  ptz->y -= 5;
+  ptz->x -= STEP;
+  ptz->y -= STEP;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_pan (ptz->controller,
@@ -101,7 +103,7 @@ gst_switch_ptz_button_clicked_left_top (GtkButton * button, GstSwitchPTZ * ptz)
 static void
 gst_switch_ptz_button_clicked_top (GtkButton * button, GstSwitchPTZ * ptz)
 {
-  ptz->y -= 5;
+  ptz->y -= STEP;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_tilt (ptz->controller,
@@ -113,8 +115,8 @@ gst_switch_ptz_button_clicked_top (GtkButton * button, GstSwitchPTZ * ptz)
 static void
 gst_switch_ptz_button_clicked_top_right (GtkButton * button, GstSwitchPTZ * ptz)
 {
-  ptz->x += 5;
-  ptz->y -= 5;
+  ptz->x += STEP;
+  ptz->y -= STEP;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_pan (ptz->controller,
@@ -128,7 +130,7 @@ gst_switch_ptz_button_clicked_top_right (GtkButton * button, GstSwitchPTZ * ptz)
 static void
 gst_switch_ptz_button_clicked_right (GtkButton * button, GstSwitchPTZ * ptz)
 {
-  ptz->x += 5;
+  ptz->x += STEP;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_pan (ptz->controller,
@@ -141,8 +143,8 @@ static void
 gst_switch_ptz_button_clicked_right_bottom (GtkButton * button,
     GstSwitchPTZ * ptz)
 {
-  ptz->x += 5;
-  ptz->y += 5;
+  ptz->x += STEP;
+  ptz->y += STEP;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_pan (ptz->controller,
@@ -156,7 +158,7 @@ gst_switch_ptz_button_clicked_right_bottom (GtkButton * button,
 static void
 gst_switch_ptz_button_clicked_bottom (GtkButton * button, GstSwitchPTZ * ptz)
 {
-  ptz->y += 5;
+  ptz->y += STEP;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_tilt (ptz->controller,
@@ -169,8 +171,8 @@ static void
 gst_switch_ptz_button_clicked_bottom_left (GtkButton * button,
     GstSwitchPTZ * ptz)
 {
-  ptz->x -= 5;
-  ptz->y += 5;
+  ptz->x -= STEP;
+  ptz->y += STEP;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_pan (ptz->controller,
@@ -202,7 +204,7 @@ gst_switch_ptz_zoom_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
   ptz->z = (gint) gtk_adjustment_get_value (adjustment);
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
-    gst_cam_controller_pan (ptz->controller,
+    gst_cam_controller_zoom (ptz->controller,
         (gint) gtk_adjustment_get_value (ptz->adjust_zoom_speed), ptz->z);
   }
   g_print ("zoom: (%d, %d, %d)\n", ptz->x, ptz->y, ptz->z);
