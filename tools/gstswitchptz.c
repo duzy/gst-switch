@@ -55,18 +55,18 @@ gst_switch_ptz_window_closed (GtkWidget * widget, GdkEvent * event,
 static void
 gst_switch_ptz_fix_coords (GstSwitchPTZ * ptz)
 {
-  if (ptz->x < 0)
-    ptz->x = 0;
+  if (ptz->x < 1)
+    ptz->x = 1;
   if (99 < ptz->x)
     ptz->x = 99;
 
-  if (ptz->y < 0)
-    ptz->y = 0;
+  if (ptz->y < 1)
+    ptz->y = 1;
   if (99 < ptz->y)
     ptz->y = 99;
 
-  if (ptz->z < 0)
-    ptz->z = 0;
+  if (ptz->z < 1)
+    ptz->z = 1;
   if (99 < ptz->z)
     ptz->z = 99;
 }
@@ -211,6 +211,47 @@ gst_switch_ptz_zoom_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
 }
 
 static void
+gst_switch_ptz_button_clicked_zoom_minus (GtkButton * button,
+    GstSwitchPTZ * ptz)
+{
+  ptz->z -= STEP;
+  if (ptz->controller) {
+    gst_switch_ptz_fix_coords (ptz);
+    gst_cam_controller_zoom (ptz->controller,
+        (gint) gtk_adjustment_get_value (ptz->adjust_zoom_speed), ptz->z);
+    //gtk_adjustment_set_value (ptz->adjust_zoom_speed, ptz->z);
+  }
+  g_print ("zoom: (%d, %d, %d)\n", ptz->x, ptz->y, ptz->z);
+}
+
+static void
+gst_switch_ptz_button_clicked_zoom_reset (GtkButton * button,
+    GstSwitchPTZ * ptz)
+{
+  ptz->z = 50;
+  if (ptz->controller) {
+    gst_switch_ptz_fix_coords (ptz);
+    gst_cam_controller_zoom (ptz->controller,
+        (gint) gtk_adjustment_get_value (ptz->adjust_zoom_speed), ptz->z);
+    //gtk_adjustment_set_value (ptz->adjust_zoom_speed, ptz->z);
+  }
+  g_print ("zoom: (%d, %d, %d)\n", ptz->x, ptz->y, ptz->z);
+}
+
+static void
+gst_switch_ptz_button_clicked_zoom_plus (GtkButton * button, GstSwitchPTZ * ptz)
+{
+  ptz->z += STEP;
+  if (ptz->controller) {
+    gst_switch_ptz_fix_coords (ptz);
+    gst_cam_controller_zoom (ptz->controller,
+        (gint) gtk_adjustment_get_value (ptz->adjust_zoom_speed), ptz->z);
+    //gtk_adjustment_set_value (ptz->adjust_zoom_speed, ptz->z);
+  }
+  g_print ("zoom: (%d, %d, %d)\n", ptz->x, ptz->y, ptz->z);
+}
+
+static void
 gst_switch_ptz_zoom_speed_changed (GtkAdjustment * adjustment,
     GstSwitchPTZ * ptz)
 {
@@ -235,6 +276,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   GtkWidget *box_control_pan, *box_control_tilt, *box_control_zoom;
   GtkWidget *control_grid;
   GtkWidget *control_buttons[3][3] = { {NULL} };
+  GtkWidget *box_zoom, *zoom_minus, *zoom_reset, *zoom_plus;
   GtkWidget *scrollwin;
   GtkWidget *scale_zoom;
   GtkWidget *scale_pan_speed, *scale_tilt_speed, *scale_zoom_speed;
@@ -303,6 +345,26 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
     }
   }
   gtk_box_pack_start (GTK_BOX (box_control), control_grid, FALSE, TRUE, 0);
+
+  box_zoom = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  zoom_minus = gtk_button_new_with_label ("-");
+  zoom_reset = gtk_button_new_with_label ("*");
+  zoom_plus = gtk_button_new_with_label ("+");
+  gtk_widget_set_size_request (zoom_minus, 110, 50);
+  gtk_widget_set_size_request (zoom_reset, 110, 50);
+  gtk_widget_set_size_request (zoom_plus, 110, 50);
+  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("zoom:"), TRUE,
+      TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_minus, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_reset, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_plus, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_control), box_zoom, FALSE, TRUE, 0);
+  g_signal_connect (zoom_minus, "clicked",
+      G_CALLBACK (gst_switch_ptz_button_clicked_zoom_minus), ptz);
+  g_signal_connect (zoom_reset, "clicked",
+      G_CALLBACK (gst_switch_ptz_button_clicked_zoom_reset), ptz);
+  g_signal_connect (zoom_plus, "clicked",
+      G_CALLBACK (gst_switch_ptz_button_clicked_zoom_plus), ptz);
 
   ptz->adjust_zoom = gtk_adjustment_new (50, 0, 100, 1, 1, 5);
   scale_zoom = gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, ptz->adjust_zoom);
