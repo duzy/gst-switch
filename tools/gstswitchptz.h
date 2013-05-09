@@ -46,7 +46,7 @@ typedef struct _GstSwitchPTZ
     GtkAdjustment *adjust_zoom_speed;
     GtkAdjustment *adjust_zoom;
 
-    gint x, y, z;
+    double x, y, z;
 
     GstCamController *controller;
 } GstSwitchPTZ;
