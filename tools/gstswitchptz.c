@@ -405,6 +405,12 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   gtk_box_pack_start (GTK_BOX (box_control), box_control_zoom, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new (""), TRUE, TRUE, 0);
 
+  if (strcmp (ptz_control_protocol, "visca-sony") == 0) {
+    gtk_widget_set_sensitive (box_control_pan, FALSE);
+    gtk_widget_set_sensitive (box_control_tilt, FALSE);
+    gtk_widget_set_sensitive (box_control_zoom, FALSE);
+  }
+
   /*
      g_signal_connect (G_OBJECT (scale_pan_speed), "value-changed",
      G_CALLBACK (gst_switch_ptz_window_closed), ptz);
