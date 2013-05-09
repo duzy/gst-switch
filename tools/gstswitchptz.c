@@ -265,7 +265,7 @@ static void
 gst_switch_ptz_button_clicked_zoom_reset (GtkButton * button,
     GstSwitchPTZ * ptz)
 {
-  ptz->z = 50;
+  ptz->z = 0.50;
   if (ptz->controller) {
     gst_switch_ptz_fix_coords (ptz);
     gst_cam_controller_zoom (ptz->controller,
