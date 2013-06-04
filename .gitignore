@@ -2,6 +2,7 @@
 *.o
 *.lo
 *.la
+*.pyc
 /INSTALL
 /Makefile
 /Makefile.in
