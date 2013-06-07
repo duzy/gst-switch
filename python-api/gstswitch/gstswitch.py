@@ -47,13 +47,13 @@ class Server(object):
 	def run(self):
 		"""Launches the server
 		"""
-		cmd = """gst-switch-srv -v \
-					--gst-debug-no-color \
+		cmd = """gst-switch-srv \
 					--video-input-port=%s \
 					--audio-input-port=%s \
 					--control-port=%s \
 					--record=%s """ %(self.video_port, self.audio_port, self.control_port, self.record_file)
-		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=-1, shell=True)
+		print cmd.split()
+		proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, bufsize=-1, shell=False)
 		print "created process:", proc, proc.pid
 		return proc
 
@@ -65,6 +65,7 @@ class Server(object):
 		Parameters:
 			None
 		"""
+		self.endAllTestVideo()
 		proc = self.proc
 		ret = True
 		try:
@@ -74,29 +75,34 @@ class Server(object):
 			ret = False
 		return ret
 
-	def newTestVideoSrc(self, pattern=None):
+	def newTestVideo(self, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
 		"""Start a new test source
 		"""
-		testsrc = TestVideoSrc(self.video_port, pattern)
+		testsrc = TestVideoSrc(self.video_port, width, height, pattern, timeoverlay, clockoverlay)
 		if testsrc == None:
 			pass
 		self.TESTS.append(testsrc)
 
-	def getTestVideoSrc(self):
+	def getTestVideo(self):
 		"""
 		"""
-		i=1
+		i=0
 		for x in self.TESTS:
 			print i,"pattern:",x.pattern
 			i+=1
 
-	def endTestVideoSrc(self, index):
+	def endTestVideo(self, index):
 		"""
 		"""
 		testsrc = self.TESTS[index]
 		testsrc.end()
-		self.TESTS.remove(testsrc)
+		self.TESTS.remove(self.TESTS[index])
 
+	def endAllTestVideo(self):
+		"""
+		"""
+		for x in range(len(self.TESTS)):
+			self.endTestVideo(0)
 
 
 class UI(object):
@@ -118,9 +124,9 @@ class UI(object):
 	def run(self):
 		"""Launches the UI process
 		"""
-		cmd = """gst-switch-ui -v \
-					--gst-debug-no-color """
-		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=-1, shell=True)
+		cmd = """gst-switch-ui \
+					"""
+		proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, bufsize=-1, shell=False)
 		print "created process:", proc, proc.pid
 		return proc
 
@@ -157,44 +163,57 @@ class UI(object):
 class TestVideoSrc(object):
 	"""docstring for TestVideoSrc"""
 
-	def __init__(self, port, pattern=None):
+	def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
 		super(TestVideoSrc, self).__init__()
 		"""Contructor for TestVideoSrc class
 		Returns:
 			None
 		Parameters:
 			videotestsrc pattern(optional): chooses random if not specified
+			#some other optional
 		"""
-		self.TIMEOVERLAY = True
-		self.WIDTH=640
-		self.HEIGHT=480
+
+		if timeoverlay:
+			self.TIMEOVERLAY = True
+		else:
+			self.TIMEOVERLAY = False
+		if clockoverlay:
+			self.CLOCKOVERLAY = True
+		else:
+			self.CLOCKOVERLAY = False
+		self.WIDTH = width
+		self.HEIGHT = height
+		self.port = port
+		self.pattern = self.getPattern(pattern)
 
 		self.proc = None
-		if pattern == None:
-			self.pattern = None
-		else:
-			self.pattern = pattern
-		self.proc = self.run(port, self.pattern)
+		self.proc = self.run()
 		if self.proc == None:
 			pass
 	
-	def run(self, port, pattern=None):
+	def run(self):
 		"""Launches a Test Source
 
 		"""
-		self.pattern = self.getPattern(pattern)
+		
 		if self.TIMEOVERLAY == True:
 			timeoverlay = """timeoverlay font-desc="Verdana bold 50" ! """
 		else:
 			timeoverlay = " "
+		if self.CLOCKOVERLAY:
+			clockoverlay = """clockoverlay font-desc="Verdana bold 50" ! """
+		else:
+			clockoverlay = " "
+		# @TO-DO: do using gi.repository.Gst - gst-launch-1.0 
 		cmd = """gst-launch-1.0   \
 					videotestsrc pattern=%s ! \
 					video/x-raw,width=%s,height=%s ! \
 					%s \
+					%s \
 					gdppay ! \
-					tcpclientsink port=%s """ %(self.pattern, self.WIDTH, self.HEIGHT, timeoverlay, str(port))
+					tcpclientsink port=%s """ %(self.pattern, self.WIDTH, self.HEIGHT, timeoverlay, clockoverlay, str(self.port))
 		print cmd
-		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=-1, shell=True)
+		proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, bufsize=-1, shell=False)
 		print "created process:", proc, proc.pid
 		return proc
 
@@ -205,14 +224,18 @@ class TestVideoSrc(object):
 		ret = True
 		try:
 			proc.terminate()
-			print "VideoTestSrc killed"
+			print "TestVideo pattern:%s killed" %(self.pattern)
 		except:
 			ret = False
 		return ret
 
 
-	def getPattern(self, pattern=None):
+	def getPattern(self, pattern):
+		"""Generates a random patern if not specified
+		"""
+		print pattern
 		if pattern==None:
 			pattern = random.randint(0,20)
 		pattern = str(pattern)
+		print pattern
 		return pattern

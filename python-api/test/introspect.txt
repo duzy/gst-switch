@@ -1,0 +1,59 @@
+node /info/duzy/gst_switch/SwitchController {
+  interface org.freedesktop.DBus.Properties {
+    methods:
+      Get(in  s interface_name,
+          in  s property_name,
+          out v value);
+      GetAll(in  s interface_name,
+             out a{sv} properties);
+      Set(in  s interface_name,
+          in  s property_name,
+          in  v value);
+    signals:
+      PropertiesChanged(s interface_name,
+                        a{sv} changed_properties,
+                        as invalidated_properties);
+    properties:
+  };
+  interface org.freedesktop.DBus.Introspectable {
+    methods:
+      Introspect(out s xml_data);
+    signals:
+    properties:
+  };
+  interface org.freedesktop.DBus.Peer {
+    methods:
+      Ping();
+      GetMachineId(out s machine_uuid);
+    signals:
+    properties:
+  };
+  interface info.duzy.gst_switch.SwitchControllerInterface {
+    methods:
+      get_compose_port(out i port);
+      get_encode_port(out i port);
+      get_audio_port(out i port);
+      get_preview_ports(out s ports);
+      set_composite_mode(in  i channel,
+                         out b result);
+      set_encode_mode(in  i channel,
+                      out b result);
+      new_record(out b result);
+      adjust_pip(in  i dx,
+                 in  i dy,
+                 in  i dw,
+                 in  i dh,
+                 out u result);
+      switch(in  i channel,
+             in  i port,
+             out b result);
+    signals:
+      audio_port(i port);
+      compose_port(i port);
+      encode_port(i port);
+      preview_port(i port,
+                   i serve,
+                   i type);
+    properties:
+  };
+};
