@@ -1,4 +1,5 @@
 from controller import Controller
+from testsource import VideoSource
 
 import os, sys, signal, subprocess
 import random
@@ -7,6 +8,7 @@ import random
 class Server(object):
 	"""docstring for Server"""
 	
+
 	def __init__(self, video_port=3000, audio_port=4000, control_port=5000, record_file='record.data'):
 		"""Contructor for the Server class
 		Returns:
@@ -33,7 +35,7 @@ class Server(object):
 			pass
 			
 
-	def connectController(self, Controller=None):
+	def connect_controller(self, Controller=None):
 		"""Connects the Server() to the gdbus enabling all further method calls. 
 		Creates Controller and returns it if it does not exist
 		Returns:
@@ -75,7 +77,7 @@ class Server(object):
 			ret = False
 		return ret
 
-	def newTestVideo(self, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
+	def new_test_video(self, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
 		"""Start a new test source
 		"""
 		testsrc = TestVideoSrc(self.video_port, width, height, pattern, timeoverlay, clockoverlay)
@@ -83,7 +85,7 @@ class Server(object):
 			pass
 		self.TESTS.append(testsrc)
 
-	def getTestVideo(self):
+	def get_test_video(self):
 		"""
 		"""
 		i=0
@@ -91,7 +93,7 @@ class Server(object):
 			print i,"pattern:",x.pattern
 			i+=1
 
-	def endTestVideo(self, index):
+	def end_test_video(self, index):
 		"""
 		"""
 		testsrc = self.TESTS[index]
@@ -102,11 +104,13 @@ class Server(object):
 		"""
 		"""
 		for x in range(len(self.TESTS)):
-			self.endTestVideo(0)
+			self.end_test_video(0)
 
 
 class UI(object):
 	"""docstring for UI"""
+
+
 	def __init__(self):
 		"""Constructor for the UI Object.
 		Returns:
@@ -147,7 +151,7 @@ class UI(object):
 			ret = False
 		return ret
 
-	def connectController(self, Controller=None):
+	def connect_controller(self, Controller=None):
 		"""Connect the UI to the controller enabling all further method calls
 		Creates a Controller() and returns it if it does not exist
 		Returns:
@@ -162,6 +166,7 @@ class UI(object):
 
 class TestVideoSrc(object):
 	"""docstring for TestVideoSrc"""
+
 
 	def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
 		super(TestVideoSrc, self).__init__()
@@ -184,7 +189,7 @@ class TestVideoSrc(object):
 		self.WIDTH = width
 		self.HEIGHT = height
 		self.port = port
-		self.pattern = self.getPattern(pattern)
+		self.pattern = self.get_pattern(pattern)
 
 		self.proc = None
 		self.proc = self.run()
@@ -230,7 +235,7 @@ class TestVideoSrc(object):
 		return ret
 
 
-	def getPattern(self, pattern):
+	def get_pattern(self, pattern):
 		"""Generates a random patern if not specified
 		"""
 		print pattern
