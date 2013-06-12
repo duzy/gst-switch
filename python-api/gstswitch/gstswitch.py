@@ -1,5 +1,5 @@
 from controller import Controller
-from testsource import VideoSource
+from testsource import VideoSrc
 
 import os, sys, signal, subprocess
 import random
@@ -80,7 +80,7 @@ class Server(object):
 	def new_test_video(self, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
 		"""Start a new test source
 		"""
-		testsrc = TestVideoSrc(self.video_port, width, height, pattern, timeoverlay, clockoverlay)
+		testsrc = VideoSrc(self.video_port, width, height, pattern, timeoverlay, clockoverlay)
 		if testsrc == None:
 			pass
 		self.TESTS.append(testsrc)
@@ -164,83 +164,83 @@ class UI(object):
 
 
 
-class TestVideoSrc(object):
-	"""docstring for TestVideoSrc"""
+# class TestVideoSrc(object):
+# 	"""docstring for TestVideoSrc"""
 
 
-	def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
-		super(TestVideoSrc, self).__init__()
-		"""Contructor for TestVideoSrc class
-		Returns:
-			None
-		Parameters:
-			videotestsrc pattern(optional): chooses random if not specified
-			#some other optional
-		"""
+# 	def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
+# 		super(TestVideoSrc, self).__init__()
+# 		"""Contructor for TestVideoSrc class
+# 		Returns:
+# 			None
+# 		Parameters:
+# 			videotestsrc pattern(optional): chooses random if not specified
+# 			#some other optional
+# 		"""
 
-		if timeoverlay:
-			self.TIMEOVERLAY = True
-		else:
-			self.TIMEOVERLAY = False
-		if clockoverlay:
-			self.CLOCKOVERLAY = True
-		else:
-			self.CLOCKOVERLAY = False
-		self.WIDTH = width
-		self.HEIGHT = height
-		self.port = port
-		self.pattern = self.get_pattern(pattern)
+# 		if timeoverlay:
+# 			self.TIMEOVERLAY = True
+# 		else:
+# 			self.TIMEOVERLAY = False
+# 		if clockoverlay:
+# 			self.CLOCKOVERLAY = True
+# 		else:
+# 			self.CLOCKOVERLAY = False
+# 		self.WIDTH = width
+# 		self.HEIGHT = height
+# 		self.port = port
+# 		self.pattern = self.get_pattern(pattern)
 
-		self.proc = None
-		self.proc = self.run()
-		if self.proc == None:
-			pass
+# 		self.proc = None
+# 		self.proc = self.run()
+# 		if self.proc == None:
+# 			pass
 	
-	def run(self):
-		"""Launches a Test Source
+# 	def run(self):
+# 		"""Launches a Test Source
 
-		"""
+# 		"""
 		
-		if self.TIMEOVERLAY == True:
-			timeoverlay = """timeoverlay font-desc="Verdana bold 50" ! """
-		else:
-			timeoverlay = " "
-		if self.CLOCKOVERLAY:
-			clockoverlay = """clockoverlay font-desc="Verdana bold 50" ! """
-		else:
-			clockoverlay = " "
-		# @TO-DO: do using gi.repository.Gst - gst-launch-1.0 
-		cmd = """gst-launch-1.0   \
-					videotestsrc pattern=%s ! \
-					video/x-raw,width=%s,height=%s ! \
-					%s \
-					%s \
-					gdppay ! \
-					tcpclientsink port=%s """ %(self.pattern, self.WIDTH, self.HEIGHT, timeoverlay, clockoverlay, str(self.port))
-		print cmd
-		proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, bufsize=-1, shell=False)
-		print "created process:", proc, proc.pid
-		return proc
+# 		if self.TIMEOVERLAY == True:
+# 			timeoverlay = """timeoverlay font-desc="Verdana bold 50" ! """
+# 		else:
+# 			timeoverlay = " "
+# 		if self.CLOCKOVERLAY:
+# 			clockoverlay = """clockoverlay font-desc="Verdana bold 50" ! """
+# 		else:
+# 			clockoverlay = " "
+# 		# @TO-DO: do using gi.repository.Gst - gst-launch-1.0 
+# 		cmd = """gst-launch-1.0   \
+# 					videotestsrc pattern=%s ! \
+# 					video/x-raw,width=%s,height=%s ! \
+# 					%s \
+# 					%s \
+# 					gdppay ! \
+# 					tcpclientsink port=%s """ %(self.pattern, self.WIDTH, self.HEIGHT, timeoverlay, clockoverlay, str(self.port))
+# 		print cmd
+# 		proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, bufsize=-1, shell=False)
+# 		print "created process:", proc, proc.pid
+# 		return proc
 
-	def end(self):
-		"""Stops the TestVideoSrc
-		"""
-		proc = self.proc
-		ret = True
-		try:
-			proc.terminate()
-			print "TestVideo pattern:%s killed" %(self.pattern)
-		except:
-			ret = False
-		return ret
+# 	def end(self):
+# 		"""Stops the TestVideoSrc
+# 		"""
+# 		proc = self.proc
+# 		ret = True
+# 		try:
+# 			proc.terminate()
+# 			print "TestVideo pattern:%s killed" %(self.pattern)
+# 		except:
+# 			ret = False
+# 		return ret
 
 
-	def get_pattern(self, pattern):
-		"""Generates a random patern if not specified
-		"""
-		print pattern
-		if pattern==None:
-			pattern = random.randint(0,20)
-		pattern = str(pattern)
-		print pattern
-		return pattern
+# 	def get_pattern(self, pattern):
+# 		"""Generates a random patern if not specified
+# 		"""
+# 		print pattern
+# 		if pattern==None:
+# 			pattern = random.randint(0,20)
+# 		pattern = str(pattern)
+# 		print pattern
+# 		return pattern
