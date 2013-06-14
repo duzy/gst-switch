@@ -1,19 +1,19 @@
-#!/usr/bin/python
-from gi.repository import Gio
+ #!usr/bin/env python
+import dbus
+import dbus.mainloop.glib
+import os
+import time
+import gobject
 
+def main():
+    loop = gobject.MainLoop()
+    bus = dbus.SessionBus()
+    obj = bus.get_object("info.duzy.gst_switch.SwitchControllerInterface","/info/duzy/gst_switch/SwitchController")
+    print obj.Introspect()
+    loop.run()
 
-DBUS_ADDR = 'unix:abstract=gstswitch'
-
-flags = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
-
-conn = Gio.DBusConnection.new_for_address_sync(DBUS_ADDR, flags, None, None)
-print "BUS:",conn
-
-name = 'info.duzy.gst_switch.SwitchClientInterface'
-obj_path = '/info/duzy/gst_switch/SwitchController'
-iname = '/info/duzy/gst_switch/SwitchController'
-proxy_flags = Gio.DBusProxyFlags.NONE
-proxy = Gio.DBusProxy.new_sync(conn, proxy_flags, None, name, obj_path, iname, None)
-
-
-print proxy
+if __name__=="__main__":
+    os.environ["DBUS_SESSION_BUS_ADDRESS"] = "unix:abstract=gstswitch"
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    main()
+    

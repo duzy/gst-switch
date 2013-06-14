@@ -144,3 +144,7 @@ class VideoSrc(object):
 
 	def end(self):
 		self.pipeline.disable()
+
+
+
+		
