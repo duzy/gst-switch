@@ -1,14 +1,12 @@
 from gstswitch import *
-import time
-
+from time import sleep
+import subprocess
 s = Server()
-time.sleep(2)
-
+sleep(0.5)
 u = UI()
-time.sleep(2)
-
 s.new_test_video()
-time.sleep(10)
+sleep(5)
 s.new_test_video(clockoverlay=True)
-time.sleep(10)
+sleep(15)
 s.end()
+proc.kill()

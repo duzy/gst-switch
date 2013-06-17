@@ -1,10 +1,6 @@
 from gi.repository import Gio, GLib
+from time import sleep
 
-def dbus_node_introspect_cb():
-	res = connection.call_finish(result_async)
-	print res
-	node_info = Gio.DBusNodeInfo.new_for_xml(res[0])
-	print n
 address = "unix:abstract=gstswitch"
 name = None
 object_path = "/info/duzy/gst_switch/SwitchController"
@@ -12,8 +8,17 @@ connection = Gio.DBusConnection.new_for_address_sync(
                     address,
                     Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT,
                     None, None)
-print connection
-print connection.call(
+a =  connection.call_sync(
             name, object_path, 'org.freedesktop.DBus.Introspectable', 'Introspect',
             None, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
-            None, dbus_node_introspect_cb, object_path)
+            None)
+mode = 0
+args = GLib.Variant('(i)',(mode,))
+print "args:::::::", args
+b =  connection.call_sync(
+            name, object_path, 'info.duzy.gst_switch.SwitchControllerInterface', 'set_composite_mode',
+            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+
+print b
+print type(a), type(b)

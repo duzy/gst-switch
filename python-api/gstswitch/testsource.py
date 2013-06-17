@@ -2,7 +2,7 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
 
-import os, sys, random
+import os, sys, random, time
 
 #IMPORTS
 
@@ -39,6 +39,7 @@ class BasePipeline(Gst.Pipeline):
 
 
 
+
 class VideoPipeline(BasePipeline):
 	"""docstring for VideoPipeline"""
 
@@ -47,11 +48,30 @@ class VideoPipeline(BasePipeline):
 		super(VideoPipeline, self).__init__()
 		pattern = self.get_pattern(pattern)
 
+		# if timeoverlay:
+		# 	timeoverlaystr = """timeoverlay font-desc="Verdana bold 50" ! """
+		# else:
+		# 	timeoverlay = ""
+		# if clockoverlay:
+		# 	clockoverlaystr = """clockoverlay font-desc="Verdana bold 50" ! """
+		# else:
+		# 	clockoverlaystr = ""
+
+		# s = """videotestsrc pattern=%s ! 
+		# 	video/x-raw, width=%s, height=%s ! 
+		# 	%s
+		# 	%s
+		# 	gdppay ! 
+		# 	tcpclientsink port=%s
+		# 	""" %(pattern, str(width), str(height), str(port))
+
+		# p = Gst.parse_launch(s)
+		
 		src = self.make_videotestsrc()
 		src.set_property('pattern', int(pattern))
 		self.add(src)		
 		vfilter = self.make_capsfilter()
-		capsstring = "video/x-raw,width=%s,heigth=%s" %(str(width), str(height))
+		capsstring = "video/x-raw, width=%s, heigth=%s" %(str(width), str(height))
 		caps = Gst.caps_from_string(capsstring)
 		vfilter.props.caps = caps
 		self.add(vfilter)
@@ -122,8 +142,12 @@ class VideoPipeline(BasePipeline):
 		print pattern
 		return pattern
 		
+
+
 class VideoSrc(object):
 	"""docstring for VideoSrc"""
+
+
 	def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
 		super(VideoSrc, self).__init__()
 		self.port = port
@@ -144,6 +168,7 @@ class VideoSrc(object):
 
 	def end(self):
 		self.pipeline.disable()
+
 
 
 
