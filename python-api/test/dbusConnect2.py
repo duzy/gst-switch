@@ -4,7 +4,6 @@ from time import sleep
 address = "unix:abstract=gstswitch"
 name = None
 object_path = "/info/duzy/gst/switch/SwitchController"
-print "mode:"
 
 
 # a = connection.call_sync(
@@ -15,6 +14,7 @@ print "mode:"
 #print type(mode), mode
 mode=0
 while mode<=3:
+    print "mode:", mode
     connection = Gio.DBusConnection.new_for_address_sync(
                     address,
                     Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT,
