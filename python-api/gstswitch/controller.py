@@ -1,4 +1,5 @@
 #IMPORTS
+from gi.repository import Gio, Glib
 
 class Controller(object):
 	"""docstring for Controller"""

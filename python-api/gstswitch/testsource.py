@@ -89,7 +89,7 @@ class VideoPipeline(BasePipeline):
 
 	def make_capsfilter(self, width, height):
 		element = self.make("capsfilter", "vfilter")
-		capsstring = "video/x-raw, width=%s, heigth=%s" %(str(width), str(height))
+		capsstring = "video/x-raw, format=(string)I420, width=%s, heigth=%s" %(str(width), str(height))
 		caps = Gst.Caps.from_string(capsstring)
 		element.set_property('caps',caps)
 		return element
