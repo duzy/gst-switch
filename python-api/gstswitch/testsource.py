@@ -120,7 +120,7 @@ class VideoPipeline(BasePipeline):
 		if pattern==None:
 			pattern = random.randint(0,20)
 		pattern = str(pattern)
-		print pattern
+		self.pattern = pattern
 		return pattern
 		
 

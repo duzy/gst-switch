@@ -3,14 +3,17 @@ from time import sleep
 import subprocess
 
 s = Server()
+s.run()
 sleep(0.5)
-#u = UI()
-cmd = "gst-launch-1.0 tcpclientsrc port=3001 ! gdpdepay ! autovideosink"
-proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, bufsize=-1, shell=False)
+u = UI()
+sleep(3)
+# cmd = "gst-launch-1.0 tcpclientsrc port=3001 ! gdpdepay ! autovideosink"
+# proc = subprocess.Popen(cmd.split(),  bufsize=-1, shell=False)
 s.new_test_video(pattern=10)
 s.new_test_video(clockoverlay=True)
 #wait for user to end the server
-raw_input()
-proc.kill()
+sleep(10)
+u.end()
 s.end()
+s.brute_end
 

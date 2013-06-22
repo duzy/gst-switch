@@ -1,110 +1,11 @@
 from controller import Controller
 from testsource import VideoSrc
+from server import Server
 
 import os, sys, signal, subprocess
 import random
+
 #IMPORTS
-
-class Server(object):
-	"""docstring for Server"""
-	
-
-	def __init__(self, video_port=3000, audio_port=4000, control_port=5000, record_file='record.data'):
-		"""Contructor for the Server class
-		Returns:
-			Server() object 
-		Parameters:
-			video_port(optional)
-			audio_port(optional)
-			control_port(optional)
-			record_file(optional)
-
-		"""
-		super(Server, self).__init__()
-
-		self.video_port = str(video_port)
-		self.audio_port = str(audio_port)
-		self.control_port = str(control_port)
-		self.record_file = record_file
-		self.proc = None
-		self.Controller = None
-		self.TESTS = []
-
-		self.proc = self.run()
-		if self.proc == None:
-			pass
-			
-
-	def connect_controller(self, Controller=None):
-		"""Connects the Server() to the gdbus enabling all further method calls. 
-		Creates Controller and returns it if it does not exist
-		Returns:
-			Controller object on success
-			None object on failure
-		Parameters:
-			None
-		"""
-		pass
-
-	def run(self):
-		"""Launches the server
-		"""
-		cmd = """gst-switch-srv \
-					--video-input-port=%s \
-					--audio-input-port=%s \
-					--control-port=%s \
-					--record=%s """ %(self.video_port, self.audio_port, self.control_port, self.record_file)
-		print cmd.split()
-		proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, bufsize=-1, shell=False)
-		print "created process:", proc, proc.pid
-		return proc
-
-	def end(self):
-		"""Stops the server
-		Returns:
-			True on success
-			False on failure
-		Parameters:
-			None
-		"""
-		self.endAllTestVideo()
-		proc = self.proc
-		ret = True
-		try:
-			proc.terminate()
-			print "server killed"
-		except:
-			ret = False
-		return ret
-
-	def new_test_video(self, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
-		"""Start a new test source
-		"""
-		testsrc = VideoSrc(self.video_port, width, height, pattern, timeoverlay, clockoverlay)
-		if testsrc == None:
-			pass
-		self.TESTS.append(testsrc)
-
-	def get_test_video(self):
-		"""
-		"""
-		i=0
-		for x in self.TESTS:
-			print i,"pattern:",x.pattern
-			i+=1
-
-	def end_test_video(self, index):
-		"""
-		"""
-		testsrc = self.TESTS[index]
-		testsrc.end()
-		self.TESTS.remove(self.TESTS[index])
-
-	def endAllTestVideo(self):
-		"""
-		"""
-		for x in range(len(self.TESTS)):
-			self.end_test_video(0)
 
 
 class UI(object):
@@ -130,9 +31,10 @@ class UI(object):
 		"""
 		cmd = """gst-switch-ui \
 					"""
-		proc = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, bufsize=-1, shell=False)
-		print "created process:", proc, proc.pid
-		return proc
+		with open(os.devnull, 'w') as tempf:
+			process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
+		#print "created process:", proc, proc.pid
+		return process
 
 	def end(self):
 		"""Stops the UI
