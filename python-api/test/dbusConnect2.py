@@ -29,4 +29,4 @@ while mode<=3:
     mode += 1
     if mode==4:
         mode=0
-    sleep(5)
+    sleep(0.5)

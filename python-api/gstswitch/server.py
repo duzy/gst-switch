@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class BaseServer(object):
 	"""docstring for BaseServer"""
-	def __init__(self, arg):
+	def __init__(self):
 		super(BaseServer, self).__init__()
 		
 	def set_video_port(self, video_port):
@@ -39,6 +39,7 @@ class BaseServer(object):
 
 	def  get_record_file(self):
 		return self.record_file
+
 
 
 
@@ -69,10 +70,9 @@ class ServerTestSourceController(object):
 
 	def __init__(self):
 		super(ServerTestSourceController, self).__init__()
-		pass
-
-	def initialize_sources(self):
 		self.TESTS = []
+
+		
 
 	def new_test_video(self, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
 		"""Start a new test source
@@ -96,13 +96,15 @@ class ServerTestSourceController(object):
 		"""
 		"""
 		testsrc = self.TESTS[index]
-		logging.info('End source with pattern %s' %(str(testsrc.pattern)))
+		print 'End source with pattern %s' %(str(testsrc.get_pattern()))
+		logging.info('End source with pattern %s' %(str(testsrc.get_pattern())))
 		testsrc.end()
 		self.TESTS.remove(self.TESTS[index])
 
 	def endAllTestVideo(self):
 		"""
 		"""
+		print 'TESTS:', self.TESTS
 		for x in range(len(self.TESTS)):
 			self.end_test_video(0)
 
@@ -120,6 +122,7 @@ class ServerProcess(ServerTestSourceController):
 		self.proc = None
 		self.pid = -1
 		logging.info('Starting server')
+		print "running"
 		self.proc = self.run_process()
 		if self.proc == None:
 			pass
@@ -127,7 +130,9 @@ class ServerProcess(ServerTestSourceController):
 			self.pid = self.proc.pid
 
 	def run_process(self):
-		cmd = """gst-switch-srv \
+		# cmd = self.PATH
+		cmd = ''
+		cmd += """gst-switch-srv \
 					--video-input-port=%s \
 					--audio-input-port=%s \
 					--control-port=%s \
@@ -155,6 +160,7 @@ class ServerProcess(ServerTestSourceController):
 		Parameters:
 			None
 		"""
+		print 'Killing server'
 		logging.info('Killing server')
 		self.endAllTestVideo()
 		proc = self.proc
@@ -169,6 +175,9 @@ class ServerProcess(ServerTestSourceController):
 
 	def brute_end(self):
 		os.kill(self.pid, signal.SIGKILL)
+
+	def set_executable_path(self, path):
+		self.PATH = path
 
 
 
@@ -186,14 +195,13 @@ class Server(BaseServer, ServerProcess, ServerDBusController):
 			record_file(optional)
 
 		"""
-		#super(Server, self).__init__()
-
+		super(Server, self).__init__()
+		#self.set_executable_path(path)
 		self.set_video_port(video_port)
 		self.set_audio_port(audio_port)
 		self.set_control_port(control_port)
 		self.set_record_file(record_file)
 
-		self.initialize_sources()
 
 	
 

@@ -83,7 +83,6 @@ class VideoPipeline(BasePipeline):
 
 	def make_videotestsrc(self, pattern):
 		element = self.make('videotestsrc','src')
-		pattern = self.get_pattern(pattern)
 		element.set_property('pattern', int(pattern))
 		return element
 
@@ -114,14 +113,7 @@ class VideoPipeline(BasePipeline):
 		element.set_property('port', int(port))
 		return element
 
-	def get_pattern(self, pattern):
-		"""Generates a random patern if not specified
-		"""
-		if pattern==None:
-			pattern = random.randint(0,20)
-		pattern = str(pattern)
-		self.pattern = pattern
-		return pattern
+	
 		
 
 
@@ -134,7 +126,7 @@ class VideoSrc(object):
 		self.port = port
 		self.width = width
 		self.height = height
-		self.pattern = pattern
+		self.pattern = self.generate_pattern(pattern)
 		self.timeoverlay = timeoverlay
 		self.clockoverlay = clockoverlay
 
@@ -147,16 +139,16 @@ class VideoSrc(object):
 	def get_width(self):
 		return self.width
 
-	def get_height():
+	def get_height(self):
 		return self.height
 
-	def get_pattern():
+	def get_pattern(self):
 		return self.pattern
 
-	def get_timeoverlay():
+	def get_timeoverlay(self):
 		return self.timeoverlay
 
-	def get_clockoverlay():
+	def get_clockoverlay(self):
 		return self.clockoverlay
 
 	def run(self):
@@ -167,6 +159,15 @@ class VideoSrc(object):
 
 	def end(self):
 		self.pipeline.disable()
+
+	def generate_pattern(self, pattern):
+		"""Generates a random patern if not specified
+		"""
+		if pattern==None:
+			pattern = random.randint(0,20)
+		pattern = str(pattern)
+		self.pattern = pattern
+		return pattern
 
 
 
