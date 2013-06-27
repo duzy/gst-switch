@@ -119,33 +119,33 @@ class VideoSrc(object):
 
     def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
         super(VideoSrc, self).__init__()
-        self.port = port
-        self.width = width
-        self.height = height
-        self.pattern = self.generate_pattern(pattern)
-        self.timeoverlay = timeoverlay
-        self.clockoverlay = clockoverlay
+        self.PORT = port
+        self.WIDTH = width
+        self.HEIGHT = height
+        self.PATTERN = self.generate_pattern(pattern)
+        self.TIMEOVERLAY = timeoverlay
+        self.CLOCKOVERLAY = clockoverlay
 
-        self.pipeline = VideoPipeline(self.port, self.width, self.height, self.pattern, self.timeoverlay, self.clockoverlay)
+        self.pipeline = VideoPipeline(self.PORT, self.WIDTH, self.HEIGHT, self.PATTERN, self.TIMEOVERLAY, self.CLOCKOVERLAY)
         self.run()
 
     def get_port(self):
-        return self.port
+        return self.PORT
 
     def get_width(self):
-        return self.width
+        return self.WIDTH
 
     def get_height(self):
-        return self.height
+        return self.HEIGHT
 
     def get_pattern(self):
-        return self.pattern
+        return self.PATTERN
 
     def get_timeoverlay(self):
-        return self.timeoverlay
+        return self.TIMEOVERLAY
 
     def get_clockoverlay(self):
-        return self.clockoverlay
+        return self.CLOCKOVERLAY
 
     def run(self):
         self.pipeline.play()
@@ -162,5 +162,5 @@ class VideoSrc(object):
         if pattern is None:
             pattern = random.randint(0, 20)
         pattern = str(pattern)
-        self.pattern = pattern
+        self.PATTERN = pattern
         return pattern
