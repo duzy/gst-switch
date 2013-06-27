@@ -13,7 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 class BaseServer(object):
-    """docstring for BaseServer"""
+    """Properties of the Server
+    """
     def __init__(self):
         super(BaseServer, self).__init__()
 
@@ -43,7 +44,9 @@ class BaseServer(object):
 
 
 class ServerDBusController(object):
-    """docstring for ServerDBusController"""
+    """Contains methods for invoking remote methods on
+    gst-switch-srv through dbus.
+    """
 
     def __init__(self):
         super(ServerDBusController, self).__init__()
@@ -64,7 +67,8 @@ class ServerDBusController(object):
 
 
 class ServerTestSourceController(object):
-    """docstring for ServerTestSourceController"""
+    """A Controller of test sources feeding into the
+    gst-switch-srv"""
 
     def __init__(self):
         super(ServerTestSourceController, self).__init__()
@@ -106,7 +110,9 @@ class ServerTestSourceController(object):
 
 
 class ServerProcess(ServerTestSourceController):
-    """docstring for ServerProcess"""
+    """Handles all processes created. This includes the server process
+    and test sources added to the gst-switch-srv
+    """
 
     def __init__(self):
         super(ServerProcess, self).__init__()
@@ -177,7 +183,8 @@ class ServerProcess(ServerTestSourceController):
 
 
 class Server(BaseServer, ServerProcess, ServerDBusController):
-    """docstring for Server"""
+    """Controls all Server operations and Test Video Sources
+    """
 
     def __init__(self, video_port=3000, audio_port=4000, control_port=5000, record_file='record.data'):
         """Contructor for the Server class
