@@ -5,8 +5,8 @@ import os
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
 path = '/home/hyades/gst/master/gstreamer/tools/.libs/'
-os.chdir(path)
-s = Server()
+# os.chdir(path)
+s = Server(path)
 s.run()  # launches the server default parameters
 try:
     sleep(0.5)

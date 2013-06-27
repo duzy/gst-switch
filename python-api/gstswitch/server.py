@@ -132,8 +132,8 @@ class ServerProcess(ServerTestSourceController):
             self.pid = self.proc.pid
 
     def run_process(self):
-        # cmd = self.PATH
-        cmd = ''
+        cmd = self.PATH
+        # cmd = ''
         cmd += """gst-switch-srv \
                     --video-input-port=%s \
                     --audio-input-port=%s \
@@ -186,7 +186,7 @@ class Server(BaseServer, ServerProcess, ServerDBusController):
     """Controls all Server operations and Test Video Sources
     """
 
-    def __init__(self, video_port=3000, audio_port=4000, control_port=5000, record_file='record.data'):
+    def __init__(self, path, video_port=3000, audio_port=4000, control_port=5000, record_file='record.data'):
         """Contructor for the Server class
         Returns:
             Server() object
@@ -198,7 +198,7 @@ class Server(BaseServer, ServerProcess, ServerDBusController):
 
         """
         super(Server, self).__init__()
-        #self.set_executable_path(path)
+        self.set_executable_path(path)
         self.set_video_port(video_port)
         self.set_audio_port(audio_port)
         self.set_control_port(control_port)
