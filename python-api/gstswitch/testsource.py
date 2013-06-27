@@ -14,7 +14,8 @@ Gst.init(None)
 
 
 class BasePipeline(Gst.Pipeline):
-    """docstring for BasePipeline"""
+    """A Basic pipeline
+    """
 
     def __init__(self):
         super(BasePipeline, self).__init__()
@@ -39,7 +40,8 @@ class BasePipeline(Gst.Pipeline):
 
 
 class VideoPipeline(BasePipeline):
-    """docstring for VideoPipeline"""
+    """A Video Pipeline which can be used by a video test Source
+    """
 
     def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
         super(VideoPipeline, self).__init__()
@@ -112,7 +114,8 @@ class VideoPipeline(BasePipeline):
 
 
 class VideoSrc(object):
-    """docstring for VideoSrc"""
+    """A Test Video Source
+    """
 
     def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
         super(VideoSrc, self).__init__()
