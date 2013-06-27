@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from gstswitch import *
 from time import sleep
 import subprocess

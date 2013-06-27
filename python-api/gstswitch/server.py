@@ -19,28 +19,28 @@ class BaseServer(object):
         super(BaseServer, self).__init__()
 
     def set_video_port(self, video_port):
-        self.video_port = str(video_port)
+        self.VIDEO_PORT = str(video_port)
 
     def set_audio_port(self, audio_port):
-        self.audio_port = str(audio_port)
+        self.AUDIO_PORT = str(audio_port)
 
     def set_control_port(self, control_port):
-        self.control_port = str(control_port)
+        self.CONTROL_PORT = str(control_port)
 
     def set_record_file(self, record_file):
-        self.record_file = record_file
+        self.RECORD_FILE = record_file
 
     def get_video_port(self):
-        return self.video_port
+        return self.VIDEO_PORT
 
     def get_audio_port(self):
-        return self.audio_port
+        return self.AUDIO_PORT
 
     def get_control_port(self):
-        return self.control_port
+        return self.CONTROL_PORT
 
     def get_record_file(self):
-        return self.record_file
+        return self.RECORD_FILE
 
 
 class ServerDBusController(object):
@@ -78,7 +78,7 @@ class ServerTestSourceController(object):
         """Start a new test source
         """
         logging.info('Adding new test video source')
-        testsrc = VideoSrc(self.video_port, width, height, pattern, timeoverlay, clockoverlay)
+        testsrc = VideoSrc(self.VIDEO_PORT, width, height, pattern, timeoverlay, clockoverlay)
         if testsrc is None:
             pass
         self.TESTS.append(testsrc)
@@ -138,7 +138,7 @@ class ServerProcess(ServerTestSourceController):
                     --video-input-port=%s \
                     --audio-input-port=%s \
                     --control-port=%s \
-                    --record=%s """ % (self.video_port, self.audio_port, self.control_port, self.record_file)
+                    --record=%s """ % (self.VIDEO_PORT, self.AUDIO_PORT, self.CONTROL_PORT, self.RECORD_FILE)
         proc = self.start_process(cmd)
         print "process:", proc
         if proc is None:
