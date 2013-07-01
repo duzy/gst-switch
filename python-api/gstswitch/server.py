@@ -109,7 +109,20 @@ class ServerTestSourceController(object):
             self.end_test_video(0)
 
 
-class ServerProcess(ServerTestSourceController):
+class ServerPreview(object):
+    """docstring for ServerPreview"""
+    def __init__(self):
+        super(ServerPreview, self).__init__()
+        self.PREVIEW_PORT = 3001
+
+    def start_preview(self):
+        self.preview = Preview(self.PREVIEW_PORT)
+
+    def end_preview(self):
+        self.preview.end()
+
+
+class ServerProcess(ServerTestSourceController, ServerPreview):
     """Handles all processes created. This includes the server process
     and test sources added to the gst-switch-srv
     """
