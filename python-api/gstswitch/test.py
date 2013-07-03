@@ -2,14 +2,14 @@
 from gstswitch import *
 from time import sleep
 import subprocess
-import os
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
-path = '/home/hyades/gst/master/gstreamer/tools/.libs/'
+path = '/home/hyades/gst/master/gstreamer/tools/'
 # os.chdir(path)
+print "starting server"
 s = Server(path)
-s.run()  # launches the server default parameters
 try:
+    s.run()  # launches the server default parameters
     sleep(0.5)
     cmd = path
     # connects a gstreamer module to view the output of the gst-switch-srv
@@ -19,8 +19,8 @@ try:
     s.new_test_video()
     s.new_test_video(clockoverlay=True)
     # waiting till user ends the server
-    raw_input()
+    sleep(0.5)
     s.end()
 except:
-    # to kill off all processes that are created by the program
+    raise Exception()
     s.brute_end()

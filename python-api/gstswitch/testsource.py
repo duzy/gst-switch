@@ -5,8 +5,8 @@ from gi.repository import GObject, Gst
 import os
 import sys
 import random
-import time
 
+# from pipeline import *
 #IMPORTS
 
 GObject.threads_init()
@@ -220,12 +220,16 @@ class Preview(object):
     """docstring for Preview"""
     def __init__(self, port):
         super(Preview, self).__init__()
-        self.set_port(port)
+        self.set_preview_port(port)
         self.pipeline = PreviewPipeline(self.PORT)
         self.run()
 
-    def set_port(self, port):
+    def set_preview_port(self, port):
         self.PORT = port
+
+    # should not be called except for debugging
+    def get_preview_port(self, port):
+        return self.PORT
 
     def run(self):
         self.pipeline.play()

@@ -6,7 +6,7 @@ import logging
 
 from exception import *
 from controller import Controller
-from testsource import VideoSrc
+from testsource import VideoSrc, Preview
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -119,7 +119,10 @@ class ServerPreview(object):
         self.preview = Preview(self.PREVIEW_PORT)
 
     def end_preview(self):
-        self.preview.end()
+        try:
+            self.preview.end()
+        except:
+            pass
 
 
 class ServerProcess(ServerTestSourceController, ServerPreview):
@@ -178,6 +181,7 @@ class ServerProcess(ServerTestSourceController, ServerPreview):
         print 'Killing server'
         logging.info('Killing server')
         self.endAllTestVideo()
+        self.end_preview()
         proc = self.proc
         ret = True
         try:
