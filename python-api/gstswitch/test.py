@@ -19,8 +19,7 @@ try:
     s.new_test_video()
     s.new_test_video(clockoverlay=True)
     # waiting till user ends the server
-    sleep(0.5)
+    raw_input()
     s.end()
-except:
-    raise Exception()
+finally:
     s.brute_end()

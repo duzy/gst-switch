@@ -154,7 +154,7 @@ class VideoSrc(object):
         self.set_port(port)
         self.set_width(width)
         self.set_height(height)
-        self.set_pattern(pattern)
+        self.set_pattern(self.generate_pattern(pattern))
         self.set_timeoverlay(timeoverlay)
         self.set_clockoverlay(clockoverlay)
 
