@@ -25,7 +25,7 @@ while mode<=3:
                 name, object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_composite_mode',
                 args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
                 None)
-    print b
+    print b.unpack()[0],type(b.unpack()[0])
     mode += 1
     if mode==4:
         mode=0

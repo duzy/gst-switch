@@ -5,10 +5,6 @@ class DBus(object):
     """docstring for DBus"""
     def __init__(self):
         super(DBus, self).__init__()
-        self.set_address("unix:abstract=gstswitch")
-        self.set_busname(None)
-        self.set_objectpath("/info/duzy/gst/switch/SwitchController")
-        self.set_default_interface("info.duzy.gst.switch.SwitchControllerInterface")
 
     def set_address(self, address):
         self.ADDRESS = address

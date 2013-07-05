@@ -1,4 +1,5 @@
 #IMPORTS
+#all dbus variables need to be setup here
 from dbus import DBus
 from gi.repository import Gio, GLib
 
@@ -8,7 +9,11 @@ class Connection(DBus):
 
     def __init__(self):
         super(Connection, self).__init__()
-        self.connection = self.connect_dbus()
+        self.set_address("unix:abstract=gstswitch")
+        self.set_busname(None)
+        self.set_objectpath("/info/duzy/gst/switch/SwitchController")
+        self.set_default_interface("info.duzy.gst.switch.SwitchControllerInterface")
+        # self.connection = self.connect_dbus()
 
     def connect_dbus(self):
         CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
@@ -17,7 +22,7 @@ class Connection(DBus):
             CONNECTION_FLAGS,
             None,
             None)
-        return connection
+        self.connection = connection
 
     def get_connection(self):
         return self.connection

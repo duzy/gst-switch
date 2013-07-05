@@ -15,15 +15,83 @@ class Controller(object):
 
     def establish_connection(self):
         self.connection = Connection()
-
-    def set_composite_mode(self, mode):
-        if mode >= 0 and mode <= 3:
-            res = self.connection.set_composite_mode(mode)
-            if res is True:
-                logging.info()
-        else:
-            pass
-            #raise Exception
+        self.connection.connect_dbus
 
     def get_compose_port(self):
-        pass
+        conn = self.connection.get_compose_port()
+        compose_port = conn.unpack()[0]
+        return compose_port
+
+    def get_encode_port(self):
+        conn = self.connection.get_encode_port()
+        encode_port = conn.unpack()[0]
+        return encode_port
+
+    def get_audio_port(self):
+        conn = self.connection.get_audio_port()
+        audio_port = conn.unpack()[0]
+        return audio_port
+
+    def get_preview_ports(self):
+        conn = self.connection.get_preview_ports()
+        preview_ports = conn.unpack[0]
+        # TO-DO: implement a parser
+        return preview_ports
+
+    def set_composite_mode(self, mode):
+        # only modes from 0 to 3 are supported
+        if mode >= 0 and mode <= 3:
+            conn = self.connection.set_composite_mode(mode)
+            res = conn.unpack()[0]
+            if res is True:
+                logging.info("Set composite mode to %s" % (str(mode)))
+        else:
+            pass
+            # raise some Exception
+
+    def set_encode_mode(self, channel):
+        conn = self.connection.set_encode_mode(channel)
+        res = conn.unpack()[0]
+        if res is True:
+            logging.info("Set encode mode to %s" % (str(channel)))
+        else:
+            pass
+            # raise some exception
+
+    def new_record(self):
+        conn = self.connection.new_record()
+        res = conn.unpack()[0]
+        if res is True:
+            #logging
+            pass
+        else:
+            pass
+
+    def adjust_pip(self, dx, dy, dw, dh):
+        conn = self.connection.adjust_pip(dx, dy, dw, dh)
+        res = conn.unpack()[0]
+        #to-do - parse
+        return res
+
+    def switch(self, channel, port):
+        conn = self.connection.switch(channel, port)
+        res = conn.unpack()[0]
+        if res is True:
+            pass
+        else:
+            pass
+
+    def click_video(self, x, y, fw, fh):
+        conn = self.connection.click_video(x, y, fw, fh)
+        res = conn.unpack()[0]
+        if res is True:
+            pass
+        else:
+            pass
+
+    def mark_face(self, faces):
+        # faces is dictionary
+        self.connection.mark_face(faces)
+
+    def function(self, faces):
+        self.connection.mark_tracking(faces)
