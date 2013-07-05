@@ -48,6 +48,7 @@ class Controller(object):
         else:
             pass
             # raise some Exception
+        return res
 
     def set_encode_mode(self, channel):
         conn = self.connection.set_encode_mode(channel)
@@ -57,15 +58,17 @@ class Controller(object):
         else:
             pass
             # raise some exception
+        return res
 
     def new_record(self):
         conn = self.connection.new_record()
         res = conn.unpack()[0]
         if res is True:
             #logging
-            pass
+            logging.info("New record")
         else:
             pass
+        return res
 
     def adjust_pip(self, dx, dy, dw, dh):
         conn = self.connection.adjust_pip(dx, dy, dw, dh)
@@ -77,7 +80,7 @@ class Controller(object):
         conn = self.connection.switch(channel, port)
         res = conn.unpack()[0]
         if res is True:
-            pass
+            logging.info("Switch channel:%s port:%s" % (str(channel), str(port)))
         else:
             pass
 
@@ -85,13 +88,14 @@ class Controller(object):
         conn = self.connection.click_video(x, y, fw, fh)
         res = conn.unpack()[0]
         if res is True:
-            pass
+            logging.info("Click video: x:%s y:%s fw:%s fh:%s" % (str(x), str(y), str(fw), str(fh)))
         else:
             pass
+        return res
 
     def mark_face(self, faces):
         # faces is dictionary
         self.connection.mark_face(faces)
 
-    def function(self, faces):
+    def mark_tracking(self, faces):
         self.connection.mark_tracking(faces)
