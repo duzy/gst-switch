@@ -73,6 +73,7 @@ class Controller(object):
     def adjust_pip(self, dx, dy, dw, dh):
         conn = self.connection.adjust_pip(dx, dy, dw, dh)
         res = conn.unpack()[0]
+        logging.info("adjust pip dx:%s dy:%s dw:%s dh:%s" % (str(dx), str(dy), str(dw), str(dh)))
         #to-do - parse
         return res
 
