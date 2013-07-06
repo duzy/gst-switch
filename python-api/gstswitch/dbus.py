@@ -29,3 +29,15 @@ class DBus(object):
 
     def get_default_interface(self):
         return self.DEFAULTINTERFACE
+
+    def connect_dbus(self):
+        CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
+        connection = Gio.DBusConnection.new_for_address_sync(
+            self.address,
+            CONNECTION_FLAGS,
+            None,
+            None)
+        self.connection = connection
+
+    def get_connection(self):
+        return self.connection

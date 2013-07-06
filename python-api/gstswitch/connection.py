@@ -15,14 +15,109 @@ class Connection(DBus):
         self.set_default_interface("info.duzy.gst.switch.SwitchControllerInterface")
         # self.connection = self.connect_dbus()
 
-    def connect_dbus(self):
-        CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
-        connection = Gio.DBusConnection.new_for_address_sync(
-            self.address,
-            CONNECTION_FLAGS,
-            None,
+    def get_compose_port(self):
+        """get_compose_port(out i port);
+        """
+        args = None
+        connection = self.get_connection()
+        port = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'get_compose_port',
+            args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
             None)
-        self.connection = connection
+        return port
 
-    def get_connection(self):
-        return self.connection
+    def get_encode_port(self):
+        """get_encode_port(out i port);
+        """
+        args = None
+        connection = self.get_connection()
+        port = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'get_encode_port',
+            args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return port
+
+    def get_audio_port(self):
+        """get_audio_port(out i port);
+        """
+        args = None
+        connection = self.get_connection()
+        port = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'get_audio_port',
+            args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return port
+
+    def get_preview_ports(self):
+        """get_preview_ports(out s ports);
+        """
+        args = None
+        connection = self.get_connection()
+        ports = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'get_preview_ports',
+            args, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return ports
+
+    def set_composite_mode(self, mode):
+        """set_composite_mode(in  i channel,
+                                out b result);
+        """
+        args = GLib.Variant('(i)', (mode,))
+        connection = self.get_connection()
+        result = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_composite_mode',
+            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return result
+
+    def set_encode_mode(self, channel):
+        """set_encode_mode(in  i channel,
+                            out b result);
+        """
+        args = GLib.Variant('(i)', (channel,))
+        connection = self.get_connection()
+        result = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return result
+
+    def set_encode_mode(self, channel):
+        """set_encode_mode(in  i channel,
+                            out b result);
+        """
+        args = GLib.Variant('(i)', (channel,))
+        connection = self.get_connection()
+        result = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return result
+
+    def new_record(self):
+        """new_record(out b result);
+        """
+        args = None
+        connection = self.get_connection()
+        result = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'new_record',
+            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return result
+
+    def adjust_pip(self, dx, dy, dw, dh):
+        """adjust_pip(in  i dx,
+                           in  i dy,
+                           in  i dw,
+                           in  i dh,
+                           out u result);
+        """
+        args = GLib.Variant('(iiii)', (dx, dy, dw, dh,))
+        connection = self.get_connection()
+        result = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'adjust_pip',
+            args, GLib.VariantType.new("(u)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return result
+
