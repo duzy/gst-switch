@@ -43,27 +43,21 @@ class BaseServer(object):
         return self.RECORD_FILE
 
 
-class ServerDBusController(object):
+class ServerDBusController(Controller):
     """Contains methods for invoking remote methods on
     gst-switch-srv through dbus.
     """
 
     def __init__(self):
         super(ServerDBusController, self).__init__()
+        self.connect_controller()
 
-    def initialize_controller():
-        pass
-
-    def connect_controller(self, Controller=None):
+    def connect_controller(self):
         """Connects the Server() to the gdbus enabling all further method calls.
-        Creates Controller and returns it if it does not exist
-        Returns:
-            Controller object on success
-            None object on failure
         Parameters:
             None
         """
-        pass
+        self.establish_connection()
 
 
 class ServerTestSourceController(object):
@@ -117,10 +111,15 @@ class ServerPreview(object):
 
     def start_preview(self):
         self.preview = Preview(self.PREVIEW_PORT)
+        self.preview.run()
+        logging.info('Starting Preview')
+        print 'start preview'
 
     def end_preview(self):
         try:
             self.preview.end()
+            logging.info('End Preview')
+            print 'end preview'
         except:
             pass
 

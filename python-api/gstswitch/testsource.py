@@ -118,7 +118,8 @@ class PreviewPipeline(BasePipeline):
     def __init__(self, port):
         super(PreviewPipeline, self).__init__()
         self.set_host('127.0.0.1')
-        src = self.make_tcpserversrc(port)
+        self.set_port(port)
+        src = self.make_tcpclientsrc(port)
         self.add(src)
         gdpdepay = self.make_gdpdepay()
         self.add(gdpdepay)
@@ -130,10 +131,14 @@ class PreviewPipeline(BasePipeline):
     def set_host(self, host):
         self.HOST = host
 
-    def make_tcpserversrc(self, port):
-        element = self.make('tcpserversrc', 'tcpserversrc')
+    def set_port(self, port):
+        print port, type(port)
+        self.PORT = port
+
+    def make_tcpclientsrc(self, port):
+        element = self.make('tcpclientsrc', 'tcpclientsrc')
         element.set_property('host', self.HOST)
-        element.set_property('port', port)
+        element.set_property('port', self.PORT)
         return element
 
     def make_gdpdepay(self):
@@ -220,15 +225,13 @@ class Preview(object):
     """docstring for Preview"""
     def __init__(self, port):
         super(Preview, self).__init__()
-        self.set_preview_port(port)
-        self.pipeline = PreviewPipeline(self.PORT)
-        self.run()
+        self.set_preview_port(int(port))
+        self.pipeline = PreviewPipeline(self.get_preview_port())
 
     def set_preview_port(self, port):
         self.PORT = port
 
-    # should not be called except for debugging
-    def get_preview_port(self, port):
+    def get_preview_port(self):
         return self.PORT
 
     def run(self):
