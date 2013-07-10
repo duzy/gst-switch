@@ -10,7 +10,7 @@ try:
     port = s.get_video_port()
     # connects a gstreamer module to view the output of the gst-switch-srv
     output = PreviewSinks()
-    output.start()
+    output.run()
     # adding two test video sources
     sources = TestSources(port)
     sources.new_test_video()

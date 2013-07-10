@@ -63,7 +63,7 @@ class PreviewSinks(object):
         self.PREVIEW_PORT = 3001
         # TODO set preview port from dbus call
 
-    def start(self):
+    def run(self):
         self.preview = Preview(self.PREVIEW_PORT)
         self.preview.run()
         print 'start preview'
