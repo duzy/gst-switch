@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 from gstswitch import *
-from time import sleep
-# import subprocess
+from helpers import TestSources, PreviewSinks
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
 path = '/home/hyades/gst/master/gstreamer/tools/'
-# os.chdir(path)
-print "starting server"
 s = Server(path)
 try:
     s.run()  # launches the server default parameters
-    sleep(0.5)
-    cmd = path
+    port = s.get_video_port()
     # connects a gstreamer module to view the output of the gst-switch-srv
-    s.start_preview()
+    output = PreviewSinks()
+    output.start()
     # adding two test video sources
-    s.new_test_video()
-    s.new_test_video(clockoverlay=True)
+    sources = TestSources(port)
+    sources.new_test_video()
+    sources.new_test_video(timeoverlay=True)
     # waiting till user ends the server
     raw_input()
-    s.end()
+    sources.terminate()
+    output.terminate()
+    s.terminate()
 finally:
-    s.brute_end()
+    s.kill()

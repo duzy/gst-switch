@@ -2,14 +2,10 @@ import os
 import sys
 import signal
 import subprocess
-import logging
 
 from exception import *
 from controller import Controller
-from testsource import VideoSrc, Preview
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from time import sleep
 
 
 class BaseServer(object):
@@ -60,71 +56,7 @@ class ServerDBusController(Controller):
         self.establish_connection()
 
 
-class ServerTestSourceController(object):
-    """A Controller of test sources feeding into the
-    gst-switch-srv"""
-
-    def __init__(self):
-        super(ServerTestSourceController, self).__init__()
-        self.TESTS = []
-
-    def new_test_video(self, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
-        """Start a new test source
-        """
-        logging.info('Adding new test video source')
-        testsrc = VideoSrc(self.VIDEO_PORT, width, height, pattern, timeoverlay, clockoverlay)
-        if testsrc is None:
-            pass
-        self.TESTS.append(testsrc)
-
-    def get_test_video(self):
-        """Returns a list of processes acting as test inputs
-        """
-        i = 0
-        for x in self.TESTS:
-            print i, "pattern:", x.pattern
-            i += 1
-        return self.TESTS
-
-    def end_test_video(self, index):
-        """
-        """
-        testsrc = self.TESTS[index]
-        print 'End source with pattern %s' % (str(testsrc.get_pattern()))
-        logging.info('End source with pattern %s' % (str(testsrc.get_pattern())))
-        testsrc.end()
-        self.TESTS.remove(self.TESTS[index])
-
-    def endAllTestVideo(self):
-        """
-        """
-        print 'TESTS:', self.TESTS
-        for x in range(len(self.TESTS)):
-            self.end_test_video(0)
-
-
-class ServerPreview(object):
-    """docstring for ServerPreview"""
-    def __init__(self):
-        super(ServerPreview, self).__init__()
-        self.PREVIEW_PORT = 3001
-
-    def start_preview(self):
-        self.preview = Preview(self.PREVIEW_PORT)
-        self.preview.run()
-        logging.info('Starting Preview')
-        print 'start preview'
-
-    def end_preview(self):
-        try:
-            self.preview.end()
-            logging.info('End Preview')
-            print 'end preview'
-        except:
-            pass
-
-
-class ServerProcess(ServerTestSourceController, ServerPreview):
+class ServerProcess(object):
     """Handles all processes created. This includes the server process
     and test sources added to the gst-switch-srv
     """
@@ -138,13 +70,13 @@ class ServerProcess(ServerTestSourceController, ServerPreview):
         """
         self.proc = None
         self.pid = -1
-        logging.info('Starting server')
-        print "running"
+        print "Starting server"
         self.proc = self.run_process()
         if self.proc is None:
             pass
         else:
             self.pid = self.proc.pid
+        sleep(0.5)
 
     def run_process(self):
         cmd = self.PATH
@@ -157,19 +89,19 @@ class ServerProcess(ServerTestSourceController, ServerPreview):
         proc = self.start_process(cmd)
         print "process:", proc
         if proc is None:
-            logging.error('Error running server')
+            print 'ERROR: Server unable to create process'
             pass
         else:
-            logging.info('Created process with PID:%s', str(proc.pid))
+            print 'Created process with PID:%s', str(proc.pid)
             return proc
 
     def start_process(self, cmd):
-        logging.info('Creating process %s' % (cmd))
+        print 'Creating process %s' % (cmd)
         with open(os.devnull, 'w') as tempf:
             process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
         return process
 
-    def end(self):
+    def terminate(self):
         """Stops the server
         Returns:
             True on success
@@ -178,20 +110,17 @@ class ServerProcess(ServerTestSourceController, ServerPreview):
             None
         """
         print 'Killing server'
-        logging.info('Killing server')
-        self.endAllTestVideo()
-        self.end_preview()
         proc = self.proc
         ret = True
         try:
             proc.terminate()
-            logging.info('Server killed')
+            print 'Server Killed'
         except:
-            logging.info('Error killing server')
+            print 'Error killing server'
             ret = False
         return ret
 
-    def brute_end(self):
+    def kill(self):
         os.kill(self.pid, signal.SIGKILL)
 
     def set_executable_path(self, path):
