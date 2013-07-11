@@ -137,24 +137,24 @@ class Connection(DBus):
             None)
         return result
 
-    # def mark_face(self, faces):
-    #     """mark_face(in  a(iiii) faces);
-    #     """
-    #     args = GLib.Variant('a(iiii)', faces)
-    #     connection = self.get_connection()
-    #     result = connection.call_sync(
-    #         self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
-    #         args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-    #         None)
-    #     return result
+    def mark_face(self, faces):
+        """mark_face(in  a(iiii) faces);
+        """
+        args = GLib.Variant('a(iiii)', faces)
+        connection = self.get_connection()
+        result = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return result
 
-    # def mark_tracking(self, faces):
-    #     """mark_tracking(in  a(iiii) faces);
-    #     """
-    #     args = GLib.Variant('a(iiii)', faces)
-    #     connection = self.get_connection()
-    #     result = connection.call_sync(
-    #         self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
-    #         args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-    #         None)
-    #     return result
+    def mark_tracking(self, faces):
+        """mark_tracking(in  a(iiii) faces);
+        """
+        args = GLib.Variant('a(iiii)', faces)
+        connection = self.get_connection()
+        result = connection.call_sync(
+            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+            None)
+        return result
