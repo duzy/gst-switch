@@ -132,7 +132,6 @@ class PreviewPipeline(BasePipeline):
         self.HOST = host
 
     def set_port(self, port):
-        print port, type(port)
         self.PORT = port
 
     def make_tcpclientsrc(self, port):

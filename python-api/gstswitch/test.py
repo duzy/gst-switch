@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from gstswitch import *
 from helpers import TestSources, PreviewSinks
+from controller import Controller
+import time
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
 path = '/home/hyades/gst/master/gstreamer/tools/'
@@ -16,9 +18,20 @@ try:
     sources.new_test_video()
     sources.new_test_video(timeoverlay=True)
     # waiting till user ends the server
-    raw_input()
+    controller = Controller()
+    controller.establish_connection()
+    res = []
+    get_res = ''
+    tests_get = [controller.get_compose_port, controller.get_encode_port, controller.get_audio_port,
+                 controller.get_preview_ports]
+    for x in tests_get:
+        get_res += str(x())
+        get_res += '\n'
+    time.sleep(0.1)
     sources.terminate()
     output.terminate()
     s.terminate()
+    print 'output'
+    print get_res
 finally:
     s.kill()

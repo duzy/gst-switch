@@ -1,4 +1,5 @@
 #IMPORTS
+from gi.repository import Gio
 
 
 class DBus(object):
@@ -33,7 +34,7 @@ class DBus(object):
     def connect_dbus(self):
         CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
         connection = Gio.DBusConnection.new_for_address_sync(
-            self.address,
+            self.ADDRESS,
             CONNECTION_FLAGS,
             None,
             None)

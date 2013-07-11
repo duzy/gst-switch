@@ -39,23 +39,6 @@ class BaseServer(object):
         return self.RECORD_FILE
 
 
-class ServerDBusController(Controller):
-    """Contains methods for invoking remote methods on
-    gst-switch-srv through dbus.
-    """
-
-    def __init__(self):
-        super(ServerDBusController, self).__init__()
-        self.connect_controller()
-
-    def connect_controller(self):
-        """Connects the Server() to the gdbus enabling all further method calls.
-        Parameters:
-            None
-        """
-        self.establish_connection()
-
-
 class ServerProcess(object):
     """Handles all processes created. This includes the server process
     and test sources added to the gst-switch-srv
@@ -127,7 +110,7 @@ class ServerProcess(object):
         self.PATH = path
 
 
-class Server(BaseServer, ServerProcess, ServerDBusController):
+class Server(BaseServer, ServerProcess):
     """Controls all Server operations and Test Video Sources
     """
 

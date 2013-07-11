@@ -1,11 +1,7 @@
 #IMPORTS
 from gi.repository import Gio, GLib
-import logging
-
+import ast
 from connection import Connection
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 
 class Controller(object):
@@ -15,7 +11,7 @@ class Controller(object):
 
     def establish_connection(self):
         self.connection = Connection()
-        self.connection.connect_dbus
+        self.connection.connect_dbus()
 
     def get_compose_port(self):
         conn = self.connection.get_compose_port()
@@ -34,8 +30,9 @@ class Controller(object):
 
     def get_preview_ports(self):
         conn = self.connection.get_preview_ports()
-        preview_ports = conn.unpack[0]
+        res = conn.unpack()[0]
         # TO-DO: implement a parser
+        preview_ports = self.parse_preview_ports(res)
         return preview_ports
 
     def set_composite_mode(self, mode):
@@ -44,7 +41,7 @@ class Controller(object):
             conn = self.connection.set_composite_mode(mode)
             res = conn.unpack()[0]
             if res is True:
-                logging.info("Set composite mode to %s" % (str(mode)))
+                print "Set composite mode to %s" % (str(mode))
         else:
             pass
             # raise some Exception
@@ -54,7 +51,7 @@ class Controller(object):
         conn = self.connection.set_encode_mode(channel)
         res = conn.unpack()[0]
         if res is True:
-            logging.info("Set encode mode to %s" % (str(channel)))
+            print "Set encode mode to %s" % (str(channel))
         else:
             pass
             # raise some exception
@@ -65,7 +62,7 @@ class Controller(object):
         res = conn.unpack()[0]
         if res is True:
             #logging
-            logging.info("New record")
+            print "New record"
         else:
             pass
         return res
@@ -73,7 +70,7 @@ class Controller(object):
     def adjust_pip(self, dx, dy, dw, dh):
         conn = self.connection.adjust_pip(dx, dy, dw, dh)
         res = conn.unpack()[0]
-        logging.info("adjust pip dx:%s dy:%s dw:%s dh:%s" % (str(dx), str(dy), str(dw), str(dh)))
+        print "adjust pip dx:%s dy:%s dw:%s dh:%s" % (str(dx), str(dy), str(dw), str(dh))
         #to-do - parse
         return res
 
@@ -81,7 +78,7 @@ class Controller(object):
         conn = self.connection.switch(channel, port)
         res = conn.unpack()[0]
         if res is True:
-            logging.info("Switch channel:%s port:%s" % (str(channel), str(port)))
+            print "Switch channel:%s port:%s" % (str(channel), str(port))
         else:
             pass
 
@@ -89,7 +86,7 @@ class Controller(object):
         conn = self.connection.click_video(x, y, fw, fh)
         res = conn.unpack()[0]
         if res is True:
-            logging.info("Click video: x:%s y:%s fw:%s fh:%s" % (str(x), str(y), str(fw), str(fh)))
+            print "Click video: x:%s y:%s fw:%s fh:%s" % (str(x), str(y), str(fw), str(fh))
         else:
             pass
         return res
@@ -100,3 +97,11 @@ class Controller(object):
 
     def mark_tracking(self, faces):
         self.connection.mark_tracking(faces)
+
+    def parse_preview_ports(self, res):
+        # res = '[(a, b, c), (a, b, c)*]'
+        x = ast.literal_eval(res)
+        preview_ports = []
+        for tupl in x:
+            preview_ports.append(int(tupl[0]))
+        return preview_ports

@@ -21,7 +21,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         port = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'get_compose_port',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'get_compose_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return port
@@ -32,7 +32,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         port = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'get_encode_port',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'get_encode_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return port
@@ -43,7 +43,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         port = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'get_audio_port',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'get_audio_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return port
@@ -54,7 +54,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         ports = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'get_preview_ports',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'get_preview_ports',
             args, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return ports
@@ -66,7 +66,7 @@ class Connection(DBus):
         args = GLib.Variant('(i)', (mode,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_composite_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_composite_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -78,7 +78,7 @@ class Connection(DBus):
         args = GLib.Variant('(i)', (channel,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -89,7 +89,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         result = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'new_record',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'new_record',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -104,7 +104,7 @@ class Connection(DBus):
         args = GLib.Variant('(iiii)', (dx, dy, dw, dh,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'adjust_pip',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'adjust_pip',
             args, GLib.VariantType.new("(u)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -117,7 +117,7 @@ class Connection(DBus):
         args = GLib.Variant('(ii)', (channel, port,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -132,7 +132,7 @@ class Connection(DBus):
         args = GLib.Variant('(iiii)', (x, y, fw, fh,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -143,7 +143,7 @@ class Connection(DBus):
         args = GLib.Variant('a(iiii)', faces)
         connection = self.get_connection()
         result = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -154,7 +154,7 @@ class Connection(DBus):
         args = GLib.Variant('a(iiii)', faces)
         connection = self.get_connection()
         result = connection.call_sync(
-            self.name, self.object_path, 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
