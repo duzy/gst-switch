@@ -36,6 +36,7 @@ class Controller(object):
         return preview_ports
 
     def set_composite_mode(self, mode):
+        self.establish_connection()
         # only modes from 0 to 3 are supported
         if mode >= 0 and mode <= 3:
             conn = self.connection.set_composite_mode(mode)
@@ -48,6 +49,7 @@ class Controller(object):
         return res
 
     def set_encode_mode(self, channel):
+        self.establish_connection()
         conn = self.connection.set_encode_mode(channel)
         res = conn.unpack()[0]
         if res is True:
@@ -58,6 +60,7 @@ class Controller(object):
         return res
 
     def new_record(self):
+        self.establish_connection()
         conn = self.connection.new_record()
         res = conn.unpack()[0]
         if res is True:
@@ -68,6 +71,7 @@ class Controller(object):
         return res
 
     def adjust_pip(self, dx, dy, dw, dh):
+        self.establish_connection()
         conn = self.connection.adjust_pip(dx, dy, dw, dh)
         res = conn.unpack()[0]
         print "adjust pip dx:%s dy:%s dw:%s dh:%s" % (str(dx), str(dy), str(dw), str(dh))
@@ -75,6 +79,7 @@ class Controller(object):
         return res
 
     def switch(self, channel, port):
+        self.establish_connection()
         conn = self.connection.switch(channel, port)
         res = conn.unpack()[0]
         if res is True:
@@ -83,6 +88,7 @@ class Controller(object):
             pass
 
     def click_video(self, x, y, fw, fh):
+        self.establish_connection()
         conn = self.connection.click_video(x, y, fw, fh)
         res = conn.unpack()[0]
         if res is True:
@@ -93,9 +99,11 @@ class Controller(object):
 
     def mark_face(self, faces):
         # faces is dictionary
+        self.establish_connection()
         self.connection.mark_face(faces)
 
     def mark_tracking(self, faces):
+        self.establish_connection()
         self.connection.mark_tracking(faces)
 
     def parse_preview_ports(self, res):

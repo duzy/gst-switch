@@ -117,7 +117,7 @@ class Connection(DBus):
         args = GLib.Variant('(ii)', (channel, port,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'switch',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -132,7 +132,7 @@ class Connection(DBus):
         args = GLib.Variant('(iiii)', (x, y, fw, fh,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'click_video',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -143,7 +143,7 @@ class Connection(DBus):
         args = GLib.Variant('a(iiii)', faces)
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'mark_face',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -154,7 +154,7 @@ class Connection(DBus):
         args = GLib.Variant('a(iiii)', faces)
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'mark_tracking',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
