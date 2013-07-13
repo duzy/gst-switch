@@ -72,6 +72,8 @@ class Connection(DBus):
         return result
 
     def set_encode_mode(self, channel):
+        """Confusion over what this does
+        """
         """set_encode_mode(in  i channel,
                             out b result);
         """
