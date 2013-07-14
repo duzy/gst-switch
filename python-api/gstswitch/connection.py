@@ -7,6 +7,8 @@ from gi.repository import Gio, GLib
 class Connection(DBus):
     """Class which makes all remote object class
 
+    :default bus-address: unix:abstract=gstswitch
+
     :param: None
     """
 
@@ -98,7 +100,7 @@ class Connection(DBus):
         """set_encode_mode(in  i channel,
                             out b result);
         Calls set_encode_mode remotely
-        *Does not do anything*
+        **Does not do anything**
 
         :param: channel
         :returns: tuple with first element True if requested
