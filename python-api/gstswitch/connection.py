@@ -73,8 +73,7 @@ class Connection(DBus):
 
     def set_encode_mode(self, channel):
         """Confusion over what this does
-        """
-        """set_encode_mode(in  i channel,
+           set_encode_mode(in  i channel,
                             out b result);
         """
         args = GLib.Variant('(i)', (channel,))
