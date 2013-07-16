@@ -69,7 +69,14 @@ class BaseServer(object):
         :param record_file: The record file name
         :returns: nothing
         """
-        self.RECORD_FILE = record_file
+        if type(record_file) != str:
+            raise TypeError('record file name should be string')
+        if record_file.find('/') >= 0:
+            raise ValueError("record file name should not contain '/'")
+        if len(record_file) > 0:
+            self.RECORD_FILE = record_file
+        else:
+            raise ValueError('record file name length should be greater than 0')
 
     def get_video_port(self):
         """Returns the video port number
