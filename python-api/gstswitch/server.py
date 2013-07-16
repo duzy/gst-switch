@@ -17,11 +17,19 @@ class BaseServer(object):
 
     def set_video_port(self, video_port):
         """Sets the server's video port
+        Should be between 1 and 65535
 
         :param video_port: Video port
         :returns: nothing
         """
-        self.VIDEO_PORT = str(video_port)
+        try:
+            video_port + 1
+        except TypeError:
+            raise TypeError
+        if video_port > 0 and video_port < 65536:
+            self.VIDEO_PORT = str(video_port)
+        else:
+            raise ValueError('video port not in range')
 
     def set_audio_port(self, audio_port):
         """Sets the server's audio port
@@ -175,7 +183,7 @@ class ServerProcess(object):
 class Server(BaseServer, ServerProcess):
     """Controls all Server operations
 
-    :param path: Path where all exceutables gst-switch-srv, gst-launch-1.0, wtc are located
+    :param path: Path where all exceutables gst-switch-srv, gst-launch-1.0, etc are located
     :param video_port: The video port number - default = 3000
     :param audio_port: The audio port number - default = 4000
     :param control_port: The control port number - default = 5000
