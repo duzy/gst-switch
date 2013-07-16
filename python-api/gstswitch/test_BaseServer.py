@@ -240,7 +240,7 @@ class TestGetVideoPort(object):
         assert port == instance.get_video_port()
 
 
-class TestGetaudioPort(object):
+class TestGetAudioPort(object):
 
     def test_non_string(self):
         port = 1234
@@ -279,3 +279,44 @@ class TestGetaudioPort(object):
         instance = BaseServer()
         instance.AUDIO_PORT = port
         assert port == instance.get_audio_port()
+
+
+class TestGetControlPort(object):
+
+    def test_non_string(self):
+        port = 1234
+        instance = BaseServer()
+        instance.CONTROL_PORT = port
+        with pytest.raises(TypeError):
+            res = instance.get_control_port()
+            assert res is None
+
+    def test_none(self):
+        port = None
+        instance = BaseServer()
+        instance.CONTROL_PORT = port
+        with pytest.raises(TypeError):
+            res = instance.get_control_port()
+            assert res is None
+
+    def test_zero_length_string(self):
+        port = ''
+        instance = BaseServer()
+        instance.CONTROL_PORT = port
+        with pytest.raises(ValueError):
+            res = instance.get_control_port()
+            assert res is None
+
+    def test_non_int_string(self):
+        port = 'abcd'
+        instance = BaseServer()
+        instance.CONTROL_PORT = port
+        with pytest.raises(ValueError):
+            res = instance.get_control_port()
+            assert res is None
+
+    def test_normal(self):
+        port = '3000'
+        instance = BaseServer()
+        instance.CONTROL_PORT = port
+        assert port == instance.get_control_port()

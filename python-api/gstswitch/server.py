@@ -112,6 +112,12 @@ class BaseServer(object):
         :param: None
         :returns: Control port
         """
+        if type(self.CONTROL_PORT) != str:
+            raise TypeError("Control port: " + self.CONTROL_PORT + " should be a string")
+        try:
+            int(self.CONTROL_PORT)
+        except:
+            raise ValueError("Control port: " + self.CONTROL_PORT + " should have integral value")
         return self.CONTROL_PORT
 
     def get_record_file(self):
