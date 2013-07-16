@@ -98,6 +98,12 @@ class BaseServer(object):
         :param: None
         :returns: Audio port
         """
+        if type(self.AUDIO_PORT) != str:
+            raise TypeError("audio port: " + self.AUDIO_PORT + " should be a string")
+        try:
+            int(self.AUDIO_PORT)
+        except:
+            raise ValueError("audio port: " + self.AUDIO_PORT + " should have integral value")
         return self.AUDIO_PORT
 
     def get_control_port(self):
