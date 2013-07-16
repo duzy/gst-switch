@@ -37,7 +37,14 @@ class BaseServer(object):
         :param audio_port: Audio port
         :returns: nothing
         """
-        self.AUDIO_PORT = str(audio_port)
+        try:
+            audio_port + 1
+        except TypeError:
+            raise TypeError
+        if audio_port > 0 and audio_port < 65536:
+            self.AUDIO_PORT = str(audio_port)
+        else:
+            raise ValueError('audio port not in range')
 
     def set_control_port(self, control_port):
         """Sets the server's control port
