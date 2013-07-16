@@ -320,3 +320,36 @@ class TestGetControlPort(object):
         instance = BaseServer()
         instance.CONTROL_PORT = port
         assert port == instance.get_control_port()
+
+
+class TestGetRecordFile(object):
+
+    def test_non_string(self):
+        name = 1234
+        instance = BaseServer()
+        instance.RECORD_FILE = name
+        with pytest.raises(TypeError):
+            res = instance.get_record_file()
+            assert res is None
+
+    def test_none(self):
+        name = None
+        instance = BaseServer()
+        instance.RECORD_FILE = name
+        with pytest.raises(TypeError):
+            res = instance.get_record_file()
+            assert res is None
+
+    def test_forward_slash(self):
+        name = 'abcd/xyz'
+        instance = BaseServer()
+        instance.RECORD_FILE = name
+        with pytest.raises(ValueError):
+            res = instance.get_record_file()
+            assert res is None
+
+    def test_normal(self):
+        name = "recordFile"
+        instance = BaseServer()
+        instance.RECORD_FILE = name
+        assert name ==  instance.get_record_file()

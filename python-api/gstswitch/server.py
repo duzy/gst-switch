@@ -85,11 +85,11 @@ class BaseServer(object):
         :returns: Video port
         """
         if type(self.VIDEO_PORT) != str:
-            raise TypeError("Video port: " + self.VIDEO_PORT + " should be a string")
+            raise TypeError("Video port: ", self.VIDEO_PORT, " should be a string")
         try:
             int(self.VIDEO_PORT)
         except:
-            raise ValueError("Video port: " + self.VIDEO_PORT + " should have integral value")
+            raise ValueError("Video port: ", self.VIDEO_PORT, " should have integral value")
         return self.VIDEO_PORT
 
     def get_audio_port(self):
@@ -99,11 +99,11 @@ class BaseServer(object):
         :returns: Audio port
         """
         if type(self.AUDIO_PORT) != str:
-            raise TypeError("audio port: " + self.AUDIO_PORT + " should be a string")
+            raise TypeError("audio port: ", self.AUDIO_PORT, " should be a string")
         try:
             int(self.AUDIO_PORT)
         except:
-            raise ValueError("audio port: " + self.AUDIO_PORT + " should have integral value")
+            raise ValueError("audio port: ", self.AUDIO_PORT, " should have integral value")
         return self.AUDIO_PORT
 
     def get_control_port(self):
@@ -113,11 +113,11 @@ class BaseServer(object):
         :returns: Control port
         """
         if type(self.CONTROL_PORT) != str:
-            raise TypeError("Control port: " + self.CONTROL_PORT + " should be a string")
+            raise TypeError("Control port: ", self.CONTROL_PORT, " should be a string")
         try:
             int(self.CONTROL_PORT)
         except:
-            raise ValueError("Control port: " + self.CONTROL_PORT + " should have integral value")
+            raise ValueError("Control port: ", self.CONTROL_PORT, " should have integral value")
         return self.CONTROL_PORT
 
     def get_record_file(self):
@@ -126,6 +126,10 @@ class BaseServer(object):
         :param: None
         :returns: Record file format
         """
+        if type(self.RECORD_FILE) != str:
+            raise TypeError("Record File:", self.RECORD_FILE, "should be a string")
+        if self.RECORD_FILE.find('/') >= 0:
+            raise ValueError("Record file name should not have '/'")
         return self.RECORD_FILE
 
 
