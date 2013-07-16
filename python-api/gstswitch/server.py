@@ -17,7 +17,7 @@ class BaseServer(object):
 
     def set_video_port(self, video_port):
         """Sets the server's video port
-        Should be between 1 and 65535
+        Should be integer between 1 and 65535
 
         :param video_port: Video port
         :returns: nothing
@@ -33,6 +33,7 @@ class BaseServer(object):
 
     def set_audio_port(self, audio_port):
         """Sets the server's audio port
+        Should be integer between 1 and 65535
 
         :param audio_port: Audio port
         :returns: nothing
@@ -48,11 +49,19 @@ class BaseServer(object):
 
     def set_control_port(self, control_port):
         """Sets the server's control port
+        Should be integer between 1 and 65535
 
         :param control_port: Control port
         :returns: nothing
         """
-        self.CONTROL_PORT = str(control_port)
+        try:
+            control_port + 1
+        except TypeError:
+            raise TypeError
+        if control_port > 0 and control_port < 65536:
+            self.CONTROL_PORT = str(control_port)
+        else:
+            raise ValueError('control port not in range')
 
     def set_record_file(self, record_file):
         """Sets the record file name format - [name-date-time.datas]
