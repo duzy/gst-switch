@@ -64,7 +64,7 @@ class BaseServer(object):
             raise ValueError('control port not in range')
 
     def set_record_file(self, record_file):
-        """Sets the record file name format - [name-date-time.datas]
+        """Sets the record file name format - [name-date-time.data]
 
         :param record_file: The record file name
         :returns: nothing
@@ -84,6 +84,12 @@ class BaseServer(object):
         :param: None
         :returns: Video port
         """
+        if type(self.VIDEO_PORT) != str:
+            raise TypeError("Video port: " + self.VIDEO_PORT + " should be a string")
+        try:
+            int(self.VIDEO_PORT)
+        except:
+            raise ValueError("Video port: " + self.VIDEO_PORT + " should have integral value")
         return self.VIDEO_PORT
 
     def get_audio_port(self):
