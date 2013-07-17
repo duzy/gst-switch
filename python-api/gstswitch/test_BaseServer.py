@@ -352,4 +352,5 @@ class TestGetRecordFile(object):
         name = "recordFile"
         instance = BaseServer()
         instance.RECORD_FILE = name
-        assert name ==  instance.get_record_file()
+        assert name == instance.get_record_file()
+

@@ -132,8 +132,34 @@ class BaseServer(object):
             raise ValueError("Record file name should not have '/'")
         return self.RECORD_FILE
 
+    def set_executable_path(self, path):
+        """Sets the path where all exceutables
+        gst-switch-srv, gst-launch-1.0, wtc are located
 
-class ServerProcess(object):
+        :param path: Path where exceutables are present
+        :returns: nothing
+        """
+        if type(path) != str:
+            raise TypeError("path should be of type str")
+        if len(str) == 0:
+            raise ValueError("path should be a string of length more than 0")
+        self.PATH = path
+
+    def get_executable_path(self, path):
+        """Sets the path where all exceutables
+        gst-switch-srv, gst-launch-1.0, wtc are located
+
+        :param path: Path where exceutables are present
+        :returns: nothing
+        """
+        if type(self.PATH) != str:
+            raise TypeError("path not set correctly: should be a str")
+        if len(self.PATH) == 0:
+            raise ValueError("path not set correctly: should have length more than 0")
+        return self.PATH
+
+
+class ServerProcess(BaseServer):
     """Class handling controlling the server process
 
     :param: None
@@ -149,12 +175,18 @@ class ServerProcess(object):
         :param: None
         :returns: nothing
         """
+
         self.proc = None
         self.pid = -1
         print "Starting server"
-        self.proc = self._run_process()
+        try:
+            self.proc = self._run_process()
+        except:
+            raise RuntimeError("cannot creating gst-switch-srv process")
         if self.proc is None:
-            pass
+            raise RuntimeError("cannot create gst-switch-srv process: No process created")
+        if self.proc.pid < 0:
+            raise RuntimeError("cannot create gst-switch-srv process: PID returned is negative")
         else:
             self.pid = self.proc.pid
         # TODO: Sleep time may vary
@@ -163,13 +195,13 @@ class ServerProcess(object):
     def _run_process(self):
         """Private method for running gst-switch-srv process
         """
-        cmd = self.PATH
+        cmd = self.get_executable_path()
         # cmd = ''
         cmd += """gst-switch-srv \
                     --video-input-port=%s \
                     --audio-input-port=%s \
                     --control-port=%s \
-                    --record=%s """ % (self.VIDEO_PORT, self.AUDIO_PORT, self.CONTROL_PORT, self.RECORD_FILE)
+                    --record=%s """ % (self.get_video_port(), self.get_audio_port(), self.get_control_port(), self.get_video_port())
         proc = self._start_process(cmd)
         print "process:", proc
         if proc is None:
@@ -215,17 +247,8 @@ class ServerProcess(object):
         """
         os.kill(self.pid, signal.SIGKILL)
 
-    def set_executable_path(self, path):
-        """Sets the path where all exceutables
-        gst-switch-srv, gst-launch-1.0, wtc are located
 
-        :param path: Path where exceutables are present
-        :returns: nothing
-        """
-        self.PATH = path
-
-
-class Server(BaseServer, ServerProcess):
+class Server(ServerProcess):
     """Controls all Server operations
 
     :param path: Path where all exceutables gst-switch-srv, gst-launch-1.0, etc are located
