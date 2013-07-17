@@ -133,7 +133,7 @@ class BaseServer(object):
         return self.RECORD_FILE
 
     def set_executable_path(self, path):
-        """Sets the path where all exceutables
+        """Sets the path where all executables
         gst-switch-srv, gst-launch-1.0, wtc are located
 
         :param path: Path where exceutables are present
@@ -146,7 +146,7 @@ class BaseServer(object):
         self.PATH = path
 
     def get_executable_path(self, path):
-        """Sets the path where all exceutables
+        """Sets the path where all executables
         gst-switch-srv, gst-launch-1.0, wtc are located
 
         :param path: Path where exceutables are present
