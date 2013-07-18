@@ -1,12 +1,11 @@
 #IMPORTS
 #all dbus variables need to be setup here
-from dbus import DBus
 from gi.repository import Gio, GLib
 
 CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
 
 
-class Connection(DBus):
+class Connection(object):
     """Class which makes all remote object class.
     Deals with lower level connection and remote method invoking
 
@@ -51,7 +50,7 @@ class Connection(DBus):
         :returns: tuple with first element compose port number
         """
         args = None
-        connection = self.get_connection()
+        connection = self.connection
         port = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'get_compose_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
@@ -66,7 +65,7 @@ class Connection(DBus):
         :returns: tuple with first element encode port number
         """
         args = None
-        connection = self.get_connection()
+        connection = self.connection
         port = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'get_encode_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
@@ -81,7 +80,7 @@ class Connection(DBus):
         :returns: tuple wit first element audio port number
         """
         args = None
-        connection = self.get_connection()
+        connection = self.connection
         port = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'get_audio_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
@@ -96,7 +95,7 @@ class Connection(DBus):
         :returns: tuple with first element a string in the form of '[(3002, 1, 7), (3003, 1, 8)]'
         """
         args = None
-        connection = self.get_connection()
+        connection = self.connection
         ports = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'get_preview_ports',
             args, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
@@ -112,7 +111,7 @@ class Connection(DBus):
         :returns: tuple with first element True if requested
         """
         args = GLib.Variant('(i)', (mode,))
-        connection = self.get_connection()
+        connection = self.connection
         result = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'set_composite_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
@@ -129,7 +128,7 @@ class Connection(DBus):
         :returns: tuple with first element True if requested
         """
         args = GLib.Variant('(i)', (channel,))
-        connection = self.get_connection()
+        connection = self.connection
         result = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'set_encode_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
@@ -144,7 +143,7 @@ class Connection(DBus):
         returns: tuple with first element True if requested
         """
         args = None
-        connection = self.get_connection()
+        connection = self.connection
         result = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'new_record',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
@@ -166,7 +165,7 @@ class Connection(DBus):
         :returns: tuple with first element as result - PIP has been changed succefully
         """
         args = GLib.Variant('(iiii)', (dx, dy, dw, dh,))
-        connection = self.get_connection()
+        connection = self.connection
         result = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'adjust_pip',
             args, GLib.VariantType.new("(u)"), Gio.DBusCallFlags.NONE, -1,
@@ -184,7 +183,7 @@ class Connection(DBus):
         :returns: tuple with first element True if requested
         """
         args = GLib.Variant('(ii)', (channel, port,))
-        connection = self.get_connection()
+        connection = self.connection
         result = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'switch',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
@@ -206,7 +205,7 @@ class Connection(DBus):
         :returns: tuple with first element True if requested
         """
         args = GLib.Variant('(iiii)', (x, y, fw, fh,))
-        connection = self.get_connection()
+        connection = self.connection
         result = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'click_video',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
@@ -221,7 +220,7 @@ class Connection(DBus):
         :returns: tuple with first element True if requested
         """
         args = GLib.Variant('a(iiii)', faces)
-        connection = self.get_connection()
+        connection = self.connection
         result = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'mark_face',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
@@ -236,7 +235,7 @@ class Connection(DBus):
         :returns: tuple with first element True if requested
         """
         args = GLib.Variant('a(iiii)', faces)
-        connection = self.get_connection()
+        connection = self.connection
         result = connection.call_sync(
             self._bus_name, self._object_path, self._default_interface, 'mark_tracking',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,

@@ -27,7 +27,7 @@ class Server(object):
         self.control_port = control_port
         self.record_file = record_file
 
-    def run(self):
+    def run(self, gst_option=''):
         """Launches the server process
 
         :param: None
@@ -35,6 +35,7 @@ class Server(object):
         """
         self.proc = None
         self.pid = -1
+        self.gst_option_string = gst_option
         print "Starting server"
         self.proc = self._run_process()
         self.pid = self.proc.pid
@@ -47,10 +48,12 @@ class Server(object):
         cmd = self.path
         # cmd = ''
         cmd += """gst-switch-srv \
+                    %s \
                     --video-input-port=%s \
                     --audio-input-port=%s \
                     --control-port=%s \
-                    --record=%s """ % (self.video_port,
+                    --record=%s """ % (self.gst_option_string,
+                                       self.video_port,
                                        self.audio_port,
                                        self.control_port,
                                        self.record_file)
