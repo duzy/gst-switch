@@ -17,6 +17,7 @@ class Server(object):
     :param record_file: The record file format
     :returns: nothing
     """
+    SLEEP_TIME = 0.5
 
     def __init__(self, path, video_port=3000, audio_port=4000, control_port=5000, record_file='record.data'):
         super(Server, self).__init__()
@@ -32,14 +33,13 @@ class Server(object):
         :param: None
         :returns: nothing
         """
-
         self.proc = None
         self.pid = -1
         print "Starting server"
         self.proc = self._run_process()
         self.pid = self.proc.pid
         # TODO: Sleep time may vary
-        sleep(0.5)
+        sleep(self.SLEEP_TIME)
 
     def _run_process(self):
         """Private method for running gst-switch-srv process
