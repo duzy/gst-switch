@@ -10,7 +10,7 @@ s = Server(path)
 get_res = ''
 try:
     s.run()  # launches the server default parameters
-    port = s.get_video_port()
+    port = s.video_port
     # connects a gstreamer module to view the output of the gst-switch-srv
     output = PreviewSinks()
     output.run()
