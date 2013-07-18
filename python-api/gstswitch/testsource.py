@@ -117,8 +117,8 @@ class PreviewPipeline(BasePipeline):
     """docstring for PreviewPipeline"""
     def __init__(self, port):
         super(PreviewPipeline, self).__init__()
-        self.set_host('127.0.0.1')
-        self.set_port(port)
+        self.host = '127.0.0.1'
+        self.preview_port = port
         src = self.make_tcpclientsrc(port)
         self.add(src)
         gdpdepay = self.make_gdpdepay()
@@ -128,16 +128,10 @@ class PreviewPipeline(BasePipeline):
         self.add(sink)
         gdpdepay.link(sink)
 
-    def set_host(self, host):
-        self.HOST = host
-
-    def set_port(self, port):
-        self.PORT = port
-
     def make_tcpclientsrc(self, port):
         element = self.make('tcpclientsrc', 'tcpclientsrc')
-        element.set_property('host', self.HOST)
-        element.set_property('port', self.PORT)
+        element.set_property('host', self.host)
+        element.set_property('port', self.preview_port)
         return element
 
     def make_gdpdepay(self):
@@ -155,51 +149,15 @@ class VideoSrc(object):
 
     def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
         super(VideoSrc, self).__init__()
-        self.set_port(port)
-        self.set_width(width)
-        self.set_height(height)
-        self.set_pattern(self.generate_pattern(pattern))
-        self.set_timeoverlay(timeoverlay)
-        self.set_clockoverlay(clockoverlay)
+        self.port = port
+        self.width = width
+        self.height = height
+        self.pattern = self.generate_pattern(pattern)
+        self.timeoverlay = timeoverlay
+        self.clockoverlay = clockoverlay
 
-        self.pipeline = VideoPipeline(self.PORT, self.WIDTH, self.HEIGHT, self.PATTERN, self.TIMEOVERLAY, self.CLOCKOVERLAY)
+        self.pipeline = VideoPipeline(self.port, self.width, self.height, self.pattern, self.timeoverlay, self.clockoverlay)
         self.run()
-
-    def set_port(self, port):
-        self.PORT = port
-
-    def set_width(self, width):
-        self.WIDTH = width
-
-    def set_height(self, height):
-        self.HEIGHT = height
-
-    def set_pattern(self, pattern):
-        self.PATTERN = pattern
-
-    def set_timeoverlay(self, timeoverlay):
-        self.TIMEOVERLAY = timeoverlay
-
-    def set_clockoverlay(self, clockoverlay):
-        self.CLOCKOVERLAY = clockoverlay
-
-    def get_port(self):
-        return self.PORT
-
-    def get_width(self):
-        return self.WIDTH
-
-    def get_height(self):
-        return self.HEIGHT
-
-    def get_pattern(self):
-        return self.PATTERN
-
-    def get_timeoverlay(self):
-        return self.TIMEOVERLAY
-
-    def get_clockoverlay(self):
-        return self.CLOCKOVERLAY
 
     def run(self):
         self.pipeline.play()
@@ -216,7 +174,6 @@ class VideoSrc(object):
         if pattern is None:
             pattern = random.randint(0, 20)
         pattern = str(pattern)
-        self.PATTERN = pattern
         return pattern
 
 
@@ -224,14 +181,8 @@ class Preview(object):
     """docstring for Preview"""
     def __init__(self, port):
         super(Preview, self).__init__()
-        self.set_preview_port(int(port))
-        self.pipeline = PreviewPipeline(self.get_preview_port())
-
-    def set_preview_port(self, port):
-        self.PORT = port
-
-    def get_preview_port(self):
-        return self.PORT
+        self.preview_port = int(port)
+        self.pipeline = PreviewPipeline(self.preview_port)
 
     def run(self):
         self.pipeline.play()
