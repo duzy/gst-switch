@@ -3,22 +3,45 @@
 from dbus import DBus
 from gi.repository import Gio, GLib
 
+CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
+
 
 class Connection(DBus):
-    """Class which makes all remote object class
+    """Class which makes all remote object class.
+    Deals with lower level connection and remote method invoking
 
     :default bus-address: unix:abstract=gstswitch
 
     :param: None
     """
 
-    def __init__(self):
+    def __init__(
+            self,
+            address="unix:abstract=gstswitch",
+            bus_name=None,
+            object_path="/info/duzy/gst/switch/SwitchController",
+            default_interface="info.duzy.gst.switch.SwitchControllerInterface"):
+
         super(Connection, self).__init__()
-        self.set_address("unix:abstract=gstswitch")
-        self.set_busname(None)
-        self.set_objectpath("/info/duzy/gst/switch/SwitchController")
-        self.set_default_interface("info.duzy.gst.switch.SwitchControllerInterface")
-        # self.connection = self.connect_dbus()
+        self._address = address
+        self._bus_name = bus_name
+        self._object_path = object_path
+        self._default_interface = default_interface
+
+    def connect_dbus(self):
+        """Make a new connection using the parameters belonging to the class
+        to the gst-switch-srv over dbus.
+        Sets the self.connection
+
+        :params: None
+        :returns: Nothing
+        """
+        connection = Gio.DBusConnection.new_for_address_sync(
+            self._address,
+            CONNECTION_FLAGS,
+            None,
+            None)
+        self.connection = connection
 
     def get_compose_port(self):
         """get_compose_port(out i port);
@@ -30,7 +53,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         port = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'get_compose_port',
+            self._bus_name, self._object_path, self._default_interface, 'get_compose_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return port
@@ -45,7 +68,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         port = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'get_encode_port',
+            self._bus_name, self._object_path, self._default_interface, 'get_encode_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return port
@@ -60,7 +83,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         port = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'get_audio_port',
+            self._bus_name, self._object_path, self._default_interface, 'get_audio_port',
             args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return port
@@ -75,7 +98,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         ports = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'get_preview_ports',
+            self._bus_name, self._object_path, self._default_interface, 'get_preview_ports',
             args, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return ports
@@ -91,7 +114,7 @@ class Connection(DBus):
         args = GLib.Variant('(i)', (mode,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_composite_mode',
+            self._bus_name, self._object_path, self._default_interface, 'set_composite_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -108,7 +131,7 @@ class Connection(DBus):
         args = GLib.Variant('(i)', (channel,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'set_encode_mode',
+            self._bus_name, self._object_path, self._default_interface, 'set_encode_mode',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -123,7 +146,7 @@ class Connection(DBus):
         args = None
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'new_record',
+            self._bus_name, self._object_path, self._default_interface, 'new_record',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -145,7 +168,7 @@ class Connection(DBus):
         args = GLib.Variant('(iiii)', (dx, dy, dw, dh,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'adjust_pip',
+            self._bus_name, self._object_path, self._default_interface, 'adjust_pip',
             args, GLib.VariantType.new("(u)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -163,7 +186,7 @@ class Connection(DBus):
         args = GLib.Variant('(ii)', (channel, port,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'switch',
+            self._bus_name, self._object_path, self._default_interface, 'switch',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -185,7 +208,7 @@ class Connection(DBus):
         args = GLib.Variant('(iiii)', (x, y, fw, fh,))
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'click_video',
+            self._bus_name, self._object_path, self._default_interface, 'click_video',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -200,7 +223,7 @@ class Connection(DBus):
         args = GLib.Variant('a(iiii)', faces)
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'mark_face',
+            self._bus_name, self._object_path, self._default_interface, 'mark_face',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result
@@ -215,7 +238,7 @@ class Connection(DBus):
         args = GLib.Variant('a(iiii)', faces)
         connection = self.get_connection()
         result = connection.call_sync(
-            self.get_busname(), self.get_objectpath(), 'info.duzy.gst.switch.SwitchControllerInterface', 'mark_tracking',
+            self._bus_name, self._object_path, self._default_interface, 'mark_tracking',
             args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
             None)
         return result

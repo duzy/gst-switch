@@ -33,29 +33,29 @@ try:
     # testing random 10 modes
     for x in tests_get:
         print x()
-    time.sleep(2)
+    time.sleep(0.5)
     count = 0
-    modes = [0, 3, 3, 3, 1, 0, 3, 2, 2, 2, 0]
+    modes = [3, 2, 1, 0, 1, 2, 3, 0]
     for mode in modes:
         print 'composite mode=', mode
         test_set_composite_mode(mode)
         count += 1
-        time.sleep(2)
+        time.sleep(1)
 
-    # test_set_composite_mode(0)
-    # time.sleep(2)
-    # channel = 1
-    # while True:
-    #     print 'encode mode=', channel
-    #     test_set_encode_mode(channel % 2 + 1)
-    #     channel += 1
-    #     time.sleep(2)
-    #     if channel == 5:
-    #         break
+# test_set_composite_mode(0)
+# time.sleep(2)
+# channel = 1
+# while True:
+#     print 'encode mode=', channel
+#     test_set_encode_mode(channel % 2 + 1)
+#     channel += 1
+#     time.sleep(2)
+#     if channel == 5:
+#         break
 
 
 
-    time.sleep(0.1)
+    # time.sleep(0.1)
     sources.terminate()
     output.terminate()
     s.terminate()

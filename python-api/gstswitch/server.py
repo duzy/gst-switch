@@ -134,20 +134,20 @@ class BaseServer(object):
 
     def set_executable_path(self, path):
         """Sets the path where all executables
-        gst-switch-srv, gst-launch-1.0, wtc are located
+        gst-switch-srv, gst-launch-1.0, etc are located
 
         :param path: Path where exceutables are present
         :returns: nothing
         """
         if type(path) != str:
             raise TypeError("path should be of type str")
-        if len(str) == 0:
+        if len(path) == 0:
             raise ValueError("path should be a string of length more than 0")
         self.PATH = path
 
-    def get_executable_path(self, path):
+    def get_executable_path(self):
         """Sets the path where all executables
-        gst-switch-srv, gst-launch-1.0, wtc are located
+        gst-switch-srv, gst-launch-1.0, etc are located
 
         :param path: Path where exceutables are present
         :returns: nothing
@@ -179,10 +179,7 @@ class ServerProcess(BaseServer):
         self.proc = None
         self.pid = -1
         print "Starting server"
-        try:
-            self.proc = self._run_process()
-        except:
-            raise RuntimeError("cannot creating gst-switch-srv process")
+        self.proc = self._run_process()
         if self.proc is None:
             raise RuntimeError("cannot create gst-switch-srv process: No process created")
         if self.proc.pid < 0:
@@ -201,14 +198,14 @@ class ServerProcess(BaseServer):
                     --video-input-port=%s \
                     --audio-input-port=%s \
                     --control-port=%s \
-                    --record=%s """ % (self.get_video_port(), self.get_audio_port(), self.get_control_port(), self.get_video_port())
+                    --record=%s """ % (self.get_video_port(),
+                                       self.get_audio_port(),
+                                       self.get_control_port(),
+                                       self.get_video_port())
         proc = self._start_process(cmd)
-        print "process:", proc
         if proc is None:
-            print 'ERROR: Server unable to create process'
-            pass
+            raise RuntimeError("unable to create process: %s" % (proc))
         else:
-            print 'Created process with PID:%s', str(proc.pid)
             return proc
 
     def _start_process(self, cmd):
@@ -218,8 +215,8 @@ class ServerProcess(BaseServer):
         :returns: process created
         """
         print 'Creating process %s' % (cmd)
-        with open(os.devnull, 'w') as tempf:
-            process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
+        tempf = open(os.devnull, 'w')
+        process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
         return process
 
     def terminate(self):

@@ -354,3 +354,29 @@ class TestGetRecordFile(object):
         instance.RECORD_FILE = name
         assert name == instance.get_record_file()
 
+
+class TestSetExecutablePath(object):
+
+    def test_integer(self):
+        path = 1234
+        instance = BaseServer()
+        with pytest.raises(TypeError):
+            instance.set_executable_path(path)
+
+    def test_none(self):
+        path = None
+        instance = BaseServer()
+        with pytest.raises(TypeError):
+            instance.set_executable_path(path)
+
+    def test_zero_length_string(self):
+        path = ''
+        instance = BaseServer()
+        with pytest.raises(ValueError):
+            instance.set_executable_path(path)
+
+    def test_normal(self):
+        path = "/home/hyades/gst/master/"
+        instance = BaseServer()
+        instance.set_executable_path(path)
+        assert path == instance.PATH
