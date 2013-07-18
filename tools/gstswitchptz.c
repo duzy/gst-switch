@@ -72,7 +72,7 @@ gst_switch_ptz_fix_coords (GstSwitchPTZ * ptz)
     ptz->z = 1.0;
 }
 
-#define STEP 0.1
+#define STEP 0.05
 
 static void
 gst_switch_ptz_button_clicked_left (GtkButton * button, GstSwitchPTZ * ptz)
@@ -334,7 +334,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   };
   int n, m;
 
-  ptz->x = ptz->y = ptz->z = 0;
+  ptz->x = ptz->y = ptz->z = 0.5;
   ptz->controller = gst_cam_controller_new (ptz_control_protocol);
   if (ptz->controller) {
     gst_cam_controller_open (ptz->controller, ptz_device_name);
