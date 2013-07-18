@@ -31,6 +31,8 @@ class Server(object):
         """Launches the server process
 
         :param: None
+        :gst-option: Any gstreamer option. Refer to http://www.linuxmanpages.com/man1/gst-launch-0.8.1.php#lbAF.
+        Should be added with spaces between them
         :returns: nothing
         """
         self.proc = None
@@ -58,10 +60,7 @@ class Server(object):
                                        self.control_port,
                                        self.record_file)
         proc = self._start_process(cmd)
-        if proc is None:
-            raise RuntimeError("unable to create process: %s" % (proc))
-        else:
-            return proc
+        return proc
 
     def _start_process(self, cmd):
         """Private method for starting a process
@@ -70,8 +69,13 @@ class Server(object):
         :returns: process created
         """
         print 'Creating process %s' % (cmd)
-        tempf = open(os.devnull, 'w')
-        process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
+        try:
+            tempf = open(os.devnull, 'w')
+            process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
+        except IOError:
+            print "Cannot open os.devnull"
+        except OSError:
+            print "gst-switch-srv not found in path"
         return process
 
     def terminate(self):
