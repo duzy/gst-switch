@@ -85,7 +85,8 @@ gst_switch_ptz_button_clicked_left (GtkButton * button, GstSwitchPTZ * ptz)
        (gint) gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("left: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
@@ -104,7 +105,8 @@ gst_switch_ptz_button_clicked_left_top (GtkButton * button, GstSwitchPTZ * ptz)
        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("left-top: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
@@ -120,7 +122,8 @@ gst_switch_ptz_button_clicked_top (GtkButton * button, GstSwitchPTZ * ptz)
        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("top: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
@@ -139,7 +142,8 @@ gst_switch_ptz_button_clicked_top_right (GtkButton * button, GstSwitchPTZ * ptz)
        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("top-right: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
@@ -155,7 +159,8 @@ gst_switch_ptz_button_clicked_right (GtkButton * button, GstSwitchPTZ * ptz)
        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("right: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
@@ -175,7 +180,8 @@ gst_switch_ptz_button_clicked_right_bottom (GtkButton * button,
        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("right-bottom: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
@@ -191,7 +197,8 @@ gst_switch_ptz_button_clicked_bottom (GtkButton * button, GstSwitchPTZ * ptz)
        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("bottom: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
@@ -211,7 +218,8 @@ gst_switch_ptz_button_clicked_bottom_left (GtkButton * button,
        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("bottom-left: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
@@ -230,7 +238,8 @@ gst_switch_ptz_button_clicked_center (GtkButton * button, GstSwitchPTZ * ptz)
        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
      */
     gst_cam_controller_move (ptz->controller,
-        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x, ptz->y);
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
   }
   g_print ("center: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
 }
