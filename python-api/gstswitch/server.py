@@ -72,10 +72,10 @@ class Server(object):
         try:
             tempf = open(os.devnull, 'w')
             process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
-        except IOError:
-            print "Cannot open os.devnull"
-        except OSError:
-            print "gst-switch-srv not found in path"
+        except IOError as e:
+            print "I/O error: os.devnull: {0}".format(e.strerror)
+        except OSError as e:
+            print "OS error: {0}: {1}".format(cmd, e.strerror)
         return process
 
     def terminate(self):
