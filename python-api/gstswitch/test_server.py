@@ -17,3 +17,12 @@ class TestRun(object):
         s.run()
         assert s.proc is not None
         s.terminate()
+
+    def test_terminate(self):
+        path = '/home/hyades/gst/master/gstreamer/tools/'
+        s = Server(path=path)
+        with pytest.raises(ServerProcessError):
+            s.terminate()
+
+    # def test_kill(self):
+    #     pass
