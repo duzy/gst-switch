@@ -1,10 +1,14 @@
-class PathError(Exception):
+class BaseError(Exception):
+    """docstring for BaseError"""
+    pass
+
+
+class PathError(BaseError):
     """docstring for PathError"""
-    def __init__(self):
-        pass
+    pass
 
 
-class ServerProcessError(object):
+class ServerProcessError(BaseError):
     """docstring for ServerProcessError"""
-    def __init__(self):
-        pass
+    pass
+

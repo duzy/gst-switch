@@ -72,7 +72,7 @@ class Server(object):
         :returns: process created
         :raises IOError: Fail to open /dev/null (os.devnull)
         :raises PathError: Unable to find gst-switch-srv at path specified
-        :raises ServerProcessError: Creating the gst-switch-srv gives a OS based error.
+        :raises ServerProcessError: running gst-switch-srv gives a OS based error.
         """
         print 'Creating process %s' % (cmd)
         try:
@@ -84,9 +84,9 @@ class Server(object):
             print "cannot open os.devnull"
         except OSError as e:
             if e.errno == ENOENT:
-                raise PathError
+                raise PathError('Cannot find gst-switch-srv at path')
             else:
-                raise ServerProcessError
+                raise ServerProcessError('Internal error')
 
     def terminate(self):
         """Terminates the server
@@ -97,12 +97,15 @@ class Server(object):
         print 'Killing server'
         proc = self.proc
         ret = True
-        try:
-            proc.terminate()
-            print 'Server Killed'
-        except:
-            print 'Error killing server'
-            ret = False
+        if proc is None:
+            raise ServerProcessError('Process does not exist')
+        else:
+            try:
+                proc.terminate()
+                print 'Server Killed'
+            except OSError:
+                raise ServerProcessError('Process could not be terminated. Try kill method')
+                ret = False
         return ret
 
     def kill(self):
@@ -111,4 +114,10 @@ class Server(object):
         :param: None
         :returns: nothing
         """
-        os.kill(self.pid, signal.SIGKILL)
+        if self.proc is None:
+            raise ServerProcessError('Process does not exist')
+        else:
+            try:
+                os.kill(self.pid, signal.SIGKILL)
+            except OSError:
+                raise ServerProcessError('Cannot kill process')
