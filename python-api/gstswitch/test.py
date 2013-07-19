@@ -57,7 +57,7 @@ try:
 
     # time.sleep(0.1)
     sources.terminate()
-    output.terminate()
+#     output.terminate()
     s.terminate()
 
 finally:

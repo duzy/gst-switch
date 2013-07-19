@@ -3,6 +3,7 @@ import sys
 import signal
 import subprocess
 
+from errno import *
 from exception import *
 from time import sleep
 
@@ -40,7 +41,8 @@ class Server(object):
         self.gst_option_string = gst_option
         print "Starting server"
         self.proc = self._run_process()
-        self.pid = self.proc.pid
+        if self.proc:
+            self.pid = self.proc.pid
         # TODO: Sleep time may vary
         sleep(self.SLEEP_TIME)
 
@@ -59,6 +61,7 @@ class Server(object):
                                        self.audio_port,
                                        self.control_port,
                                        self.record_file)
+        cmd = " ".join(cmd.split())
         proc = self._start_process(cmd)
         return proc
 
@@ -67,16 +70,23 @@ class Server(object):
 
         :param cmd: The command which needs to be excecuted
         :returns: process created
+        :raises IOError: Fail to open /dev/null (os.devnull)
+        :raises PathError: Unable to find gst-switch-srv at path specified
+        :raises ServerProcessError: Creating the gst-switch-srv gives a OS based error.
         """
         print 'Creating process %s' % (cmd)
         try:
-            tempf = open(os.devnull, 'w')
-            process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
-        except IOError as e:
-            print "I/O error: os.devnull: {0}".format(e.strerror)
+            with open(os.devnull, 'w') as tempf:
+                process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
+                print cmd
+                return process
+        except IOError:
+            print "cannot open os.devnull"
         except OSError as e:
-            print "OS error: {0}: {1}".format(cmd, e.strerror)
-        return process
+            if e.errno == ENOENT:
+                raise PathError
+            else:
+                raise ServerProcessError
 
     def terminate(self):
         """Terminates the server
