@@ -11,4 +11,3 @@ class PathError(BaseError):
 class ServerProcessError(BaseError):
     """docstring for ServerProcessError"""
     pass
-

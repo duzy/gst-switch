@@ -30,6 +30,85 @@ class Server(object):
         self.proc = None
         self.pid = -1
 
+    @property
+    def path(self):
+        return self._path
+
+    @property
+    def video_port(self):
+        return self._video_port
+
+    @property
+    def audio_port(self):
+        return self._audio_port
+
+    @property
+    def control_port(self):
+        return self._control_port
+
+    @property
+    def record_file(self):
+        return self._record_file
+
+    @path.setter
+    def path(self, path):
+        if not path:
+            raise ValueError('Path cannot be blank or None')
+        else:
+            self._path = path
+
+    @video_port.setter
+    def video_port(self, video_port):
+        if not video_port:
+            raise ValueError('Video Port cannot be blank or None')
+        else:
+            try:
+                i = int(video_port)
+                if i < 1 or i > 65535:
+                    raise ValueError('Video Port must be in range 1 to 65535')
+                else:
+                    self._video_port = video_port
+            except TypeError:
+                raise TypeError("Video Port must be a string or a number, not '{0}'".format(type(video_port)))
+
+    @audio_port.setter
+    def audio_port(self, audio_port):
+        if not audio_port:
+            raise ValueError('Audio Port cannot be blank or None')
+        else:
+            try:
+                i = int(audio_port)
+                if i < 1 or i > 65535:
+                    raise ValueError('Audio Port must be in range 1 to 65535')
+                else:
+                    self._audio_port = audio_port
+            except TypeError:
+                raise TypeError("Audio Port must be a string or a number, not '{0}'".format(type(audio_port)))
+
+    @control_port.setter
+    def control_port(self, control_port):
+        if not control_port:
+            raise ValueError('Control Port cannot be blank or None')
+        else:
+            try:
+                i = int(control_port)
+                if i < 1 or i > 65535:
+                    raise ValueError('Control Port must be in range 1 to 65535')
+                else:
+                    self._control_port = control_port
+            except TypeError:
+                raise TypeError("Control Port must be a string or a number, not '{0}'".format(type(control_port)))
+
+    @record_file.setter
+    def record_file(self, record_file):
+        if not record_file:
+            raise ValueError('Record File cannot be blank or None')
+        else:
+            try:
+                self._record_file = str(record_file)
+            except TypeError:
+                raise TypeError("Record File should be a string or buffer, not '{0}'".format(type(record_file)))
+
     def run(self, gst_option=''):
         """Launch the server process
 
@@ -43,7 +122,7 @@ class Server(object):
         """
         self.gst_option_string = gst_option
         print "Starting server"
-        self.proc = self.run_process()
+        self.proc = self._run_process()
         if self.proc:
             self.pid = self.proc.pid
         # TODO: Sleep time may vary
@@ -55,15 +134,15 @@ class Server(object):
         cmd = self.path
         # cmd = ''
         cmd += """gst-switch-srv \
-                    %s \
-                    --video-input-port=%s \
-                    --audio-input-port=%s \
-                    --control-port=%s \
-                    --record=%s """ % (self.gst_option_string,
-                                       self.video_port,
-                                       self.audio_port,
-                                       self.control_port,
-                                       self.record_file)
+                    {0} \
+                    --video-input-port={1} \
+                    --audio-input-port={2} \
+                    --control-port={3} \
+                    --record={4} """ .format(self.gst_option_string,
+                                             self.video_port,
+                                             self.audio_port,
+                                             self.control_port,
+                                             self.record_file)
         cmd = " ".join(cmd.split())
         proc = self._start_process(cmd)
         return proc
@@ -89,7 +168,8 @@ class Server(object):
                 raise ServerProcessError('Internal error')
 
     def terminate(self):
-        """Terminate the server
+        """Terminate the server.
+        self.proc is made None on success
 
         :param: None
         :returns: True when success
@@ -105,6 +185,7 @@ class Server(object):
             try:
                 proc.terminate()
                 print 'Server Killed'
+                self.proc = None
                 return True
             except OSError:
                 raise ServerProcessError('Cannot terminate process. Try killing it')
@@ -113,6 +194,7 @@ class Server(object):
 
     def kill(self):
         """Kill the server process by sending signal.SIGKILL
+        self.proc is made None on success
 
         :param: None
         :returns: True when success
@@ -125,6 +207,7 @@ class Server(object):
             ret = False
             try:
                 os.kill(self.pid, signal.SIGKILL)
+                self.proc = None
                 return True
             except OSError:
                 raise ServerProcessError('Cannot kill process')
