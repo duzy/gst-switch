@@ -9,7 +9,7 @@ from time import sleep
 
 
 class Server(object):
-    """Controls all Server operations
+    """Control all server related operations
 
     :param path: Path where all exceutables gst-switch-srv, gst-launch-1.0, etc are located
     :param video_port: The video port number - default = 3000
@@ -31,24 +31,26 @@ class Server(object):
         self.pid = -1
 
     def run(self, gst_option=''):
-        """Launches the server process
+        """Launch the server process
 
         :param: None
         :gst-option: Any gstreamer option. Refer to http://www.linuxmanpages.com/man1/gst-launch-0.8.1.php#lbAF.
-        Should be added with spaces between them
+        Multiple can be added separated by spaces
         :returns: nothing
+        :raises IOError: Fail to open /dev/null (os.devnull)
+        :raises PathError: Unable to find gst-switch-srv at path specified
+        :raises ServerProcessError: Running gst-switch-srv gives a OS based error.
         """
-        
         self.gst_option_string = gst_option
         print "Starting server"
-        self.proc = self._run_process()
+        self.proc = self.run_process()
         if self.proc:
             self.pid = self.proc.pid
         # TODO: Sleep time may vary
         sleep(self.SLEEP_TIME)
 
     def _run_process(self):
-        """Private method for running gst-switch-srv process
+        """Non-public method: Runs the gst-switch-srv process
         """
         cmd = self.path
         # cmd = ''
@@ -67,13 +69,10 @@ class Server(object):
         return proc
 
     def _start_process(self, cmd):
-        """Private method for starting a process
+        """Non-public method: Start a process
 
         :param cmd: The command which needs to be excecuted
         :returns: process created
-        :raises IOError: Fail to open /dev/null (os.devnull)
-        :raises PathError: Unable to find gst-switch-srv at path specified
-        :raises ServerProcessError: running gst-switch-srv gives a OS based error.
         """
         print 'Creating process %s' % (cmd)
         try:
@@ -90,35 +89,44 @@ class Server(object):
                 raise ServerProcessError('Internal error')
 
     def terminate(self):
-        """Terminates the server
+        """Terminate the server
 
         :param: None
         :returns: True when success
+        :raises ServerProcessError: Process does not exist
+        :raises ServerProcessError: Cannot terminate process. Try killing it
         """
         print 'Killing server'
         proc = self.proc
-        ret = True
+        ret = False
         if proc is None:
             raise ServerProcessError('Process does not exist')
         else:
             try:
                 proc.terminate()
                 print 'Server Killed'
+                return True
             except OSError:
-                raise ServerProcessError('Process could not be terminated. Try kill method')
-                ret = False
+                raise ServerProcessError('Cannot terminate process. Try killing it')
+                return False
         return ret
 
     def kill(self):
-        """Kills the server process by sending SIGKILL
+        """Kill the server process by sending signal.SIGKILL
 
         :param: None
-        :returns: nothing
+        :returns: True when success
+        :raises ServerProcessError: Process does not exist
+        :raises ServerProcessError: Cannot kill process
         """
         if self.proc is None:
             raise ServerProcessError('Process does not exist')
         else:
+            ret = False
             try:
                 os.kill(self.pid, signal.SIGKILL)
+                return True
             except OSError:
                 raise ServerProcessError('Cannot kill process')
+                return False
+            return ret
