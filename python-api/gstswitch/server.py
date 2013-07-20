@@ -27,6 +27,7 @@ class Server(object):
         self.audio_port = audio_port
         self.control_port = control_port
         self.record_file = record_file
+
         self.proc = None
         self.pid = -1
 
@@ -53,14 +54,14 @@ class Server(object):
     @path.setter
     def path(self, path):
         if not path:
-            raise ValueError('Path cannot be blank or None')
+            raise ValueError("Path. '{0}' be blank".format(path))
         else:
             self._path = path
 
     @video_port.setter
     def video_port(self, video_port):
         if not video_port:
-            raise ValueError('Video Port cannot be blank or None')
+            raise ValueError("Video Port. '{0}' be blank".format(video_port))
         else:
             try:
                 i = int(video_port)
@@ -74,7 +75,7 @@ class Server(object):
     @audio_port.setter
     def audio_port(self, audio_port):
         if not audio_port:
-            raise ValueError('Audio Port cannot be blank or None')
+            raise ValueError("Audio Port. '{0}' be blank".format(audio_port))
         else:
             try:
                 i = int(audio_port)
@@ -88,7 +89,7 @@ class Server(object):
     @control_port.setter
     def control_port(self, control_port):
         if not control_port:
-            raise ValueError('Control Port cannot be blank or None')
+            raise ValueError("Control Port. '{0}' be blank".format(control_port))
         else:
             try:
                 i = int(control_port)
@@ -102,10 +103,14 @@ class Server(object):
     @record_file.setter
     def record_file(self, record_file):
         if not record_file:
-            raise ValueError('Record File cannot be blank or None')
+            raise ValueError("Record File. '{0}' be blank".format(record_file))
         else:
             try:
-                self._record_file = str(record_file)
+                rec = str(record_file)
+                if rec.find('/') < 0:
+                    self._record_file = rec
+                else:
+                    raise ValueError("Record File: '{0}' cannot have forward slashes".format(rec))
             except TypeError:
                 raise TypeError("Record File should be a string or buffer, not '{0}'".format(type(record_file)))
 
@@ -163,9 +168,9 @@ class Server(object):
             print "cannot open os.devnull"
         except OSError as e:
             if e.errno == ENOENT:
-                raise PathError('Cannot find gst-switch-srv at path')
+                raise PathError("Cannot find gst-switch-srv at path: '{0}'".format(self.path))
             else:
-                raise ServerProcessError('Internal error')
+                raise ServerProcessError('Internal error while launching process')
 
     def terminate(self):
         """Terminate the server.
@@ -180,7 +185,7 @@ class Server(object):
         proc = self.proc
         ret = False
         if proc is None:
-            raise ServerProcessError('Process does not exist')
+            raise ServerProcessError('Server Process does not exist')
         else:
             try:
                 proc.terminate()
@@ -188,7 +193,7 @@ class Server(object):
                 self.proc = None
                 return True
             except OSError:
-                raise ServerProcessError('Cannot terminate process. Try killing it')
+                raise ServerProcessError('Cannot terminate server process. Try killing it')
                 return False
         return ret
 
@@ -202,7 +207,7 @@ class Server(object):
         :raises ServerProcessError: Cannot kill process
         """
         if self.proc is None:
-            raise ServerProcessError('Process does not exist')
+            raise ServerProcessError('Server Process does not exist')
         else:
             ret = False
             try:
