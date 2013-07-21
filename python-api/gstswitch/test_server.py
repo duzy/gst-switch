@@ -3,7 +3,7 @@ import pytest
 from exception import *
 
 
-class TestRun(object):
+class TestPath(object):
 
     # Path Tests
     def test_invalid_path(self):
@@ -18,6 +18,8 @@ class TestRun(object):
             with pytest.raises(ValueError):
                 Server(path=path)
 
+
+class TestVideoPort(object):
     # Video Port Tests
     def test_invalid_video_port_null(self):
         path = '/home/hyades/gst/master/gstreamer/tools/'
@@ -40,6 +42,8 @@ class TestRun(object):
             with pytest.raises(ValueError):
                 Server(path=path, video_port=video_port)
 
+
+class TestAudioPort(object):
     # Audio Port Tests
     def test_invalid_audio_port_null(self):
         path = '/home/hyades/gst/master/gstreamer/tools/'
@@ -62,6 +66,8 @@ class TestRun(object):
             with pytest.raises(ValueError):
                 Server(path=path, audio_port=audio_port)
 
+
+class TestControlPort(object):
     # Control Port Tests
     def test_invalid_control_port_null(self):
         path = '/home/hyades/gst/master/gstreamer/tools/'
@@ -84,6 +90,8 @@ class TestRun(object):
             with pytest.raises(ValueError):
                 Server(path=path, control_port=control_port)
 
+
+class TestNormal(object):
     # Normal Functioning Tests
     def test_normal_terminate(self):
         path = '/home/hyades/gst/master/gstreamer/tools/'

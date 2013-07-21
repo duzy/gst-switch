@@ -1,5 +1,3 @@
-import sys
-from gi.repository import GLib
 from connection import Connection
 from exception import *
 import pytest
@@ -23,3 +21,4 @@ class TestAddress(object):
         with pytest.raises(ValueError):
             Connection(address=address)
 
+class Test
