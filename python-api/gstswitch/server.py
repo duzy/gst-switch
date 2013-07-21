@@ -112,7 +112,7 @@ class Server(object):
                 else:
                     raise ValueError("Record File: '{0}' cannot have forward slashes".format(rec))
             except TypeError:
-                raise TypeError("Record File should be a string or buffer, not '{0}'".format(type(record_file)))
+                raise TypeError("Record File cannot be '{0}'".format(type(record_file)))
 
     def run(self, gst_option=''):
         """Launch the server process

@@ -52,7 +52,7 @@ class Connection(object):
         http://dbus.freedesktop.org/doc/dbus-specification.html#addresses
         """
         if not address:
-            raise ValueError("Address '{0} cannot be blank'")
+            raise ValueError("Address '{0}' cannot be blank")
         else:
             try:
                 a = str(address)
@@ -62,7 +62,7 @@ class Connection(object):
                     raise ValueError("""Address must follow specifications mentioned at
                      http://dbus.freedesktop.org/doc/dbus-specification.html#addresses""")
             except TypeError:
-                raise TypeError("Address should be a string or buffer, not '{0}'".format(type(address)))
+                raise TypeError("Address cannot be '{0}'".format(type(address)))
 
     @bus_name.setter
     def bus_name(self, bus_name):
@@ -76,7 +76,7 @@ class Connection(object):
             a = str(bus_name)
             self._bus_name = a
         except TypeError:
-            raise TypeError("Bus Name should be a string or buffer, not '{0}'".format(type(bus_name)))
+            raise TypeError("Bus Name cannot be '{0}'".format(type(bus_name)))
 
     @object_path.setter
     def object_path(self, object_path):
@@ -94,8 +94,8 @@ class Connection(object):
                     raise ValueError("""object_path must follow specifications mentioned at
                      http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path""")
             except TypeError:
-                raise TypeError("object_path should be a string or buffer, not '{0}'".format(type(object_path)))
-            
+                raise TypeError("object_path cannot be '{0}'".format(type(object_path)))
+
     @default_interface.setter
     def default_interface(self, default_interface):
         """Set the default_interface
@@ -112,7 +112,7 @@ class Connection(object):
                     raise ValueError("""default_interface must follow specifications mentioned at
                      http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface""")
             except TypeError:
-                raise TypeError("default_interface should be a string or buffer, not '{0}'".format(type(default_interface)))
+                raise TypeError("default_interface cannot be '{0}'".format(type(default_interface)))
 
     def connect_dbus(self):
         """Make a new connection using the parameters belonging to the class

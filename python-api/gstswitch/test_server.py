@@ -4,7 +4,6 @@ from exception import *
 
 
 class TestPath(object):
-
     # Path Tests
     def test_invalid_path(self):
         path = '/usr/'
