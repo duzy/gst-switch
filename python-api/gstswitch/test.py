@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+# WARNING:
+# THIS FILE IS ONLY FOR MY PERSONAL TESTING PURPOSES.
+# IT IS NOT MADE TO AND SHOULD NOT BE TESTING THE ENTIRE API
+
 from gstswitch import *
 from helpers import TestSources, PreviewSinks
 from controller import Controller
@@ -9,7 +14,6 @@ from gi.repository import GLib
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
 path = '/home/hyades/gst/master/gstreamer/tools/'
 s = Server(path)
-get_res = ''
 try:
     s.run()  # launches the server default parameters
     port = s.video_port
@@ -40,10 +44,14 @@ try:
     for mode in modes:
         print 'composite mode=', mode
         test_set_composite_mode(mode)
-        time.sleep(0.3)
-except:
-    a =  sys.exc_info()
-    print a
+        time.sleep(1)
+
+    sources.terminate()
+    s.terminate()
+# except:
+#     a = sys.exc_info()
+#     print a
+#     raise
 # test_set_composite_mode(0)
 # time.sleep(2)
 # channel = 1
@@ -58,9 +66,7 @@ except:
 
 
     # time.sleep(0.1)
-    sources.terminate()
-#     output.terminate()
-    s.terminate()
-else:
-# finally:
+    
+# else:
+finally:
     s.kill()

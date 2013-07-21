@@ -54,14 +54,14 @@ class Server(object):
     @path.setter
     def path(self, path):
         if not path:
-            raise ValueError("Path. '{0}' be blank".format(path))
+            raise ValueError("Path '{0}' cannot be blank".format(path))
         else:
             self._path = path
 
     @video_port.setter
     def video_port(self, video_port):
         if not video_port:
-            raise ValueError("Video Port. '{0}' be blank".format(video_port))
+            raise ValueError("Video Port '{0}' cannot be blank".format(video_port))
         else:
             try:
                 i = int(video_port)
@@ -75,7 +75,7 @@ class Server(object):
     @audio_port.setter
     def audio_port(self, audio_port):
         if not audio_port:
-            raise ValueError("Audio Port. '{0}' be blank".format(audio_port))
+            raise ValueError("Audio Port '{0}' cannot be blank".format(audio_port))
         else:
             try:
                 i = int(audio_port)
@@ -89,7 +89,7 @@ class Server(object):
     @control_port.setter
     def control_port(self, control_port):
         if not control_port:
-            raise ValueError("Control Port. '{0}' be blank".format(control_port))
+            raise ValueError("Control Port '{0}' cannot be blank".format(control_port))
         else:
             try:
                 i = int(control_port)
@@ -103,7 +103,7 @@ class Server(object):
     @record_file.setter
     def record_file(self, record_file):
         if not record_file:
-            raise ValueError("Record File. '{0}' be blank".format(record_file))
+            raise ValueError("Record File '{0}' cannot be blank".format(record_file))
         else:
             try:
                 rec = str(record_file)

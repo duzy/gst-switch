@@ -5,9 +5,6 @@ from exception import *
 import sys
 
 
-CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
-
-
 class Connection(object):
     """Class which makes all remote object class.
     Deals with lower level connection and remote method invoking
@@ -16,6 +13,7 @@ class Connection(object):
 
     :param: None
     """
+    CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
 
     def __init__(
             self,
@@ -30,6 +28,100 @@ class Connection(object):
         self.object_path = object_path
         self.default_interface = default_interface
 
+    @property
+    def address(self):
+        return self._address
+
+    @property
+    def bus_name(self):
+        if self._bus_name is None:
+            return None
+        return self._bus_name
+
+    @property
+    def object_path(self):
+        return self._object_path
+
+    @property
+    def default_interface(self):
+        return self._default_interface
+
+    @address.setter
+    def address(self, address):
+        """Set the Address
+        http://dbus.freedesktop.org/doc/dbus-specification.html#addresses
+        """
+        if not address:
+            raise ValueError("Address '{0} cannot be blank'")
+        else:
+            try:
+                a = str(address)
+                if a.find(':') > 0:
+                    self._address = a
+                else:
+                    raise ValueError("""Address must follow specifications mentioned at
+                     http://dbus.freedesktop.org/doc/dbus-specification.html#addresses""")
+            # except TypeError:
+            #     raise TypeError("Address should be a string or buffer, not '{0}'".format(type(address)))
+            except:
+                raise
+
+    @bus_name.setter
+    def bus_name(self, bus_name):
+        """Set the Bus Name
+        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-bus
+        """
+        if bus_name is None:
+            self._bus_name = None
+            return
+        try:
+            a = str(bus_name)
+            self._bus_name = a
+        # except TypeError:
+        #     raise TypeError("Bus Name should be a string or buffer, not '{0}'".format(type(bus_name)))
+        except:
+            raise
+
+    @object_path.setter
+    def object_path(self, object_path):
+        """Set the object_path
+        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
+        """
+        if not object_path:
+            raise ValueError("object_path '{0} cannot be blank'")
+        else:
+            try:
+                a = str(object_path)
+                if a[0] == '/':
+                    self._object_path = a
+                else:
+                    raise ValueError("""object_path must follow specifications mentioned at
+                     http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path""")
+            # except TypeError:
+            #     raise TypeError("object_path should be a string or buffer, not '{0}'".format(type(object_path)))
+            except:
+                raise
+
+    @default_interface.setter
+    def default_interface(self, default_interface):
+        """Set the default_interface
+        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
+        """
+        if not default_interface:
+            raise ValueError("default_interface '{0} cannot be blank'")
+        else:
+            try:
+                a = str(default_interface)
+                if a.count('.') > 1:
+                    self._default_interface = a
+                else:
+                    raise ValueError("""default_interface must follow specifications mentioned at
+                     http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface""")
+            except TypeError:
+                raise TypeError("default_interface should be a string or buffer, not '{0}'".format(type(default_interface)))
+            except:
+                raise
+
     def connect_dbus(self):
         """Make a new connection using the parameters belonging to the class
         to the gst-switch-srv over dbus.
@@ -42,11 +134,11 @@ class Connection(object):
         try:
             connection = Gio.DBusConnection.new_for_address_sync(
                 self.address,
-                CONNECTION_FLAGS,
+                self.CONNECTION_FLAGS,
                 None,
                 None)
             self.connection = connection
-        except GLib.GError:
+        except:
             error = sys.exc_info()[1]
             message = error.message
             domain = error.domain
@@ -68,7 +160,7 @@ class Connection(object):
                 args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return port
-        except GLib.GError:
+        except:
             error = sys.exc_info()[1]
             message = error.message
             domain = error.domain
