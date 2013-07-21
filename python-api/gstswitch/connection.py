@@ -61,10 +61,8 @@ class Connection(object):
                 else:
                     raise ValueError("""Address must follow specifications mentioned at
                      http://dbus.freedesktop.org/doc/dbus-specification.html#addresses""")
-            # except TypeError:
-            #     raise TypeError("Address should be a string or buffer, not '{0}'".format(type(address)))
-            except:
-                raise
+            except TypeError:
+                raise TypeError("Address should be a string or buffer, not '{0}'".format(type(address)))
 
     @bus_name.setter
     def bus_name(self, bus_name):
@@ -77,10 +75,8 @@ class Connection(object):
         try:
             a = str(bus_name)
             self._bus_name = a
-        # except TypeError:
-        #     raise TypeError("Bus Name should be a string or buffer, not '{0}'".format(type(bus_name)))
-        except:
-            raise
+        except TypeError:
+            raise TypeError("Bus Name should be a string or buffer, not '{0}'".format(type(bus_name)))
 
     @object_path.setter
     def object_path(self, object_path):
@@ -97,11 +93,9 @@ class Connection(object):
                 else:
                     raise ValueError("""object_path must follow specifications mentioned at
                      http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path""")
-            # except TypeError:
-            #     raise TypeError("object_path should be a string or buffer, not '{0}'".format(type(object_path)))
-            except:
-                raise
-
+            except TypeError:
+                raise TypeError("object_path should be a string or buffer, not '{0}'".format(type(object_path)))
+            
     @default_interface.setter
     def default_interface(self, default_interface):
         """Set the default_interface
@@ -119,8 +113,6 @@ class Connection(object):
                      http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface""")
             except TypeError:
                 raise TypeError("default_interface should be a string or buffer, not '{0}'".format(type(default_interface)))
-            except:
-                raise
 
     def connect_dbus(self):
         """Make a new connection using the parameters belonging to the class
