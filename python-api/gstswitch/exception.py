@@ -11,3 +11,8 @@ class PathError(BaseError):
 class ServerProcessError(BaseError):
     """docstring for ServerProcessError"""
     pass
+
+
+class ConnectionError(BaseError):
+    """docstring for ConnectionError"""
+    pass

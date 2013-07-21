@@ -1,6 +1,9 @@
 #IMPORTS
 #all dbus variables need to be setup here
 from gi.repository import Gio, GLib
+from exception import *
+import sys
+
 
 CONNECTION_FLAGS = Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT
 
@@ -22,10 +25,10 @@ class Connection(object):
             default_interface="info.duzy.gst.switch.SwitchControllerInterface"):
 
         super(Connection, self).__init__()
-        self._address = address
-        self._bus_name = bus_name
-        self._object_path = object_path
-        self._default_interface = default_interface
+        self.address = address
+        self.bus_name = bus_name
+        self.object_path = object_path
+        self.default_interface = default_interface
 
     def connect_dbus(self):
         """Make a new connection using the parameters belonging to the class
@@ -34,13 +37,21 @@ class Connection(object):
 
         :params: None
         :returns: Nothing
+        :raises ConnectionError: GError occurs while making a connection
         """
-        connection = Gio.DBusConnection.new_for_address_sync(
-            self._address,
-            CONNECTION_FLAGS,
-            None,
-            None)
-        self.connection = connection
+        try:
+            connection = Gio.DBusConnection.new_for_address_sync(
+                self.address,
+                CONNECTION_FLAGS,
+                None,
+                None)
+            self.connection = connection
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{1} ({0})".format(message, self.address)
+            raise ConnectionError(new_message)
 
     def get_compose_port(self):
         """get_compose_port(out i port);
@@ -49,13 +60,20 @@ class Connection(object):
         :param: None
         :returns: tuple with first element compose port number
         """
-        args = None
-        connection = self.connection
-        port = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'get_compose_port',
-            args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return port
+        try:
+            args = None
+            connection = self.connection
+            port = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'get_compose_port',
+                args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return port
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "get_compose_port")
+            raise ConnectionError(new_message)
 
     def get_encode_port(self):
         """get_encode_port(out i port);
@@ -64,13 +82,20 @@ class Connection(object):
         :param: None
         :returns: tuple with first element encode port number
         """
-        args = None
-        connection = self.connection
-        port = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'get_encode_port',
-            args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return port
+        try:
+            args = None
+            connection = self.connection
+            port = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'get_encode_port',
+                args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return port
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "get_encode_port")
+            raise ConnectionError(new_message)
 
     def get_audio_port(self):
         """get_audio_port(out i port);
@@ -79,13 +104,20 @@ class Connection(object):
         :param: None
         :returns: tuple wit first element audio port number
         """
-        args = None
-        connection = self.connection
-        port = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'get_audio_port',
-            args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return port
+        try:
+            args = None
+            connection = self.connection
+            port = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'get_audio_port',
+                args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return port
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "get_audio_port")
+            raise ConnectionError(new_message)
 
     def get_preview_ports(self):
         """get_preview_ports(out s ports);
@@ -94,13 +126,20 @@ class Connection(object):
         :param: None
         :returns: tuple with first element a string in the form of '[(3002, 1, 7), (3003, 1, 8)]'
         """
-        args = None
-        connection = self.connection
-        ports = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'get_preview_ports',
-            args, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return ports
+        try:
+            args = None
+            connection = self.connection
+            ports = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'get_preview_ports',
+                args, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return ports
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "get_preview_ports")
+            raise ConnectionError(new_message)
 
     def set_composite_mode(self, mode):
         """set_composite_mode(in  i channel,
@@ -110,13 +149,20 @@ class Connection(object):
         :param mode: new composite mode
         :returns: tuple with first element True if requested
         """
-        args = GLib.Variant('(i)', (mode,))
-        connection = self.connection
-        result = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'set_composite_mode',
-            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return result
+        try:
+            args = GLib.Variant('(i)', (mode,))
+            connection = self.connection
+            result = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'set_composite_mode',
+                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return result
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "set_composite_mode")
+            raise ConnectionError(new_message)
 
     def set_encode_mode(self, channel):
         """set_encode_mode(in  i channel,
@@ -127,13 +173,20 @@ class Connection(object):
         :param: channel
         :returns: tuple with first element True if requested
         """
-        args = GLib.Variant('(i)', (channel,))
-        connection = self.connection
-        result = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'set_encode_mode',
-            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return result
+        try:
+            args = GLib.Variant('(i)', (channel,))
+            connection = self.connection
+            result = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'set_encode_mode',
+                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return result
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "set_encode_mode")
+            raise ConnectionError(new_message)
 
     def new_record(self):
         """new_record(out b result);
@@ -142,13 +195,20 @@ class Connection(object):
         :param: None:
         returns: tuple with first element True if requested
         """
-        args = None
-        connection = self.connection
-        result = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'new_record',
-            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return result
+        try:
+            args = None
+            connection = self.connection
+            result = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'new_record',
+                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return result
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "new_record")
+            raise ConnectionError(new_message)
 
     def adjust_pip(self, dx, dy, dw, dh):
         """adjust_pip(in  i dx,
@@ -164,13 +224,20 @@ class Connection(object):
         :param h: the height of the PIP
         :returns: tuple with first element as result - PIP has been changed succefully
         """
-        args = GLib.Variant('(iiii)', (dx, dy, dw, dh,))
-        connection = self.connection
-        result = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'adjust_pip',
-            args, GLib.VariantType.new("(u)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return result
+        try:
+            args = GLib.Variant('(iiii)', (dx, dy, dw, dh,))
+            connection = self.connection
+            result = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'adjust_pip',
+                args, GLib.VariantType.new("(u)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return result
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "adjust_pip")
+            raise ConnectionError(new_message)
 
     def switch(self, channel, port):
         """switch(in  i channel,
@@ -182,13 +249,20 @@ class Connection(object):
         :param port: The target port number
         :returns: tuple with first element True if requested
         """
-        args = GLib.Variant('(ii)', (channel, port,))
-        connection = self.connection
-        result = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'switch',
-            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return result
+        try:
+            args = GLib.Variant('(ii)', (channel, port,))
+            connection = self.connection
+            result = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'switch',
+                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return result
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "switch")
+            raise ConnectionError(new_message)
 
     def click_video(self, x, y, fw, fh):
         """click_video(in  i x,
@@ -204,13 +278,20 @@ class Connection(object):
         :param fh:
         :returns: tuple with first element True if requested
         """
-        args = GLib.Variant('(iiii)', (x, y, fw, fh,))
-        connection = self.connection
-        result = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'click_video',
-            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return result
+        try:
+            args = GLib.Variant('(iiii)', (x, y, fw, fh,))
+            connection = self.connection
+            result = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'click_video',
+                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return result
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "click_video")
+            raise ConnectionError(new_message)
 
     def mark_face(self, faces):
         """mark_face(in  a(iiii) faces);
@@ -219,13 +300,20 @@ class Connection(object):
         :param faces: tuple having four elements
         :returns: tuple with first element True if requested
         """
-        args = GLib.Variant('a(iiii)', faces)
-        connection = self.connection
-        result = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'mark_face',
-            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return result
+        try:
+            args = GLib.Variant('a(iiii)', faces)
+            connection = self.connection
+            result = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'mark_face',
+                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return result
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "mark_face")
+            raise ConnectionError(new_message)
 
     def mark_tracking(self, faces):
         """mark_tracking(in  a(iiii) faces);
@@ -234,10 +322,17 @@ class Connection(object):
         :param faces: tuple having four elements
         :returns: tuple with first element True if requested
         """
-        args = GLib.Variant('a(iiii)', faces)
-        connection = self.connection
-        result = connection.call_sync(
-            self._bus_name, self._object_path, self._default_interface, 'mark_tracking',
-            args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
-            None)
-        return result
+        try:
+            args = GLib.Variant('a(iiii)', faces)
+            connection = self.connection
+            result = connection.call_sync(
+                self.bus_name, self.object_path, self.default_interface, 'mark_tracking',
+                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                None)
+            return result
+        except GLib.GError:
+            error = sys.exc_info()[1]
+            message = error.message
+            domain = error.domain
+            new_message = "{0}: {1}".format(message, "mark_tracking")
+            raise ConnectionError(new_message)

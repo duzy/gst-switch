@@ -3,6 +3,8 @@ from gstswitch import *
 from helpers import TestSources, PreviewSinks
 from controller import Controller
 import time
+import sys
+from gi.repository import GLib
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
 path = '/home/hyades/gst/master/gstreamer/tools/'
@@ -33,15 +35,15 @@ try:
     # testing random 10 modes
     for x in tests_get:
         print x()
-    time.sleep(0.5)
-    count = 0
+    time.sleep(1)
     modes = [3, 2, 1, 0, 1, 2, 3, 0]
     for mode in modes:
         print 'composite mode=', mode
         test_set_composite_mode(mode)
-        count += 1
-        time.sleep(1)
-
+        time.sleep(0.3)
+except:
+    a =  sys.exc_info()
+    print a
 # test_set_composite_mode(0)
 # time.sleep(2)
 # channel = 1
@@ -59,6 +61,6 @@ try:
     sources.terminate()
 #     output.terminate()
     s.terminate()
-
-finally:
+else:
+# finally:
     s.kill()

@@ -17,10 +17,10 @@ class Controller(object):
             default_interface="info.duzy.gst.switch.SwitchControllerInterface"):
 
         super(Controller, self).__init__()
-        self.address = "unix:abstract=gstswitch"
-        self.bus_name = None
-        self.object_path = "/info/duzy/gst/switch/SwitchController"
-        self.default_interface = "info.duzy.gst.switch.SwitchControllerInterface"
+        self.address = address
+        self.bus_name = bus_name
+        self.object_path = object_path
+        self.default_interface = default_interface
 
     def establish_connection(self):
         """Establishes a fresh connection to the dbus
