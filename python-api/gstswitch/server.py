@@ -11,7 +11,7 @@ from time import sleep
 class Server(object):
     """Control all server related operations
 
-    :param path: Path where all exceutables gst-switch-srv, gst-launch-1.0, etc are located
+    :param path: Path where all executables gst-switch-srv, gst-launch-1.0, etc are located
     :param video_port: The video port number - default = 3000
     :param audio_port: The audio port number - default = 4000
     :param control_port: The control port number - default = 5000
@@ -152,7 +152,7 @@ class Server(object):
     def _start_process(self, cmd):
         """Non-public method: Start a process
 
-        :param cmd: The command which needs to be excecuted
+        :param cmd: The command which needs to be executed
         :returns: process created
         """
         print 'Creating process %s' % (cmd)

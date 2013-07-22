@@ -54,15 +54,12 @@ class Connection(object):
         if not address:
             raise ValueError("Address '{0}' cannot be blank")
         else:
-            try:
-                a = str(address)
-                if a.find(':') > 0:
-                    self._address = a
-                else:
-                    raise ValueError("""Address must follow specifications mentioned at
-                     http://dbus.freedesktop.org/doc/dbus-specification.html#addresses""")
-            except TypeError:
-                raise TypeError("Address cannot be '{0}'".format(type(address)))
+            a = str(address)
+            if a.find(':') > 0:
+                self._address = a
+            else:
+                raise ValueError("""Address must follow specifications mentioned at
+                 http://dbus.freedesktop.org/doc/dbus-specification.html#addresses""")
 
     @bus_name.setter
     def bus_name(self, bus_name):
@@ -72,11 +69,8 @@ class Connection(object):
         if bus_name is None:
             self._bus_name = None
             return
-        try:
-            a = str(bus_name)
-            self._bus_name = a
-        except TypeError:
-            raise TypeError("Bus Name cannot be '{0}'".format(type(bus_name)))
+        a = str(bus_name)
+        self._bus_name = a
 
     @object_path.setter
     def object_path(self, object_path):
@@ -86,15 +80,12 @@ class Connection(object):
         if not object_path:
             raise ValueError("object_path '{0} cannot be blank'")
         else:
-            try:
-                a = str(object_path)
-                if a[0] == '/':
-                    self._object_path = a
-                else:
-                    raise ValueError("""object_path must follow specifications mentioned at
-                     http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path""")
-            except TypeError:
-                raise TypeError("object_path cannot be '{0}'".format(type(object_path)))
+            a = str(object_path)
+            if a[0] == '/':
+                self._object_path = a
+            else:
+                raise ValueError("""object_path must follow specifications mentioned at
+                 http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path""")
 
     @default_interface.setter
     def default_interface(self, default_interface):
@@ -104,15 +95,12 @@ class Connection(object):
         if not default_interface:
             raise ValueError("default_interface '{0} cannot be blank'")
         else:
-            try:
-                a = str(default_interface)
-                if a.count('.') > 1:
-                    self._default_interface = a
-                else:
-                    raise ValueError("""default_interface must follow specifications mentioned at
-                     http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface""")
-            except TypeError:
-                raise TypeError("default_interface cannot be '{0}'".format(type(default_interface)))
+            a = str(default_interface)
+            if a.count('.') > 1:
+                self._default_interface = a
+            else:
+                raise ValueError("""default_interface must follow specifications mentioned at
+                 http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface""")
 
     def connect_dbus(self):
         """Make a new connection using the parameters belonging to the class
@@ -130,10 +118,8 @@ class Connection(object):
                 None,
                 None)
             self.connection = connection
-        except:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{1} ({0})".format(message, self.address)
             raise ConnectionError(new_message)
 
@@ -152,10 +138,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return port
-        except:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "get_compose_port")
             raise ConnectionError(new_message)
 
@@ -174,10 +158,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return port
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "get_encode_port")
             raise ConnectionError(new_message)
 
@@ -196,10 +178,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return port
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "get_audio_port")
             raise ConnectionError(new_message)
 
@@ -218,10 +198,9 @@ class Connection(object):
                 args, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return ports
-        except GLib.GError:
+        except GLib.GError as error:
             error = sys.exc_info()[1]
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "get_preview_ports")
             raise ConnectionError(new_message)
 
@@ -241,10 +220,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "set_composite_mode")
             raise ConnectionError(new_message)
 
@@ -265,10 +242,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "set_encode_mode")
             raise ConnectionError(new_message)
 
@@ -287,10 +262,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "new_record")
             raise ConnectionError(new_message)
 
@@ -316,10 +289,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(u)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "adjust_pip")
             raise ConnectionError(new_message)
 
@@ -341,10 +312,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "switch")
             raise ConnectionError(new_message)
 
@@ -370,10 +339,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "click_video")
             raise ConnectionError(new_message)
 
@@ -392,10 +359,8 @@ class Connection(object):
                 args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "mark_face")
             raise ConnectionError(new_message)
 
@@ -414,9 +379,7 @@ class Connection(object):
                 args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
-        except GLib.GError:
-            error = sys.exc_info()[1]
+        except GLib.GError as error:
             message = error.message
-            domain = error.domain
             new_message = "{0}: {1}".format(message, "mark_tracking")
             raise ConnectionError(new_message)
