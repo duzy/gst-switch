@@ -105,14 +105,11 @@ class Server(object):
         if not record_file:
             raise ValueError("Record File '{0}' cannot be blank".format(record_file))
         else:
-            try:
-                rec = str(record_file)
-                if rec.find('/') < 0:
-                    self._record_file = rec
-                else:
-                    raise ValueError("Record File: '{0}' cannot have forward slashes".format(rec))
-            except TypeError:
-                raise TypeError("Record File cannot be '{0}'".format(type(record_file)))
+            rec = str(record_file)
+            if rec.find('/') < 0:
+                self._record_file = rec
+            else:
+                raise ValueError("Record File: '{0}' cannot have forward slashes".format(rec))
 
     def run(self, gst_option=''):
         """Launch the server process
@@ -181,7 +178,6 @@ class Server(object):
         """
         print 'Killing server'
         proc = self.proc
-        ret = False
         if proc is None:
             raise ServerProcessError('Server Process does not exist')
         else:
@@ -192,8 +188,6 @@ class Server(object):
                 return True
             except OSError:
                 raise ServerProcessError('Cannot terminate server process. Try killing it')
-                return False
-        return ret
 
     def kill(self):
         """Kill the server process by sending signal.SIGKILL
@@ -207,12 +201,9 @@ class Server(object):
         if self.proc is None:
             raise ServerProcessError('Server Process does not exist')
         else:
-            ret = False
             try:
                 os.kill(self.pid, signal.SIGKILL)
                 self.proc = None
                 return True
             except OSError:
                 raise ServerProcessError('Cannot kill process')
-                return False
-            return ret

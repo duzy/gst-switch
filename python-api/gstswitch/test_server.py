@@ -91,6 +91,22 @@ class TestControlPort(object):
                 Server(path=path, control_port=control_port)
 
 
+class TestRecordFile(object):
+    # Record File
+    def test_record_file_blank(self):
+        files = ['', None, [], {}]
+        path = '/home/hyades/gst/master/gstreamer/tools/'
+        for record_file in files:
+            with pytest.raises(ValueError):
+                Server(path=path, record_file=record_file)
+
+    def test_record_file_slashes(self):
+        file = 'abcd/xyz/'
+        with pytest.raises(ValueError):
+            path = '/home/hyades/gst/master/gstreamer/tools/'
+            Server(path=path, record_file=file)
+
+
 class TestProcess(object):
     # OS Errors
     def test_terminate_fail(self):
@@ -106,6 +122,26 @@ class TestProcess(object):
         s.proc = fake_proc()
         with pytest.raises(ServerProcessError):
             s.terminate()
+
+    def test_kill_fail(self):
+        path = '/home/hyades/gst/master/gstreamer/tools/'
+        s = Server(path=path)
+        s.proc = 1
+        s.pid = -300
+        with pytest.raises(ServerProcessError):
+            s.kill()
+
+    def test_start_process(self):
+        path = '/home/hyades/gst/master/gstreamer/tools/'
+        s = Server(path=path)
+        with pytest.raises(ServerProcessError):
+            s._start_process('/usr/')
+
+    def test_no_process_kill(self):
+        path = '/home/hyades/gst/master/gstreamer/tools/'
+        s = Server(path=path)
+        with pytest.raises(ServerProcessError):
+            s.kill()
 
 
 class TestNormal(object):
