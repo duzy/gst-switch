@@ -3,6 +3,7 @@
 *.lo
 *.la
 *.pyc
+.coverage
 /INSTALL
 /Makefile
 /Makefile.in
