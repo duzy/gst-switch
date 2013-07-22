@@ -19,6 +19,7 @@
 /configure
 /depcomp
 /html
+/htmlcov
 /install-sh
 /libtool
 /ltmain.sh
@@ -28,7 +29,6 @@
 /plugins/.libs/
 /plugins/Makefile
 /plugins/Makefile.in
-/python-api/gstswitch/htmlcov/*
 /stamp-h1
 /tools/.deps/
 /tools/Makefile
