@@ -164,8 +164,6 @@ class Server(object):
                 process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
                 print cmd
                 return process
-        except IOError:
-            print "cannot open os.devnull"
         except OSError as e:
             if e.errno == ENOENT:
                 raise PathError("Cannot find gst-switch-srv at path: '{0}'".format(self.path))
