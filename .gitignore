@@ -28,7 +28,7 @@
 /plugins/.libs/
 /plugins/Makefile
 /plugins/Makefile.in
-/python-api/gstswitch/htmlcov
+/python-api/gstswitch/htmlcov/
 /stamp-h1
 /tools/.deps/
 /tools/Makefile
