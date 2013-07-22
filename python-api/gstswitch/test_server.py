@@ -1,6 +1,7 @@
 from server import Server
 import pytest
 from exception import *
+import subprocess
 
 
 class TestPath(object):
@@ -88,6 +89,23 @@ class TestControlPort(object):
         for control_port in control_ports:
             with pytest.raises(ValueError):
                 Server(path=path, control_port=control_port)
+
+
+class TestProcess(object):
+    # OS Errors
+    def test_terminate_fail(self):
+        class fake_proc(object):
+            def __init__(self):
+                pass
+
+            def terminate(self):
+                raise OSError
+
+        path = '/home/hyades/gst/master/gstreamer/tools/'
+        s = Server(path=path)
+        s.proc = fake_proc()
+        with pytest.raises(ServerProcessError):
+            s.terminate()
 
 
 class TestNormal(object):
