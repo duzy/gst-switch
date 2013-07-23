@@ -3,6 +3,7 @@
 from gi.repository import Gio, GLib
 from exception import *
 import sys
+from mock import patch
 
 
 class Connection(object):
@@ -23,6 +24,8 @@ class Connection(object):
             default_interface="info.duzy.gst.switch.SwitchControllerInterface"):
 
         super(Connection, self).__init__()
+        self.connection = None
+
         self.address = address
         self.bus_name = bus_name
         self.object_path = object_path
