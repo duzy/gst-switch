@@ -72,15 +72,15 @@ gst_switch_ptz_fix_coords (GstSwitchPTZ * ptz)
   if (1.0 < ptz->z)
     ptz->z = 1.0;
 #else
-  if (ptz->x < -120.0)
-    ptz->x = -120.0;
-  if (120.0 < ptz->x)
-    ptz->x = 120.0;
+  if (ptz->x < ptz->controller->pan_min)
+    ptz->x = ptz->controller->pan_min;
+  if (ptz->controller->pan_max < ptz->x)
+    ptz->x = ptz->controller->pan_max;
 
-  if (ptz->y < -120.0)
-    ptz->y = -120.0;
-  if (120.0 < ptz->y)
-    ptz->y = 120.0;
+  if (ptz->y < ptz->controller->tilt_min)
+    ptz->y = ptz->controller->tilt_min;
+  if (ptz->controller->tilt_max < ptz->y)
+    ptz->y = ptz->controller->tilt_max;
 
   if (ptz->z < 0.0)
     ptz->z = 0.0;
@@ -288,11 +288,37 @@ gst_switch_ptz_tilt_speed_changed (GtkAdjustment * adjustment,
 }
 
 static void
+gst_switch_ptz_pan_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
+{
+  ptz->x = gtk_adjustment_get_value (adjustment);
+  if (ptz->controller) {
+    gst_switch_ptz_fix_coords (ptz);
+    gst_cam_controller_move (ptz->controller,
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
+  }
+  g_print ("pan: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
+}
+
+static void
+gst_switch_ptz_tilt_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
+{
+  ptz->y = gtk_adjustment_get_value (adjustment);
+  if (ptz->controller) {
+    gst_switch_ptz_fix_coords (ptz);
+    gst_cam_controller_move (ptz->controller,
+        gtk_adjustment_get_value (ptz->adjust_pan_speed), ptz->x,
+        gtk_adjustment_get_value (ptz->adjust_tilt_speed), ptz->y);
+  }
+  g_print ("tilt: (%f, %f, %f)\n", ptz->x, ptz->y, ptz->z);
+}
+
+static void
 gst_switch_ptz_init (GstSwitchPTZ * ptz)
 {
   GtkWidget *box_main, *box_video, *box_control;
   GtkWidget *box_control_pan, *box_control_tilt, *box_control_zoom;
-  GtkWidget *control_grid;
+  GtkWidget *pan_scale, *tilt_scale, *control_grid;
   GtkWidget *control_buttons[3][3] = { {NULL} };
   GtkWidget *box_zoom, *zoom_minus, *zoom_reset, *zoom_plus;
   GtkWidget *scrollwin;
@@ -347,6 +373,19 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       | GDK_BUTTON_RELEASE_MASK
       | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
   gtk_box_pack_start (GTK_BOX (box_video), ptz->video_view, TRUE, TRUE, 0);
+
+  pan_scale =
+      gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, gtk_adjustment_new (0,
+          ptz->controller->pan_min, ptz->controller->pan_max + 5, 1, 5, 5));
+  tilt_scale =
+      gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, gtk_adjustment_new (0,
+          ptz->controller->tilt_min, ptz->controller->tilt_max + 5, 1, 5, 5));
+  gtk_box_pack_start (GTK_BOX (box_control), pan_scale, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_control), tilt_scale, FALSE, TRUE, 0);
+  g_signal_connect (gtk_range_get_adjustment (pan_scale), "value-changed",
+      G_CALLBACK (gst_switch_ptz_pan_changed), ptz);
+  g_signal_connect (gtk_range_get_adjustment (tilt_scale), "value-changed",
+      G_CALLBACK (gst_switch_ptz_tilt_changed), ptz);
 
   control_grid = gtk_grid_new ();
   gtk_grid_insert_row (GTK_GRID (control_grid), 0);
