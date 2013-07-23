@@ -22,6 +22,80 @@ class Controller(object):
         self.object_path = object_path
         self.default_interface = default_interface
 
+    @property
+    def address(self):
+        return self._address
+
+    @property
+    def bus_name(self):
+        if self._bus_name is None:
+            return None
+        return self._bus_name
+
+    @property
+    def object_path(self):
+        return self._object_path
+
+    @property
+    def default_interface(self):
+        return self._default_interface
+
+    @address.setter
+    def address(self, address):
+        """Set the Address
+        http://dbus.freedesktop.org/doc/dbus-specification.html#addresses
+        """
+        if not address:
+            raise ValueError("Address '{0}' cannot be blank")
+        else:
+            a = str(address)
+            if a.find(':') > 0:
+                self._address = a
+            else:
+                raise ValueError("""Address must follow specifications mentioned at
+                 http://dbus.freedesktop.org/doc/dbus-specification.html#addresses""")
+
+    @bus_name.setter
+    def bus_name(self, bus_name):
+        """Set the Bus Name
+        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-bus
+        """
+        if bus_name is None:
+            self._bus_name = None
+            return
+        a = str(bus_name)
+        self._bus_name = a
+
+    @object_path.setter
+    def object_path(self, object_path):
+        """Set the object_path
+        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
+        """
+        if not object_path:
+            raise ValueError("object_path '{0} cannot be blank'")
+        else:
+            a = str(object_path)
+            if a[0] == '/':
+                self._object_path = a
+            else:
+                raise ValueError("""object_path must follow specifications mentioned at
+                 http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path""")
+
+    @default_interface.setter
+    def default_interface(self, default_interface):
+        """Set the default_interface
+        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
+        """
+        if not default_interface:
+            raise ValueError("default_interface '{0} cannot be blank'")
+        else:
+            a = str(default_interface)
+            if a.count('.') > 1:
+                self._default_interface = a
+            else:
+                raise ValueError("""default_interface must follow specifications mentioned at
+                 http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface""")
+
     def establish_connection(self):
         """Establishes a fresh connection to the dbus
         Connection stored as self.connection
@@ -30,10 +104,10 @@ class Controller(object):
         :returns: None
         """
         self.connection = Connection(
-            self.address,
-            self.bus_name,
-            self.object_path,
-            self.default_interface)
+            address=self.address,
+            bus_name=self.bus_name,
+            object_path=self.object_path,
+            default_interface=self.default_interface)
 
         self.connection.connect_dbus()
 
