@@ -35,28 +35,16 @@ class Server(object):
     def path(self):
         return self._path
 
-    @property
-    def video_port(self):
-        return self._video_port
-
-    @property
-    def audio_port(self):
-        return self._audio_port
-
-    @property
-    def control_port(self):
-        return self._control_port
-
-    @property
-    def record_file(self):
-        return self._record_file
-
     @path.setter
     def path(self, path):
         if not path:
             raise ValueError("Path '{0}' cannot be blank".format(path))
         else:
             self._path = path
+
+    @property
+    def video_port(self):
+        return self._video_port
 
     @video_port.setter
     def video_port(self, video_port):
@@ -72,6 +60,10 @@ class Server(object):
             except TypeError:
                 raise TypeError("Video Port must be a string or a number, not '{0}'".format(type(video_port)))
 
+    @property
+    def audio_port(self):
+        return self._audio_port
+
     @audio_port.setter
     def audio_port(self, audio_port):
         if not audio_port:
@@ -86,6 +78,10 @@ class Server(object):
             except TypeError:
                 raise TypeError("Audio Port must be a string or a number, not '{0}'".format(type(audio_port)))
 
+    @property
+    def control_port(self):
+        return self._control_port
+
     @control_port.setter
     def control_port(self, control_port):
         if not control_port:
@@ -99,6 +95,10 @@ class Server(object):
                     self._control_port = control_port
             except TypeError:
                 raise TypeError("Control Port must be a string or a number, not '{0}'".format(type(control_port)))
+
+    @property
+    def record_file(self):
+        return self._record_file
 
     @record_file.setter
     def record_file(self, record_file):

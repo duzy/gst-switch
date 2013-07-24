@@ -1,6 +1,7 @@
 #IMPORTS
 import ast
 from connection import Connection
+from exception import *
 
 
 class Controller(object):
@@ -26,20 +27,6 @@ class Controller(object):
     def address(self):
         return self._address
 
-    @property
-    def bus_name(self):
-        if self._bus_name is None:
-            return None
-        return self._bus_name
-
-    @property
-    def object_path(self):
-        return self._object_path
-
-    @property
-    def default_interface(self):
-        return self._default_interface
-
     @address.setter
     def address(self, address):
         """Set the Address
@@ -52,8 +39,14 @@ class Controller(object):
             if a.find(':') > 0:
                 self._address = a
             else:
-                raise ValueError("""Address must follow specifications mentioned at
-                 http://dbus.freedesktop.org/doc/dbus-specification.html#addresses""")
+                raise ValueError("Address must follow specifications mentioned at "
+                                 "http://dbus.freedesktop.org/doc/dbus-specification.html#addresses")
+
+    @property
+    def bus_name(self):
+        if self._bus_name is None:
+            return None
+        return self._bus_name
 
     @bus_name.setter
     def bus_name(self, bus_name):
@@ -65,6 +58,10 @@ class Controller(object):
             return
         a = str(bus_name)
         self._bus_name = a
+
+    @property
+    def object_path(self):
+        return self._object_path
 
     @object_path.setter
     def object_path(self, object_path):
@@ -78,8 +75,13 @@ class Controller(object):
             if a[0] == '/':
                 self._object_path = a
             else:
-                raise ValueError("""object_path must follow specifications mentioned at
-                 http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path""")
+                raise ValueError("object_path must follow specifications mentioned at "
+                                 "http://dbus.freedesktop.org/doc/dbus-specification.html"
+                                 "#message-protocol-marshaling-object-path")
+
+    @property
+    def default_interface(self):
+        return self._default_interface
 
     @default_interface.setter
     def default_interface(self, default_interface):
@@ -93,8 +95,9 @@ class Controller(object):
             if a.count('.') > 1:
                 self._default_interface = a
             else:
-                raise ValueError("""default_interface must follow specifications mentioned at
-                 http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface""")
+                raise ValueError("default_interface must follow specifications mentioned at "
+                                 "http://dbus.freedesktop.org/doc/dbus-specification.html"
+                                 "#message-protocol-names-interface")
 
     def establish_connection(self):
         """Establishes a fresh connection to the dbus
@@ -103,13 +106,16 @@ class Controller(object):
         :param: None
         :returns: None
         """
-        self.connection = Connection(
-            address=self.address,
-            bus_name=self.bus_name,
-            object_path=self.object_path,
-            default_interface=self.default_interface)
+        try:
+            self.connection = Connection(
+                address=self.address,
+                bus_name=self.bus_name,
+                object_path=self.object_path,
+                default_interface=self.default_interface)
 
-        self.connection.connect_dbus()
+            self.connection.connect_dbus()
+        except (ConnectionError, ValueError) as e:
+            raise
 
     def get_compose_port(self):
         """Get the compose port number
