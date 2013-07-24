@@ -134,8 +134,17 @@ class MockConnection(object):
         self.method = method
         self.return_result = self.funs[method]
 
-    def call_sync(self, a1, a2, a3, a4, a5, a6, a7, a8, a9):
-        if a3 == "info.duzy.gst.switch.SwitchControllerInterface":
+    def call_sync(
+            self,
+            bus_name,
+            object_path,
+            interface_name,
+            method_name,
+            parameters,
+            reply_type, flags,
+            timeout_msec,
+            cancellable):
+        if interface_name == "info.duzy.gst.switch.SwitchControllerInterface":
             return self.return_result
         else:
             raise GLib.GError('{0}: Test Failed'.format(self.method))
