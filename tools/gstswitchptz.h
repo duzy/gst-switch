@@ -42,7 +42,9 @@ typedef struct _GstSwitchPTZ
     GtkWidget *window;
     GtkWidget *video_view;
     GtkAdjustment *adjust_pan_speed;
+    GtkAdjustment *adjust_pan;
     GtkAdjustment *adjust_tilt_speed;
+    GtkAdjustment *adjust_tilt;
     GtkAdjustment *adjust_zoom_speed;
     GtkAdjustment *adjust_zoom;
 
