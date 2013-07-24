@@ -1,10 +1,9 @@
 import os
-import sys
 import signal
 import subprocess
 
-from errno import *
-from exception import *
+from errno import ENOENT
+from exception import PathError, ServerProcessError
 from time import sleep
 
 
@@ -23,7 +22,14 @@ class Server(object):
     """
     SLEEP_TIME = 0.5
 
-    def __init__(self, path, video_port=3000, audio_port=4000, control_port=5000, record_file='record.data'):
+    def __init__(
+            self,
+            path,
+            video_port=3000,
+            audio_port=4000,
+            control_port=5000,
+            record_file='record.data'):
+
         super(Server, self).__init__()
         self.path = path
         self.video_port = video_port
@@ -52,7 +58,8 @@ class Server(object):
     @video_port.setter
     def video_port(self, video_port):
         if not video_port:
-            raise ValueError("Video Port '{0}' cannot be blank".format(video_port))
+            raise ValueError("Video Port '{0}' cannot be blank"
+                             .format(video_port))
         else:
             try:
                 i = int(video_port)
@@ -61,7 +68,8 @@ class Server(object):
                 else:
                     self._video_port = video_port
             except TypeError:
-                raise TypeError("Video Port must be a string or a number, not '{0}'".format(type(video_port)))
+                raise TypeError("Video Port must be a string or a number, "
+                                "not '{0}'".format(type(video_port)))
 
     @property
     def audio_port(self):
@@ -70,7 +78,8 @@ class Server(object):
     @audio_port.setter
     def audio_port(self, audio_port):
         if not audio_port:
-            raise ValueError("Audio Port '{0}' cannot be blank".format(audio_port))
+            raise ValueError("Audio Port '{0}' cannot be blank"
+                             .format(audio_port))
         else:
             try:
                 i = int(audio_port)
@@ -79,7 +88,8 @@ class Server(object):
                 else:
                     self._audio_port = audio_port
             except TypeError:
-                raise TypeError("Audio Port must be a string or a number, not '{0}'".format(type(audio_port)))
+                raise TypeError("Audio Port must be a string or a number,"
+                                " not '{0}'".format(type(audio_port)))
 
     @property
     def control_port(self):
@@ -88,7 +98,8 @@ class Server(object):
     @control_port.setter
     def control_port(self, control_port):
         if not control_port:
-            raise ValueError("Control Port '{0}' cannot be blank".format(control_port))
+            raise ValueError("Control Port '{0}' cannot be blank"
+                             .format(control_port))
         else:
             try:
                 i = int(control_port)
@@ -97,7 +108,8 @@ class Server(object):
                 else:
                     self._control_port = control_port
             except TypeError:
-                raise TypeError("Control Port must be a string or a number, not '{0}'".format(type(control_port)))
+                raise TypeError("Control Port must be a string or a number,"
+                                " not '{0}'".format(type(control_port)))
 
     @property
     def record_file(self):
@@ -106,13 +118,15 @@ class Server(object):
     @record_file.setter
     def record_file(self, record_file):
         if not record_file:
-            raise ValueError("Record File '{0}' cannot be blank".format(record_file))
+            raise ValueError("Record File '{0}' cannot be blank"
+                             .format(record_file))
         else:
             rec = str(record_file)
             if rec.find('/') < 0:
                 self._record_file = rec
             else:
-                raise ValueError("Record File: '{0}' cannot have forward slashes".format(rec))
+                raise ValueError("Record File: '{0}' "
+                                 "cannot have forward slashes".format(rec))
 
     def run(self, gst_option=''):
         """Launch the server process
@@ -161,14 +175,21 @@ class Server(object):
         print 'Creating process %s' % (cmd)
         try:
             with open(os.devnull, 'w') as tempf:
-                process = subprocess.Popen(cmd.split(), stdout=tempf, stderr=tempf,  bufsize=-1, shell=False)
+                process = subprocess.Popen(
+                    cmd.split(),
+                    stdout=tempf,
+                    stderr=tempf,
+                    bufsize=-1,
+                    shell=False)
                 print cmd
                 return process
         except OSError as e:
             if e.errno == ENOENT:
-                raise PathError("Cannot find gst-switch-srv at path: '{0}'".format(self.path))
+                raise PathError("Cannot find gst-switch-srv at path:"
+                                " '{0}'".format(self.path))
             else:
-                raise ServerProcessError('Internal error while launching process')
+                raise ServerProcessError("Internal error "
+                                         "while launching process")
 
     def terminate(self):
         """Terminate the server.
@@ -190,7 +211,8 @@ class Server(object):
                 self.proc = None
                 return True
             except OSError:
-                raise ServerProcessError('Cannot terminate server process. Try killing it')
+                raise ServerProcessError("Cannot terminate server process. "
+                                         "Try killing it")
 
     def kill(self):
         """Kill the server process by sending signal.SIGKILL

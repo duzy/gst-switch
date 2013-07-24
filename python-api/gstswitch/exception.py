@@ -1,3 +1,6 @@
+__all__ = ['BaseError', 'PathError', 'ServerProcessError', 'ConnectionError']
+
+
 class BaseError(Exception):
     """docstring for BaseError"""
     pass
