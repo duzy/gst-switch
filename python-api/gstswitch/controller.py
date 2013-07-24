@@ -3,6 +3,8 @@ import ast
 from connection import Connection
 from exception import *
 
+__all__ = ["Controller", ]
+
 
 class Controller(object):
     """A Class to control all interactions with the gst-switch-srv over dbus.

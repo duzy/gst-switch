@@ -5,6 +5,8 @@ import subprocess
 from gi.repository import Gio
 from testsource import VideoSrc, Preview
 
+__all__ = ["TestSources", "PreviewSinks"]
+
 
 class TestSources(object):
     """A Controller of test sources feeding into the

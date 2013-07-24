@@ -8,6 +8,9 @@ from exception import *
 from time import sleep
 
 
+__all__ = ["Server", ]
+
+
 class Server(object):
     """Control all server related operations
 

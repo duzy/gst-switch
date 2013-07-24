@@ -12,6 +12,8 @@ import random
 GObject.threads_init()
 Gst.init(None)
 
+__all__ = ["Preview", "VideoSrc", ]
+
 
 class BasePipeline(Gst.Pipeline):
     """A Basic pipeline

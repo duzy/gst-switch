@@ -5,6 +5,8 @@ from exception import *
 import sys
 from mock import patch
 
+__all__ = ["Connection", ]
+
 
 class Connection(object):
     """Class which makes all remote object class.

@@ -4,12 +4,10 @@
 # THIS FILE IS ONLY FOR MY PERSONAL TESTING PURPOSES.
 # IT IS NOT MADE TO AND SHOULD NOT BE TESTING THE ENTIRE API
 
-from gstswitch import *
-from helpers import TestSources, PreviewSinks
-from controller import Controller
+from gstswitch.server import Server
+from gstswitch.helpers import *
+from gstswitch.controller import Controller
 import time
-import sys
-from gi.repository import GLib
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
 path = '/home/hyades/gst/master/gstreamer/tools/'
@@ -48,25 +46,7 @@ try:
 
     sources.terminate()
     s.terminate()
-# except:
-#     a = sys.exc_info()
-#     print a
-#     raise
-# test_set_composite_mode(0)
-# time.sleep(2)
-# channel = 1
-# while True:
-#     print 'encode mode=', channel
-#     test_set_encode_mode(channel % 2 + 1)
-#     channel += 1
-#     time.sleep(2)
-#     if channel == 5:
-#         break
 
-
-
-    # time.sleep(0.1)
-    
-# else:
 finally:
-    s.kill()
+    if s.proc:
+        s.kill()
