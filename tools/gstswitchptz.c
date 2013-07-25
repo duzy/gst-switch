@@ -40,7 +40,7 @@ const char *ptz_video_name = "/dev/video0";
 const char *ptz_control_protocol = "visca";
 
 static gboolean button_pressed = FALSE;
-static gboolean button_released = FALSE;
+//static gboolean button_released = FALSE;
 
 G_DEFINE_TYPE (GstSwitchPTZ, gst_switch_ptz, GST_TYPE_WORKER);
 
@@ -363,7 +363,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
 {
   GtkWidget *box_main, *box_video, *box_control;
   GtkWidget *box_control_pan, *box_control_tilt, *box_control_zoom;
-  GtkWidget *pan_scale, *tilt_scale, *control_grid;
+  GtkWidget *scale_pan, *scale_tilt, *control_grid, *box_buttons_tilt;
   GtkWidget *control_buttons[3][3] = { {NULL} };
   GtkWidget *box_zoom, *zoom_minus, *zoom_reset, *zoom_plus;
   GtkWidget *scrollwin;
@@ -379,6 +379,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
 
   ptz->step = 1;
   ptz->x = ptz->y = ptz->z = ptz->dx = ptz->dy = ptz->dz = 0;   //0.5;
+  ptz->z = 0.5;
   ptz->controller = gst_cam_controller_new (ptz_control_protocol);
   if (ptz->controller) {
     gst_cam_controller_open (ptz->controller, ptz_device_name);
@@ -419,22 +420,30 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
   gtk_box_pack_start (GTK_BOX (box_video), ptz->video_view, TRUE, TRUE, 0);
 
-  ptz->adjust_pan = gtk_adjustment_new (0,
-      ptz->controller->pan_min, ptz->controller->pan_max + 5, 1, 5, 5);
-  ptz->adjust_tilt = gtk_adjustment_new (0,
-      ptz->controller->tilt_min, ptz->controller->tilt_max + 5, 1, 5, 5);
-  pan_scale = gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, ptz->adjust_pan);
-  tilt_scale = gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, ptz->adjust_tilt);
-  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("Pan:"), TRUE, TRUE,
-      0);
-  gtk_box_pack_start (GTK_BOX (box_control), pan_scale, FALSE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("Tilt:"), TRUE,
-      TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_control), tilt_scale, FALSE, TRUE, 0);
-  g_signal_connect (gtk_range_get_adjustment (pan_scale), "value-changed",
-      G_CALLBACK (gst_switch_ptz_pan_changed), ptz);
-  g_signal_connect (gtk_range_get_adjustment (tilt_scale), "value-changed",
-      G_CALLBACK (gst_switch_ptz_tilt_changed), ptz);
+  scale_pan =
+      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL,
+      ptz->controller->pan_min, ptz->controller->pan_max, 1.0);
+  scale_tilt =
+      gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL,
+      ptz->controller->tilt_min, ptz->controller->tilt_max, 1.0);
+  gtk_scale_set_value_pos (GTK_SCALE (scale_pan), GTK_POS_RIGHT);
+  gtk_scale_set_value_pos (GTK_SCALE (scale_tilt), GTK_POS_TOP);
+  ptz->adjust_pan = gtk_range_get_adjustment (GTK_RANGE (scale_pan));
+  ptz->adjust_tilt = gtk_range_get_adjustment (GTK_RANGE (scale_tilt));
+  {
+    double v;
+    for (v = ptz->controller->pan_min; v <= ptz->controller->pan_max; v += 10.0) {
+      gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, NULL);
+    }
+    for (v = ptz->controller->tilt_min; v <= ptz->controller->tilt_max;
+        v += 10.0) {
+      gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, NULL);
+    }
+  }
+  g_signal_connect (gtk_range_get_adjustment (GTK_RANGE (scale_pan)),
+      "value-changed", G_CALLBACK (gst_switch_ptz_pan_changed), ptz);
+  g_signal_connect (gtk_range_get_adjustment (GTK_RANGE (scale_tilt)),
+      "value-changed", G_CALLBACK (gst_switch_ptz_tilt_changed), ptz);
 
   control_grid = gtk_grid_new ();
   gtk_grid_insert_row (GTK_GRID (control_grid), 0);
@@ -451,7 +460,18 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       gtk_button_set_label (GTK_BUTTON (btn), control_labels[m][n]);
     }
   }
-  gtk_box_pack_start (GTK_BOX (box_control), control_grid, FALSE, TRUE, 0);
+
+  /*
+     gtk_box_pack_start (GTK_BOX (box_control), scale_pan, FALSE, TRUE, 0);
+     gtk_box_pack_start (GTK_BOX (box_control), scale_tilt, FALSE, TRUE, 0);
+     gtk_box_pack_start (GTK_BOX (box_control), control_grid, FALSE, TRUE, 0);
+   */
+
+  box_buttons_tilt = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start (GTK_BOX (box_control), scale_pan, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_buttons_tilt), control_grid, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_buttons_tilt), scale_tilt, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_control), box_buttons_tilt, FALSE, TRUE, 0);
 
   box_zoom = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   zoom_minus = gtk_button_new_with_label ("-");
@@ -478,25 +498,28 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   g_signal_connect (zoom_plus, "released",
       G_CALLBACK (gst_switch_ptz_button_released_zoom_plus), ptz);
 
-  ptz->adjust_zoom = gtk_adjustment_new (0.50, 0.0, 1.00, 0.01, 0.01, 0.05);
-  scale_zoom = gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, ptz->adjust_zoom);
+  scale_zoom =
+      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 1.0, 0.01);
+  gtk_range_set_value (GTK_RANGE (scale_zoom), 0.5);
+  ptz->adjust_zoom = gtk_range_get_adjustment (GTK_RANGE (scale_zoom));
   gtk_box_pack_start (GTK_BOX (box_control), scale_zoom, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new (""), TRUE, TRUE, 0);
 
-  ptz->adjust_pan_speed =
-      gtk_adjustment_new (50, 0, 120, 5, 5,
-      5 /*0.50, 0.0, 1.00, 0.01, 0.01, 0.05 */ );
-  ptz->adjust_tilt_speed =
-      gtk_adjustment_new (50, 0, 120, 5, 5,
-      5 /*0.50, 0.0, 1.00, 0.01, 0.01, 0.05 */ );
-  ptz->adjust_zoom_speed =
-      gtk_adjustment_new (0.50, 0.0, 1.00, 0.01, 0.01, 0.05);
   scale_pan_speed =
-      gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, ptz->adjust_pan_speed);
+      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 120, 1);
   scale_tilt_speed =
-      gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, ptz->adjust_tilt_speed);
+      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 120, 1);
   scale_zoom_speed =
-      gtk_scale_new (GTK_ORIENTATION_HORIZONTAL, ptz->adjust_zoom_speed);
+      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 1.0, 0.01);
+  gtk_range_set_value (GTK_RANGE (scale_pan_speed), 120);
+  gtk_range_set_value (GTK_RANGE (scale_tilt_speed), 120);
+  gtk_range_set_value (GTK_RANGE (scale_zoom_speed), 1.0);
+  ptz->adjust_pan_speed =
+      gtk_range_get_adjustment (GTK_RANGE (scale_pan_speed));
+  ptz->adjust_tilt_speed =
+      gtk_range_get_adjustment (GTK_RANGE (scale_tilt_speed));
+  ptz->adjust_zoom_speed =
+      gtk_range_get_adjustment (GTK_RANGE (scale_zoom_speed));
   label_pan_speed = gtk_label_new ("P:");
   label_tilt_speed = gtk_label_new ("T:");
   label_zoom_speed = gtk_label_new ("Z:");
