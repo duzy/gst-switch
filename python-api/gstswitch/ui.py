@@ -1,6 +1,5 @@
 # from controller import Controller
 # from testsource import VideoSrc
-from server import Server
 import os
 import sys
 import signal

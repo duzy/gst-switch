@@ -1,9 +1,8 @@
 #IMPORTS
 #all dbus variables need to be setup here
 from gi.repository import Gio, GLib
-from exception import *
+from exception import ConnectionError
 import sys
-from mock import patch
 
 __all__ = ["Connection", ]
 
@@ -45,12 +44,13 @@ class Connection(object):
         if not address:
             raise ValueError("Address '{0}' cannot be blank")
         else:
-            a = str(address)
-            if a.find(':') > 0:
-                self._address = a
+            adr = str(address)
+            if adr.find(':') > 0:
+                self._address = adr
             else:
-                raise ValueError("Address must follow specifications mentioned at "
-                                 "http://dbus.freedesktop.org/doc/dbus-specification.html#addresses")
+                raise ValueError("Address must follow specifications mentioned"
+                                 " at http://dbus.freedesktop.org/doc/"
+                                 "dbus-specification.html#addresses")
 
     @property
     def bus_name(self):
@@ -66,8 +66,8 @@ class Connection(object):
         if bus_name is None:
             self._bus_name = None
             return
-        a = str(bus_name)
-        self._bus_name = a
+        bus = str(bus_name)
+        self._bus_name = bus
 
     @property
     def object_path(self):
@@ -81,12 +81,14 @@ class Connection(object):
         if not object_path:
             raise ValueError("object_path '{0} cannot be blank'")
         else:
-            a = str(object_path)
-            if a[0] == '/':
-                self._object_path = a
+            obj = str(object_path)
+            if obj[0] == '/':
+                self._object_path = obj
             else:
-                raise ValueError("object_path must follow specifications mentioned at "
-                                 "http://dbus.freedesktop.org/doc/dbus-specification.html"
+                raise ValueError("object_path must follow specifications"
+                                 " mentioned at "
+                                 "http://dbus.freedesktop.org/doc/"
+                                 "dbus-specification.html"
                                  "#message-protocol-marshaling-object-path""")
 
     @property
@@ -101,12 +103,14 @@ class Connection(object):
         if not default_interface:
             raise ValueError("default_interface '{0} cannot be blank'")
         else:
-            a = str(default_interface)
-            if a.count('.') > 1:
-                self._default_interface = a
+            intr = str(default_interface)
+            if intr.count('.') > 1:
+                self._default_interface = intr
             else:
-                raise ValueError("default_interface must follow specifications mentioned at "
-                                 "http://dbus.freedesktop.org/doc/dbus-specification.html"
+                raise ValueError("default_interface must follow "
+                                 "specifications mentioned at "
+                                 "http://dbus.freedesktop.org/"
+                                 "doc/dbus-specification.html"
                                  "#message-protocol-names-interface")
 
     def connect_dbus(self):
@@ -141,8 +145,13 @@ class Connection(object):
             args = None
             connection = self.connection
             port = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'get_compose_port',
-                args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'get_compose_port',
+                args, GLib.VariantType.new("(i)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return port
         except GLib.GError as error:
@@ -161,8 +170,14 @@ class Connection(object):
             args = None
             connection = self.connection
             port = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'get_encode_port',
-                args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'get_encode_port',
+                args,
+                GLib.VariantType.new("(i)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return port
         except GLib.GError as error:
@@ -181,8 +196,14 @@ class Connection(object):
             args = None
             connection = self.connection
             port = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'get_audio_port',
-                args, GLib.VariantType.new("(i)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'get_audio_port',
+                args,
+                GLib.VariantType.new("(i)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return port
         except GLib.GError as error:
@@ -201,8 +222,14 @@ class Connection(object):
             args = None
             connection = self.connection
             ports = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'get_preview_ports',
-                args, GLib.VariantType.new("(s)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'get_preview_ports',
+                args,
+                GLib.VariantType.new("(s)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return ports
         except GLib.GError as error:
@@ -223,8 +250,13 @@ class Connection(object):
             args = GLib.Variant('(i)', (mode,))
             connection = self.connection
             result = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'set_composite_mode',
-                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'set_composite_mode',
+                args,
+                GLib.VariantType.new("(b)"),
+                Gio.DBusCallFlags.NONE, -1,
                 None)
             return result
         except GLib.GError as error:
@@ -245,8 +277,14 @@ class Connection(object):
             args = GLib.Variant('(i)', (channel,))
             connection = self.connection
             result = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'set_encode_mode',
-                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'set_encode_mode',
+                args,
+                GLib.VariantType.new("(b)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return result
         except GLib.GError as error:
@@ -265,8 +303,14 @@ class Connection(object):
             args = None
             connection = self.connection
             result = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'new_record',
-                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'new_record',
+                args,
+                GLib.VariantType.new("(b)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return result
         except GLib.GError as error:
@@ -274,7 +318,7 @@ class Connection(object):
             new_message = "{0}: {1}".format(message, "new_record")
             raise ConnectionError(new_message)
 
-    def adjust_pip(self, dx, dy, dw, dh):
+    def adjust_pip(self, xpos, ypos, width, height):
         """adjust_pip(in  i dx,
                            in  i dy,
                            in  i dw,
@@ -282,18 +326,24 @@ class Connection(object):
                            out u result);
         Calls adjust_pip remotely
 
-        :param x: the X position of the PIP
-        :param y: the Y position of the PIP
-        :param w: the width of the PIP
-        :param h: the height of the PIP
+        :param xpos: the X position of the PIP
+        :param ypos: the Y position of the PIP
+        :param width: the width of the PIP
+        :param height: the height of the PIP
         :returns: tuple with first element as result - PIP has been changed succefully
         """
         try:
-            args = GLib.Variant('(iiii)', (dx, dy, dw, dh,))
+            args = GLib.Variant('(iiii)', (xpos, ypos, width, height,))
             connection = self.connection
             result = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'adjust_pip',
-                args, GLib.VariantType.new("(u)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'adjust_pip',
+                args,
+                GLib.VariantType.new("(u)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return result
         except GLib.GError as error:
@@ -315,8 +365,14 @@ class Connection(object):
             args = GLib.Variant('(ii)', (channel, port,))
             connection = self.connection
             result = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'switch',
-                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'switch',
+                args,
+                GLib.VariantType.new("(b)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return result
         except GLib.GError as error:
@@ -324,7 +380,7 @@ class Connection(object):
             new_message = "{0}: {1}".format(message, "switch")
             raise ConnectionError(new_message)
 
-    def click_video(self, x, y, fw, fh):
+    def click_video(self, xpos, ypos, width, height):
         """click_video(in  i x,
                             in  i y,
                             in  i fw,
@@ -332,18 +388,24 @@ class Connection(object):
                             out b result);
         Calls click_video remotely
 
-        :param x:
-        :param y:
-        :param fw:
-        :param fh:
+        :param xpos:
+        :param ypos:
+        :param width:
+        :param height:
         :returns: tuple with first element True if requested
         """
         try:
-            args = GLib.Variant('(iiii)', (x, y, fw, fh,))
+            args = GLib.Variant('(iiii)', (xpos, ypos, width, height,))
             connection = self.connection
             result = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'click_video',
-                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'click_video',
+                args,
+                GLib.VariantType.new("(b)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return result
         except GLib.GError as error:
@@ -362,8 +424,14 @@ class Connection(object):
             args = GLib.Variant('a(iiii)', faces)
             connection = self.connection
             result = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'mark_face',
-                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'mark_face',
+                args,
+                GLib.VariantType.new("(b)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return result
         except GLib.GError as error:
@@ -382,8 +450,14 @@ class Connection(object):
             args = GLib.Variant('a(iiii)', faces)
             connection = self.connection
             result = connection.call_sync(
-                self.bus_name, self.object_path, self.default_interface, 'mark_tracking',
-                args, GLib.VariantType.new("(b)"), Gio.DBusCallFlags.NONE, -1,
+                self.bus_name,
+                self.object_path,
+                self.default_interface,
+                'mark_tracking',
+                args,
+                GLib.VariantType.new("(b)"),
+                Gio.DBusCallFlags.NONE,
+                -1,
                 None)
             return result
         except GLib.GError as error:
