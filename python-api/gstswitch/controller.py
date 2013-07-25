@@ -1,7 +1,7 @@
 #IMPORTS
 import ast
 from connection import Connection
-from exception import *
+from exception import ConnectionError
 
 __all__ = ["Controller", ]
 
@@ -37,12 +37,13 @@ class Controller(object):
         if not address:
             raise ValueError("Address '{0}' cannot be blank")
         else:
-            a = str(address)
-            if a.find(':') > 0:
-                self._address = a
+            adr = str(address)
+            if adr.find(':') > 0:
+                self._address = adr
             else:
-                raise ValueError("Address must follow specifications mentioned at "
-                                 "http://dbus.freedesktop.org/doc/dbus-specification.html#addresses")
+                raise ValueError("Address must follow specifications mentioned"
+                                 " at http://dbus.freedesktop.org/doc/"
+                                 "dbus-specification.html#addresses")
 
     @property
     def bus_name(self):
@@ -58,8 +59,8 @@ class Controller(object):
         if bus_name is None:
             self._bus_name = None
             return
-        a = str(bus_name)
-        self._bus_name = a
+        bus = str(bus_name)
+        self._bus_name = bus
 
     @property
     def object_path(self):
@@ -73,13 +74,15 @@ class Controller(object):
         if not object_path:
             raise ValueError("object_path '{0} cannot be blank'")
         else:
-            a = str(object_path)
-            if a[0] == '/':
-                self._object_path = a
+            obj = str(object_path)
+            if obj[0] == '/':
+                self._object_path = obj
             else:
-                raise ValueError("object_path must follow specifications mentioned at "
-                                 "http://dbus.freedesktop.org/doc/dbus-specification.html"
-                                 "#message-protocol-marshaling-object-path")
+                raise ValueError("object_path must follow specifications"
+                                 " mentioned at "
+                                 "http://dbus.freedesktop.org/doc/"
+                                 "dbus-specification.html"
+                                 "#message-protocol-marshaling-object-path""")
 
     @property
     def default_interface(self):
@@ -93,12 +96,14 @@ class Controller(object):
         if not default_interface:
             raise ValueError("default_interface '{0} cannot be blank'")
         else:
-            a = str(default_interface)
-            if a.count('.') > 1:
-                self._default_interface = a
+            intr = str(default_interface)
+            if intr.count('.') > 1:
+                self._default_interface = intr
             else:
-                raise ValueError("default_interface must follow specifications mentioned at "
-                                 "http://dbus.freedesktop.org/doc/dbus-specification.html"
+                raise ValueError("default_interface must follow "
+                                 "specifications mentioned at "
+                                 "http://dbus.freedesktop.org/"
+                                 "doc/dbus-specification.html"
                                  "#message-protocol-names-interface")
 
     def establish_connection(self):
@@ -108,16 +113,13 @@ class Controller(object):
         :param: None
         :returns: None
         """
-        try:
-            self.connection = Connection(
-                address=self.address,
-                bus_name=self.bus_name,
-                object_path=self.object_path,
-                default_interface=self.default_interface)
+        self.connection = Connection(
+            address=self.address,
+            bus_name=self.bus_name,
+            object_path=self.object_path,
+            default_interface=self.default_interface)
 
-            self.connection.connect_dbus()
-        except (ConnectionError, ValueError) as e:
-            raise
+        self.connection.connect_dbus()
 
     def get_compose_port(self):
         """Get the compose port number
@@ -210,19 +212,20 @@ class Controller(object):
             pass
         return res
 
-    def adjust_pip(self, x, y, w, h):
+    def adjust_pip(self, xpos, ypos, width, height):
         """Change the PIP position and size
 
-        :param x: the X position of the PIP
-        :param y: the Y position of the PIP
-        :param w: the width of the PIP
-        :param h: the height of the PIP
-        :returns: result - PIP has been changed succefully
+        :param xpos: the x position of the PIP
+        :param ypos: the y position of the PIP
+        :param width: the width of the PIP
+        :param height: the height of the PIP
+        :returns: result - PIP has been changed succefullypos
         """
         self.establish_connection()
-        conn = self.connection.adjust_pip(x, y, w, h)
+        conn = self.connection.adjust_pip(xpos, ypos, width, height)
         res = conn.unpack()[0]
-        print "adjust pip x:%s y:%s w:%s h:%s" % (str(x), str(y), str(w), str(h))
+        print "adjust pip xpos:%s ypos:%s w:%s h:%s" % (str(xpos), str(ypos),
+                                                        str(width), str(height))
         #to-do - parse
         return res
 
@@ -241,20 +244,21 @@ class Controller(object):
         else:
             pass
 
-    def click_video(self, x, y, fw, fh):
+    def click_video(self, xpos, ypos, width, height):
         """User click on the video
 
-        :param x:
-        :param y:
-        :param fw:
-        :param fh:
+        :param xpos:
+        :param ypos:
+        :param width:
+        :param height:
         :returns: True when requested
         """
         self.establish_connection()
-        conn = self.connection.click_video(x, y, fw, fh)
+        conn = self.connection.click_video(xpos, ypos, width, height)
         res = conn.unpack()[0]
         if res is True:
-            print "Click video: x:%s y:%s fw:%s fh:%s" % (str(x), str(y), str(fw), str(fh))
+            print "Click video: xpos:%s ypos:%s width:%s height:%s" % (str(xpos), str(ypos),
+                                                                       str(width), str(height))
         else:
             pass
         return res
@@ -279,9 +283,10 @@ class Controller(object):
         self.connection.mark_tracking(faces)
 
     def _parse_preview_ports(self, res):
+        """Parses the preview_ports string"""
         # res = '[(a, b, c), (a, b, c)*]'
-        x = ast.literal_eval(res)
+        liststr = ast.literal_eval(res)
         preview_ports = []
-        for tupl in x:
+        for tupl in liststr:
             preview_ports.append(int(tupl[0]))
         return preview_ports
