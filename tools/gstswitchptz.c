@@ -410,7 +410,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
 
   ptz->video_view = gtk_drawing_area_new ();
   gtk_widget_set_name (ptz->video_view, "video");
-  gtk_widget_set_double_buffered (ptz->video_view, TRUE);
+  gtk_widget_set_double_buffered (ptz->video_view, FALSE);
   gtk_widget_set_hexpand (ptz->video_view, TRUE);
   gtk_widget_set_vexpand (ptz->video_view, TRUE);
   gtk_widget_set_events (ptz->video_view, GDK_EXPOSURE_MASK
@@ -631,8 +631,9 @@ gst_switch_ptz_get_pipeline (GstSwitchPTZ * ptz)
   desc = g_string_new ("");
 
   g_string_append_printf (desc, "v4l2src device=%s ", ptz_video_name);
-  g_string_append_printf (desc, "! videoconvert ");
-  g_string_append_printf (desc, "! xvimagesink name=sink ");
+  //g_string_append_printf (desc, "! video/x-raw,width=320,height=240 ");
+  g_string_append_printf (desc, "! videoconvert ! videoscale ");
+  g_string_append_printf (desc, "! ximagesink name=sink ");
   return desc;
 }
 
