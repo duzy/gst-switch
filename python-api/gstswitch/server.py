@@ -183,8 +183,8 @@ class Server(object):
                     shell=False)
                 print cmd
                 return process
-        except OSError as e:
-            if e.errno == ENOENT:
+        except OSError as error:
+            if error.errno == ENOENT:
                 raise PathError("Cannot find gst-switch-srv at path:"
                                 " '{0}'".format(self.path))
             else:
