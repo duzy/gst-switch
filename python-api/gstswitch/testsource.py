@@ -2,8 +2,6 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
 
-import os
-import sys
 import random
 
 # from pipeline import *
@@ -45,7 +43,14 @@ class VideoPipeline(BasePipeline):
     """A Video Pipeline which can be used by a video test Source
     """
 
-    def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
+    def __init__(
+            self,
+            port,
+            width=300,
+            height=200,
+            pattern=None,
+            timeoverlay=False,
+            clockoverlay=False):
         super(VideoPipeline, self).__init__()
 
         self.host = '127.0.0.1'
@@ -89,7 +94,10 @@ class VideoPipeline(BasePipeline):
 
     def make_capsfilter(self, width, height):
         element = self.make("capsfilter", "vfilter")
-        capsstring = "video/x-raw, format=(string)I420, width=%s, height=%s" % (str(width), str(height))
+        width = str(width)
+        height = str(height)
+        capsstring = "video/x-raw, format=(string)I420, "
+        "width=%s, height=%s".format(width, height)
         caps = Gst.Caps.from_string(capsstring)
         element.set_property('caps', caps)
         return element
@@ -149,7 +157,14 @@ class VideoSrc(object):
     """A Test Video Source
     """
 
-    def __init__(self, port, width=300, height=200, pattern=None, timeoverlay=False, clockoverlay=False):
+    def __init__(
+            self,
+            port,
+            width=300,
+            height=200,
+            pattern=None,
+            timeoverlay=False,
+            clockoverlay=False):
         super(VideoSrc, self).__init__()
         self.port = port
         self.width = width
@@ -158,7 +173,13 @@ class VideoSrc(object):
         self.timeoverlay = timeoverlay
         self.clockoverlay = clockoverlay
 
-        self.pipeline = VideoPipeline(self.port, self.width, self.height, self.pattern, self.timeoverlay, self.clockoverlay)
+        self.pipeline = VideoPipeline(
+            self.port,
+            self.width,
+            self.height,
+            self.pattern,
+            self.timeoverlay,
+            self.clockoverlay)
         self.run()
 
     def run(self):
