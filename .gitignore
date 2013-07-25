@@ -30,6 +30,7 @@
 /plugins/.libs/
 /plugins/Makefile
 /plugins/Makefile.in
+/python-api/reports/
 /stamp-h1
 /tools/.deps/
 /tools/Makefile
