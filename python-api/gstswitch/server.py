@@ -173,7 +173,6 @@ class Server(object):
         """Non-public method: Runs the gst-switch-srv process
         """
         cmd = self.path
-        # cmd = ''
         cmd += """gst-switch-srv \
                     {0} \
                     --video-input-port={1} \
