@@ -46,6 +46,9 @@ class Server(object):
 
     @path.setter
     def path(self, path):
+        """Set path
+        :raises ValueError: Path cannot be left blank
+        """
         if not path:
             raise ValueError("Path '{0}' cannot be blank".format(path))
         else:
@@ -57,6 +60,11 @@ class Server(object):
 
     @video_port.setter
     def video_port(self, video_port):
+        """Set Video Port
+        :raises ValueError: Video Port cannot be left blank
+        :raises ValueError: Video Port must be in range 1 to 65535
+        :raises TypeError: Video Port must be a string or a number
+        """
         if not video_port:
             raise ValueError("Video Port '{0}' cannot be blank"
                              .format(video_port))
@@ -77,6 +85,11 @@ class Server(object):
 
     @audio_port.setter
     def audio_port(self, audio_port):
+        """Set Audio Port
+        :raises ValueError: Audio Port cannot be left blank
+        :raises ValueError: Audio Port must be in range 1 to 65535
+        :raises TypeError: Audio Port must be a string or a number
+        """
         if not audio_port:
             raise ValueError("Audio Port '{0}' cannot be blank"
                              .format(audio_port))
@@ -97,6 +110,11 @@ class Server(object):
 
     @control_port.setter
     def control_port(self, control_port):
+        """Set Control Port
+        :raises ValueError: Control Port cannot be left blank
+        :raises ValueError: Control Port must be in range 1 to 65535
+        :raises TypeError: Control Port must be a string or a number
+        """
         if not control_port:
             raise ValueError("Control Port '{0}' cannot be blank"
                              .format(control_port))
@@ -117,6 +135,10 @@ class Server(object):
 
     @record_file.setter
     def record_file(self, record_file):
+        """Set Record File
+        :raises ValueError: Record File cannot be left blank
+        :raises ValueError: Record File cannot have forward slashes
+        """
         if not record_file:
             raise ValueError("Record File '{0}' cannot be blank"
                              .format(record_file))
