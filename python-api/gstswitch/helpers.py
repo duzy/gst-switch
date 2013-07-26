@@ -5,7 +5,13 @@ __all__ = ["TestSources", "PreviewSinks"]
 
 class TestSources(object):
     """A Controller of test sources feeding into the
-    gst-switch-srv"""
+    gst-switch-srv
+    :param width: The width of the output video
+    :param height: The height of the output video
+    :param pattern: The videotestsrc pattern of the output video
+    :param timeoverlay: True to enable a running time over video
+    :param clockoverlay: True to enable current clock time over video
+    """
 
     def __init__(self, video_port):
         super(TestSources, self).__init__()
@@ -18,9 +24,15 @@ class TestSources(object):
                        pattern=None,
                        timeoverlay=False,
                        clockoverlay=False):
-        """Start a new test source
+        """Start a new test video
+        :param port: The port of where the TCP stream will be sent
+        Should be same as video port of gst-switch-src
+        :param width: The width of the output video
+        :param height: The height of the output video
+        :param pattern: The videotestsrc pattern of the output video
+        :param timeoverlay: True to enable a running time over video
+        :param clockoverlay: True to enable current clock time over video
         """
-        print 'Adding new test video source'
         testsrc = VideoSrc(
             self.video_port,
             width,
@@ -33,7 +45,8 @@ class TestSources(object):
         self.running_tests.append(testsrc)
 
     def get_test_video(self):
-        """Returns a list of processes acting as test inputs
+        """Returns a list of processes acting as video test sources running
+        :returns: A list containing all video test sources running
         """
         i = 0
         for test in self.running_tests:
@@ -42,7 +55,9 @@ class TestSources(object):
         return self.running_tests
 
     def terminate_index(self, index):
-        """
+        """Terminate video test source specified by index
+        :param index: The index of the video source to terminate
+        Use get_test_video for finding the index
         """
         testsrc = self.running_tests[index]
         print 'End source with pattern %s' % (str(testsrc.pattern))
@@ -50,15 +65,16 @@ class TestSources(object):
         self.running_tests.remove(self.running_tests[index])
 
     def terminate(self):
-        """
+        """Terminate all test video sources
         """
         print 'TESTS:', self.running_tests
-        for test in range(len(self.running_tests)):
+        for i in range(len(self.running_tests)):
             self.terminate_index(0)
 
 
 class PreviewSinks(object):
-    """docstring for PreviewSinks
+    """A Controller for preview sinks to preview ports of gst-switch-srv
+    :param preview_port: The preview port to get the preview
     """
     # TODO set preview port from dbus call
 
@@ -77,5 +93,6 @@ class PreviewSinks(object):
         try:
             self.preview.end()
             print 'end preview'
-        except:
-            pass
+            # TODO: Find which error may occur
+        except OSError:
+            raise

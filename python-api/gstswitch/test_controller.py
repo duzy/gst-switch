@@ -2,6 +2,7 @@ from controller import Controller
 from exception import *
 import pytest
 from mock import Mock, patch
+from connection import Connection
 
 
 class TestAddress(object):
@@ -75,3 +76,12 @@ class TestInterface(object):
         default_interface = "info.duzy.gst.switch.SwitchControllerInterface"
         conn = Controller(default_interface=default_interface)
         assert default_interface == conn.default_interface
+
+
+class TestEstablishConnection(object):
+
+    def test_normal(self, monkeypatch):
+        monkeypatch.setattr(Connection, 'connect_dbus', Mock())
+        controller = Controller()
+        controller.establish_connection()
+        assert controller.connection is not None
