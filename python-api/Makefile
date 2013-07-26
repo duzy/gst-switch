@@ -3,7 +3,7 @@ lint:
 	mkdir -p reports/pylint
 	-pylint --rcfile=.pylintrc gstswitch
 	mv -f *.html reports/pylint
-	@echo "Lint report generated in reports/lint_report.html"
+	@echo "Lint report generated in reports/pylint"
 
 # runs py.test also
 coverage:
