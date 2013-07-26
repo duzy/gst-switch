@@ -33,6 +33,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <math.h>
+#include <glib/gprintf.h>
 
 gboolean verbose;
 const char *ptz_device_name = "/dev/ttyUSB0";
@@ -371,9 +372,19 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   GtkWidget *scale_pan_speed, *scale_tilt_speed, *scale_zoom_speed;
   GtkWidget *label_pan_speed, *label_tilt_speed, *label_zoom_speed;
   const gchar *control_labels[3][3] = {
-    {"  \\  ", "  ^  ", "  /  "},
-    {"  <  ", "  *  ", "  >  "},
-    {"  /  ", "  v  ", "  \\  "},
+    /*
+       {"  \\  ", "  ^  ", "  /  "},
+       {"  <  ", "  *  ", "  >  "},
+       {"  /  ", "  v  ", "  \\  "},
+     */
+    /*
+       { "  \\  ", GTK_STOCK_GO_UP, "  /  " },
+       { GTK_STOCK_GO_BACK, GTK_STOCK_HOME, GTK_STOCK_GO_FORWARD },
+       { "  /  ", GTK_STOCK_GO_DOWN, "  \\  " },
+     */
+    {"icons/up_left.png", "icons/up.png", "icons/up_right.png"},
+    {"icons/left.png", "icons/center.png", "icons/right.png"},
+    {"icons/down_left.png", "icons/down.png", "icons/down_right.png"},
   };
   int n, m;
 
@@ -398,7 +409,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   scrollwin = gtk_scrolled_window_new (NULL, NULL);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrollwin),
       GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_widget_set_size_request (scrollwin, 100, -1);
+  gtk_widget_set_size_request (scrollwin, 200, -1);
   gtk_widget_set_vexpand (scrollwin, TRUE);
   gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollwin),
       box_control);
@@ -426,19 +437,65 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   scale_tilt =
       gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL,
       ptz->controller->tilt_min, ptz->controller->tilt_max, 1.0);
+  //gtk_range_set_slider_size_fixed (GTK_RANGE (scale_pan), TRUE);
+  gtk_widget_set_size_request (scale_pan, 300, -1);
   gtk_scale_set_value_pos (GTK_SCALE (scale_pan), GTK_POS_RIGHT);
-  gtk_scale_set_value_pos (GTK_SCALE (scale_tilt), GTK_POS_TOP);
+  gtk_scale_set_value_pos (GTK_SCALE (scale_tilt), GTK_POS_BOTTOM);
   gtk_range_set_inverted (GTK_RANGE (scale_tilt), TRUE);
   ptz->adjust_pan = gtk_range_get_adjustment (GTK_RANGE (scale_pan));
   ptz->adjust_tilt = gtk_range_get_adjustment (GTK_RANGE (scale_tilt));
   {
-    double v;
-    for (v = ptz->controller->pan_min; v <= ptz->controller->pan_max; v += 10.0) {
-      gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, NULL);
+    double v, tick = 50;
+    gchar *s;
+    gchar buf[64] = { 0 };
+    int n;
+    (void) n;
+    const gchar *const fmt = "<small><sub>%d</sub></small>";
+    (void) fmt;
+    const gchar *const fmtb = "<small><sub><b>%d</b></sub></small>";
+    g_sprintf ((s = buf), fmtb, 0);
+    gtk_scale_add_mark (GTK_SCALE (scale_pan), 0, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (int) ptz->controller->pan_min);
+    gtk_scale_add_mark (GTK_SCALE (scale_pan), ptz->controller->pan_min,
+        GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (int) ptz->controller->pan_max);
+    gtk_scale_add_mark (GTK_SCALE (scale_pan), ptz->controller->pan_max,
+        GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, 0);
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt), 0, GTK_POS_RIGHT, s);
+    g_sprintf ((s = buf), fmtb, (int) ptz->controller->tilt_min);
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt), ptz->controller->tilt_min,
+        GTK_POS_RIGHT, s);
+    g_sprintf ((s = buf), fmtb, (int) ptz->controller->tilt_max);
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt), ptz->controller->tilt_max,
+        GTK_POS_RIGHT, s);
+    for (v = -tick; ptz->controller->pan_min <= v; v -= tick) {
+      n = (int) v;
+      s = NULL;
+      if (abs (n) % 50 == 0)
+        g_sprintf ((s = buf), fmt, n);
+      gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, s);
     }
-    for (v = ptz->controller->tilt_min; v <= ptz->controller->tilt_max;
-        v += 10.0) {
-      gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, NULL);
+    for (v = tick; v <= ptz->controller->pan_max; v += tick) {
+      n = (int) v;
+      s = NULL;
+      if (abs (n) % 50 == 0)
+        g_sprintf ((s = buf), fmt, n);
+      gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, s);
+    }
+    for (v = -tick; ptz->controller->tilt_min <= v; v -= tick) {
+      n = (int) v;
+      s = NULL;
+      if (abs (n) % 50 == 0)
+        g_sprintf ((s = buf), fmt, n);
+      gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, s);
+    }
+    for (v = tick; v <= ptz->controller->tilt_max; v += tick) {
+      n = (int) v;
+      s = NULL;
+      if (abs (n) % 50 == 0)
+        g_sprintf ((s = buf), fmt, n);
+      gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, s);
     }
   }
   g_signal_connect (gtk_range_get_adjustment (GTK_RANGE (scale_pan)),
@@ -457,36 +514,42 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
     for (m = 0; m < 3; ++m) {
       GtkWidget *btn = control_buttons[m][n] = gtk_button_new ();
       gtk_grid_attach (GTK_GRID (control_grid), btn, n, m, 1, 1);
-      gtk_widget_set_size_request (btn, 110, 110);
-      gtk_button_set_label (GTK_BUTTON (btn), control_labels[m][n]);
+      gtk_widget_set_size_request (btn, 80, 80);
+      gtk_button_set_image (GTK_BUTTON (btn),
+          gtk_image_new_from_file (control_labels[m][n]));
     }
   }
 
-  /*
-     gtk_box_pack_start (GTK_BOX (box_control), scale_pan, FALSE, TRUE, 0);
-     gtk_box_pack_start (GTK_BOX (box_control), scale_tilt, FALSE, TRUE, 0);
-     gtk_box_pack_start (GTK_BOX (box_control), control_grid, FALSE, TRUE, 0);
-   */
-
   box_buttons_tilt = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("pan/tilt:"),
+      TRUE, TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_control), scale_pan, FALSE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_buttons_tilt), control_grid, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_buttons_tilt), scale_tilt, FALSE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_control), box_buttons_tilt, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_buttons_tilt), control_grid, FALSE, TRUE,
+      10);
+  gtk_box_pack_start (GTK_BOX (box_control), box_buttons_tilt, FALSE, TRUE, 10);
 
   box_zoom = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  zoom_minus = gtk_button_new_with_label ("-");
-  zoom_reset = gtk_button_new_with_label ("*");
-  zoom_plus = gtk_button_new_with_label ("+");
-  gtk_widget_set_size_request (zoom_minus, 110, 50);
-  gtk_widget_set_size_request (zoom_reset, 110, 50);
-  gtk_widget_set_size_request (zoom_plus, 110, 50);
+  zoom_minus = gtk_button_new ();
+  zoom_reset = gtk_button_new ();
+  zoom_plus = gtk_button_new ();
+  gtk_button_set_image (GTK_BUTTON (zoom_minus),
+      gtk_image_new_from_file ("icons/zoom_out.png"));
+  gtk_button_set_image (GTK_BUTTON (zoom_reset),
+      gtk_image_new_from_file ("icons/zoom.png"));
+  gtk_button_set_image (GTK_BUTTON (zoom_plus),
+      gtk_image_new_from_file ("icons/zoom_in.png"));
+  gtk_widget_set_size_request (zoom_minus, 80, 80);
+  gtk_widget_set_size_request (zoom_reset, 80, 80);
+  gtk_widget_set_size_request (zoom_plus, 80, 80);
   gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("zoom:"), TRUE,
-      TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_minus, TRUE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_reset, TRUE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_plus, TRUE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_control), box_zoom, FALSE, TRUE, 0);
+      TRUE, 10);
+  gtk_box_pack_start (GTK_BOX (box_zoom), gtk_label_new (""), TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_minus, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_reset, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box_zoom), zoom_plus, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (box_zoom), gtk_label_new (""), TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_control), box_zoom, TRUE, TRUE, 0);
   g_signal_connect (zoom_minus, "pressed",
       G_CALLBACK (gst_switch_ptz_button_pressed_zoom_minus), ptz);
   g_signal_connect (zoom_reset, "pressed",
@@ -528,7 +591,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   box_control_tilt = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   box_control_zoom = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("Speeds:"), FALSE,
-      TRUE, 0);
+      TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_control_pan), label_pan_speed, FALSE, FALSE,
       0);
   gtk_box_pack_start (GTK_BOX (box_control_pan), scale_pan_speed, TRUE, TRUE,
@@ -541,6 +604,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box_control_zoom), scale_zoom_speed, TRUE, TRUE,
       0);
+
   gtk_box_pack_start (GTK_BOX (box_control), box_control_pan, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_control), box_control_tilt, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_control), box_control_zoom, FALSE, TRUE, 0);
