@@ -23,24 +23,39 @@ class BasePipeline(Gst.Pipeline):
         self._playing = False
 
     def play(self):
+        """Set the pipeline as playing"""
         self._playing = True
         self.set_state(Gst.State.PLAYING)
 
     def pause(self):
+        """Pause the pipeline"""
         self._playing = False
         self.set_state(Gst.State.PAUSED)
 
     def disable(self):
+        """Disable the pipeline"""
         self._playing = False
         self.set_state(Gst.State.NULL)
 
     def make(self, elem, description=''):
+        """Make a new gstreamer pipeline element
+        :param elem: The name of the element to be made
+        :param description: Description of the element to be made
+        returns: The element which is made
+        """
         element = Gst.ElementFactory.make(elem, description)
         return element
 
 
 class VideoPipeline(BasePipeline):
-    """A Video Pipeline which can be used by a video test Source
+    """A Video Pipeline which can be used by a Video Test Source
+    :param port: The port of where the TCP stream will be sent
+    Should be same as video port of gst-switch-src
+    :param width: The width of the output video
+    :param height: The height of the output video
+    :param pattern: The videotestsrc pattern of the output video
+    :param timeoverlay: True to enable a running time over video
+    :param clockoverlay: True to enable current clock time over video
     """
 
     def __init__(
@@ -88,11 +103,20 @@ class VideoPipeline(BasePipeline):
         gdppay.link(sink)
 
     def make_videotestsrc(self, pattern):
+        """Return a videotestsrc element
+        :param pattern: The video test source pattern (1-20)
+        :return: A video test source element
+        """
         element = self.make('videotestsrc', 'src')
         element.set_property('pattern', int(pattern))
         return element
 
     def make_capsfilter(self, width, height):
+        """Return a caps filter
+        :param width: The width of the caps
+        :param height: The height of the caps
+        :returns: A caps filter element
+        """
         element = self.make("capsfilter", "vfilter")
         width = str(width)
         height = str(height)
@@ -103,20 +127,33 @@ class VideoPipeline(BasePipeline):
         return element
 
     def make_gdppay(self):
+        """Return a gdppay element
+        :returns: A gdppay element
+        """
         element = self.make('gdppay', 'gdppay')
         return element
 
     def make_timeoverlay(self):
+        """Return a time overlay element (Verdana bold 50)
+        :returns: a time overlay element
+        """
         element = self.make('timeoverlay', 'timeoverlay')
         element.set_property('font-desc', "Verdana bold 50")
         return element
 
     def make_clockoverlay(self):
+        """Return a clock overlay element (Verdana bold 50)
+        :returns: a clock overlay element
+        """
         element = self.make('clockoverlay', 'clockoverlay')
         element.set_property('font-desc', "Verdana bold 50")
         return element
 
     def make_tcpclientsink(self, port):
+        """Return a TCP client sink element
+        :port: Port to sink
+        :returns: A TCP client sink element
+        """
         element = self.make('tcpclientsink', 'tcpclientsink')
         element.set_property('host', self.host)
         element.set_property('port', int(port))
@@ -124,7 +161,9 @@ class VideoPipeline(BasePipeline):
 
 
 class PreviewPipeline(BasePipeline):
-    """docstring for PreviewPipeline"""
+    """Pipeline for usage by a Preview
+    :param port: The preview port
+    """
     def __init__(self, port):
         super(PreviewPipeline, self).__init__()
         self.host = '127.0.0.1'
@@ -139,22 +178,38 @@ class PreviewPipeline(BasePipeline):
         gdpdepay.link(sink)
 
     def make_tcpclientsrc(self, port):
+        """Return a TCP Client Source element
+        :param port: The port of the server
+        :returns: A TCP Client Source element
+        """
         element = self.make('tcpclientsrc', 'tcpclientsrc')
         element.set_property('host', self.host)
         element.set_property('port', self.preview_port)
         return element
 
     def make_gdpdepay(self):
+        """Return a gdpdepay element
+        :returns: A gdpdepay element
+        """
         element = self.make('gdpdepay', 'gdpdepay')
         return element
 
     def make_autovideosink(self):
+        """Return a auto video sink element to show the video
+        :returns: A Auto Video Sink element
+        """
         element = self.make('autovideosink', 'autovideosink')
         return element
 
 
 class VideoSrc(object):
     """A Test Video Source
+    :param width: The width of the output video
+    :param height: The height of the output video
+    :param pattern: The videotestsrc pattern of the output video
+    None for random
+    :param timeoverlay: True to enable a running time over video
+    :param clockoverlay: True to enable current clock time over video
     """
 
     def __init__(
@@ -183,16 +238,19 @@ class VideoSrc(object):
         self.run()
 
     def run(self):
+        """Run the pipeline"""
         self.pipeline.play()
 
     def pause(self):
+        """End the pipeline"""
         self.pipeline.pause()
 
     def end(self):
+        """End/disable the pipeline"""
         self.pipeline.disable()
 
     def generate_pattern(self, pattern):
-        """Generates a random patern if not specified
+        """Generate a random patern if not specified
         """
         if pattern is None:
             pattern = random.randint(0, 20)
@@ -201,17 +259,22 @@ class VideoSrc(object):
 
 
 class Preview(object):
-    """docstring for Preview"""
+    """A Preview Element
+    :param port: The preview port
+    """
     def __init__(self, port):
         super(Preview, self).__init__()
         self.preview_port = int(port)
         self.pipeline = PreviewPipeline(self.preview_port)
 
     def run(self):
+        """Run the pipeline"""
         self.pipeline.play()
 
     def pause(self):
+        """Pause the pipeline"""
         self.pipeline.pause()
 
     def end(self):
+        """End/disable the pipeline"""
         self.pipeline.disable()
