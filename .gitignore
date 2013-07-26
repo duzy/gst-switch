@@ -48,3 +48,4 @@
 /record*.dat
 *.data
 *.log
+/tools/gst-switch-ptz

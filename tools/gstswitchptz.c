@@ -428,6 +428,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       ptz->controller->tilt_min, ptz->controller->tilt_max, 1.0);
   gtk_scale_set_value_pos (GTK_SCALE (scale_pan), GTK_POS_RIGHT);
   gtk_scale_set_value_pos (GTK_SCALE (scale_tilt), GTK_POS_TOP);
+  gtk_range_set_inverted (GTK_RANGE (scale_tilt), TRUE);
   ptz->adjust_pan = gtk_range_get_adjustment (GTK_RANGE (scale_pan));
   ptz->adjust_tilt = gtk_range_get_adjustment (GTK_RANGE (scale_tilt));
   {
