@@ -387,6 +387,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
     {"icons/down_left.png", "icons/down.png", "icons/down_right.png"},
   };
   int n, m;
+  const char *title = NULL;
 
   ptz->step = 1;
   ptz->x = ptz->y = ptz->z = ptz->dx = ptz->dy = ptz->dz = 0;   //0.5;
@@ -394,11 +395,14 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   ptz->controller = gst_cam_controller_new (ptz_control_protocol);
   if (ptz->controller) {
     gst_cam_controller_open (ptz->controller, ptz_device_name);
+    title = ptz->controller->device_info;
+    if (title == NULL)
+      title = "??? - PTZ Controller";
   }
 
   ptz->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size (GTK_WINDOW (ptz->window), 640, 480);
-  gtk_window_set_title (GTK_WINDOW (ptz->window), "PTZ Control");
+  gtk_window_set_title (GTK_WINDOW (ptz->window), title);
   g_signal_connect (G_OBJECT (ptz->window), "delete-event",
       G_CALLBACK (gst_switch_ptz_window_closed), ptz);
 
