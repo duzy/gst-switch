@@ -574,13 +574,17 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new (""), TRUE, TRUE, 0);
 
   scale_pan_speed =
-      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 120, 1);
+      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL,
+      ptz->controller->pan_speed_min, ptz->controller->pan_speed_max, 1);
   scale_tilt_speed =
-      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 120, 1);
+      gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL,
+      ptz->controller->tilt_speed_min, ptz->controller->tilt_speed_max, 1);
   scale_zoom_speed =
       gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 1.0, 0.01);
-  gtk_range_set_value (GTK_RANGE (scale_pan_speed), 120);
-  gtk_range_set_value (GTK_RANGE (scale_tilt_speed), 120);
+  gtk_range_set_value (GTK_RANGE (scale_pan_speed),
+      ptz->controller->pan_speed_max);
+  gtk_range_set_value (GTK_RANGE (scale_tilt_speed),
+      ptz->controller->tilt_speed_max);
   gtk_range_set_value (GTK_RANGE (scale_zoom_speed), 1.0);
   ptz->adjust_pan_speed =
       gtk_range_get_adjustment (GTK_RANGE (scale_pan_speed));
