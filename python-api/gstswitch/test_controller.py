@@ -3,6 +3,7 @@ from exception import *
 import pytest
 from mock import Mock, patch
 from connection import Connection
+from gi.repository import GLib
 
 
 class TestAddress(object):
@@ -82,6 +83,27 @@ class TestEstablishConnection(object):
 
     def test_normal(self, monkeypatch):
         monkeypatch.setattr(Connection, 'connect_dbus', Mock())
-        controller = Controller()
+        controller = Controller(address='unix:abstract=abcd')
         controller.establish_connection()
         assert controller.connection is not None
+
+
+class MockConnection(object):
+
+        def __init__(self, mode):
+            self.mode = mode
+
+        def get_compose_port(self):
+            if self.mode is True:
+                return GLib.Variant('(i)', (0,))
+            else:
+                return (0,)
+
+
+class TestGetComposePort(object):
+
+    def test_unpack(self):
+        controller = Controller(address='unix:abstract=abcdefghijk')
+        controller.connection = MockConnection(False)
+        with pytest.raises(AttributeError):
+            controller.get_compose_port()

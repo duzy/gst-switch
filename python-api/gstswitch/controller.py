@@ -128,8 +128,11 @@ class Controller(object):
         :returns: compose port number
         """
         conn = self.connection.get_compose_port()
-        compose_port = conn.unpack()[0]
-        return compose_port
+        try:
+            compose_port = conn.unpack()[0]
+            return compose_port
+        except AttributeError:
+            raise ConnectionError('Connection returned invalid values. Should return a GVariant tuple')
 
     def get_encode_port(self):
         """Get the encode port number
@@ -138,8 +141,11 @@ class Controller(object):
         :returns: encode port number
         """
         conn = self.connection.get_encode_port()
-        encode_port = conn.unpack()[0]
-        return encode_port
+        try:
+            encode_port = conn.unpack()[0]
+            return encode_port
+        except AttributeError:
+            raise ConnectionError('Connection returned invalid values. Should return a GVariant tuple')
 
     def get_audio_port(self):
         """Get the audio port number
@@ -148,8 +154,11 @@ class Controller(object):
         :returns: audio port number
         """
         conn = self.connection.get_audio_port()
-        audio_port = conn.unpack()[0]
-        return audio_port
+        try:
+            audio_port = conn.unpack()[0]
+            return audio_port
+        except AttributeError:
+            raise ConnectionError('Connection returned invalid values. Should return a GVariant tuple')
 
     def get_preview_ports(self):
         """Get all the preview ports
@@ -158,9 +167,12 @@ class Controller(object):
         :returns: list of all preview ports
         """
         conn = self.connection.get_preview_ports()
-        res = conn.unpack()[0]
-        preview_ports = self._parse_preview_ports(res)
-        return preview_ports
+        try:
+            res = conn.unpack()[0]
+            preview_ports = self._parse_preview_ports(res)
+            return preview_ports
+        except AttributeError:
+            raise ConnectionError('Connection returned invalid values. Should return a GVariant tuple')
 
     def set_composite_mode(self, mode):
         """Set the current composite mode. Modes between 0 and 3 are allowed.

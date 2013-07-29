@@ -9,7 +9,7 @@ lint:
 coverage:
 	mkdir -p reports
 	mkdir -p reports/coverage
-	-py.test --cov-report html --cov gstswitch gstswitch
+	-py.test --cov-report html --cov gstswitch gstswitch -v
 	mv htmlcov/*.* reports/coverage
 	rmdir htmlcov
 	rm *.data
