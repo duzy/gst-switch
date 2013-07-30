@@ -96,6 +96,18 @@ gst_switch_ptz_update_d (GstSwitchPTZ * ptz)
 }
 
 static gboolean
+gst_switch_ptz_update_xy (GstSwitchPTZ * ptz)
+{
+  if (button_pressed) {
+    double x, y;
+    gst_cam_controller_query (ptz->controller, &x, &y);
+    gtk_adjustment_set_value (ptz->adjust_pan, (ptz->x = x));
+    gtk_adjustment_set_value (ptz->adjust_tilt, (ptz->y = y));
+  }
+  return TRUE;
+}
+
+static gboolean
 gst_switch_ptz_update (GstSwitchPTZ * ptz)
 {
   static double pan, tilt, zoom;        //, pan_speed, tilt_speed, zoom_speed;
@@ -105,7 +117,7 @@ gst_switch_ptz_update (GstSwitchPTZ * ptz)
   suseconds_t millis, millis_z;
   const double d = 0.0001;
   gettimeofday (&now, NULL);
-  if (timestamp.tv_usec == 0) {
+  if (timestamp.tv_usec == 0 || button_pressed) {
     timestamp = timestamp_z = now;
     pan = ptz->x, tilt = ptz->y, zoom = ptz->z;
     return TRUE;
@@ -354,6 +366,9 @@ gst_switch_ptz_button_pressed_center (GtkButton * button, GstSwitchPTZ * ptz)
       gtk_adjustment_get_value (ptz->adjust_pan_speed),
       gtk_adjustment_get_value (ptz->adjust_tilt_speed),
       CAM_RUN_NONE, button_pressed);
+  gst_cam_controller_move (ptz->controller,
+      gtk_adjustment_get_value (ptz->adjust_pan_speed), (ptz->x = 0),
+      gtk_adjustment_get_value (ptz->adjust_tilt_speed), (ptz->y = 0));
 }
 
 static void
@@ -747,7 +762,9 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       G_CALLBACK (gst_switch_ptz_button_released_right_bottom), ptz);
 
   g_timeout_add (250, (GSourceFunc) gst_switch_ptz_update, ptz);
-  g_timeout_add (50, (GSourceFunc) gst_switch_ptz_update_d, ptz);
+  g_timeout_add (50, (GSourceFunc) gst_switch_ptz_update_xy, ptz);
+  //g_timeout_add (50, (GSourceFunc) gst_switch_ptz_update_d, ptz);
+  (void) gst_switch_ptz_update_d;
 }
 
 static void
