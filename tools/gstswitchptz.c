@@ -119,6 +119,8 @@ gst_switch_ptz_update (GstSwitchPTZ * ptz)
   gettimeofday (&now, NULL);
   if (timestamp.tv_usec == 0 || button_pressed) {
     timestamp = timestamp_z = now;
+    if (button_pressed)
+      timestamp.tv_usec += 1000000;
     pan = ptz->x, tilt = ptz->y, zoom = ptz->z;
     return TRUE;
   }
@@ -606,7 +608,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
     for (m = 0; m < 3; ++m) {
       GtkWidget *btn = control_buttons[m][n] = gtk_button_new ();
       gtk_grid_attach (GTK_GRID (control_grid), btn, n, m, 1, 1);
-      gtk_widget_set_size_request (btn, 80, 80);
+      gtk_widget_set_size_request (btn, 70, 70);
       gtk_button_set_image (GTK_BUTTON (btn),
           gtk_image_new_from_file (control_labels[m][n]));
     }
@@ -616,7 +618,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("pan/tilt:"),
       TRUE, TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_control), scale_pan, FALSE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_buttons_tilt), scale_tilt, FALSE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_buttons_tilt), scale_tilt, FALSE, TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_buttons_tilt), control_grid, FALSE, TRUE,
       10);
   gtk_box_pack_start (GTK_BOX (box_control), box_buttons_tilt, FALSE, TRUE, 10);
@@ -631,9 +633,9 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       gtk_image_new_from_file ("icons/zoom.png"));
   gtk_button_set_image (GTK_BUTTON (zoom_plus),
       gtk_image_new_from_file ("icons/zoom_in.png"));
-  gtk_widget_set_size_request (zoom_minus, 80, 80);
-  gtk_widget_set_size_request (zoom_reset, 80, 80);
-  gtk_widget_set_size_request (zoom_plus, 80, 80);
+  gtk_widget_set_size_request (zoom_minus, 70, 70);
+  gtk_widget_set_size_request (zoom_reset, 70, 70);
+  gtk_widget_set_size_request (zoom_plus, 70, 70);
   gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("zoom:"), TRUE,
       TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_zoom), gtk_label_new (""), TRUE, TRUE, 0);
