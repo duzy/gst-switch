@@ -117,6 +117,12 @@ class MockConnection(object):
             else:
                 return (0,)
 
+        def set_composite_mode(self, m):
+            if self.mode is False:
+                return GLib.Variant('(b)', (True,))
+            else:
+                return (0,)
+
 
 class TestGetComposePort(object):
 
@@ -173,5 +179,21 @@ class TestGetPreviewPorts(object):
         controller.connection = MockConnection(False)
         controller._parse_preview_ports = Mock(return_value=[3001, 3002])
         assert controller.get_preview_ports() == [3001, 3002]
+
+
+class TestSetCompositeMode(object):
+
+    def test_unpack(self):
+        controller = Controller(address='unix:abstract=abcdefghijk')
+        controller.connection = MockConnection(True)
+        with pytest.raises(ConnectionError):
+            controller.set_composite_mode(1)
+
+    def test_normal_unpack(self):
+        controller =  Controller(address='unix:abstract=abcdef')
+        controller.establish_connection = Mock(return_value=None)
+        controller.connection = MockConnection(False)
+        assert controller.set_composite_mode(1) == True
+
 
 
