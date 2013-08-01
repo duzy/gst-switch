@@ -1,7 +1,9 @@
 from server import Server
 import pytest
 from exception import *
+import os
 import subprocess
+from mock import Mock
 
 
 class TestPath(object):
@@ -107,7 +109,7 @@ class TestRecordFile(object):
             Server(path=path, record_file=file)
 
 
-class TestProcess(object):
+class TestKillTerminate(object):
     # OS Errors
     def test_terminate_fail(self):
         class fake_proc(object):
@@ -131,45 +133,85 @@ class TestProcess(object):
         with pytest.raises(ServerProcessError):
             s.kill()
 
-    def test_start_process(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
-        s = Server(path=path)
-        with pytest.raises(ServerProcessError):
-            s._start_process('/usr/')
-
     def test_no_process_kill(self):
         path = '/home/hyades/gst/master/gstreamer/tools/'
         s = Server(path=path)
         with pytest.raises(ServerProcessError):
             s.kill()
 
-
-class TestNormal(object):
-    # Normal Functioning Tests
-    def test_normal_terminate(self):
+    def test_no_process_terminate(self):
         path = '/home/hyades/gst/master/gstreamer/tools/'
         s = Server(path=path)
+        with pytest.raises(ServerProcessError):
+            s.terminate()
+
+
+class TestRun(object):
+
+    def test_run(self):
+        s = Server(path='abc')
+        s._run_process = Mock(return_value=MockProcess())
         s.run()
+        assert s.pid == 1
         assert s.proc is not None
+
+    def test_run_process(self):
+        s = Server(path='abc')
+        s._start_process = Mock(return_value=MockProcess())
+        s.gst_option_string = ''
+        ret = s._run_process()
+        assert ret is not None
+
+    def test_start_process_error(self, monkeypatch):
+        s = Server(path='abc')
+        monkeypatch.setattr(subprocess, 'Popen', Mock(side_effect=OSError))
+        with pytest.raises(ServerProcessError):
+            s._start_process('cmd')
+
+    def test_start_process_normal(self, monkeypatch):
+        s = Server(path='abc')
+        monkeypatch.setattr(subprocess, 'Popen', Mock(return_value=MockProcess()))
+        s._start_process('cmd') 
+
+
+class MockProcess(object):
+        def __init__(self, mode=True):
+            self.mode = mode
+            self.pid = 1
+
+        def terminate(self):
+            if self.mode == True:
+                pass
+            if self.mode == False:
+                raise OSError('Testing terminate')
+
+
+class TestNormal(object):
+    # Normal Functioning Tests    
+
+    def test_normal_terminate(self):
+        s = Server(path='abc')
+        s.proc = MockProcess(True)
         s.terminate()
         assert s.proc is None
 
-    def test_normal_kill(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
-        s = Server(path=path)
-        s.run()
-        assert s.proc is not None
-        s.kill()
+    def test_normal_kill(self, monkeypatch):
+        s = Server(path='abc')
+        s.proc = Mock()
+        monkeypatch.setattr(os, 'kill', Mock())
+        res = s.kill()
+        assert  res == True
         assert s.proc is None
 
     def test_terminate(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
-        s = Server(path=path)
+        s = Server(path='abc')
+        s.proc = MockProcess(False)
         with pytest.raises(ServerProcessError):
             s.terminate()
 
-    def test_kill(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
-        s = Server(path=path)
+    def test_kill(self, monkeypatch):
+        s = Server(path='abc')
+        s.proc = Mock()
+        monkeypatch.setattr(os, 'kill', Mock(side_effect=OSError))
         with pytest.raises(ServerProcessError):
-            s.terminate()
+            s.kill()

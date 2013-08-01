@@ -10,7 +10,8 @@ from gstswitch.controller import Controller
 import time
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
-path = '/home/hyades/gst/master/gstreamer/tools/'
+# path = '/home/hyades/gst/master/gstreamer/tools/'
+path = '/usr/local/bin/'
 s = Server(path)
 try:
     s.run()  # launches the server default parameters

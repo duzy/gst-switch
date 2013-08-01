@@ -94,8 +94,26 @@ class MockConnection(object):
             self.mode = mode
 
         def get_compose_port(self):
-            if self.mode is True:
-                return GLib.Variant('(i)', (0,))
+            if self.mode is False:
+                return GLib.Variant('(i)', (3001,))
+            else:
+                return (0,)
+
+        def get_encode_port(self):
+            if self.mode is False:
+                return GLib.Variant('(i)', (3002,))
+            else:
+                return (0,)
+
+        def get_audio_port(self):
+            if self.mode is False:
+                return GLib.Variant('(i)', (4000,))
+            else:
+                return (0,)
+
+        def get_preview_ports(self):
+            if self.mode is False:
+                return GLib.Variant('(s)', ('[(3002, 1, 7), (3003, 1, 8)]',))
             else:
                 return (0,)
 
@@ -104,6 +122,53 @@ class TestGetComposePort(object):
 
     def test_unpack(self):
         controller = Controller(address='unix:abstract=abcdefghijk')
-        controller.connection = MockConnection(False)
-        with pytest.raises(AttributeError):
+        controller.connection = MockConnection(True)
+        with pytest.raises(ConnectionError):
             controller.get_compose_port()
+
+    def test_normal_unpack(self):
+        controller =  Controller(address='unix:abstract=abcdef')
+        controller.connection = MockConnection(False)
+        assert controller.get_compose_port() == 3001
+
+
+class TestGetEncodePort(object):
+
+    def test_unpack(self):
+        controller = Controller(address='unix:abstract=abcdefghijk')
+        controller.connection = MockConnection(True)
+        with pytest.raises(ConnectionError):
+            controller.get_encode_port()
+
+    def test_normal_unpack(self):
+        controller =  Controller(address='unix:abstract=abcdef')
+        controller.connection = MockConnection(False)
+        assert controller.get_encode_port() == 3002
+
+
+class TestGetAudioPort(object):
+
+    def test_unpack(self):
+        controller = Controller(address='unix:abstract=abcdefghijk')
+        controller.connection = MockConnection(True)
+        with pytest.raises(ConnectionError):
+            controller.get_audio_port()
+
+    def test_normal_unpack(self):
+        controller =  Controller(address='unix:abstract=abcdef')
+        controller.connection = MockConnection(False)
+        assert controller.get_audio_port() == 4000
+
+
+# class TestGetPreviewPorts(object):
+
+#     def test_unpack(self):
+#         controller = Controller(address='unix:abstract=abcdefghijk')
+#         controller.connection = MockConnection(True)
+#         with pytest.raises(ConnectionError):
+#             controller.get_preview_ports()
+
+#     def test_normal_unpack(self):
+#         controller =  Controller(address='unix:abstract=abcdef')
+#         controller.connection = MockConnection(False)
+#         assert controller.get_preview_ports() == '[(3002, 1, 7), (3003, 1, 8)]'
