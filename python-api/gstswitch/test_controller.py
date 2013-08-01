@@ -160,15 +160,18 @@ class TestGetAudioPort(object):
         assert controller.get_audio_port() == 4000
 
 
-# class TestGetPreviewPorts(object):
+class TestGetPreviewPorts(object):
 
-#     def test_unpack(self):
-#         controller = Controller(address='unix:abstract=abcdefghijk')
-#         controller.connection = MockConnection(True)
-#         with pytest.raises(ConnectionError):
-#             controller.get_preview_ports()
+    def test_unpack(self):
+        controller = Controller(address='unix:abstract=abcdefghijk')
+        controller.connection = MockConnection(True)
+        with pytest.raises(ConnectionError):
+            controller.get_preview_ports()
 
-#     def test_normal_unpack(self):
-#         controller =  Controller(address='unix:abstract=abcdef')
-#         controller.connection = MockConnection(False)
-#         assert controller.get_preview_ports() == '[(3002, 1, 7), (3003, 1, 8)]'
+    def test_normal_unpack(self):
+        controller =  Controller(address='unix:abstract=abcdef')
+        controller.connection = MockConnection(False)
+        controller._parse_preview_ports = Mock(return_value=[3001, 3002])
+        assert controller.get_preview_ports() == [3001, 3002]
+
+
