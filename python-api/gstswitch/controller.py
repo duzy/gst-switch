@@ -1,7 +1,7 @@
 #IMPORTS
 import ast
 from connection import Connection
-from exception import ConnectionError
+from exception import ConnectionReturnError
 
 __all__ = ["Controller", ]
 
@@ -132,7 +132,7 @@ class Controller(object):
             compose_port = conn.unpack()[0]
             return compose_port
         except AttributeError:
-            raise ConnectionError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
 
     def get_encode_port(self):
         """Get the encode port number
@@ -145,7 +145,7 @@ class Controller(object):
             encode_port = conn.unpack()[0]
             return encode_port
         except AttributeError:
-            raise ConnectionError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
 
     def get_audio_port(self):
         """Get the audio port number
@@ -158,7 +158,7 @@ class Controller(object):
             audio_port = conn.unpack()[0]
             return audio_port
         except AttributeError:
-            raise ConnectionError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
 
     def get_preview_ports(self):
         """Get all the preview ports
@@ -172,7 +172,7 @@ class Controller(object):
             preview_ports = self._parse_preview_ports(res)
             return preview_ports
         except AttributeError:
-            raise ConnectionError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
 
     def set_composite_mode(self, mode):
         """Set the current composite mode. Modes between 0 and 3 are allowed.
@@ -183,10 +183,14 @@ class Controller(object):
         self.establish_connection()
         # only modes from 0 to 3 are supported
         if mode >= 0 and mode <= 3:
-            conn = self.connection.set_composite_mode(mode)
-            res = conn.unpack()[0]
-            if res is True:
-                print "Set composite mode to %s" % (str(mode))
+            try:
+                conn = self.connection.set_composite_mode(mode)
+                print conn
+                res = conn.unpack()[0]
+                if res is True:
+                    print "Set composite mode to %s" % (str(mode))
+            except AttributeError:
+                raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
         else:
             pass
             # raise some Exception
@@ -200,14 +204,17 @@ class Controller(object):
         :returns: True when requested
         """
         self.establish_connection()
-        conn = self.connection.set_encode_mode(channel)
-        res = conn.unpack()[0]
-        if res is True:
-            print "Set encode mode to %s" % (str(channel))
-        else:
-            pass
-            # raise some exception
-        return res
+        try:
+            conn = self.connection.set_encode_mode(channel)
+            res = conn.unpack()[0]
+            if res is True:
+                print "Set encode mode to %s" % (str(channel))
+            else:
+                pass
+                # raise some exception
+            return res
+        except AttributeError:
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
 
     def new_record(self):
         """Start a new recording
@@ -215,13 +222,16 @@ class Controller(object):
         :param: None
         """
         self.establish_connection()
-        conn = self.connection.new_record()
-        res = conn.unpack()[0]
-        if res is True:
-            #logging
-            print "New record"
-        else:
-            pass
+        try:
+            conn = self.connection.new_record()
+            res = conn.unpack()[0]
+            if res is True:
+                #logging
+                print "New record"
+            else:
+                pass
+        except AttributeError:
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
         return res
 
     def adjust_pip(self, xpos, ypos, width, height):
@@ -234,10 +244,13 @@ class Controller(object):
         :returns: result - PIP has been changed succefullypos
         """
         self.establish_connection()
-        conn = self.connection.adjust_pip(xpos, ypos, width, height)
-        res = conn.unpack()[0]
-        print "adjust pip xpos:%s ypos:%s w:%s h:%s" % (str(xpos), str(ypos),
-                                                        str(width), str(height))
+        try:
+            conn = self.connection.adjust_pip(xpos, ypos, width, height)
+            res = conn.unpack()[0]
+            print "adjust pip xpos:%s ypos:%s w:%s h:%s" % (str(xpos), str(ypos),
+                                                            str(width), str(height))
+        except AttributeError:
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
         #to-do - parse
         return res
 
@@ -249,12 +262,16 @@ class Controller(object):
         :returns: True when requested
         """
         self.establish_connection()
-        conn = self.connection.switch(channel, port)
-        res = conn.unpack()[0]
-        if res is True:
-            print "Switch channel:%s port:%s" % (str(channel), str(port))
-        else:
-            pass
+        try:
+            conn = self.connection.switch(channel, port)
+            res = conn.unpack()[0]
+            if res is True:
+                print "Switch channel:%s port:%s" % (str(channel), str(port))
+            else:
+                pass
+            return res
+        except AttributeError:
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
 
     def click_video(self, xpos, ypos, width, height):
         """User click on the video
@@ -266,13 +283,16 @@ class Controller(object):
         :returns: True when requested
         """
         self.establish_connection()
-        conn = self.connection.click_video(xpos, ypos, width, height)
-        res = conn.unpack()[0]
-        if res is True:
-            print "Click video: xpos:%s ypos:%s width:%s height:%s" % (str(xpos), str(ypos),
-                                                                       str(width), str(height))
-        else:
-            pass
+        try:
+            conn = self.connection.click_video(xpos, ypos, width, height)
+            res = conn.unpack()[0]
+            if res is True:
+                print "Click video: xpos:%s ypos:%s width:%s height:%s" % (str(xpos), str(ypos),
+                                                                           str(width), str(height))
+            else:
+                pass
+        except:
+            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
         return res
 
     def mark_face(self, faces):
@@ -281,7 +301,7 @@ class Controller(object):
         :param faces: tuple having four elements
         :returns: True when requested
         """
-        # faces is dictionary
+        # faces is list of a tuple of four elements
         self.establish_connection()
         self.connection.mark_face(faces)
 
@@ -297,7 +317,10 @@ class Controller(object):
     def _parse_preview_ports(self, res):
         """Parses the preview_ports string"""
         # res = '[(a, b, c), (a, b, c)*]'
-        liststr = ast.literal_eval(res)
+        try:
+            liststr = ast.literal_eval(res)
+        except (ValueError, SyntaxError):
+            raise ConnectionReturnError("Connection returned invalid values: {0}".format(res))
         preview_ports = []
         for tupl in liststr:
             preview_ports.append(int(tupl[0]))

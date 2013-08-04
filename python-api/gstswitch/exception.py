@@ -19,3 +19,8 @@ class ServerProcessError(BaseError):
 class ConnectionError(BaseError):
     """docstring for ConnectionError"""
     pass
+
+
+class ConnectionReturnError(BaseError):
+    """docstring for ConnectionError"""
+    pass
