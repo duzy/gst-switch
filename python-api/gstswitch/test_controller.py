@@ -93,9 +93,6 @@ class MockConnection(object):
         def __init__(self, mode):
             self.mode = mode
 
-        def establish_connection(self):
-            pass
-
         def get_compose_port(self):
             if self.mode is False:
                 return GLib.Variant('(i)', (3001,))

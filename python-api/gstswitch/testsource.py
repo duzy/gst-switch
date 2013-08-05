@@ -237,6 +237,110 @@ class VideoSrc(object):
             self.clockoverlay)
         self.run()
 
+    @property
+    def port(self):
+        return self._port
+
+    @port.setter
+    def port(self, port):
+        if not port:
+            raise ValueError("Port: '{0}'' cannot be blank"
+                             .format(port))
+        else:
+            try:
+                i = int(port)
+                if i < 1 or i > 65535:
+                    raise ValueError('Port must be in range 1 to 65535')
+                else:
+                    self._port = port
+            except TypeError:
+                raise TypeError("Port must be a string or number,"
+                    "not, '{0}'".format(type(port)))
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, width):
+        if not width:
+            raise ValueError("Width: '{0}' cannot be blank"
+                .format(width))
+        try:
+            i = float(width)
+            if i <= 0 :
+                raise ValueError("Width: '{0}' must be a valid positive value")
+            else:
+                self._width = width
+        except TypeError:
+            raise TypeError("Width must be a valid value not '{0}'"
+                .format(type(width)))
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, height):
+        if not height:
+            raise ValueError("Height: '{0}' cannot be blank"
+                .format(height))
+        try:
+            i = float(height)
+            if i <= 0 :
+                raise ValueError("Height: '{0}' must be a valid positive value")
+            else:
+                self._height = height
+        except TypeError:
+            raise TypeError("Height must be a valid value not '{0}'"
+                .format(type(height)))
+
+    @property
+    def pattern(self):
+        return self._pattern
+
+    @pattern.setter
+    def pattern(self, pattern):
+        if not pattern:
+            raise ValueError("Pattern: '{0}'' cannot be blank"
+                             .format(pattern))
+        else:
+            try:
+                i = int(pattern)
+                if i < 0 or i > 19:
+                    raise ValueError('pattern must be in range 0 to 19')
+                else:
+                    self._pattern = pattern
+            except TypeError:
+                raise TypeError("pattern must be a string or number,"
+                    "not, '{0}'".format(type(pattern)))
+
+    @property
+    def timeoverlay(self):
+        return self._timeoverlay
+
+    @timeoverlay.setter
+    def timeoverlay(self, timeoverlay):
+        t = str(timeoverlay)
+        if t == 'True' or t == 'False':
+            self._timeoverlay = timeoverlay
+        else:
+            raise ValueError("Timeoverlay: '{0}' must be True of False"
+                .format(timeoverlay))
+
+    @property
+    def clockoverlay(self):
+        return self._clockoverlay
+
+    @clockoverlay.setter
+    def clockoverlay(self, clockoverlay):
+        t = str(clockoverlay)
+        if t == 'True' or t == 'False':
+            self._clockoverlay = clockoverlay
+        else:
+            raise ValueError("Clockoverlay: '{0}' must be True of False"
+                .format(clockoverlay))
+
     def run(self):
         """Run the pipeline"""
         self.pipeline.play()
