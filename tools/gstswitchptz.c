@@ -147,8 +147,11 @@ gst_switch_ptz_update (GstSwitchPTZ * ptz)
     double x = gtk_adjustment_get_value (ptz->adjust_pan);
     double y = gtk_adjustment_get_value (ptz->adjust_tilt);
     double z = gtk_adjustment_get_value (ptz->adjust_zoom);
+    double rx, ry;
+    gst_cam_controller_query (ptz->controller, &rx, &ry);
 
-    if (d < fabs (x - pan) || d < fabs (y - tilt)) {
+    if (d < fabs (x - pan) || d < fabs (y - tilt) ||
+        d < fabs (rx - pan) || d < fabs (ry - tilt)) {
       if (g < millis) {
         gst_cam_controller_move (ptz->controller,
             gtk_adjustment_get_value (ptz->adjust_pan_speed), (pan = x),
@@ -452,12 +455,14 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   const char *title = NULL;
 
   ptz->controller = gst_cam_controller_new (ptz_control_protocol);
-  if (ptz->controller) {
-    gst_cam_controller_open (ptz->controller, ptz_device_name);
-    title = ptz->controller->device_info;
-    if (title == NULL)
-      title = "??? - PTZ Controller";
+  if (ptz->controller == NULL) {
+    return;
   }
+
+  gst_cam_controller_open (ptz->controller, ptz_device_name);
+  title = ptz->controller->device_info;
+  if (title == NULL)
+    title = "??? - PTZ Controller";
 
   ptz->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
   gtk_window_set_default_size (GTK_WINDOW (ptz->window), 640, 480);
@@ -507,60 +512,6 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   gtk_range_set_inverted (GTK_RANGE (scale_tilt), TRUE);
   ptz->adjust_pan = gtk_range_get_adjustment (GTK_RANGE (scale_pan));
   ptz->adjust_tilt = gtk_range_get_adjustment (GTK_RANGE (scale_tilt));
-  {
-    double v, tick = 50;
-    gchar *s;
-    gchar buf[64] = { 0 };
-    int n;
-    (void) n;
-    const gchar *const fmt = "<small><sub>%d</sub></small>";
-    (void) fmt;
-    const gchar *const fmtb = "<small><sub><b>%d</b></sub></small>";
-    g_sprintf ((s = buf), fmtb, 0);
-    gtk_scale_add_mark (GTK_SCALE (scale_pan), 0, GTK_POS_BOTTOM, s);
-    g_sprintf ((s = buf), fmtb, (int) ptz->controller->pan_min);
-    gtk_scale_add_mark (GTK_SCALE (scale_pan), ptz->controller->pan_min,
-        GTK_POS_BOTTOM, s);
-    g_sprintf ((s = buf), fmtb, (int) ptz->controller->pan_max);
-    gtk_scale_add_mark (GTK_SCALE (scale_pan), ptz->controller->pan_max,
-        GTK_POS_BOTTOM, s);
-    g_sprintf ((s = buf), fmtb, 0);
-    gtk_scale_add_mark (GTK_SCALE (scale_tilt), 0, GTK_POS_RIGHT, s);
-    g_sprintf ((s = buf), fmtb, (int) ptz->controller->tilt_min);
-    gtk_scale_add_mark (GTK_SCALE (scale_tilt), ptz->controller->tilt_min,
-        GTK_POS_RIGHT, s);
-    g_sprintf ((s = buf), fmtb, (int) ptz->controller->tilt_max);
-    gtk_scale_add_mark (GTK_SCALE (scale_tilt), ptz->controller->tilt_max,
-        GTK_POS_RIGHT, s);
-    for (v = -tick; ptz->controller->pan_min <= v; v -= tick) {
-      n = (int) v;
-      s = NULL;
-      if (abs (n) % 50 == 0)
-        g_sprintf ((s = buf), fmt, n);
-      gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, s);
-    }
-    for (v = tick; v <= ptz->controller->pan_max; v += tick) {
-      n = (int) v;
-      s = NULL;
-      if (abs (n) % 50 == 0)
-        g_sprintf ((s = buf), fmt, n);
-      gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, s);
-    }
-    for (v = -tick; ptz->controller->tilt_min <= v; v -= tick) {
-      n = (int) v;
-      s = NULL;
-      if (abs (n) % 50 == 0)
-        g_sprintf ((s = buf), fmt, n);
-      gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, s);
-    }
-    for (v = tick; v <= ptz->controller->tilt_max; v += tick) {
-      n = (int) v;
-      s = NULL;
-      if (abs (n) % 50 == 0)
-        g_sprintf ((s = buf), fmt, n);
-      gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, s);
-    }
-  }
   g_signal_connect (gtk_range_get_adjustment (GTK_RANGE (scale_pan)),
       "value-changed", G_CALLBACK (gst_switch_ptz_pan_changed), ptz);
   g_signal_connect (gtk_range_get_adjustment (GTK_RANGE (scale_tilt)),
@@ -645,6 +596,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   gtk_range_set_value (GTK_RANGE (scale_tilt_speed),
       ptz->controller->tilt_speed_max);
   gtk_range_set_value (GTK_RANGE (scale_zoom_speed), 1.0);
+
   ptz->adjust_pan_speed =
       gtk_range_get_adjustment (GTK_RANGE (scale_pan_speed));
   ptz->adjust_tilt_speed =
@@ -676,6 +628,96 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   gtk_box_pack_start (GTK_BOX (box_control), box_control_tilt, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_control), box_control_zoom, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new (""), TRUE, TRUE, 0);
+
+  {
+    double v, tick = 50;
+    gchar *s;
+    gchar buf[64] = { 0 };
+    int n;
+    const gchar *fmt = "<small><sub>%d</sub></small>";
+    const gchar *fmtb = "<small><sub><b>%d</b></sub></small>";
+    g_sprintf ((s = buf), fmtb, 0);
+    gtk_scale_add_mark (GTK_SCALE (scale_pan), 0, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (int) ptz->controller->pan_min);
+    gtk_scale_add_mark (GTK_SCALE (scale_pan), ptz->controller->pan_min,
+        GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (int) ptz->controller->pan_max);
+    gtk_scale_add_mark (GTK_SCALE (scale_pan), ptz->controller->pan_max,
+        GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, 0);
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt), 0, GTK_POS_RIGHT, s);
+    g_sprintf ((s = buf), fmtb, (int) ptz->controller->tilt_min);
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt), ptz->controller->tilt_min,
+        GTK_POS_RIGHT, s);
+    g_sprintf ((s = buf), fmtb, (int) ptz->controller->tilt_max);
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt), ptz->controller->tilt_max,
+        GTK_POS_RIGHT, s);
+    for (v = -tick; ptz->controller->pan_min <= v; v -= tick) {
+      n = (int) v;
+      s = NULL;
+      if (abs (n) % 50 == 0)
+        g_sprintf ((s = buf), fmt, n);
+      gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, s);
+    }
+    for (v = tick; v <= ptz->controller->pan_max; v += tick) {
+      n = (int) v;
+      s = NULL;
+      if (abs (n) % 50 == 0)
+        g_sprintf ((s = buf), fmt, n);
+      gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, s);
+    }
+    for (v = -tick; ptz->controller->tilt_min <= v; v -= tick) {
+      n = (int) v;
+      s = NULL;
+      if (abs (n) % 50 == 0)
+        g_sprintf ((s = buf), fmt, n);
+      gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, s);
+    }
+    for (v = tick; v <= ptz->controller->tilt_max; v += tick) {
+      n = (int) v;
+      s = NULL;
+      if (abs (n) % 50 == 0)
+        g_sprintf ((s = buf), fmt, n);
+      gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, s);
+    }
+
+    g_sprintf ((s = buf), fmtb, (int) (v =
+            ptz->controller->pan_speed_min + 0.5));
+    gtk_scale_add_mark (GTK_SCALE (scale_pan_speed), v, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (int) (v =
+            ptz->controller->pan_speed_max + 0.5));
+    gtk_scale_add_mark (GTK_SCALE (scale_pan_speed), v, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (int) (v =
+            (ptz->controller->pan_speed_max -
+                ptz->controller->pan_speed_min) / 2 + 0.5));
+    gtk_scale_add_mark (GTK_SCALE (scale_pan_speed), v, GTK_POS_BOTTOM, s);
+
+    g_sprintf ((s = buf), fmtb, (int) (v =
+            ptz->controller->tilt_speed_min + 0.5));
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt_speed), v, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (int) (v =
+            ptz->controller->tilt_speed_max + 0.5));
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt_speed), v, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (int) (v =
+            (ptz->controller->tilt_speed_max -
+                ptz->controller->tilt_speed_min) / 2 + 0.5));
+    gtk_scale_add_mark (GTK_SCALE (scale_tilt_speed), v, GTK_POS_BOTTOM, s);
+
+    fmtb = "<small><sub><b>%.1f</b></sub></small>";
+    g_sprintf ((s = buf), fmtb, (v = 0.0));
+    gtk_scale_add_mark (GTK_SCALE (scale_zoom_speed), v, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (v = 1.0));
+    gtk_scale_add_mark (GTK_SCALE (scale_zoom_speed), v, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (v = 0.5));
+    gtk_scale_add_mark (GTK_SCALE (scale_zoom_speed), v, GTK_POS_BOTTOM, s);
+
+    g_sprintf ((s = buf), fmtb, (v = 0.0));
+    gtk_scale_add_mark (GTK_SCALE (scale_zoom), v, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (v = 1.0));
+    gtk_scale_add_mark (GTK_SCALE (scale_zoom), v, GTK_POS_BOTTOM, s);
+    g_sprintf ((s = buf), fmtb, (v = 0.5));
+    gtk_scale_add_mark (GTK_SCALE (scale_zoom), v, GTK_POS_BOTTOM, s);
+  }
 
   if (strcmp (ptz_control_protocol, "visca-sony") == 0) {
     gtk_widget_set_sensitive (box_control_pan, FALSE);
@@ -777,9 +819,22 @@ gst_switch_ptz_get_pipeline (GstSwitchPTZ * ptz)
 static void
 gst_switch_ptz_run (GstSwitchPTZ * ptz)
 {
-  gtk_widget_show_all (ptz->window);
-  gst_worker_start (GST_WORKER (ptz));
-  gtk_main ();
+  if (ptz->controller == NULL) {
+    GtkWidget *d = gtk_message_dialog_new (NULL,
+        GTK_DIALOG_DESTROY_WITH_PARENT,
+        GTK_MESSAGE_ERROR,
+        GTK_BUTTONS_CLOSE,
+        "You don't specify the correct protocol (check the -p option)!");
+    gtk_dialog_run (GTK_DIALOG (d));
+    gtk_widget_destroy (d);
+    return;
+  }
+
+  if (ptz->window) {
+    gtk_widget_show_all (ptz->window);
+    gst_worker_start (GST_WORKER (ptz));
+    gtk_main ();
+  }
 }
 
 static int
@@ -805,12 +860,12 @@ gst_switch_ptz_class_init (GstSwitchPTZClass * klass)
 }
 
 static GOptionEntry entries[] = {
-  {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", NULL},
+  {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", "VERBOSE"},
   {"device", 'd', 0, G_OPTION_ARG_STRING, &ptz_device_name,
       "PTZ camera control device", "DEVICE"},
   {"protocol", 'p', 0, G_OPTION_ARG_STRING, &ptz_control_protocol,
-      "PTZ camera control protocol", "NAME"},
-  {"video", 'v', 0, G_OPTION_ARG_STRING, &ptz_video_name,
+      "PTZ camera control protocol", "PROTOCOL"},
+  {"video", 'i', 0, G_OPTION_ARG_STRING, &ptz_video_name,
       "Camera video name (default /dev/video0)", "NAME"},
   {NULL}
 };
