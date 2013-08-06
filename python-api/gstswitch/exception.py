@@ -22,5 +22,10 @@ class ConnectionError(BaseError):
 
 
 class ConnectionReturnError(BaseError):
-    """docstring for ConnectionError"""
+    """docstring for ConnectionReturnError"""
     pass
+
+class RangeError(BaseError):
+    """docstring for RangeError"""
+    pass
+

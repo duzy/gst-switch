@@ -1,7 +1,7 @@
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
-
+from exception import RangeError
 import random
 
 # from pipeline import *
@@ -61,6 +61,7 @@ class VideoPipeline(BasePipeline):
     def __init__(
             self,
             port,
+            host='127.0.0.1',
             width=300,
             height=200,
             pattern=None,
@@ -68,7 +69,7 @@ class VideoPipeline(BasePipeline):
             clockoverlay=False):
         super(VideoPipeline, self).__init__()
 
-        self.host = '127.0.0.1'
+        self.host = host
 
         src = self.make_videotestsrc(pattern)
         self.add(src)
@@ -177,6 +178,24 @@ class PreviewPipeline(BasePipeline):
         self.add(sink)
         gdpdepay.link(sink)
 
+    @property
+    def preview_port(self):
+        return self._preview_port
+
+    @preview_port.setter
+    def preview_port(self, preview_port):
+        try:
+            port = int(preview_port)
+            if port < 1 or port > 65535:
+                raise RangeError("Preview Port: '{0}' must be in range 1 and 65535"
+                                 .format(preview_port))
+            else:
+                self._preview_port = preview_port
+        except TypeError:
+            raise TypeError("Preview Port: '{0}' must be a valid non negative integer"
+                            .format(preview_port))
+
+
     def make_tcpclientsrc(self, port):
         """Return a TCP Client Source element
         :param port: The port of the server
@@ -244,18 +263,20 @@ class VideoSrc(object):
     @port.setter
     def port(self, port):
         if not port:
-            raise ValueError("Port: '{0}'' cannot be blank"
+            raise ValueError("Port: '{0}' cannot be blank"
                              .format(port))
         else:
             try:
                 i = int(port)
                 if i < 1 or i > 65535:
-                    raise ValueError('Port must be in range 1 to 65535')
+                    raise RangeError('Port must be in range 1 to 65535')
                 else:
                     self._port = port
             except TypeError:
                 raise TypeError("Port must be a string or number,"
                     "not, '{0}'".format(type(port)))
+            except ValueError:
+                raise TypeError("Port must be a valid number")
 
     @property
     def width(self):
@@ -301,19 +322,17 @@ class VideoSrc(object):
 
     @pattern.setter
     def pattern(self, pattern):
-        if not pattern:
-            raise ValueError("Pattern: '{0}'' cannot be blank"
-                             .format(pattern))
-        else:
-            try:
-                i = int(pattern)
-                if i < 0 or i > 19:
-                    raise ValueError('pattern must be in range 0 to 19')
-                else:
-                    self._pattern = pattern
-            except TypeError:
-                raise TypeError("pattern must be a string or number,"
-                    "not, '{0}'".format(type(pattern)))
+        try:
+            i = int(float(pattern))
+            if i < 0 or i > 19:
+                raise RangeError('Pattern must be in range 0 and 19')
+            else:
+                self._pattern = pattern
+        except TypeError:
+            raise TypeError("Pattern must be a string or number,"
+                "not, '{0}'".format(type(pattern)))
+        except ValueError:
+            raise TypeError("Pattern must be a valid number")
 
     @property
     def timeoverlay(self):
@@ -357,7 +376,7 @@ class VideoSrc(object):
         """Generate a random patern if not specified
         """
         if pattern is None:
-            pattern = random.randint(0, 20)
+            pattern = random.randint(0, 19)
         pattern = str(pattern)
         return pattern
 
@@ -368,8 +387,26 @@ class Preview(object):
     """
     def __init__(self, port):
         super(Preview, self).__init__()
-        self.preview_port = int(port)
+        self.preview_port = port
         self.pipeline = PreviewPipeline(self.preview_port)
+
+    @property
+    def preview_port(self):
+        return self._preview_port
+
+    @preview_port.setter
+    def preview_port(self, preview_port):
+        try:
+            port = int(preview_port)
+            if port < 1 or port > 65535:
+                raise RangeError("Preview Port: '{0}' must be in range 1 and 65535"
+                                 .format(preview_port))
+            else:
+                self._preview_port = preview_port
+        except TypeError:
+            raise TypeError("Preview Port: '{0}' must be a valid non negative integer"
+                            .format(preview_port))
+
 
     def run(self):
         """Run the pipeline"""
