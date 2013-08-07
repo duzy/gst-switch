@@ -1,7 +1,8 @@
 from exception import RangeError
-from testsource import Preview, VideoSrc
+from testsource import Preview, VideoSrc, BasePipeline, VideoPipeline
 import pytest
 from mock import Mock, patch
+from gi.repository import Gst
 
 
 class TestVideoSrcPort(object):
@@ -222,3 +223,40 @@ class TestPreviewPlay(object):
         src = Preview(port=3001)
         src.pipeline = MockPipeline()
         src.end()
+
+
+
+class TestBasePipeline(object):
+
+    def test_play(self, monkeypatch):
+        monkeypatch.setattr(Gst.Pipeline, '__init__', Mock())
+        pipeline = BasePipeline()
+        pipeline.set_state = Mock()
+        pipeline.play()
+
+    def test_pause(self, monkeypatch):
+        monkeypatch.setattr(Gst.Pipeline, '__init__', Mock())
+        pipeline = BasePipeline()
+        pipeline.set_state = Mock()
+        pipeline.pause()
+
+    def test_disable(self, monkeypatch):
+        monkeypatch.setattr(Gst.Pipeline, '__init__', Mock())
+        pipeline = BasePipeline()
+        pipeline.set_state = Mock()
+        pipeline.disable()
+
+
+class TestVideoPipeline(object):
+
+    def test_permuate_time_clock_1(self):
+        VideoPipeline(port=3000, pattern=10, timeoverlay=False, clockoverlay=False)
+
+    def test_permuate_time_clock_2(self):
+        VideoPipeline(port=3000, pattern=10, timeoverlay=False, clockoverlay=True)
+
+    def test_permuate_time_clock_3(self):
+        VideoPipeline(port=3000, pattern=10, timeoverlay=True, clockoverlay=False)
+
+    def test_permuate_time_clock_4(self):
+        VideoPipeline(port=3000, pattern=10, timeoverlay=True, clockoverlay=True)
