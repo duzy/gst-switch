@@ -328,9 +328,6 @@ class VideoSrc(object):
                 raise RangeError('Pattern must be in range 0 and 19')
             else:
                 self._pattern = pattern
-        except TypeError:
-            raise TypeError("Pattern must be a string or number,"
-                "not, '{0}'".format(type(pattern)))
         except ValueError:
             raise TypeError("Pattern must be a valid number")
 

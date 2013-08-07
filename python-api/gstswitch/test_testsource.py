@@ -114,3 +114,38 @@ class TestVideoSrcPattern(object):
 		for test in tests:
 			src = VideoSrc(port=port, pattern=test)
 			assert src.pattern == str(test)
+
+
+class TestVideoSrcTimeOverlay(object):
+
+	def test_fail(self):
+		tests = ['', 1234, 'hi', [1, 2], {1: 2}, None, 0, []]
+		port = 1000
+		for test in tests:
+			with pytest.raises(ValueError):
+				VideoSrc(port=port, timeoverlay=test)
+
+	def test_normal(self):
+		tests = [True, False]
+		port = 1000
+		for test in tests:
+			src = VideoSrc(port=port, timeoverlay=test)
+			assert src.timeoverlay == test
+
+
+
+class TestVideoSrcClockOverlay(object):
+
+	def test_fail(self):
+		tests = ['', 1234, 'hi', [1, 2], {1: 2}, None, 0, []]
+		port = 1000
+		for test in tests:
+			with pytest.raises(ValueError):
+				VideoSrc(port=port, clockoverlay=test)
+
+	def test_normal(self):
+		tests = [True, False]
+		port = 1000
+		for test in tests:
+			src = VideoSrc(port=port, clockoverlay=test)
+			assert src.clockoverlay == test
