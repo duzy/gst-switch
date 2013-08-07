@@ -247,6 +247,14 @@ class VideoSrc(object):
         self.pattern = self.generate_pattern(pattern)
         self.timeoverlay = timeoverlay
         self.clockoverlay = clockoverlay
+        self.pipeline = VideoPipeline(
+            self.port,
+            self.HOST,
+            self.width,
+            self.height,
+            self.pattern,
+            self.timeoverlay,
+            self.clockoverlay)
 
     @property
     def port(self):
@@ -351,15 +359,6 @@ class VideoSrc(object):
 
     def run(self):
         """Run the pipeline"""
-        self.pipeline = VideoPipeline(
-            self.port,
-            self.HOST,
-            self.width,
-            self.height,
-            self.pattern,
-            self.timeoverlay,
-            self.clockoverlay)
-        
         self.pipeline.play()
 
     def pause(self):

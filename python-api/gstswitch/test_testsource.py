@@ -151,4 +151,7 @@ class TestVideoSrcClockOverlay(object):
             assert src.clockoverlay == test
 
 
-# class TestVideoSrc
+class TestVideoSrcRun(object):
+
+    def function():
+        pass
