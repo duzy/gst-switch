@@ -178,24 +178,6 @@ class PreviewPipeline(BasePipeline):
         self.add(sink)
         gdpdepay.link(sink)
 
-    @property
-    def preview_port(self):
-        return self._preview_port
-
-    @preview_port.setter
-    def preview_port(self, preview_port):
-        try:
-            port = int(preview_port)
-            if port < 1 or port > 65535:
-                raise RangeError("Preview Port: '{0}' must be in range 1 and 65535"
-                                 .format(preview_port))
-            else:
-                self._preview_port = preview_port
-        except TypeError:
-            raise TypeError("Preview Port: '{0}' must be a valid non negative integer"
-                            .format(preview_port))
-
-
     def make_tcpclientsrc(self, port):
         """Return a TCP Client Source element
         :param port: The port of the server
@@ -393,16 +375,21 @@ class Preview(object):
 
     @preview_port.setter
     def preview_port(self, preview_port):
-        try:
-            port = int(preview_port)
-            if port < 1 or port > 65535:
-                raise RangeError("Preview Port: '{0}' must be in range 1 and 65535"
-                                 .format(preview_port))
-            else:
-                self._preview_port = preview_port
-        except TypeError:
-            raise TypeError("Preview Port: '{0}' must be a valid non negative integer"
-                            .format(preview_port))
+        if not preview_port:
+            raise ValueError("preview_port: '{0}' cannot be blank"
+                             .format(preview_port))
+        else:
+            try:
+                i = int(preview_port)
+                if i < 1 or i > 65535:
+                    raise RangeError('preview_port must be in range 1 to 65535')
+                else:
+                    self._preview_port = preview_port
+            except TypeError:
+                raise TypeError("preview_port must be a string or number,"
+                    "not, '{0}'".format(type(preview_port)))
+            except ValueError:
+                raise TypeError("Port must be a valid number")
 
 
     def run(self):

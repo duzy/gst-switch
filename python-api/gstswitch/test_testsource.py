@@ -150,8 +150,75 @@ class TestVideoSrcClockOverlay(object):
             src = VideoSrc(port=port, clockoverlay=test)
             assert src.clockoverlay == test
 
+class MockPipeline(object):
 
-class TestVideoSrcRun(object):
-
-    def function():
+    def play(self):
         pass
+
+    def pause(self):
+        pass
+
+    def disable(self):
+        pass
+
+
+class TestVideoSrcPlay(object):
+
+    def test_run(self):
+        src = VideoSrc(port=3000)
+        src.pipeline = MockPipeline()
+        src.run()
+
+    def test_pause(self):
+        src = VideoSrc(port=3000)
+        src.pipeline = MockPipeline()
+        src.pause()
+
+    def test_end(self):
+        src = VideoSrc(port=3000)
+        src.pipeline = MockPipeline()
+        src.end()
+
+
+class TestPreviewPort(object):
+
+    def test_blank(self):
+        tests = ['', None, [], {}]
+        for test in tests:
+            with pytest.raises(ValueError):
+                Preview(port=test) 
+
+    def test_range(self):
+        tests = [-100, 1e7, 65536]
+        for test in tests:
+            with pytest.raises(RangeError):
+                Preview(port=test)
+
+    def test_invalid(self):
+        tests = [[1, 2, 3, 4], {1: 2, 2: 3}, '1e10']
+        for test in tests:
+            with pytest.raises(TypeError):
+                Preview(port=test)
+
+    def test_normal(self):
+        tests = [1, 65535, 1000]
+        for test in tests:
+            src = Preview(port=test)
+            assert src.preview_port == test
+
+class TestPreviewPlay(object):
+
+    def test_run(self):
+        src = Preview(port=3001)
+        src.pipeline = MockPipeline()
+        src.run()
+
+    def test_pause(self):
+        src = Preview(port=3001)
+        src.pipeline = MockPipeline()
+        src.pause()
+
+    def test_end(self):
+        src = Preview(port=3001)
+        src.pipeline = MockPipeline()
+        src.end()
