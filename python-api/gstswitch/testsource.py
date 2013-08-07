@@ -230,6 +230,7 @@ class VideoSrc(object):
     :param timeoverlay: True to enable a running time over video
     :param clockoverlay: True to enable current clock time over video
     """
+    HOST = '127.0.0.1'
 
     def __init__(
             self,
@@ -246,15 +247,6 @@ class VideoSrc(object):
         self.pattern = self.generate_pattern(pattern)
         self.timeoverlay = timeoverlay
         self.clockoverlay = clockoverlay
-
-        self.pipeline = VideoPipeline(
-            self.port,
-            self.width,
-            self.height,
-            self.pattern,
-            self.timeoverlay,
-            self.clockoverlay)
-        self.run()
 
     @property
     def port(self):
@@ -359,6 +351,15 @@ class VideoSrc(object):
 
     def run(self):
         """Run the pipeline"""
+        self.pipeline = VideoPipeline(
+            self.port,
+            self.HOST,
+            self.width,
+            self.height,
+            self.pattern,
+            self.timeoverlay,
+            self.clockoverlay)
+        
         self.pipeline.play()
 
     def pause(self):

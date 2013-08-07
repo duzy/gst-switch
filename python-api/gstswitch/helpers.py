@@ -40,8 +40,7 @@ class TestSources(object):
             pattern,
             timeoverlay,
             clockoverlay)
-        if testsrc is None:
-            pass
+        testsrc.run()
         self.running_tests.append(testsrc)
 
     def get_test_video(self):
