@@ -1,4 +1,4 @@
-from testsource import VideoSrc, Preview
+import testsource
 from exception import RangeError
 
 __all__ = ["TestSources", "PreviewSinks"]
@@ -57,7 +57,7 @@ class TestSources(object):
         :param timeoverlay: True to enable a running time over video
         :param clockoverlay: True to enable current clock time over video
         """
-        testsrc = VideoSrc(
+        testsrc = testsource.VideoSrc(
             self.video_port,
             width,
             height,
@@ -107,7 +107,7 @@ class PreviewSinks(object):
 
     def run(self):
         """Run the Preview Sink"""
-        self.preview = Preview(self.preview_port)
+        self.preview = testsource.Preview(self.preview_port)
         self.preview.run()
         print 'start preview'
 
