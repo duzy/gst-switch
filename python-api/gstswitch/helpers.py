@@ -114,6 +114,29 @@ class PreviewSinks(object):
         super(PreviewSinks, self).__init__()
         self.preview_port = preview_port
 
+    @property
+    def preview_port(self):
+        return self._preview_port
+
+    @preview_port.setter
+    def preview_port(self, preview_port):
+        if not preview_port:
+            raise ValueError("preview_port: '{0}' cannot be blank"
+                             .format(preview_port))
+        else:
+            try:
+                i = int(preview_port)
+                if i < 1 or i > 65535:
+                    raise RangeError('preview_port must be in range 1 to 65535')
+                else:
+                    self._preview_port = preview_port
+            except TypeError:
+                raise TypeError("preview_port must be a string or number,"
+                    "not, '{0}'".format(type(preview_port)))
+            except ValueError:
+                raise TypeError("Port must be a valid number")
+
+
     def run(self):
         """Run the Preview Sink"""
         self.preview = testsource.Preview(self.preview_port)
