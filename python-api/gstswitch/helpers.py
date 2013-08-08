@@ -1,4 +1,5 @@
 from testsource import VideoSrc, Preview
+from exception import RangeError
 
 __all__ = ["TestSources", "PreviewSinks"]
 
@@ -17,6 +18,29 @@ class TestSources(object):
         super(TestSources, self).__init__()
         self.running_tests = []
         self.video_port = video_port
+
+    @property
+    def video_port(self):
+        return self._video_port
+
+    @video_port.setter
+    def video_port(self, video_port):
+        if not video_port:
+            raise ValueError("video_port: '{0}' cannot be blank"
+                             .format(video_port))
+        else:
+            try:
+                i = int(video_port)
+                if i < 1 or i > 65535:
+                    raise RangeError('video_port must be in range 1 to 65535')
+                else:
+                    self._video_port = video_port
+            except TypeError:
+                raise TypeError("video_port must be a string or number,"
+                    "not, '{0}'".format(type(video_port)))
+            except ValueError:
+                raise TypeError("Port must be a valid number")
+        
 
     def new_test_video(self,
                        width=300,

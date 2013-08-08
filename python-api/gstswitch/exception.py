@@ -1,4 +1,7 @@
-__all__ = ['BaseError', 'PathError', 'ServerProcessError', 'ConnectionError']
+__all__ = [
+            'BaseError', 'PathError', 'ServerProcessError', 'ConnectionError', 
+            'ConnectionReturnError', 'RangeError',
+           ]
 
 
 class BaseError(Exception):
