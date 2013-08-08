@@ -1,5 +1,5 @@
 import testsource
-from exception import RangeError
+from exception import RangeError, InvalidIndexError
 
 __all__ = ["TestSources", "PreviewSinks"]
 
@@ -82,7 +82,16 @@ class TestSources(object):
         :param index: The index of the video source to terminate
         Use get_test_video for finding the index
         """
-        testsrc = self.running_tests[index]
+        try:
+            testsrc = self.running_tests[int(index)]
+        except IndexError:
+            raise InvalidIndexError("No pattern with index:{0}, use get_test_video() to determine index"
+                .format(index))
+        except ValueError:
+            raise InvalidIndexError("Pattern should be a valid integer")
+        except TypeError:
+            raise InvalidIndexError("Pattern should be a valid integer")
+                
         print 'End source with pattern %s' % (str(testsrc.pattern))
         testsrc.end()
         self.running_tests.remove(self.running_tests[index])

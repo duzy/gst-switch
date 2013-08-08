@@ -1,6 +1,6 @@
 __all__ = [
             'BaseError', 'PathError', 'ServerProcessError', 'ConnectionError', 
-            'ConnectionReturnError', 'RangeError',
+            'ConnectionReturnError', 'RangeError', 'InvalidIndexError',
            ]
 
 
@@ -30,5 +30,9 @@ class ConnectionReturnError(BaseError):
 
 class RangeError(BaseError):
     """docstring for RangeError"""
+    pass
+
+class InvalidIndexError(BaseError):
+    """docstring for InvalidIndexError"""
     pass
 
