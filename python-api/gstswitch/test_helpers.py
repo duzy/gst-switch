@@ -82,3 +82,14 @@ class TestTestSources(object):
         test = TestSources(video_port=3000)
         test.running_tests = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
         test.terminate_index(0)
+
+
+    def test_terminate1(self):
+        test = TestSources(video_port=3000)
+        test.running_tests = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
+        test.terminate()
+
+    def test_terminate2(self):
+        test = TestSources(video_port=3000)
+        test.running_tests = []
+        test.terminate()
