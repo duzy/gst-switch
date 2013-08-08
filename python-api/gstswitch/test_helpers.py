@@ -1,7 +1,6 @@
 from helpers import TestSources, PreviewSinks
 from exception import RangeError, InvalidIndexError
 import pytest
-from mock import Mock, patch
 import testsource
 
 
@@ -93,3 +92,62 @@ class TestTestSources(object):
         test = TestSources(video_port=3000)
         test.running_tests = []
         test.terminate()
+
+
+class TestPreviewSinksPreviewPort(object):
+
+    def test_blank(self):
+        tests = ['', None, [], {}]
+        for test in tests:
+            with pytest.raises(ValueError):
+                PreviewSinks(preview_port=test) 
+
+    def test_range(self):
+        tests = [-100, 1e7, 65536]
+        for test in tests:
+            with pytest.raises(RangeError):
+                PreviewSinks(preview_port=test)
+
+    def test_invalid(self):
+        tests = [[1, 2, 3, 4], {1: 2, 2: 3}, '1e10']
+        for test in tests:
+            with pytest.raises(TypeError):
+                PreviewSinks(preview_port=test)
+
+    def test_normal(self):
+        tests = [1, 65535, 1000]
+        for test in tests:
+            src = PreviewSinks(preview_port=test)
+            assert src.preview_port == test
+
+
+
+class TestPreviewSinks(object):
+
+    class MockPreview(object):
+
+        def __init__(self, preview_port=3001):
+            pass
+
+        def run(self):
+            pass
+
+        def end(self):
+            pass
+
+    def test_run(self, monkeypatch):
+        preview = PreviewSinks()
+        monkeypatch.setattr(testsource, 'Preview', self.MockPreview)
+        preview.run()
+        assert preview.preview is not None
+
+    def test_terminate_fail(self):
+        preview = PreviewSinks()
+        with pytest.raises(AttributeError):
+            preview.terminate()
+
+    def test_terminate_normal(self, monkeypatch):
+        preview = PreviewSinks()
+        preview.preview = self.MockPreview()
+        preview.terminate()
+        assert preview.preview is None

@@ -121,17 +121,17 @@ class PreviewSinks(object):
     @preview_port.setter
     def preview_port(self, preview_port):
         if not preview_port:
-            raise ValueError("preview_port: '{0}' cannot be blank"
+            raise ValueError("Preview_port: '{0}' cannot be blank"
                              .format(preview_port))
         else:
             try:
                 i = int(preview_port)
                 if i < 1 or i > 65535:
-                    raise RangeError('preview_port must be in range 1 to 65535')
+                    raise RangeError('Preview_port must be in range 1 to 65535')
                 else:
                     self._preview_port = preview_port
             except TypeError:
-                raise TypeError("preview_port must be a string or number,"
+                raise TypeError("Preview_port must be a string or number,"
                     "not, '{0}'".format(type(preview_port)))
             except ValueError:
                 raise TypeError("Port must be a valid number")
@@ -147,7 +147,7 @@ class PreviewSinks(object):
         """End/Terminate the Preview Sink"""
         try:
             self.preview.end()
+            self.preview = None
             print 'end preview'
-            # TODO: Find which error may occur
-        except OSError:
-            raise
+        except AttributeError:
+            raise AttributeError("No preview Sink to terminate")
