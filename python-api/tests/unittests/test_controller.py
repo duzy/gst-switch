@@ -1,8 +1,12 @@
-from controller import Controller
-from exception import ConnectionReturnError
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
+
+from gstswitch.controller import Controller
+from gstswitch.exception import ConnectionReturnError
 import pytest
 from mock import Mock, patch
-from connection import Connection
+from gstswitch.connection import Connection
 from gi.repository import GLib
 
 

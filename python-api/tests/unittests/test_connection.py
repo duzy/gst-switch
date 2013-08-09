@@ -1,8 +1,12 @@
-from connection import Connection
-from exception import *
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
+
+from gstswitch.connection import Connection
+from gstswitch.exception import *
 import pytest
 from gi.repository import Gio, GLib
-from mock import Mock, patch
+from mock import Mock
 
 
 class TestAddress(object):

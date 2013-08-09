@@ -1,5 +1,9 @@
-from exception import RangeError
-from testsource import Preview, VideoSrc, BasePipeline, VideoPipeline
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
+
+from gstswitch.exception import RangeError
+from gstswitch.testsource import Preview, VideoSrc, BasePipeline, VideoPipeline
 import pytest
 from mock import Mock, patch
 from gi.repository import Gst

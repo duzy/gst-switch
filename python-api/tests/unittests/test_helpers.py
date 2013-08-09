@@ -1,7 +1,11 @@
-from helpers import TestSources, PreviewSinks
-from exception import RangeError, InvalidIndexError
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
+
+from gstswitch.helpers import TestSources, PreviewSinks
+from gstswitch.exception import RangeError, InvalidIndexError
 import pytest
-import testsource
+import gstswitch.testsource
 
 
 class TestTestSourcesVideoPort(object):
@@ -50,7 +54,7 @@ class TestTestSources(object):
 
     def test_new_test_video(self, monkeypatch):
         test = TestSources(video_port=3000)
-        monkeypatch.setattr(testsource, 'VideoSrc', self.MockVideoSrc)
+        monkeypatch.setattr(gstswitch.testsource, 'VideoSrc', self.MockVideoSrc)
         test.new_test_video()
         assert test.running_tests[0] is not None
         assert len(test.running_tests) != 0
@@ -137,7 +141,7 @@ class TestPreviewSinks(object):
 
     def test_run(self, monkeypatch):
         preview = PreviewSinks()
-        monkeypatch.setattr(testsource, 'Preview', self.MockPreview)
+        monkeypatch.setattr(gstswitch.testsource, 'Preview', self.MockPreview)
         preview.run()
         assert preview.preview is not None
 

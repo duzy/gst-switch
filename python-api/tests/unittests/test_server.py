@@ -1,6 +1,10 @@
-from server import Server
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
+
+from gstswitch.server import Server
 import pytest
-from exception import *
+from gstswitch.exception import *
 import os
 import subprocess
 from mock import Mock
