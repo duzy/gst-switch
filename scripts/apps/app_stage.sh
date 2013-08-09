@@ -32,7 +32,15 @@ function install-git-libvpx()
 	--enable-shared --enable-vp8
 
     make clean || true
-    make ${options[make-args]} && make ${options[make-args]} install
+    
+    make || {
+       printf "make of $project failed!!!\n"
+        exit -1
+    }
+    make install || {
+       printf "make of $project failed!!!\n"
+        exit -1
+    }
 
     cd $back
 
