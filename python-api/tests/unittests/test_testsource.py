@@ -344,3 +344,21 @@ class TestAudioSrcWave(object):
         for test in tests:
             src = AudioSrc(port=4000, wave=test)
             assert src.wave == str(test)
+
+
+class TestAudioSrcPlay(object):
+
+    def test_run(self):
+        src = AudioSrc(port=3000)
+        src.pipeline = MockPipeline()
+        src.run()
+
+    def test_pause(self):
+        src = AudioSrc(port=3000)
+        src.pipeline = MockPipeline()
+        src.pause()
+
+    def test_end(self):
+        src = AudioSrc(port=3000)
+        src.pipeline = MockPipeline()
+        src.end()
