@@ -16,7 +16,7 @@ class TestSources(object):
 
     def __init__(self, video_port):
         super(TestSources, self).__init__()
-        self.running_tests = []
+        self._running_tests_video = []
         self.video_port = video_port
 
     @property
@@ -40,7 +40,14 @@ class TestSources(object):
                     "not, '{0}'".format(type(video_port)))
             except ValueError:
                 raise TypeError("Port must be a valid number")
-        
+
+    @property
+    def running_tests_video(self):
+        return self._running_tests_video
+
+    @running_tests_video.setter
+    def running_tests_video(self, tests):
+        self._running_tests_video = tests
 
     def new_test_video(self,
                        width=300,
@@ -65,25 +72,25 @@ class TestSources(object):
             timeoverlay,
             clockoverlay)
         testsrc.run()
-        self.running_tests.append(testsrc)
+        self._running_tests_video.append(testsrc)
 
     def get_test_video(self):
         """Returns a list of processes acting as video test sources running
         :returns: A list containing all video test sources running
         """
         i = 0
-        for test in self.running_tests:
+        for test in self._running_tests_video:
             print i, "pattern:", test.pattern
             i += 1
-        return self.running_tests
+        return self._running_tests_video
 
-    def terminate_index(self, index):
+    def terminate_index_video(self, index):
         """Terminate video test source specified by index
         :param index: The index of the video source to terminate
         Use get_test_video for finding the index
         """
         try:
-            testsrc = self.running_tests[int(index)]
+            testsrc = self._running_tests_video[int(index)]
         except IndexError:
             raise InvalidIndexError("No pattern with index:{0}, use get_test_video() to determine index"
                 .format(index))
@@ -94,14 +101,14 @@ class TestSources(object):
                 
         print 'End source with pattern %s' % (str(testsrc.pattern))
         testsrc.end()
-        self.running_tests.remove(self.running_tests[index])
+        self._running_tests_video.remove(self._running_tests_video[index])
 
-    def terminate(self):
+    def terminate_video(self):
         """Terminate all test video sources
         """
-        print 'TESTS:', self.running_tests
-        for i in range(len(self.running_tests)):
-            self.terminate_index(0)
+        print 'TESTS:', self._running_tests_video
+        for i in range(len(self._running_tests_video)):
+            self.terminate_index_video(0)
 
 
 class PreviewSinks(object):

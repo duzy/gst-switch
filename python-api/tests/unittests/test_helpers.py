@@ -56,8 +56,8 @@ class TestTestSources(object):
         test = TestSources(video_port=3000)
         monkeypatch.setattr(gstswitch.testsource, 'VideoSrc', self.MockVideoSrc)
         test.new_test_video()
-        assert test.running_tests[0] is not None
-        assert len(test.running_tests) != 0
+        assert test.running_tests_video[0] is not None
+        assert len(test.running_tests_video) != 0
 
     class MockTest(object):
 
@@ -70,32 +70,32 @@ class TestTestSources(object):
     def test_get_test_video(self):
 
         test = TestSources(video_port=3000)
-        test.running_tests = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
+        test.running_tests_video = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
         test.get_test_video()
 
     def test_terminate_index_error(self):
         testsrc = TestSources(video_port=3000)
-        testsrc.running_tests = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
+        testsrc.running_tests_video = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
         tests = [-100, 20, 1e10, "hi", [1, 2, 3]]
         for test in tests:
             with pytest.raises(InvalidIndexError):
-                testsrc.terminate_index(test)
+                testsrc.terminate_index_video(test)
 
     def test_terminate_index_normal(self):
         test = TestSources(video_port=3000)
-        test.running_tests = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
-        test.terminate_index(0)
+        test.running_tests_video = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
+        test.terminate_index_video(0)
 
 
     def test_terminate1(self):
         test = TestSources(video_port=3000)
-        test.running_tests = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
-        test.terminate()
+        test.running_tests_video = [self.MockTest(1), self.MockTest(2), self.MockTest(3), self.MockTest(19)]
+        test.terminate_video()
 
     def test_terminate2(self):
         test = TestSources(video_port=3000)
-        test.running_tests = []
-        test.terminate()
+        test.running_tests_video = []
+        test.terminate_video()
 
 
 class TestPreviewSinksPreviewPort(object):

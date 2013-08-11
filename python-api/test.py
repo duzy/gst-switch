@@ -4,6 +4,10 @@
 # THIS FILE IS ONLY FOR MY PERSONAL TESTING PURPOSES.
 # IT IS NOT MADE TO AND SHOULD NOT BE TESTING THE ENTIRE API
 
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
+
 from gstswitch.server import Server
 from gstswitch.helpers import *
 from gstswitch.controller import Controller

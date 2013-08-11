@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
 from gstswitch.controller import Controller
 from gstswitch.exception import ConnectionReturnError
 import pytest
-from mock import Mock, patch
+from mock import Mock
 from gstswitch.connection import Connection
 from gi.repository import GLib
 
