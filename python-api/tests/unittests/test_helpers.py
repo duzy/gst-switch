@@ -10,12 +10,6 @@ import gstswitch.testsource
 
 class TestTestSourcesVideoPort(object):
 
-    def test_blank(self):
-        tests = ['', None, [], {}]
-        for test in tests:
-            with pytest.raises(ValueError):
-                TestSources(video_port=test) 
-
     def test_range(self):
         tests = [-100, 1e7, 65536]
         for test in tests:

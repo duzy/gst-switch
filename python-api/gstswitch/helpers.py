@@ -14,10 +14,13 @@ class TestSources(object):
     :param clockoverlay: True to enable current clock time over video
     """
 
-    def __init__(self, video_port):
+    def __init__(self, video_port=None, audio_port=None):
         super(TestSources, self).__init__()
         self._running_tests_video = []
-        self.video_port = video_port
+        if video_port:
+            self.video_port = video_port
+        if audio_port:
+            self.audio_port = audio_port
 
     @property
     def video_port(self):
@@ -42,12 +45,42 @@ class TestSources(object):
                 raise TypeError("Port must be a valid number")
 
     @property
+    def audio(self):
+        return self._video_port
+
+    @audio.setter
+    def audio(self, audio):
+        if not audio:
+            raise ValueError("audio: '{0}' cannot be blank"
+                             .format(audio))
+        else:
+            try:
+                i = int(audio)
+                if i < 1 or i > 65535:
+                    raise RangeError('audio must be in range 1 to 65535')
+                else:
+                    self._video_port = audio
+            except TypeError:
+                raise TypeError("audio must be a string or number,"
+                    "not, '{0}'".format(type(audio)))
+            except ValueError:
+                raise TypeError("Port must be a valid number")
+
+    @property
     def running_tests_video(self):
         return self._running_tests_video
 
     @running_tests_video.setter
     def running_tests_video(self, tests):
         self._running_tests_video = tests
+
+    @property
+    def running_tests_audio(self):
+        return self._running_tests_audio
+
+    @running_tests_audio.setter
+    def running_tests_audio(self, tests):
+        self._running_tests_audio = tests
 
     def new_test_video(self,
                        width=300,
@@ -109,6 +142,68 @@ class TestSources(object):
         print 'TESTS:', self._running_tests_video
         for i in range(len(self._running_tests_video)):
             self.terminate_index_video(0)
+
+
+    def new_test_audio(self,
+                       width=300,
+                       height=200,
+                       pattern=None,
+                       timeoverlay=False,
+                       clockoverlay=False):
+        """Start a new test audio
+        :param port: The port of where the TCP stream will be sent
+        Should be same as audio port of gst-switch-src
+        :param width: The width of the output audio
+        :param height: The height of the output audio
+        :param pattern: The audiotestsrc pattern of the output audio
+        :param timeoverlay: True to enable a running time over audio
+        :param clockoverlay: True to enable current clock time over audio
+        """
+        testsrc = testsource.AudioSrc(
+            self.audio_port,
+            width,
+            height,
+            pattern,
+            timeoverlay,
+            clockoverlay)
+        testsrc.run()
+        self._running_tests_audio.append(testsrc)
+
+    def get_test_audio(self):
+        """Returns a list of processes acting as audio test sources running
+        :returns: A list containing all audio test sources running
+        """
+        i = 0
+        for test in self._running_tests_audio:
+            print i, "pattern:", test.pattern
+            i += 1
+        return self._running_tests_audio
+
+    def terminate_index_audio(self, index):
+        """Terminate audio test source specified by index
+        :param index: The index of the audio source to terminate
+        Use get_test_audio for finding the index
+        """
+        try:
+            testsrc = self._running_tests_audio[int(index)]
+        except IndexError:
+            raise InvalidIndexError("No pattern with index:{0}, use get_test_audio() to determine index"
+                .format(index))
+        except ValueError:
+            raise InvalidIndexError("Pattern should be a valid integer")
+        except TypeError:
+            raise InvalidIndexError("Pattern should be a valid integer")
+                
+        print 'End source with pattern %s' % (str(testsrc.pattern))
+        testsrc.end()
+        self._running_tests_audio.remove(self._running_tests_audio[index])
+
+    def terminate_audio(self):
+        """Terminate all test audio sources
+        """
+        print 'TESTS:', self._running_tests_audio
+        for i in range(len(self._running_tests_audio)):
+            self.terminate_index_audio(0)
 
 
 class PreviewSinks(object):

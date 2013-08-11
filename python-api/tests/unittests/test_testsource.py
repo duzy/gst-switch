@@ -3,7 +3,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
 
 from gstswitch.exception import RangeError
-from gstswitch.testsource import Preview, VideoSrc, BasePipeline, VideoPipeline
+from gstswitch.testsource import Preview, VideoSrc, BasePipeline, VideoPipeline, AudioPipeline, AudioSrc
 import pytest
 from mock import Mock, patch
 from gi.repository import Gst
@@ -264,3 +264,83 @@ class TestVideoPipeline(object):
 
     def test_permuate_time_clock_4(self):
         VideoPipeline(port=3000, pattern=10, timeoverlay=True, clockoverlay=True)
+
+
+class TestAudioSrcPort(object):
+
+    def test_blank(self):
+        tests = ['', None, [], {}]
+        for test in tests:
+            with pytest.raises(ValueError):
+                AudioSrc(port=test) 
+
+    def test_range(self):
+        tests = [-100, 1e7, 65536]
+        for test in tests:
+            with pytest.raises(RangeError):
+                AudioSrc(port=test)
+
+    def test_invalid(self):
+        tests = [[1, 2, 3, 4], {1: 2, 2: 3}, '1e10']
+        for test in tests:
+            with pytest.raises(TypeError):
+                AudioSrc(port=test)
+
+    def test_normal(self):
+        tests = [1, 65535, 1000]
+        for test in tests:
+            src = AudioSrc(port=test)
+            assert src.port == test
+
+
+class TestAudioSrcFreq(object):
+
+    def test_blank(self):
+        tests = ['', None, [], {}, 0]
+        port = 4000
+        for test in tests:
+            with pytest.raises(ValueError):
+                AudioSrc(port=port, freq=test) 
+
+    def test_range(self):
+        tests = [-100,  -1]
+        port = 4000
+        for test in tests:
+            with pytest.raises(RangeError):
+                AudioSrc(port=port, freq=test)
+
+    def test_invalid(self):
+        tests = [[1, 2, 3, 4], {1: 2, 2: 3}, '1e10']
+        port = 4000
+        for test in tests:
+            with pytest.raises(TypeError):
+                AudioSrc(port=port, freq=test)
+
+    def test_normal(self):
+        tests = [1, 65535, 1000]
+        for test in tests:
+            src = AudioSrc(port=4000, freq=test)
+            assert src.freq == test
+
+
+class TestAudioSrcWave(object):
+
+    def test_range(self):
+        tests = [-100,  -1, 13, 1e2, '1e10']
+        port = 4000
+        for test in tests:
+            with pytest.raises(RangeError):
+                AudioSrc(port=port, wave=test)
+
+    def test_invalid(self):
+        tests = [[1, 2, 3, 4], {1: 2, 2: 3},]
+        port = 4000
+        for test in tests:
+            with pytest.raises(TypeError):
+                AudioSrc(port=port, wave=test)
+
+    def test_normal(self):
+        tests = [0, 10, 12]
+        for test in tests:
+            src = AudioSrc(port=4000, wave=test)
+            assert src.wave == str(test)

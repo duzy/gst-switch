@@ -10,7 +10,7 @@ import random
 GObject.threads_init()
 Gst.init(None)
 
-__all__ = ["Preview", "VideoSrc", ]
+__all__ = ["Preview", "VideoSrc", "AudioSrc"]
 
 
 class BasePipeline(Gst.Pipeline):
@@ -159,6 +159,54 @@ class VideoPipeline(BasePipeline):
         element.set_property('host', self.host)
         element.set_property('port', int(port))
         return element
+
+
+
+class AudioPipeline(BasePipeline):
+    """docstring for AudioPipeline"""
+    def __init__(
+            self,
+            port,
+            host='127.0.0.1',
+            freq=110,
+            wave=None):
+        super(AudioPipeline, self).__init__()
+
+        self.host = host
+
+        src = self.make_audiotestsrc(freq, wave)
+        self.add(src)
+        gdppay = self.make_gdppay()
+        self.add(gdppay)
+        src.link(gdppay)
+        sink = self.make_tcpclientsink(port)
+        self.add(sink)
+        gdppay.link(sink)
+
+    def make_audiotestsrc(self, freq, wave=None):
+        element = self.make('audiotestsrc', 'src')
+        element.set_property('freq', int(freq))
+        element.set_property('wave', int(wave))
+        return element
+
+    def make_gdppay(self):
+        """Return a gdppay element
+        :returns: A gdppay element
+        """
+        element = self.make('gdppay', 'gdppay')
+        return element
+
+    def make_tcpclientsink(self, port):
+        """Return a TCP client sink element
+        :port: Port to sink
+        :returns: A TCP client sink element
+        """
+        element = self.make('tcpclientsink', 'tcpclientsink')
+        element.set_property('host', self.host)
+        element.set_property('port', int(port))
+        return element
+        
+        
 
 
 class PreviewPipeline(BasePipeline):
@@ -352,12 +400,114 @@ class VideoSrc(object):
         self.pipeline.disable()
 
     def generate_pattern(self, pattern):
-        """Generate a random patern if not specified
+        """Generate a random pattern if not specified
         """
         if pattern is None:
             pattern = random.randint(0, 19)
         pattern = str(pattern)
         return pattern
+
+
+class AudioSrc(object):
+    """docstring for AudioSrc"""
+
+    HOST = '127.0.0.1'
+
+    def __init__(
+            self,
+            port,
+            freq=110,
+            wave=None):
+        super(AudioSrc, self).__init__()
+        self.port = port
+        self.freq = freq
+        self.wave = self.generate_wave(wave)
+        self.pipeline = AudioPipeline(
+            self.port,
+            self.HOST,
+            self.freq,
+            self.wave)
+
+    @property
+    def port(self):
+        return self._port
+
+    @port.setter
+    def port(self, port):
+        if not port:
+            raise ValueError("Port: '{0}' cannot be blank"
+                             .format(port))
+        else:
+            try:
+                i = int(port)
+                if i < 1 or i > 65535:
+                    raise RangeError('Port must be in range 1 to 65535')
+                else:
+                    self._port = port
+            except TypeError:
+                raise TypeError("Port must be a string or number,"
+                    "not, '{0}'".format(type(port)))
+            except ValueError:
+                raise TypeError("Port must be a valid number")
+
+    @property
+    def freq(self):
+        return self._freq
+
+    @freq.setter
+    def freq(self, freq):
+        if not freq:
+            raise ValueError("Frequency: '{0}' cannot be blank"
+                             .format(freq))
+        else:
+            try:
+                i = int(freq)
+                if i<1:
+                    raise RangeError("Frequency must be a positive value")
+                else:
+                    self._freq = freq
+            except TypeError:
+                raise TypeError("Frequency must be a string or number,"
+                    "not, '{0}'".format(type(freq)))
+            except ValueError:
+                raise TypeError("Frequency must be a valid number")
+
+
+    @property
+    def wave(self):
+        return self._wave
+
+    @wave.setter
+    def wave(self, wave):
+        try:
+            i = int(float(wave))
+            if i < 0 or i > 12:
+                raise RangeError('Wave must be in range 0 and 12')
+            else:
+                self._wave = wave
+        except ValueError:
+            raise TypeError("Wave must be a valid number")
+
+    def run(self):
+        """Run the pipeline"""
+        self.pipeline.play()
+
+    def pause(self):
+        """End the pipeline"""
+        self.pipeline.pause()
+
+    def end(self):
+        """End/disable the pipeline"""
+        self.pipeline.disable()
+
+    def generate_wave(self, wave):
+        """Generate a random wave if not specified
+        """
+        if wave is None:
+            wave = random.randint(0, 12)
+        wave = str(wave)
+        return wave
+        
 
 
 class Preview(object):
