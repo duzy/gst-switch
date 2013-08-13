@@ -10,9 +10,12 @@ import glob
 
 PATH = '/home/hyades/gst/stage/bin/'
 
+
 class TestServerStartStop(object):
 
-    def __init__(self, num):
+    NUM = 5
+    
+    def startstop(self):
         s = Server(path=PATH)
         try:
             s.run()
@@ -24,6 +27,10 @@ class TestServerStartStop(object):
             if s.proc:
                 s.kill()
             assert s.proc is None
-            print "Test Failed"
 
-
+    def test_start_stop(self):
+        for i in range(self.NUM):
+            self.startstop()
+        # remove all .data files generated
+        for f1 in glob.glob(os.getcwd()+'/*.data'):
+            os.remove(f1)

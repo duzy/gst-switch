@@ -47,9 +47,9 @@ try:
     for mode in modes:
         print 'composite mode=', mode
         test_set_composite_mode(mode)
-        time.sleep(0.5)
-
-    sources.terminate()
+        time.sleep(0.6)
+    output.terminate()
+    sources.terminate_video()
     s.terminate()
 
 finally:
