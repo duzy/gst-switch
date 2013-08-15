@@ -13,17 +13,16 @@ PATH = '/home/hyades/gst/stage/bin/'
 
 class TestTestSourcesPreviews(object):
 
-    NUM = 1
-
-    def new_video(self, x):
-        self.sources.new_test_video()
+    NUM = 10
 
     def sourcepreview(self, num, video_port): 
-        self.sources = TestSources(video_port)
-        p = Pool(num)
-        p.map(self.new_video, range(num))
-        time.sleep(2)
-        self.sources.terminate_video()
+        sources = TestSources(video_port)
+        for i in range(num):
+            sources.new_test_video(pattern=18)
+        # print "done adding" + str(num)
+        time.sleep(5)
+        sources.terminate_video()
+        time.sleep(5)
 
     def test_sources(self):
         video_port = 3000
@@ -33,7 +32,7 @@ class TestTestSourcesPreviews(object):
             preview = PreviewSinks()
             preview.run()
             for i in range(self.NUM):
-                self.sourcepreview(i+10, video_port)
+                self.sourcepreview(i*10+1, video_port)
             preview.terminate()
             s.terminate()
         finally:
