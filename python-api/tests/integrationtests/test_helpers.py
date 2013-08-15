@@ -23,7 +23,7 @@ class TestTestSourcesPreviews(object):
         sources.terminate_video()
         time.sleep(2)
 
-    def stest_video_sources(self):
+    def test_video_sources(self):
         video_port = 3000
         s = Server(PATH, video_port=video_port)
         try:

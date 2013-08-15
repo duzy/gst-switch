@@ -12,7 +12,8 @@ PATH = '/home/hyades/gst/stage/bin/'
 
 
 class TestServerStartStop(object):
-    """Tests Starting 
+    """Test Starting and Stopping the Server
+    Run Server and Stop multiple times
     """
     NUM = 5
     
