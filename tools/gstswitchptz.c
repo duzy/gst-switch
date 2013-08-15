@@ -820,6 +820,7 @@ static void
 gst_switch_ptz_run (GstSwitchPTZ * ptz)
 {
   if (ptz->controller == NULL) {
+#if 0
     GtkWidget *d = gtk_message_dialog_new (NULL,
         GTK_DIALOG_DESTROY_WITH_PARENT,
         GTK_MESSAGE_ERROR,
@@ -827,6 +828,8 @@ gst_switch_ptz_run (GstSwitchPTZ * ptz)
         "You don't specify the correct protocol (check the -p option)!");
     gtk_dialog_run (GTK_DIALOG (d));
     gtk_widget_destroy (d);
+#endif
+    g_print ("You don't specify the correct protocol (check the -p option)!\n");
     return;
   }
 
