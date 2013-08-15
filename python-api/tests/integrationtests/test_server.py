@@ -12,7 +12,8 @@ PATH = '/home/hyades/gst/stage/bin/'
 
 
 class TestServerStartStop(object):
-
+    """Tests Starting 
+    """
     NUM = 5
     
     def startstop(self):

@@ -17,6 +17,7 @@ class TestSources(object):
     def __init__(self, video_port=None, audio_port=None):
         super(TestSources, self).__init__()
         self._running_tests_video = []
+        self._running_tests_audio = []
         if video_port:
             self.video_port = video_port
         if audio_port:
@@ -125,12 +126,12 @@ class TestSources(object):
         try:
             testsrc = self._running_tests_video[int(index)]
         except IndexError:
-            raise InvalidIndexError("No pattern with index:{0}, use get_test_video() to determine index"
+            raise InvalidIndexError("No video source with index:{0}, use get_test_video() to determine index"
                 .format(index))
         except ValueError:
-            raise InvalidIndexError("Pattern should be a valid integer")
+            raise InvalidIndexError("Index should be a valid integer")
         except TypeError:
-            raise InvalidIndexError("Pattern should be a valid integer")
+            raise InvalidIndexError("Index should be a valid integer")
                 
         print 'End source with pattern %s' % (str(testsrc.pattern))
         testsrc.end()
@@ -144,12 +145,12 @@ class TestSources(object):
             self.terminate_index_video(0)
 
 
-    def new_test_audio(self,
-                       width=300,
-                       height=200,
-                       pattern=None,
-                       timeoverlay=False,
-                       clockoverlay=False):
+    def new_test_audio(
+                       self,
+                       port,
+                       freq=110,
+                       wave=None
+                       ):
         """Start a new test audio
         :param port: The port of where the TCP stream will be sent
         Should be same as audio port of gst-switch-src
@@ -161,13 +162,14 @@ class TestSources(object):
         """
         testsrc = testsource.AudioSrc(
             self.audio_port,
-            width,
-            height,
-            pattern,
-            timeoverlay,
-            clockoverlay)
+            freq,
+            wave)
         testsrc.run()
+        # print testsrc
+        if testsrc is None:
+            raise Exception("fail")
         self._running_tests_audio.append(testsrc)
+        # print self._running_tests_audio
 
     def get_test_audio(self):
         """Returns a list of processes acting as audio test sources running
@@ -175,7 +177,7 @@ class TestSources(object):
         """
         i = 0
         for test in self._running_tests_audio:
-            print i, "pattern:", test.pattern
+            print i, "wave:", test.wave
             i += 1
         return self._running_tests_audio
 
@@ -187,14 +189,14 @@ class TestSources(object):
         try:
             testsrc = self._running_tests_audio[int(index)]
         except IndexError:
-            raise InvalidIndexError("No pattern with index:{0}, use get_test_audio() to determine index"
+            raise InvalidIndexError("No audio source with index:{0}, use get_test_audio() to determine index"
                 .format(index))
         except ValueError:
-            raise InvalidIndexError("Pattern should be a valid integer")
+            raise InvalidIndexError("Index should be a valid integer")
         except TypeError:
-            raise InvalidIndexError("Pattern should be a valid integer")
+            raise InvalidIndexError("Index should be a valid integer")
                 
-        print 'End source with pattern %s' % (str(testsrc.pattern))
+        print 'End source with pattern %s' % (str(testsrc.wave))
         testsrc.end()
         self._running_tests_audio.remove(self._running_tests_audio[index])
 
