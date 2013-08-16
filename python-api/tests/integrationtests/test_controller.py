@@ -32,3 +32,45 @@ class TestEstablishConnection(object):
             if s.proc:
                 s.terminate()
 
+
+
+class TestGetComposePort(object):
+
+    NUM = 4
+    def get_compose_port(self):
+        r = []
+        controller = Controller()
+        controller.establish_connection()
+        for i in range(self.NUM*3):
+            r.append(controller.get_compose_port())
+        return r
+
+    def test_compose_ports(self):
+        res = []
+        for i in range(self.NUM):
+            video_port = (i+1)*1000
+            s = Server(path=PATH, video_port=video_port)
+            try:
+                s.run()
+                sources = TestSources(video_port=video_port)
+                sources.new_test_video()
+                sources.new_test_video()
+
+                res.append(self.get_compose_port())
+                s.terminate()
+            finally:
+                if s.proc:
+                    s.terminate()
+        expected_result = [[1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001],
+                          [2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001], 
+                          [3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001], 
+                          [4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001]]
+        assert expected_result == res
+        # print expected_result == res
+
+                   
+                
+
+
+
+
