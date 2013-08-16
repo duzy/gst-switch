@@ -61,12 +61,13 @@ class TestGetComposePort(object):
             finally:
                 if s.proc:
                     s.terminate()
-        expected_result = [[1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001, 1001],
-                          [2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001, 2001], 
-                          [3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001, 3001], 
-                          [4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001, 4001]]
-        assert expected_result == res
-        # print expected_result == res
+        expected_result = [[1001]*self.NUM*3,
+                          [2001]*self.NUM*3, 
+                          [3001]*self.NUM*3,
+                          [4001]*self.NUM*3]
+        at = [ tuple(i) for i in expected_result]
+        bt = [ tuple(i) for i in res]
+        assert set(at) == set(bt)
 
                    
                 
