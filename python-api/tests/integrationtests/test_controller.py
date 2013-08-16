@@ -47,8 +47,10 @@ class TestGetComposePort(object):
 
     def test_compose_ports(self):
         res = []
+        expected_result = []
         for i in range(self.NUM):
             video_port = (i+1)*1000
+            expected_result.append([video_port+1]*self.NUM*3)
             s = Server(path=PATH, video_port=video_port)
             try:
                 s.run()
@@ -61,13 +63,13 @@ class TestGetComposePort(object):
             finally:
                 if s.proc:
                     s.terminate()
-        expected_result = [[1001]*self.NUM*3,
-                          [2001]*self.NUM*3, 
-                          [3001]*self.NUM*3,
-                          [4001]*self.NUM*3]
+        
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
         assert set(at) == set(bt)
+
+
+
 
                    
                 
