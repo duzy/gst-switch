@@ -62,10 +62,18 @@ function prepare-prerequisites()
 	libgtk-3-dev \
 	libmjpegtools-dev \
 	libtag1-dev \
+	libasound2-dev \
 	libtool \
 	libtoolize \
 	libvpx-dev \
+	libxv-dev \
+	libx11-dev \
+	libogg-dev \
+	libvorbis-dev \
 	libopencv-dev \
+	libcv-dev \
+	libhighgui-dev \
+	libv4l-dev \
 	pkg-config \
 	zlib1g-dev \
 	gtk-doc-tools \
