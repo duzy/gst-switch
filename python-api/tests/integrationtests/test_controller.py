@@ -36,7 +36,7 @@ class TestEstablishConnection(object):
 
 class TestGetComposePort(object):
 
-    NUM = 4
+    NUM = 3
     FACTOR = 100
     def get_compose_port(self):
         r = []
@@ -108,7 +108,7 @@ class TestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPort1(object):
+class TestGetAudioPortVideoFirst(object):
 
     NUM = 3
     FACTOR = 100
@@ -149,7 +149,7 @@ class TestGetAudioPort1(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPort2(object):
+class TestGetAudioPortAudioFirst(object):
 
     NUM = 3
     FACTOR = 100
@@ -157,7 +157,7 @@ class TestGetAudioPort2(object):
         r = []
         controller = Controller()
         controller.establish_connection()
-        for i in range(self.NUM*self.FACTOR):
+        for i in range(self.NUM * self.FACTOR):
             r.append(controller.get_audio_port())
         return r
 
@@ -191,15 +191,39 @@ class TestGetAudioPort2(object):
         assert set(at) == set(bt)
 
 
+class TestGetPreviewPorts(object):
 
+    NUM = 3
+    FACTOR = 1
+    def get_preview_ports(self):
+        r = []
+        controller = Controller()
+        controller.establish_connection()
+        for i in range(self.NUM * self.FACTOR):
+            r.append(controller.get_preview_ports())
+        return r
 
-
-
-
-
-                   
-                
-
-
-
+    def test_get_preview_ports(self):
+        
+        for  i in range(self.NUM):
+            s = Server(path=PATH)
+            try:
+                s.run()
+                sources = TestSources(video_port=3000, audio_port=4000)
+                for i in range(self.NUM * 5):
+                    sources.new_test_audio()
+                    sources.new_test_video()
+                time.sleep(1)
+                # print map(tuple, [[x for x in range(3003, 3003 + self.NUM * 10)]]*self.NUM*self.FACTOR), '\n'
+                expected_result = map(tuple, [[x for x in range(3003, 3003 + self.NUM * 10)]]*self.NUM*self.FACTOR)
+                res = map(tuple, self.get_preview_ports())
+                # print '\n', res, '\n'
+                # print expected_result
+                assert set(expected_result) == set(res)
+                sources.terminate_video()
+                sources.terminate_audio()
+                s.terminate()
+            finally:
+                if s.proc:
+                    s.terminate()
 
