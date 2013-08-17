@@ -60,6 +60,7 @@ class TestGetComposePort(object):
                 sources.new_test_video()
 
                 res.append(self.get_compose_port())
+                sources.terminate_video()
                 s.terminate()
             finally:
                 if s.proc:
@@ -72,7 +73,7 @@ class TestGetComposePort(object):
 
 class TestGetEncodePort(object):
 
-    NUM = 4
+    NUM = 3
     FACTOR = 100
     def get_encode_port(self):
         r = []
@@ -96,6 +97,7 @@ class TestGetEncodePort(object):
                 sources.new_test_video()
 
                 res.append(self.get_encode_port())
+                sources.terminate_video()
                 s.terminate()
             finally:
                 if s.proc:
@@ -104,6 +106,48 @@ class TestGetEncodePort(object):
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
         assert set(at) == set(bt)
+
+
+class TestGetAudioPort(object):
+
+    NUM = 3
+    FACTOR = 100
+    def get_audio_port(self):
+        r = []
+        controller = Controller()
+        controller.establish_connection()
+        for i in range(self.NUM*self.FACTOR):
+            r.append(controller.get_audio_port())
+        return r
+
+    def test_audio_ports(self):
+        res = []
+        expected_result = []
+        for i in range(1, self.NUM+1):
+            audio_port = (i+10)*1000
+            expected_result.append([3003 + i] * self.NUM * self.FACTOR)
+            s = Server(path=PATH, video_port=3000, audio_port=audio_port)
+            try:
+                s.run()
+                sources = TestSources(video_port=3000, audio_port=audio_port)
+                for j in range(i):
+                    sources.new_test_video()
+                time.sleep(1)
+                sources.new_test_audio()
+                sources.new_test_audio()
+                res.append(self.get_audio_port())
+                sources.terminate_video()
+                sources.terminate_audio()
+                s.terminate()
+            finally:
+                if s.proc:
+                    s.terminate()
+        # print res
+        # print expected_result
+        at = [ tuple(i) for i in expected_result]
+        bt = [ tuple(i) for i in res]
+        assert set(at) == set(bt)
+
 
 
 

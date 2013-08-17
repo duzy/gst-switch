@@ -41,7 +41,7 @@ class TestTestSourcesPreviews(object):
     def add_audio_sources(self, num, audio_port):
         sources = TestSources(audio_port=audio_port)
         for i in range(num):
-            sources.new_test_audio(port=audio_port, wave=10)
+            sources.new_test_audio(wave=10)
         # print "done adding" + str(num)
         # print sources.get_test_audio()
         time.sleep(5)

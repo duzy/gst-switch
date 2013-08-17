@@ -147,7 +147,6 @@ class TestSources(object):
 
     def new_test_audio(
                        self,
-                       port,
                        freq=110,
                        wave=None
                        ):

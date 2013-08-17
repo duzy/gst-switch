@@ -19,15 +19,21 @@ path = '/home/hyades/gst/stage/bin/'
 s = Server(path)
 try:
     s.run()  # launches the server default parameters
-    port = s.video_port
+    video_port = s.video_port
+    audio_port = s.audio_port
     # connects a gstreamer module to view the output of the gst-switch-srv
     output = PreviewSinks()
     output.run()
     # adding two test video sources
-    sources = TestSources(port)
+    sources = TestSources(video_port=video_port, audio_port=audio_port)
+
+    sources.new_test_audio()
+    sources.new_test_audio()
+    
+    sources.new_test_video()
     sources.new_test_video()
     sources.new_test_video(timeoverlay=True)
-    # waiting till user ends the server
+
     controller = Controller()
     controller.establish_connection()
     res = []
@@ -41,7 +47,7 @@ try:
 
     # testing random 10 modes
     for x in tests_get:
-        print x()
+        print x.__name__, x()
     time.sleep(1)
     modes = [3, 2, 1, 0, 1, 2, 3, 0]
     for mode in modes:
@@ -50,6 +56,7 @@ try:
         time.sleep(0.6)
     output.terminate()
     sources.terminate_video()
+    sources.terminate_audio()
     s.terminate()
 
 finally:
