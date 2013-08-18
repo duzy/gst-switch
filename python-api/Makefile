@@ -17,3 +17,7 @@ coverage:
 pytest:
 	-py.test tests/unittests -v
 
+integration:
+	-py.test tests/integrationtests/ -s -v 2>/dev/null
+	rm *.data
+
