@@ -11,7 +11,7 @@ PATH = '/home/hyades/gst/stage/bin/'
 
 class TestEstablishConnection(object):
 
-    NUM = 3
+    NUM = 1
     # fails above 3
     def establish_connection(self):
         controller = Controller()
@@ -26,7 +26,6 @@ class TestEstablishConnection(object):
             for i in range(self.NUM):
                 print i
                 self.establish_connection()
-                time.sleep(2)
             s.terminate()
         finally:
             if s.proc:
@@ -36,8 +35,8 @@ class TestEstablishConnection(object):
 
 class TestGetComposePort(object):
 
-    NUM = 3
-    FACTOR = 100
+    NUM = 1
+    FACTOR = 1
     def get_compose_port(self):
         r = []
         controller = Controller()
@@ -73,8 +72,8 @@ class TestGetComposePort(object):
 
 class TestGetEncodePort(object):
 
-    NUM = 3
-    FACTOR = 100
+    NUM = 1
+    FACTOR = 1
     def get_encode_port(self):
         r = []
         controller = Controller()
@@ -110,8 +109,8 @@ class TestGetEncodePort(object):
 
 class TestGetAudioPortVideoFirst(object):
 
-    NUM = 3
-    FACTOR = 100
+    NUM = 1
+    FACTOR = 1
     def get_audio_port(self):
         r = []
         controller = Controller()
@@ -132,7 +131,6 @@ class TestGetAudioPortVideoFirst(object):
                 sources = TestSources(video_port=3000, audio_port=audio_port)
                 for j in range(i):
                     sources.new_test_video()
-                time.sleep(1)
                 sources.new_test_audio()
                 sources.new_test_audio()
                 res.append(self.get_audio_port())
@@ -151,8 +149,8 @@ class TestGetAudioPortVideoFirst(object):
 
 class TestGetAudioPortAudioFirst(object):
 
-    NUM = 3
-    FACTOR = 100
+    NUM = 1
+    FACTOR = 1
     def get_audio_port(self):
         r = []
         controller = Controller()
@@ -174,7 +172,6 @@ class TestGetAudioPortAudioFirst(object):
                 
                 sources.new_test_audio()
                 sources.new_test_audio()
-                time.sleep(1)
                 for j in range(i):
                     sources.new_test_video()
                 res.append(self.get_audio_port())
@@ -193,7 +190,7 @@ class TestGetAudioPortAudioFirst(object):
 
 class TestGetPreviewPorts(object):
 
-    NUM = 3
+    NUM = 1
     FACTOR = 1
     def get_preview_ports(self):
         r = []
@@ -210,15 +207,14 @@ class TestGetPreviewPorts(object):
             try:
                 s.run()
                 sources = TestSources(video_port=3000, audio_port=4000)
-                for i in range(self.NUM * 5):
+                for i in range(self.NUM):
                     sources.new_test_audio()
                     sources.new_test_video()
-                time.sleep(1)
                 # print map(tuple, [[x for x in range(3003, 3003 + self.NUM * 10)]]*self.NUM*self.FACTOR), '\n'
-                expected_result = map(tuple, [[x for x in range(3003, 3003 + self.NUM * 10)]]*self.NUM*self.FACTOR)
+                expected_result = map(tuple, [[x for x in range(3003, 3003 + self.NUM)]]*self.NUM*self.FACTOR)
                 res = map(tuple, self.get_preview_ports())
-                # print '\n', res, '\n'
-                # print expected_result
+                print '\n', res, '\n'
+                print expected_result
                 assert set(expected_result) == set(res)
                 sources.terminate_video()
                 sources.terminate_audio()
