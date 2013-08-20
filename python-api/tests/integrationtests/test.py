@@ -18,7 +18,7 @@ path = '/home/hyades/gst/stage/bin/'
 # path = '/usr/local/bin/'
 s = Server(path)
 try:
-    s.run()  # launches the server default parameters
+    # s.run()  # launches the server default parameters
     video_port = s.video_port
     audio_port = s.audio_port
     # connects a gstreamer module to view the output of the gst-switch-srv
@@ -35,7 +35,7 @@ try:
     sources.new_test_video(timeoverlay=True)
 
     controller = Controller()
-    controller.establish_connection()
+    # controller.establish_connection()
     res = []
     tests_get = [controller.get_compose_port,
                  controller.get_encode_port,
@@ -46,10 +46,10 @@ try:
     test_set_composite_mode = controller.set_composite_mode
 
     # testing random 10 modes
-    for x in tests_get:
-        print x.__name__, x()
+    # for x in tests_get:
+        # print x.__name__, x()
     time.sleep(1)
-    modes = [3, 2, 1, 0, 1, 2, 3, 0]
+    modes = [0, 3, 2, 1, 0, 1, 2, 3, 0]
     for mode in modes:
         print 'composite mode=', mode
         test_set_composite_mode(mode)

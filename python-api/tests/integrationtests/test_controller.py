@@ -9,7 +9,7 @@ import time
 
 PATH = '/home/hyades/gst/stage/bin/'
 
-class TestEstablishConnection(object):
+class sTestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -33,7 +33,7 @@ class TestEstablishConnection(object):
 
 
 
-class TestGetComposePort(object):
+class sTestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -70,7 +70,7 @@ class TestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetEncodePort(object):
+class sTestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -107,7 +107,7 @@ class TestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortVideoFirst(object):
+class sTestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -147,7 +147,7 @@ class TestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortAudioFirst(object):
+class sTestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -188,7 +188,7 @@ class TestGetAudioPortAudioFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetPreviewPorts(object):
+class sTestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -211,7 +211,7 @@ class TestGetPreviewPorts(object):
                     sources.new_test_audio()
                     sources.new_test_video()
                 # print map(tuple, [[x for x in range(3003, 3003 + self.NUM * 10)]]*self.NUM*self.FACTOR), '\n'
-                expected_result = map(tuple, [[x for x in range(3003, 3003 + self.NUM)]]*self.NUM*self.FACTOR)
+                expected_result = map(tuple, [[x for x in range(3003, 3004 + self.NUM)]]*self.NUM*self.FACTOR)
                 res = map(tuple, self.get_preview_ports())
                 print '\n', res, '\n'
                 print expected_result
@@ -222,4 +222,54 @@ class TestGetPreviewPorts(object):
             finally:
                 if s.proc:
                     s.terminate()
+
+
+class TestSetCompositeMode(object):
+
+    NUM = 1
+    FACTOR = 1
+    def set_composite_mode(self, mode):
+        r = []
+        controller = Controller()
+        controller.establish_connection()
+        time.sleep(1)
+        # controller.get_compose_port()
+        for i in range(self.FACTOR):
+            print "\nchange composite mode - ", mode
+            r.append(controller.set_composite_mode(mode))
+        return r
+
+    def driver_set_composite_mode(self, mode):
+        for i in range(self.NUM):
+
+            s = Server(path=PATH)
+            try:
+                s.run()
+                
+                preview = PreviewSinks()
+                preview.run()
+
+                sources = TestSources(video_port=3000)
+                sources.new_test_video()
+                sources.new_test_video()
+                
+                time.sleep(5)
+                # expected_result = [mode != 3] * self.FACTOR
+                # print mode, expected_result
+                res = self.set_composite_mode(mode)
+                print res
+                time.sleep(5)
+                preview.terminate()
+                sources.terminate_video()
+                s.terminate()
+                # assert expected_result == res
+
+            finally:
+                if s.proc:
+                    s.terminate()
+                pass
+    def test_set_composite_mode(self):
+        for i in range(1):
+            # print "\n\nmode\n\n", i
+            self.driver_set_composite_mode(i)
 
