@@ -278,7 +278,7 @@ class TestSetCompositeMode(object):
                 sources.terminate_video()
                 s.terminate()
 
-                # assert self.verify_output(mode, out_file) == True
+                assert self.verify_output(mode, out_file) == True
                 # assert expected_result == res
 
             finally:
@@ -292,7 +292,7 @@ class TestSetCompositeMode(object):
         res1, res2 = cmpr.compare()
         print "\nRESULTS", res1, res2
         # TODO Experimental Value
-        if res1 == 0 and res2 <= 0.035:
+        if res1 == 0 and res2 == 0:
             return True
         return False
 
