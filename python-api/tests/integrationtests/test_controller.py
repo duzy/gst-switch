@@ -7,9 +7,11 @@ from gstswitch.helpers import *
 from gstswitch.controller import Controller
 import time
 
+import subprocess
+
 PATH = '/home/hyades/gst/stage/bin/'
 
-class sTestEstablishConnection(object):
+class TestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -33,7 +35,7 @@ class sTestEstablishConnection(object):
 
 
 
-class sTestGetComposePort(object):
+class TestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -70,7 +72,7 @@ class sTestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class sTestGetEncodePort(object):
+class TestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -107,7 +109,7 @@ class sTestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class sTestGetAudioPortVideoFirst(object):
+class TestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -132,8 +134,9 @@ class sTestGetAudioPortVideoFirst(object):
                 for j in range(i):
                     sources.new_test_video()
                 sources.new_test_audio()
-                sources.new_test_audio()
+
                 res.append(self.get_audio_port())
+
                 sources.terminate_video()
                 sources.terminate_audio()
                 s.terminate()
@@ -147,7 +150,7 @@ class sTestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class sTestGetAudioPortAudioFirst(object):
+class TestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -171,24 +174,24 @@ class sTestGetAudioPortAudioFirst(object):
                 sources = TestSources(video_port=3000, audio_port=audio_port)
                 
                 sources.new_test_audio()
-                sources.new_test_audio()
                 for j in range(i):
                     sources.new_test_video()
+
                 res.append(self.get_audio_port())
+
                 sources.terminate_video()
                 sources.terminate_audio()
                 s.terminate()
             finally:
                 if s.proc:
                     s.terminate()
-        # print res
-        # print expected_result
+
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
         assert set(at) == set(bt)
 
 
-class sTestGetPreviewPorts(object):
+class TestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -229,6 +232,21 @@ class TestSetCompositeMode(object):
     NUM = 1
     FACTOR = 1
 
+    class VideoFileSink(object):
+        """Sink the video to a file
+        """
+        def __init__(self, path, port, filename):
+            cmd = "{0}/gst-launch-1.0 tcpclientsrc port={1} ! gdpdepay !  jpegenc ! avimux ! filesink location={2}".format(path, port, filename)
+            with open(os.devnull, 'w') as tempf:
+                self.proc = subprocess.Popen(
+                cmd.split(),
+                stdout=tempf,
+                stderr=tempf,
+                bufsize=-1,
+                shell=False)
+        def terminate(self):
+            self.proc.terminate()
+
     def driver_set_composite_mode(self, mode):
         for i in range(self.NUM):
 
@@ -239,17 +257,21 @@ class TestSetCompositeMode(object):
                 preview = PreviewSinks()
                 preview.run()
 
+                out_file = 'output-{0}.data'.format(mode)
+                video_sink = self.VideoFileSink(PATH, s.video_port+1, out_file)
+
                 sources = TestSources(video_port=3000)
-                sources.new_test_video()
-                sources.new_test_video()
+                sources.new_test_video(pattern=4)
+                sources.new_test_video(pattern=6)
                 
-                time.sleep(5)
+                time.sleep(3)
                 # expected_result = [mode != 3] * self.FACTOR
                 # print mode, expected_result
                 controller = Controller()
                 res = controller.set_composite_mode(mode)
                 print res
-                time.sleep(5)
+                time.sleep(3)
+                video_sink.terminate()
                 preview.terminate()
                 sources.terminate_video()
                 s.terminate()

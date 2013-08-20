@@ -1,12 +1,12 @@
 import os
-import cv2
-import sys
 
 from scipy.misc import imread
 from scipy.linalg import norm
-from scipy import sum, average
+from scipy import  average
 
 import subprocess
+
+
 
 def check_video(video, cmp_folder):
 
@@ -19,12 +19,20 @@ def check_video(video, cmp_folder):
     return (res1, res2)
 
 def generate_keyframes(video, cmp_folder):
-    cmd = "ffmpeg -i {0} -ss 00:00:02.500 -f image2 -vframes 1 {1}/out1.png".format(video, cmp_folder)
-    cmd = "ffmpeg -i {0} -ss 00:00:07.500 -f image2 -vframes 1 {2}/out1.png".format(video, cmp_folder)
+    cmd1 = "ffmpeg -i {0} -ss 00:00:01.500 -f image2 -vframes 1 {1}/out1.png".format(video, cmp_folder)
+    cmd2 = "ffmpeg -i {0} -ss 00:00:04.500 -f image2 -vframes 1 {1}/out2.png".format(video, cmp_folder)
     # print cmd
     with open(os.devnull, 'w') as tempf:
             proc = subprocess.Popen(
-            cmd.split(),
+            cmd1.split(),
+            stdout=tempf,
+            stderr=tempf,
+            bufsize=-1,
+            shell=False)
+            proc.wait()
+    with open(os.devnull, 'w') as tempf:
+            proc = subprocess.Popen(
+            cmd2.split(),
             stdout=tempf,
             stderr=tempf,
             bufsize=-1,
@@ -70,6 +78,10 @@ def compare_images(img1, img2):
 def main():
     video1 = 'input.data'
     video2 = 'input.data'
+    if not os.path.exists('reference_frames'):
+        os.mkdir('reference_frames')
+    if not os.path.exists('test_frames'):
+        os.mkdir('test_frames')
     generate_keyframes(video1, 'reference_frames')
     print check_video(video2, 'test_frames')
 
