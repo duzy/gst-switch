@@ -32,8 +32,8 @@ class CompareVideo(object):
         if not os.path.exists(self.REF_FRAME_DIR):
             os.mkdir(self.REF_FRAME_DIR)
         
-        cmd1 = "ffmpeg -i {0} -ss 00:00:01.500 -f image2 -vframes 1 {1}/out{2}_1.png".format(self.video, self.REF_FRAME_DIR, self.TESTS[self.test])
-        cmd2 = "ffmpeg -i {0} -ss 00:00:04.500 -f image2 -vframes 1 {1}/out{2}_2.png".format(self.video, self.REF_FRAME_DIR, self.TESTS[self.test])
+        cmd1 = "ffmpeg -i {0} -ss 00:00:02.000 -f image2 -vframes 1 {1}/out{2}_1.png".format(self.video, self.REF_FRAME_DIR, self.TESTS[self.test])
+        cmd2 = "ffmpeg -i {0} -ss 00:00:05.000 -f image2 -vframes 1 {1}/out{2}_2.png".format(self.video, self.REF_FRAME_DIR, self.TESTS[self.test])
         # print cmd
         with open(os.devnull, 'w') as tempf:
                 proc = subprocess.Popen(

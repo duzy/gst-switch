@@ -290,7 +290,7 @@ class TestSetCompositeMode(object):
         test = 'composite_mode_{0}'.format(mode)
         cmpr = CompareVideo(test, video)
         res1, res2 = cmpr.compare()
-        print "\n\n\n\nRESULTS", res1, res2
+        print "\nRESULTS", res1, res2
         # TODO Experimental Value
         if res1 == 0 and res2 <= 0.035:
             return True
