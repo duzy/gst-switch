@@ -13,6 +13,9 @@ from gstswitch.helpers import *
 from gstswitch.controller import Controller
 import time
 
+import gi
+gi.require_version('Gst', '1.0')
+
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
 path = '/home/hyades/gst/stage/bin/'
 # path = '/usr/local/bin/'

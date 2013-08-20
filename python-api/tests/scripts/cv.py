@@ -12,21 +12,15 @@ def check_video(video, cmp_folder):
 
     
     generate_keyframes(video, cmp_folder)
-
-    result = {}
-    for x in os.listdir('reference_frames'):
-        try:
-            res = comp_image('reference_frames/'+x, 'test_frames/'+x)
-            # if res:
-            result[x] = res
-        except Exception as e:
-            pass
-    for x in result:
-        print x, result[x]
-
+    x = 'out1.png'
+    y = 'out2.png'
+    res1 = comp_image('reference_frames/'+x, 'test_frames/'+x)
+    res2 = comp_image('reference_frames/'+y, 'test_frames/'+y)
+    return (res1, res2)
 
 def generate_keyframes(video, cmp_folder):
-    cmd = "/usr/local/bin/ffmpeg -i {0} -f image2 -vf fps=fps=1 {1}/foo-%d.png".format(video, cmp_folder)
+    cmd = "ffmpeg -i {0} -ss 00:00:02.500 -f image2 -vframes 1 {1}/out1.png".format(video, cmp_folder)
+    cmd = "ffmpeg -i {0} -ss 00:00:07.500 -f image2 -vframes 1 {2}/out1.png".format(video, cmp_folder)
     # print cmd
     with open(os.devnull, 'w') as tempf:
             proc = subprocess.Popen(
@@ -74,10 +68,10 @@ def compare_images(img1, img2):
     return z_norm
 
 def main():
-    video1 = 'rec1.data'
-    video = 'rec2.data'
+    video1 = 'input.data'
+    video2 = 'input.data'
     generate_keyframes(video1, 'reference_frames')
-    print check_video(video, 'test_frames')
+    print check_video(video2, 'test_frames')
 
 main()
 
