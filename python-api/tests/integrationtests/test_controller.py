@@ -228,16 +228,6 @@ class TestSetCompositeMode(object):
 
     NUM = 1
     FACTOR = 1
-    def set_composite_mode(self, mode):
-        r = []
-        controller = Controller()
-        controller.establish_connection()
-        time.sleep(1)
-        # controller.get_compose_port()
-        for i in range(self.FACTOR):
-            print "\nchange composite mode - ", mode
-            r.append(controller.set_composite_mode(mode))
-        return r
 
     def driver_set_composite_mode(self, mode):
         for i in range(self.NUM):
@@ -256,7 +246,8 @@ class TestSetCompositeMode(object):
                 time.sleep(5)
                 # expected_result = [mode != 3] * self.FACTOR
                 # print mode, expected_result
-                res = self.set_composite_mode(mode)
+                controller = Controller()
+                res = controller.set_composite_mode(mode)
                 print res
                 time.sleep(5)
                 preview.terminate()
@@ -269,7 +260,7 @@ class TestSetCompositeMode(object):
                     s.terminate()
                 pass
     def test_set_composite_mode(self):
-        for i in range(1):
+        for i in range(4):
             # print "\n\nmode\n\n", i
             self.driver_set_composite_mode(i)
 
