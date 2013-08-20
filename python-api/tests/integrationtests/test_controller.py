@@ -7,6 +7,8 @@ from gstswitch.helpers import *
 from gstswitch.controller import Controller
 import time
 
+from compare import CompareVideo
+
 import subprocess
 
 PATH = '/home/hyades/gst/stage/bin/'
@@ -262,7 +264,7 @@ class TestSetCompositeMode(object):
 
                 sources = TestSources(video_port=3000)
                 sources.new_test_video(pattern=4)
-                sources.new_test_video(pattern=6)
+                sources.new_test_video(pattern=5)
                 
                 time.sleep(3)
                 # expected_result = [mode != 3] * self.FACTOR
@@ -275,12 +277,25 @@ class TestSetCompositeMode(object):
                 preview.terminate()
                 sources.terminate_video()
                 s.terminate()
+
+                # assert self.verify_output(mode, out_file) == True
                 # assert expected_result == res
 
             finally:
                 if s.proc:
                     s.terminate()
                 pass
+
+    def verify_output(self, mode, video):
+        test = 'composite_mode_{0}'.format(mode)
+        cmpr = CompareVideo(test, video)
+        res1, res2 = cmpr.compare()
+        print "\n\n\n\nRESULTS", res1, res2
+        # TODO Experimental Value
+        if res1 == 0 and res2 <= 0.035:
+            return True
+        return False
+
     def test_set_composite_mode(self):
         for i in range(4):
             # print "\n\nmode\n\n", i

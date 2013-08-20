@@ -53,8 +53,32 @@ class CompareVideo(object):
                 proc.wait()
 
     def  compare(self):
-        x = 'out{0}_1.png'.format(self.TESTS[self.test])
-        y = 'out{0}_2.png'
+        x = '/out{0}_1.png'.format(self.TESTS[self.test])
+        y = '/out{0}_2.png'.format(self.TESTS[self.test])
+
+        if not os.path.exists(self.TEST_FRAME_DIR):
+            os.mkdir(self.TEST_FRAME_DIR)
+        
+        cmd1 = "ffmpeg -i {0} -ss 00:00:02.000 -f image2 -vframes 1 {1}/out{2}_1.png".format(self.video, self.TEST_FRAME_DIR, self.TESTS[self.test])
+        cmd2 = "ffmpeg -i {0} -ss 00:00:05.00 -f image2 -vframes 1 {1}/out{2}_2.png".format(self.video, self.TEST_FRAME_DIR, self.TESTS[self.test])
+        # print cmd
+        with open(os.devnull, 'w') as tempf:
+                proc = subprocess.Popen(
+                cmd1.split(),
+                stdout=tempf,
+                stderr=tempf,
+                bufsize=-1,
+                shell=False)
+                proc.wait()
+        with open(os.devnull, 'w') as tempf:
+                proc = subprocess.Popen(
+                cmd2.split(),
+                stdout=tempf,
+                stderr=tempf,
+                bufsize=-1,
+                shell=False)
+                proc.wait()
+
         res1 = self.comp_image(self.REF_FRAME_DIR+x, self.TEST_FRAME_DIR+x)
         res2 = self.comp_image(self.REF_FRAME_DIR+y, self.TEST_FRAME_DIR+y)
         return (res1, res2)
