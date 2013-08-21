@@ -4,15 +4,18 @@ from scipy.misc import imread
 from scipy.linalg import norm
 from scipy import  average
 
+import tempfile
+
 import subprocess
 
+__all__ = [
+            'GenerateReferenceFrames',
+            'CompareVideo',
+            ]
 
-class CompareVideo(object):
-    """Compare a video with pre-stored frames
-    :parameter test: The test which is conducted.
-    self.TESTS stores these tests and maps them with frames
-    :parameter video: The video which has to be compared
-    """
+class BaseCompareVideo(object):
+    """docstring for BaseCompareVideo"""
+
     TESTS = {
         'composite_mode_0': 1,
         'composite_mode_1': 2,
@@ -20,69 +23,8 @@ class CompareVideo(object):
         'composite_mode_3': 4,
     }
     REF_FRAME_DIR = 'reference_frames'
-    TEST_FRAME_DIR = 'test_frames'
-    def __init__(self, test, video):
-        super(CompareVideo, self).__init__()
-        self.test = test
-        self.video = video
-
-    def generate_frames(self):
-        """Generate the original frames for storage in REF_FRAME_DIR
-        """
-        if not os.path.exists(self.REF_FRAME_DIR):
-            os.mkdir(self.REF_FRAME_DIR)
-        
-        cmd1 = "ffmpeg -i {0} -ss 00:00:02.000 -f image2 -vframes 1 {1}/out{2}_1.png".format(self.video, self.REF_FRAME_DIR, self.TESTS[self.test])
-        cmd2 = "ffmpeg -i {0} -ss 00:00:05.000 -f image2 -vframes 1 {1}/out{2}_2.png".format(self.video, self.REF_FRAME_DIR, self.TESTS[self.test])
-        # print cmd
-        with open(os.devnull, 'w') as tempf:
-                proc = subprocess.Popen(
-                cmd1.split(),
-                stdout=tempf,
-                stderr=tempf,
-                bufsize=-1,
-                shell=False)
-                proc.wait()
-        with open(os.devnull, 'w') as tempf:
-                proc = subprocess.Popen(
-                cmd2.split(),
-                stdout=tempf,
-                stderr=tempf,
-                bufsize=-1,
-                shell=False)
-                proc.wait()
-
-    def  compare(self):
-        x = '/out{0}_1.png'.format(self.TESTS[self.test])
-        y = '/out{0}_2.png'.format(self.TESTS[self.test])
-
-        if not os.path.exists(self.TEST_FRAME_DIR):
-            os.mkdir(self.TEST_FRAME_DIR)
-        
-        cmd1 = "ffmpeg -i {0} -ss 00:00:02.000 -f image2 -vframes 1 {1}/out{2}_1.png".format(self.video, self.TEST_FRAME_DIR, self.TESTS[self.test])
-        cmd2 = "ffmpeg -i {0} -ss 00:00:05.00 -f image2 -vframes 1 {1}/out{2}_2.png".format(self.video, self.TEST_FRAME_DIR, self.TESTS[self.test])
-        # print cmd
-        with open(os.devnull, 'w') as tempf:
-                proc = subprocess.Popen(
-                cmd1.split(),
-                stdout=tempf,
-                stderr=tempf,
-                bufsize=-1,
-                shell=False)
-                proc.wait()
-        with open(os.devnull, 'w') as tempf:
-                proc = subprocess.Popen(
-                cmd2.split(),
-                stdout=tempf,
-                stderr=tempf,
-                bufsize=-1,
-                shell=False)
-                proc.wait()
-
-        res1 = self.comp_image(self.REF_FRAME_DIR+x, self.TEST_FRAME_DIR+x)
-        res2 = self.comp_image(self.REF_FRAME_DIR+y, self.TEST_FRAME_DIR+y)
-        return (res1, res2)
-
+    def __init__(self):
+        pass
 
     def to_grayscale(arr):
         "If arr is a color image (3D array), convert it to grayscale (2D array)."
@@ -119,4 +61,62 @@ class CompareVideo(object):
         z_norm = norm(diff.ravel(), 0)  # Zero norm
         return z_norm
 
+    def generate_frames(self, directory=REF_FRAME_DIR):
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
+        cmd1 = "ffmpeg -i {0} -ss 00:00:02.000 -f image2 -vframes 1 {1}/out{2}_1.png".format(self.video, directory, self.TESTS[self.test])
+        cmd2 = "ffmpeg -i {0} -ss 00:00:05.000 -f image2 -vframes 1 {1}/out{2}_2.png".format(self.video, directory, self.TESTS[self.test])
+        # print cmd
+        proc = subprocess.Popen(
+        cmd1.split(),
+        bufsize=-1,
+        shell=False)
+        proc.wait()
+
+        proc = subprocess.Popen(
+        cmd2.split(),
+        bufsize=-1,
+        shell=False)
+        proc.wait()
+
+        
+
+class GenerateReferenceFrames(BaseCompareVideo):
+    """Generate the original frames for storage in reference_frames/
+    """
+
+    def __init__(self, test, video):
+        super(GenerateReferenceFrames, self).__init__()
+        self.test = test
+        self.video = video
+
+
+
+
+class CompareVideo(BaseCompareVideo):
+    """Compare a video with pre-stored frames
+    :parameter test: The test which is conducted.
+    self.TESTS stores these tests and maps them with frames
+    :parameter video: The video which has to be compared
+    """
+
+    def __init__(self, test, video):
+        super(CompareVideo, self).__init__()
+        self.test = test
+        self.video = video
+        self.TEST_FRAME_DIR = tempfile.mkdtemp()
+        
+    def  compare(self):
+        x = '/out{0}_1.png'.format(self.TESTS[self.test])
+        y = '/out{0}_2.png'.format(self.TESTS[self.test])
+
+        self.generate_frames(self.TEST_FRAME_DIR)
+
+        res1 = self.comp_image(self.REF_FRAME_DIR+x, self.TEST_FRAME_DIR+x)
+        res2 = self.comp_image(self.REF_FRAME_DIR+y, self.TEST_FRAME_DIR+y)
+        return (res1, res2)
+
+
+    
 
