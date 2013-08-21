@@ -13,7 +13,7 @@ import subprocess
 
 PATH = '/home/hyades/gst/stage/bin/'
 
-class TestEstablishConnection(object):
+class sTestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -37,7 +37,7 @@ class TestEstablishConnection(object):
 
 
 
-class TestGetComposePort(object):
+class sTestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -74,7 +74,7 @@ class TestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetEncodePort(object):
+class sTestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -111,7 +111,7 @@ class TestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortVideoFirst(object):
+class sTestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -152,7 +152,7 @@ class TestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortAudioFirst(object):
+class sTestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -193,7 +193,7 @@ class TestGetAudioPortAudioFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetPreviewPorts(object):
+class sTestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -229,7 +229,7 @@ class TestGetPreviewPorts(object):
                     s.terminate()
 
 
-class TestSetCompositeMode(object):
+class sTestSetCompositeMode(object):
 
     NUM = 1
     FACTOR = 1
@@ -303,3 +303,39 @@ class TestSetCompositeMode(object):
             # print "\n\nmode\n\n", i
             self.driver_set_composite_mode(i)
 
+
+class TestNewRecord(object):
+
+    NUM = 1
+    FACTOR = 1
+
+    def new_record(self):
+        r = []
+        controller = Controller()
+        # controller.establish_connection()
+        for i in range(self.NUM * self.FACTOR):
+            r.append(controller.new_record())
+            # time.sleep(3)
+            # controller.set_composite_mode(0)
+        return r
+
+    def test_new_record(self):
+
+        for i in range(self.NUM):
+            s = Server(path=PATH)
+            try:
+                s.run()
+
+                sources = TestSources(video_port=3000)
+                sources.new_test_video()
+                sources.new_test_video()
+
+
+                res = self.new_record()
+
+                print res
+                sources.terminate_video()
+                s.terminate()
+            finally:
+                if s.proc:
+                    s.terminate()
