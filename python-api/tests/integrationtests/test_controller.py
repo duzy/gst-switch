@@ -402,3 +402,38 @@ class TestAdjustPIP(object):
         for i in range(4,5):
             self.adjust_pip(d[i-4][0], d[i-4][1], d[i-4][2], d[i-4][3], i)
 
+
+class TestSwitch(object):
+
+    NUM = 1
+
+    def switch(self, channel, port, index, generate_frames=False):
+        for i in range(self.NUM):
+            s = Server(path=PATH)
+            try:
+                s.run()
+                
+                sources = TestSources(3000)
+                sources.new_test_video(pattern=4)
+                sources.new_test_video(pattern=5)
+                preview = PreviewSinks(3001)
+                preview.run()
+                time.sleep(3)
+                controller = Controller()
+                res = controller.switch(channel, port)
+                print res
+                time.sleep(3)
+                sources.terminate_video()
+                preview.terminate()
+                s.terminate()
+            finally:
+                if s.proc:
+                    s.terminate()
+
+    def test_switch(self):
+        d = [
+            [65, 3004]
+        ]
+        start = 5
+        for i in range(start, 6):
+            self.switch(d[i-start][0], d[i-start][1], i)
