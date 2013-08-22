@@ -14,7 +14,7 @@ import subprocess
 
 PATH = '/home/hyades/gst/stage/bin/'
 
-class TestEstablishConnection(object):
+class sTestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -38,7 +38,7 @@ class TestEstablishConnection(object):
 
 
 
-class TestGetComposePort(object):
+class sTestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -75,7 +75,7 @@ class TestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetEncodePort(object):
+class sTestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -112,7 +112,7 @@ class TestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortVideoFirst(object):
+class sTestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -153,7 +153,7 @@ class TestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortAudioFirst(object):
+class sTestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -194,7 +194,7 @@ class TestGetAudioPortAudioFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetPreviewPorts(object):
+class sTestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -230,7 +230,7 @@ class TestGetPreviewPorts(object):
                     s.terminate()
 
 
-class TestSetCompositeMode(object):
+class sTestSetCompositeMode(object):
 
     NUM = 1
     FACTOR = 1
@@ -305,20 +305,10 @@ class TestSetCompositeMode(object):
             self.driver_set_composite_mode(i)
 
 
-class TestNewRecord(object):
+class sTestNewRecord(object):
 
     NUM = 1
     FACTOR = 1
-
-    def new_record(self):
-        r = []
-        controller = Controller()
-        # controller.establish_connection()
-        for i in range(self.NUM * self.FACTOR):
-            r.append(controller.new_record())
-            # time.sleep(3)
-            # controller.set_composite_mode(0)
-        return r
 
     def test_new_record(self):
 
@@ -347,3 +337,48 @@ class TestNewRecord(object):
             finally:
                 if s.proc:
                     s.terminate()
+
+
+class TestAdjustPIP(object):
+    NUM = 1
+    FACTOR = 1
+    def adjust_pip(self, x, y, w, h):
+        r = []
+        controller = Controller()
+        # controller.establish_connection()
+        for i in range(self.NUM * self.FACTOR):
+            r.append(controller.adjust_pip(x, y, w, h))
+        return r
+
+    def test_adjust_pip(self):
+        
+        for i in range(self.NUM):
+            s = Server(path=PATH)
+            try:
+                s.run()
+                sources = TestSources(video_port=3000)
+                preview = PreviewSinks()
+                preview.run()
+
+                sources.new_test_video()
+                sources.new_test_video()
+
+                time.sleep(0)
+                controller = Controller()
+                dx = 1
+                dy = 0
+                dw = 1
+                dh = 0
+                # controller.set_composite_mode(2)
+                # time.sleep(3)
+                res = controller.adjust_pip(dx, dy, dw, dh)
+                print res
+                # time.sleep(3)
+                sources.terminate_video()
+                preview.terminate()
+                s.terminate()
+
+            finally:
+                if s.proc:
+                    s.terminate()
+

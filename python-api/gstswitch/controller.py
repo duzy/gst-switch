@@ -241,7 +241,7 @@ class Controller(object):
         :param ypos: the y position of the PIP
         :param width: the width of the PIP
         :param height: the height of the PIP
-        :returns: result - PIP has been changed succefullypos
+        :returns: result - PIP has been changed succefully
         """
         self.establish_connection()
         try:
