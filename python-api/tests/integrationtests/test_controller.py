@@ -6,6 +6,7 @@ from gstswitch.server import Server
 from gstswitch.helpers import *
 from gstswitch.controller import Controller
 import time
+import datetime
 
 from compare import CompareVideo
 
@@ -13,7 +14,7 @@ import subprocess
 
 PATH = '/home/hyades/gst/stage/bin/'
 
-class sTestEstablishConnection(object):
+class TestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -37,7 +38,7 @@ class sTestEstablishConnection(object):
 
 
 
-class sTestGetComposePort(object):
+class TestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -74,7 +75,7 @@ class sTestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class sTestGetEncodePort(object):
+class TestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -111,7 +112,7 @@ class sTestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class sTestGetAudioPortVideoFirst(object):
+class TestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -152,7 +153,7 @@ class sTestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class sTestGetAudioPortAudioFirst(object):
+class TestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -193,7 +194,7 @@ class sTestGetAudioPortAudioFirst(object):
         assert set(at) == set(bt)
 
 
-class sTestGetPreviewPorts(object):
+class TestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -229,7 +230,7 @@ class sTestGetPreviewPorts(object):
                     s.terminate()
 
 
-class sTestSetCompositeMode(object):
+class TestSetCompositeMode(object):
 
     NUM = 1
     FACTOR = 1
@@ -322,7 +323,7 @@ class TestNewRecord(object):
     def test_new_record(self):
 
         for i in range(self.NUM):
-            s = Server(path=PATH)
+            s = Server(path=PATH, record_file="test.data")
             try:
                 s.run()
 
@@ -330,12 +331,19 @@ class TestNewRecord(object):
                 sources.new_test_video()
                 sources.new_test_video()
 
+                curr_time = datetime.datetime.now()
+                alt_curr_time = curr_time + datetime.timedelta(0,1) 
+                time_str =  curr_time.strftime('%Y-%m-%d %H%M%S')
+                alt_time_str = alt_curr_time.strftime('%Y-%m-%d %H%M%S')
+                test_filename = "test {0}.data".format(time_str)
+                alt_test_filename = "test {0}.data".format(alt_time_str)
 
                 res = self.new_record()
-
                 print res
                 sources.terminate_video()
                 s.terminate()
+                # print ((os.path.exists(test_filename)) or (os.path.exists(alt_test_filename)))
+                assert ((os.path.exists(test_filename)) or (os.path.exists(alt_test_filename))) == True
             finally:
                 if s.proc:
                     s.terminate()
