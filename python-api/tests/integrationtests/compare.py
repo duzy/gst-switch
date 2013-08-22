@@ -17,10 +17,11 @@ class BaseCompareVideo(object):
     """docstring for BaseCompareVideo"""
 
     TESTS = {
-        'composite_mode_0': 1,
-        'composite_mode_1': 2,
-        'composite_mode_2': 3,
-        'composite_mode_3': 4,
+        'composite_mode_0': 0,
+        'composite_mode_1': 1,
+        'composite_mode_2': 2,
+        'composite_mode_3': 3,
+        'adjust_pip_4': 4
     }
     REF_FRAME_DIR = 'reference_frames'
     def __init__(self):

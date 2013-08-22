@@ -14,7 +14,7 @@ import subprocess
 
 PATH = '/home/hyades/gst/stage/bin/'
 
-class sTestEstablishConnection(object):
+class TestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -38,7 +38,7 @@ class sTestEstablishConnection(object):
 
 
 
-class sTestGetComposePort(object):
+class TestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -75,7 +75,7 @@ class sTestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class sTestGetEncodePort(object):
+class TestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -112,7 +112,7 @@ class sTestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class sTestGetAudioPortVideoFirst(object):
+class TestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -153,7 +153,7 @@ class sTestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class sTestGetAudioPortAudioFirst(object):
+class TestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -194,7 +194,7 @@ class sTestGetAudioPortAudioFirst(object):
         assert set(at) == set(bt)
 
 
-class sTestGetPreviewPorts(object):
+class TestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -230,28 +230,29 @@ class sTestGetPreviewPorts(object):
                     s.terminate()
 
 
-class sTestSetCompositeMode(object):
+class VideoFileSink(object):
+    """Sink the video to a file
+    """
+    def __init__(self, path, port, filename):
+        cmd = "{0}/gst-launch-1.0 tcpclientsrc port={1} ! gdpdepay !  jpegenc ! avimux ! filesink location={2}".format(path, port, filename)
+        with open(os.devnull, 'w') as tempf:
+            self.proc = subprocess.Popen(
+            cmd.split(),
+            stdout=tempf,
+            stderr=tempf,
+            bufsize=-1,
+            shell=False)
+
+    def terminate(self):
+        self.proc.terminate()
+
+
+class TestSetCompositeMode(object):
 
     NUM = 1
     FACTOR = 1
 
-    class VideoFileSink(object):
-        """Sink the video to a file
-        """
-        def __init__(self, path, port, filename):
-            cmd = "{0}/gst-launch-1.0 tcpclientsrc port={1} ! gdpdepay !  jpegenc ! avimux ! filesink location={2}".format(path, port, filename)
-            with open(os.devnull, 'w') as tempf:
-                self.proc = subprocess.Popen(
-                cmd.split(),
-                stdout=tempf,
-                stderr=tempf,
-                bufsize=-1,
-                shell=False)
-
-        def terminate(self):
-            self.proc.terminate()
-
-    def driver_set_composite_mode(self, mode, generate_frames=False):
+    def set_composite_mode(self, mode, generate_frames=False):
 
         for i in range(self.NUM):
 
@@ -263,7 +264,7 @@ class sTestSetCompositeMode(object):
                 preview.run()
 
                 out_file = 'output-{0}.data'.format(mode)
-                video_sink = self.VideoFileSink(PATH, s.video_port+1, out_file)
+                video_sink = VideoFileSink(PATH, s.video_port+1, out_file)
 
                 sources = TestSources(video_port=3000)
                 sources.new_test_video(pattern=4)
@@ -281,6 +282,11 @@ class sTestSetCompositeMode(object):
                 sources.terminate_video()
                 s.terminate()
                 if not generate_frames:
+                    if mode == 3:
+                        assert res is False
+                    else:
+                        assert res is True
+                    self.prev_mode = mode
                     assert self.verify_output(mode, out_file) == True
                 # assert expected_result == res
 
@@ -301,14 +307,19 @@ class sTestSetCompositeMode(object):
 
     def test_set_composite_mode(self):
         for i in range(4):
-            # print "\n\nmode\n\n", i
-            self.driver_set_composite_mode(i)
+            self.set_composite_mode(i)
 
 
-class sTestNewRecord(object):
+class TestNewRecord(object):
 
     NUM = 1
     FACTOR = 1
+    def new_record(self):
+        r = []
+        controller = Controller()
+        for i in range(self.NUM * self.FACTOR):
+            r.append(controller.new_record())
+        return r
 
     def test_new_record(self):
 
@@ -342,15 +353,8 @@ class sTestNewRecord(object):
 class TestAdjustPIP(object):
     NUM = 1
     FACTOR = 1
-    def adjust_pip(self, x, y, w, h):
-        r = []
-        controller = Controller()
-        # controller.establish_connection()
-        for i in range(self.NUM * self.FACTOR):
-            r.append(controller.adjust_pip(x, y, w, h))
-        return r
-
-    def test_adjust_pip(self):
+    
+    def adjust_pip(self, dx, dy, dw, dh, index, generate_frames=False):
         
         for i in range(self.NUM):
             s = Server(path=PATH)
@@ -359,26 +363,42 @@ class TestAdjustPIP(object):
                 sources = TestSources(video_port=3000)
                 preview = PreviewSinks()
                 preview.run()
-
-                sources.new_test_video()
-                sources.new_test_video()
-
-                time.sleep(0)
+                out_file = "output-{0}.data".format(index)
+                video_sink = VideoFileSink(PATH, 3001, out_file)
+                sources.new_test_video(pattern=4)
+                sources.new_test_video(pattern=5)
                 controller = Controller()
-                dx = 1
-                dy = 0
-                dw = 1
-                dh = 0
-                # controller.set_composite_mode(2)
-                # time.sleep(3)
+                controller.set_composite_mode(1)
+                time.sleep(3)
                 res = controller.adjust_pip(dx, dy, dw, dh)
-                print res
-                # time.sleep(3)
+                time.sleep(3)
                 sources.terminate_video()
                 preview.terminate()
+                video_sink.terminate()
                 s.terminate()
+                if not generate_frames:
+                    assert res is not None
+                    assert self.verify_output(index, out_file) == True
+
 
             finally:
                 if s.proc:
                     s.terminate()
+
+    def verify_output(self, index, video):
+        test = 'adjust_pip_{0}'.format(index)
+        cmpr = CompareVideo(test, video)
+        res1, res2 = cmpr.compare()
+        print "RESULTS", res1, res2
+        # TODO Experimental Value
+        if res1 == 0 and res2 == 0:
+            return True
+        return False
+
+    def test_adjust_pip(self):
+        d = [
+                [50, 75, 0, 0],
+            ]
+        for i in range(4,5):
+            self.adjust_pip(d[i-4][0], d[i-4][1], d[i-4][2], d[i-4][3], i)
 
