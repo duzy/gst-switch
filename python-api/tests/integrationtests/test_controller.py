@@ -12,7 +12,7 @@ from compare import CompareVideo
 
 import subprocess
 
-PATH = '/home/hyades/gst/stage/bin/'
+PATH = os.getenv("HOME") + '/gst/stage/bin/'
 
 class TestEstablishConnection(object):
 

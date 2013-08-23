@@ -8,7 +8,7 @@ import time
 import glob
 
 
-PATH = '/home/hyades/gst/stage/bin/'
+PATH = os.getenv("HOME") + '/gst/stage/bin/'
 
 
 class TestServerStartStop(object):

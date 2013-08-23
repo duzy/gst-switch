@@ -7,7 +7,7 @@ from gstswitch.helpers import *
 import time
 
 
-PATH = '/home/hyades/gst/stage/bin/'
+PATH = os.getenv("HOME") + '/gst/stage/bin/'
 
 
 class TestTestSourcesPreviews(object):

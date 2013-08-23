@@ -185,7 +185,7 @@ class TestSources(object):
         except TypeError:
             raise InvalidIndexError("Index should be a valid integer")
                 
-        print 'End source with pattern %s' % (str(testsrc.wave))
+        print 'End source with wave %s' % (str(testsrc.wave))
         testsrc.end()
         self._running_tests_audio.remove(self._running_tests_audio[index])
 
