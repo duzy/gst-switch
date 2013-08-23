@@ -14,8 +14,9 @@ before_install:
  - ./autogen.sh
  - py.test --cov-report html --cov gstswitch -v -s
  after_success:
- - coveralls
+  - coveralls
 
 notifications:
   email:
-    - aayushahuja@gmail.com
+    - gst-switch-spam@googlegroups.com
+  irc: "irc.freenode.org#gst-switch"
