@@ -1,0 +1,9 @@
+argparse
+PyYAML
+requests
+coverage
+six
+sh
+mock
+pytest-cov
+python-coveralls
