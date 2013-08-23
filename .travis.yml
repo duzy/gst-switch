@@ -9,7 +9,7 @@ python:
  - "2.7"
 
 before_install:
- - pip install -r requirements.txt --use-mirrors
+ - sudo pip install -r requirements.txt --use-mirrors
  - echo 'yes' | sudo add-apt-repository ppa:gstreamer-developers/ppa
  - sudo apt-get update
  - sudo apt-get install .*gstreamer.*1\.0.* libgtk-3-dev
