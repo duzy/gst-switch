@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/hyades/gst-switch.png?branch=python-api)](https://travis-ci.org/hyades/gst-switch)
-
+[![Coverage Status](https://coveralls.io/repos/hyades/gst-switch/badge.png?branch=python-api)](https://coveralls.io/r/hyades/gst-switch?branch=python-api)
 
 # GstSwitch
 
@@ -72,10 +72,4 @@ The command control port is *5000*.
  e.g. *record 2013-01-23 131139.dat*
  </td></tr>
 </table>
-
-
-
-# Current Build Status
-
-[![Build Status](https://travis-ci.org/timsvideo/gst-switch.png?branch=master)](https://travis-ci.org/timsvideo/gst-switch)
 
