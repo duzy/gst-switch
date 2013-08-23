@@ -1,14 +1,15 @@
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
+
+GObject.threads_init()
+Gst.init(None)
+
 from exception import RangeError
 import random
 
 # from pipeline import *
 #IMPORTS
-
-GObject.threads_init()
-Gst.init(None)
 
 __all__ = ["Preview", "VideoSrc", "AudioSrc"]
 
