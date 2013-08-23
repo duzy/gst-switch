@@ -20,7 +20,7 @@ script:
  - chmod +x scripts/stage
  - ./scripts/stage
  - cd python-api
- - make coverage
+ - make test
 
 after_success:
  - coveralls
