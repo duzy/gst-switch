@@ -12,7 +12,6 @@ coverage:
 	-py.test --cov-report html --cov gstswitch tests/unittests/ -v -s
 	mv htmlcov/*.* reports/coverage
 	rmdir htmlcov
-	rm *.data
 
 pytest:
 	-py.test tests/unittests -v

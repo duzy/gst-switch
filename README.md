@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/hyades/gst-switch.png?branch=python-api)](https://travis-ci.org/hyades/gst-switch)
+
+
 # GstSwitch
 
 ## Purpose
