@@ -12,7 +12,7 @@ function install-prerequisite()
     #local pkginfo=$(get-pkg-info $pkg)
     #if [[ "x$pkginfo" == "x" ]]; then
     printf "install $pkginfo..\n"
-    sudo apt-get install $pkg
+    sudo apt-get -y install $pkg
     #else
     #printf "package $pkg is ok\n"
     #fi

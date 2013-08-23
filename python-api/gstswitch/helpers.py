@@ -29,43 +29,35 @@ class TestSources(object):
 
     @video_port.setter
     def video_port(self, video_port):
-        if not video_port:
-            raise ValueError("video_port: '{0}' cannot be blank"
-                             .format(video_port))
-        else:
-            try:
-                i = int(video_port)
-                if i < 1 or i > 65535:
-                    raise RangeError('video_port must be in range 1 to 65535')
-                else:
-                    self._video_port = video_port
-            except TypeError:
-                raise TypeError("video_port must be a string or number,"
-                    "not, '{0}'".format(type(video_port)))
-            except ValueError:
-                raise TypeError("Port must be a valid number")
+        try:
+            i = int(video_port)
+            if i < 1 or i > 65535:
+                raise RangeError('video_port must be in range 1 to 65535')
+            else:
+                self._video_port = video_port
+        except TypeError:
+            raise TypeError("video_port must be a string or number,"
+                "not, '{0}'".format(type(video_port)))
+        except ValueError:
+            raise TypeError("Port must be a valid number")
 
     @property
-    def audio(self):
-        return self._video_port
+    def audio_port(self):
+        return self._audio_port
 
-    @audio.setter
-    def audio(self, audio):
-        if not audio:
-            raise ValueError("audio: '{0}' cannot be blank"
-                             .format(audio))
-        else:
-            try:
-                i = int(audio)
-                if i < 1 or i > 65535:
-                    raise RangeError('audio must be in range 1 to 65535')
-                else:
-                    self._video_port = audio
-            except TypeError:
-                raise TypeError("audio must be a string or number,"
-                    "not, '{0}'".format(type(audio)))
-            except ValueError:
-                raise TypeError("Port must be a valid number")
+    @audio_port.setter
+    def audio_port(self, audio_port):
+        try:
+            i = int(audio_port)
+            if i < 1 or i > 65535:
+                raise RangeError('audio must be in range 1 to 65535')
+            else:
+                self._audio_port = audio_port
+        except TypeError:
+            raise TypeError("audio must be a string or number,"
+                "not, '{0}'".format(type(audio_port)))
+        except ValueError:
+            raise TypeError("Port must be a valid number")
 
     @property
     def running_tests_video(self):
@@ -165,8 +157,6 @@ class TestSources(object):
             wave)
         testsrc.run()
         # print testsrc
-        if testsrc is None:
-            raise Exception("fail")
         self._running_tests_audio.append(testsrc)
         # print self._running_tests_audio
 

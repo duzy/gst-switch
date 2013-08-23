@@ -7,7 +7,12 @@
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
+import gi
+gi.require_version('Gst', '1.0')
+from gi.repository import GObject, Gst
 
+GObject.threads_init()
+Gst.init(None)
 from gstswitch.server import Server
 from gstswitch.helpers import *
 from gstswitch.controller import Controller
