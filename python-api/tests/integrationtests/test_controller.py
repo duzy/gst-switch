@@ -440,3 +440,57 @@ class TestSwitch(object):
         start = 5
         for i in range(start, 6):
             self.switch(d[i-start][0], d[i-start][1], i)
+
+
+
+class _TestClickVideo(object):
+    NUM = 1
+    FACTOR = 1
+    
+    def click_video(self, dx, dy, dw, dh, index, generate_frames=False):
+        
+        for i in range(self.NUM):
+            s = Server(path=PATH)
+            try:
+                s.run()
+                sources = TestSources(video_port=3000)
+                preview = PreviewSinks()
+                preview.run()
+                out_file = "output-{0}.data".format(index)
+                video_sink = VideoFileSink(PATH, 3001, out_file)
+                sources.new_test_video(pattern=4)
+                sources.new_test_video(pattern=5)
+                controller = Controller()
+                time.sleep(1)
+                res = controller.click_video(dx, dy, dw, dh)
+                print res
+                time.sleep(1)
+                sources.terminate_video()
+                preview.terminate()
+                video_sink.terminate()
+                s.terminate()
+                if not generate_frames:
+                    assert res is not None
+                    assert self.verify_output(index, out_file) == True
+
+
+            finally:
+                if s.proc:
+                    s.terminate()
+
+    def verify_output(self, index, video):
+        test = 'click_video_{0}'.format(index)
+        cmpr = CompareVideo(test, video)
+        res1, res2 = cmpr.compare()
+        print "RESULTS", res1, res2
+        # TODO Experimental Value
+        if res1 == 0 and res2 == 0:
+            return True
+        return False
+
+    def test_click_video(self):
+        d = [
+                [0,0, 10, 10],
+            ]
+        for i in range(4,5):
+            self.click_video(d[i-4][0], d[i-4][1], d[i-4][2], d[i-4][3], i, True)
