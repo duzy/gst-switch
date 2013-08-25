@@ -195,7 +195,7 @@ class Server(object):
         """
         print 'Creating process %s' % (cmd)
         try:
-            with open('log', 'w') as tempf:
+            with open(os.devnull, 'w') as tempf:
                 process = subprocess.Popen(
                     cmd.split(),
                     stdout=tempf,

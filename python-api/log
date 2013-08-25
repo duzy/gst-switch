@@ -1,0 +1,2537 @@
+./tools/gstswitchserver.c:125:info: gst_switch_server init 0x1cc5000
+./tools/gstswitchserver.c:1518:info: Compose sink to 3001, 3002
+./tools/gstcomposite.c:88:info: gst_composite init 0x1cc8860
+./tools/gstcomposite.c:155:warning: ignore changing mode in transition
+./tools/gstswitchserver.c:707:info: Listening on localhost (127.0.0.1:3000)
+./tools/gstswitchserver.c:707:info: Listening on localhost (127.0.0.1:5000)
+./tools/gstswitchserver.c:707:info: Listening on localhost (127.0.0.1:4000)
+./tools/gstswitchcontroller.c:484:info: Controller is listening at: unix:abstract=gstswitch
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+./tools/gstswitchcontroller.c:626:warning: set_compose_port: no connections
+online: composite @12211086527895
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+./tools/gstswitchcontroller.c:626:warning: set_encode_port: no connections
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+./tools/gstswitchcontroller.c:626:warning: new_mode_online: no connections
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:4506:store_sticky_event:<gdpdepay1:src> Sticky event misordering, got 'segment' before 'caps'
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:4506:store_sticky_event:<sink:sink> Sticky event misordering, got 'segment' before 'caps'
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:4506:store_sticky_event:<gdpdepay1:src> Sticky event misordering, got 'caps' before 'stream-start'
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:4506:store_sticky_event:<sink:sink> Sticky event misordering, got 'caps' before 'stream-start'
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:4506:store_sticky_event:<gdpdepay0:src> Sticky event misordering, got 'segment' before 'caps'
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:4506:store_sticky_event:<sink:sink> Sticky event misordering, got 'segment' before 'caps'
+./tools/gstswitchcontroller.c:626:warning: add_preview_port: no connections
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:4506:store_sticky_event:<gdpdepay0:src> Sticky event misordering, got 'caps' before 'stream-start'
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+./tools/gstswitchcontroller.c:449:info: authorize: GCredentials:linux-ucred:pid=16208,uid=1000,gid=1000
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+offline: composite @12211599220001
+online: composite @12211601079280
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+./tools/gstswitchcontroller.c:626:warning: new_mode_online: no connections
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-sta
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+./tools/gstswitchcontroller.c:591:error: GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: No such interface `info.duzy.gst.switch.SwitchUIInterface' on object at path /info/duzy/gst/switch/SwitchUI (role)
+./tools/gstswitchcontroller.c:591:error: GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: No such interface `info.duzy.gst.switch.SwitchCaptureInterface' on object at path /info/duzy/gst/switch/SwitchCapture (role)
+
+(gst-switch-srv:16686): GLib-GIO-CRITICAL **: g_dbus_connection_call_sync_internal: assertion `object_path != NULL && g_variant_is_object_path (object_path)' failed
+
+(gst-switch-srv:16686): GLib-GIO-CRITICAL **: g_dbus_connection_call_sync_internal: assertion `object_path != NULL && g_variant_is_object_path (object_path)' failed
+
+(gst-switch-srv:16686): GLib-GIO-CRITICAL **: g_dbus_connection_call_sync_internal: assertion `object_path != NULL && g_variant_is_object_path (object_path)' failed
+
+(gst-switch-srv:16686): GLib-GIO-CRITICAL **: g_dbus_connection_call_sync_internal: assertion `object_path != NULL && g_variant_is_object_path (object_path)' failed
+
+(gst-switch-srv:16686): GLib-GIO-CRITICAL **: g_dbus_connection_call_sync_internal: assertion `object_path != NULL && g_variant_is_object_path (object_path)' failed
+
+(gst-switch-srv:16686): GLib-GIO-CRITICAL **: g_dbus_connection_call_sync_internal: assertion `object_path != NULL && g_variant_is_object_path (object_path)' failed
+./tools/gstswitchcontroller.c:387:error: unknown role: 0
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay2:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay3:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay0:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3911:gst_pad_push_data:<gdppay1:src> Got data flow before stream-start event
+
+(gst-switch-srv:16686): GStreamer-WARNING **: gstpad.c:3680:gst_pad_chain_data_unchecked:<tcp_sink:sink> Got data flow before stream-start event
