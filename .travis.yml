@@ -13,19 +13,9 @@ before_install:
  - echo 'yes' | sudo add-apt-repository ppa:gstreamer-developers/ppa
  - sudo apt-get update
  - sudo apt-get install .*gstreamer.*1\.0.* libgtk-3-dev
- - mkdir $HOME/gst
- - cd $HOME/gst
- - git clone https://github.com/duzy/gst-plugins-bad.git
- - cd gst-plugins-bad
- - git checkout speakertrack_new
- - cd ..
- - git clone https://github.com/hyades/gst-switch.git
- - cd gst-switch
- - git checkout python-api
  - sudo apt-get install python-gi python3-gi gstreamer1.0-tools gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
- - sudo apt-get install python-scipy
  - export PKG_CONFIG_PATH=$HOME"/gst/stage/lib/pkgconfig"
-
+ - sudo apt-get install python-scipy
 
 script: 
  - chmod +x scripts/stage
