@@ -14,7 +14,7 @@ import subprocess
 
 PATH = os.getenv("HOME") + '/gst/stage/bin/'
 
-class TestEstablishConnection(object):
+class _TestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -38,7 +38,7 @@ class TestEstablishConnection(object):
 
 
 
-class TestGetComposePort(object):
+class _TestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -75,7 +75,7 @@ class TestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetEncodePort(object):
+class _TestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -112,7 +112,7 @@ class TestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortVideoFirst(object):
+class _TestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -153,7 +153,7 @@ class TestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortAudioFirst(object):
+class _TestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -194,7 +194,7 @@ class TestGetAudioPortAudioFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetPreviewPorts(object):
+class _TestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -247,7 +247,7 @@ class VideoFileSink(object):
         self.proc.terminate()
 
 
-class TestSetCompositeMode(object):
+class _TestSetCompositeMode(object):
 
     NUM = 1
     FACTOR = 1
@@ -310,7 +310,7 @@ class TestSetCompositeMode(object):
             self.set_composite_mode(i)
 
 
-class TestNewRecord(object):
+class _TestNewRecord(object):
 
     NUM = 1
     FACTOR = 1
@@ -350,7 +350,7 @@ class TestNewRecord(object):
                     s.terminate()
 
 
-class TestAdjustPIP(object):
+class _TestAdjustPIP(object):
     NUM = 1
     FACTOR = 1
     
@@ -403,7 +403,7 @@ class TestAdjustPIP(object):
             self.adjust_pip(d[i-4][0], d[i-4][1], d[i-4][2], d[i-4][3], i)
 
 
-class TestSwitch(object):
+class _TestSwitch(object):
 
     NUM = 1
 
@@ -443,7 +443,7 @@ class TestSwitch(object):
 
 
 
-class TestClickVideo(object):
+class _TestClickVideo(object):
     NUM = 1
     FACTOR = 1
     
