@@ -492,5 +492,60 @@ class TestClickVideo(object):
         d = [
                 [0,0, 10, 10],
             ]
-        for i in range(4,5):
-            self.click_video(d[i-4][0], d[i-4][1], d[i-4][2], d[i-4][3], i, True)
+        start = 6
+        for i in range(start, 7):
+            self.click_video(d[i-start][0], d[i-start][1], d[i-start][2], d[i-start][3], i, True)
+
+
+class TestMarkFace(object):
+
+    NUM = 1
+
+    def mark_face(self, faces, index, generate_frames=False):
+        
+        for i in range(self.NUM):
+            s = Server(path=PATH)
+            try:
+                s.run()
+                sources = TestSources(video_port=3000)
+                preview = PreviewSinks()
+                preview.run()
+                out_file = "output-{0}.data".format(index)
+                video_sink = VideoFileSink(PATH, 3001, out_file)
+                sources.new_test_video(pattern=4)
+                sources.new_test_video(pattern=5)
+                controller = Controller()
+                time.sleep(1)
+                res = controller.mark_face(faces)
+                print res
+                time.sleep(5)
+                sources.terminate_video()
+                preview.terminate()
+                video_sink.terminate()
+                s.terminate()
+                if not generate_frames:
+                    assert res is not None
+                    assert self.verify_output(index, out_file) == True
+
+
+            finally:
+                if s.proc:
+                    s.terminate()
+
+    def verify_output(self, index, video):
+        test = 'mark_face_{0}'.format(index)
+        cmpr = CompareVideo(test, video)
+        res1, res2 = cmpr.compare()
+        print "RESULTS", res1, res2
+        # TODO Experimental Value
+        if res1 == 0 and res2 == 0:
+            return True
+        return False
+
+    def test_mark_face(self):
+        d = [
+                [(1, 1, 1, 1), (10, 10, 1, 1)],
+            ]
+        start = 7
+        for i in range(start, 8):
+            self.mark_face(d[i-start], i, True)
