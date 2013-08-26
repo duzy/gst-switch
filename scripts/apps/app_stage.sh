@@ -122,7 +122,7 @@ function clone-project()
 
 function clone-duzy-project()
 {
-    clone-project https://github.com/duzy $1 .git
+    clone-project https://github.com/hyades $1 .git
 }
 
 function clone-gst-project()
@@ -217,7 +217,6 @@ function main()
 	    gstreamer \
 	    gst-plugins-base \
 	    gst-plugins-good \
-	    gst-plugins-bad \
 	    gst-plugins-ugly
     fi
 
@@ -227,6 +226,8 @@ function main()
 	[[ -s scripts/stage ]]; then
 	cd $back && build-project .
     else
+    clone-duzy-project gst-plugins-bad
+    build-gst-project gst-plugins-bad
 	clone-duzy-project gst-switch
 	build-project gst-switch
 	true
