@@ -29,7 +29,8 @@ before_install:
 
 script: 
  - chmod +x scripts/stage
- - ./scripts/stage
+ - ./scripts/
+ - ./$HOME/gst/stage/bin/gst-switch-srv
  - cd python-api
  - make test
 
