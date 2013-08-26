@@ -25,7 +25,8 @@ before_install:
  - sudo apt-get install python-gi python3-gi gstreamer1.0-tools gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
  - sudo apt-get install python-scipy
  - export PKG_CONFIG_PATH=$HOME"/gst/stage/lib/pkgconfig"
- 
+ - sudo sh -c 'echo $HOME/gst/stage/lib > /etc/ld.so.conf.d/gstreamer-local.conf'
+ - sudo ldconfig
 
 
 script: 
