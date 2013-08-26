@@ -29,7 +29,7 @@ before_install:
 
 script: 
  - chmod +x scripts/stage
- - ./scripts/
+ - ./scripts/stage
  - cd $HOME/gst/stage/bin/
  - ./gst-switch-srv > out.txt
  - sleep 10
