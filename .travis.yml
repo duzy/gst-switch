@@ -32,7 +32,7 @@ before_install:
  - ./autogen.sh && make
  - sudo make install
  - cd ../..
- - unset PKG_CONFIG_PATH
+ - export PKG_CONFIG_PATH=$HOME/gst/stage/lib/pkgconfig
 
 
 script: 
