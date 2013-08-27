@@ -18,6 +18,7 @@ before_install:
  - sudo apt-get install python-scipy
  - export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
  - sudo apt-get build-dep gstreamer1.0
+ - mkdir gst-temp
  - git clone git://anongit.freedesktop.org/gstreamer/gstreamer
  - cd gstreamer
  - chmod +x autogen.sh
@@ -29,6 +30,7 @@ before_install:
  - chmod +x autogen.sh
  - ./autogen.sh && make
  - sudo make install
+ - cd ../..
  - unset PKG_CONFIG_PATH
 
 
