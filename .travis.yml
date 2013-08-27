@@ -24,7 +24,7 @@ before_install:
  - ./autogen.sh && make
  - sudo make install
  - cd ..
- - git clone git://anongit.freedesktop.org/gst-plugins-base
+ - git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-base
  - cd gst-plugins-base
  - chmod +x autogen.sh
  - ./autogen.sh && make
