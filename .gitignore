@@ -31,6 +31,7 @@
 /plugins/Makefile
 /plugins/Makefile.in
 /python-api/reports/
+/python-api/htmlcov/
 /stamp-h1
 /tools/.deps/
 /tools/Makefile
