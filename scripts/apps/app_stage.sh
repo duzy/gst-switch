@@ -159,7 +159,14 @@ function build-project()
 	exit -1
     }
     make clean || true
-    make ${options[make-args]} && make ${options[make-args]} install
+     make || {
+       printf "make of $project failed!!!\n"
+        exit -1
+    }
+    make install || {
+       printf "make of $project failed!!!\n"
+        exit -1
+    }
     cd $backdir
 }
 
