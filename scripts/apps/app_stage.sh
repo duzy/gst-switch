@@ -211,7 +211,6 @@ function parse-options()
 
 function main()
 {
-    mkdir -p $HOME/gst
     declare -A options="( $(parse-options $@) )"
     local back=$PWD
     local stage=$(gst-stage)
