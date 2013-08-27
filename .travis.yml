@@ -20,7 +20,7 @@ before_install:
 script: 
  - chmod +x scripts/stage
  - ./scripts/stage
- - sudo mv $HOME/gst/stage/lib/girepository-1.0 /usr/lib
+ - sudo mv $HOME/gst/stage/lib/girepository-1.0 /usr/lib/python2.7/
  - cd python-api
  - make test
 
