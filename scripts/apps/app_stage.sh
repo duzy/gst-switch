@@ -161,11 +161,11 @@ function build-project()
     make clean || true
      make || {
        printf "make of $project failed!!!\n"
-        exit -1
+       exit -1
     }
     make install || {
        printf "make of $project failed!!!\n"
-        exit -1
+       exit -1
     }
     cd $backdir
 }
