@@ -19,12 +19,14 @@ before_install:
  - export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
  - git clone git://anongit.freedesktop.org/gstreamer/gstreamer
  - cd gstreamer
- - ./autogen && make
+ - chmod +x autogen.sh
+ - ./autogen.sh && make
  - sudo make install
  - cd ..
  - git clone git://anongit.freedesktop.org/gst-plugins-base
  - cd gst-plugins-base
- - ./autogen && make
+ - chmod +x autogen.sh
+ - ./autogen.sh && make
  - sudo make install
  - unset PKG_CONFIG_PATH
 
