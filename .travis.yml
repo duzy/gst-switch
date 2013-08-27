@@ -19,6 +19,7 @@ before_install:
  - export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
  - sudo apt-get build-dep gstreamer1.0
  - mkdir gst-temp
+ - cd gst-temp
  - git clone git://anongit.freedesktop.org/gstreamer/gstreamer
  - cd gstreamer
  - chmod +x autogen.sh
