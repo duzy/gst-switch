@@ -19,6 +19,8 @@ before_install:
 
 script: 
  - export PKG_CONFIG_PATH=/usr/lib/pkgconfig
+ - sudo sh -c "echo /usr/local/lib > /etc/ld.so.conf.d/gstreamer-local.conf"
+ - sudo ldconfig
  - git clone git://anongit.freedesktop.org/git/gstreamer/gstreamer
  - cd gstreamer
  - ./autogen.sh 
