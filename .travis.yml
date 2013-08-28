@@ -14,26 +14,10 @@ before_install:
  - sudo apt-get update
  - sudo apt-get install python-gi python3-gi gstreamer1.0-tools gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-libav
  - sudo apt-get install python-scipy
- - export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
  - sudo apt-get build-dep gstreamer1.0
- - mkdir gst-temp
- - cd gst-temp
- - git clone git://anongit.freedesktop.org/gstreamer/gstreamer
- - cd gstreamer
- - chmod +x autogen.sh
- - ./autogen.sh && make
- - sudo make install
- - cd ..
- - git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-base
- - cd gst-plugins-base
- - chmod +x autogen.sh
- - ./autogen.sh && make
- - sudo make install
- - cd ../..
- - export PKG_CONFIG_PATH=$HOME/gst/stage/lib/pkgconfig
-
 
 script: 
+ - export PKG_CONFIG_PATH=$HOME/gst/lib/pkgconfig
  - chmod +x scripts/stage
  - ./scripts/stage
  - cd python-api
