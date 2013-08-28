@@ -20,31 +20,31 @@ script:
 - export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
  - git clone git://anongit.freedesktop.org/git/gstreamer/gstreamer
  - cd gstreamer
- - ./autogen --prefix=/usr/local/lib
+ - ./autogen.sh --prefix=/usr/local/lib
  - make
  - sudo make install
  - cd ..
  - git clone git://anongit.freedesktop.org/git/gstreamer/gst-plugins-base
  - cd gst-plugins-base
- - ./autogen --prefix=/usr/local/lib
+ - ./autogen.sh --prefix=/usr/local/lib
  - make
  - sudo make install
  - cd ..
  - git clone git://anongit.freedesktop.org/git/gstreamer/gst-plugins-good
  - cd gst-plugins-good
- - ./autogen --prefix=/usr/local/lib
+ - ./autogen.sh --prefix=/usr/local/lib
  - make
  -sudo make install
  - cd ..
  - git clone git://anongit.freedesktop.org/git/gstreamer/gst-plugins-ugly
  - cd gst-plugins-ugly
- - ./autogen --prefix=/usr/local/lib
+ - ./autogen.sh --prefix=/usr/local/lib
  - make
  - sudo make install
  - cd ..
  - git clone https://github.com/hyades/gst-plugins-bad
  - cd gst-plugins-bad
- - ./autogen --prefix=/usr/local/lib
+ - ./autogen.sh --prefix=/usr/local/lib
  - make
  - sudo make install
  - cd ..
