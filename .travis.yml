@@ -10,7 +10,7 @@ python:
 
 before_install:
  - sudo pip install -r requirements.txt --use-mirrors
- - echo 'yes' | sudo add-apt-repository ppa:gstreamer-developers/ppa
+ - sudo apt-add-repository ppa:gstreamer-developers/ppa
  - sudo apt-get update
  - sudo apt-get build-dep gstreamer1.0
  - sudo apt-get install python-scipy
