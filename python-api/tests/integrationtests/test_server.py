@@ -4,8 +4,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
 
 from gstswitch.server import Server
 from gstswitch.helpers import *
-import time
-import glob
 
 
 PATH = os.getenv("HOME") + '/gst/stage/bin/'
