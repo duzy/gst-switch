@@ -17,7 +17,7 @@ before_install:
  - sudo apt-get install python-gi gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
 
 script: 
-- export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+ - export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
  - git clone git://anongit.freedesktop.org/git/gstreamer/gstreamer
  - cd gstreamer
  - ./autogen.sh --prefix=/usr/local/lib
