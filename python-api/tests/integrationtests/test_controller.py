@@ -35,6 +35,8 @@ class TestEstablishConnection(object):
         finally:
             if s.proc:
                 s.terminate()
+                f = open('server.log')
+                print f.read()
 
 
 
@@ -69,6 +71,8 @@ class TestGetComposePort(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
         
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
@@ -106,6 +110,8 @@ class TestGetEncodePort(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
         
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
@@ -146,6 +152,8 @@ class TestGetAudioPortVideoFirst(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
         # print res
         # print expected_result
         at = [ tuple(i) for i in expected_result]
@@ -188,6 +196,8 @@ class TestGetAudioPortAudioFirst(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
 
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
@@ -228,6 +238,8 @@ class TestGetPreviewPorts(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
 
 
 class VideoFileSink(object):
@@ -293,6 +305,8 @@ class TestSetCompositeMode(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
                 pass
 
     def verify_output(self, mode, video):
@@ -348,6 +362,8 @@ class TestNewRecord(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
 
 
 class TestAdjustPIP(object):
@@ -384,6 +400,8 @@ class TestAdjustPIP(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
 
     def verify_output(self, index, video):
         test = 'adjust_pip_{0}'.format(index)
@@ -432,6 +450,8 @@ class TestSwitch(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
 
     def test_switch(self):
         d = [
@@ -477,6 +497,8 @@ class TestClickVideo(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
 
     def verify_output(self, index, video):
         test = 'click_video_{0}'.format(index)
@@ -531,6 +553,8 @@ class TestMarkFace(object):
             finally:
                 if s.proc:
                     s.terminate()
+                    f = open('server.log')
+                    print f.read()
 
     def verify_output(self, index, video):
         test = 'mark_face_{0}'.format(index)

@@ -28,7 +28,8 @@ class TestServerStartStop(object):
         except OSError:
             if s.proc:
                 s.kill()
-            assert s.proc is None
+                f = open('server.log')
+                print f.read()
 
     def test_start_stop(self):
         for i in range(self.NUM):
