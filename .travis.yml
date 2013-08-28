@@ -14,6 +14,7 @@ before_install:
  - sudo apt-get update
  - sudo apt-get build-dep gstreamer1.0
  - sudo apt-get install python-scipy
+ - sudo apt-get install gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
  - export PKG_CONFIG_PATH=$HOME/gst/stage/lib/pkgconfig
 
 script: 
