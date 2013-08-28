@@ -14,12 +14,46 @@ before_install:
  - sudo apt-get update
  - sudo apt-get build-dep gstreamer1.0
  - sudo apt-get install python-scipy
- - sudo apt-get install gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
- - export PKG_CONFIG_PATH=$HOME/gst/stage/lib/pkgconfig
+ - sudo apt-get install python-gi gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0
 
 script: 
- - chmod +x scripts/stage
- - ./scripts/stage
+- export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
+ - git clone git://anongit.freedesktop.org/git/gstreamer/gstreamer
+ - cd gstreamer
+ - ./autogen --prefix=/usr/local/lib
+ - make
+ - sudo make install
+ - cd ..
+ - git clone git://anongit.freedesktop.org/git/gstreamer/gst-plugins-base
+ - cd gst-plugins-base
+ - ./autogen --prefix=/usr/local/lib
+ - make
+ - sudo make install
+ - cd ..
+ - git clone git://anongit.freedesktop.org/git/gstreamer/gst-plugins-good
+ - cd gst-plugins-good
+ - ./autogen --prefix=/usr/local/lib
+ - make
+ -sudo make install
+ - cd ..
+ - git clone git://anongit.freedesktop.org/git/gstreamer/gst-plugins-ugly
+ - cd gst-plugins-ugly
+ - ./autogen --prefix=/usr/local/lib
+ - make
+ - sudo make install
+ - cd ..
+ - git clone https://github.com/hyades/gst-plugins-bad
+ - cd gst-plugins-bad
+ - ./autogen --prefix=/usr/local/lib
+ - make
+ - sudo make install
+ - cd ..
+ - git clone https://github.com/hyades/gst-switch
+ - cd gst-switch
+ - ./autogen --prefix=/usr/local/lib
+ - make
+ - sudo make install
+ - cd ..
  - sudo cp $HOME/gst/stage/lib/girepository-1.0/* /usr/lib/girepository-1.0/
  - cd python-api
  - make test
