@@ -34,7 +34,7 @@ script:
  - cd gst-plugins-good
  - ./autogen.sh --prefix=/usr/local/lib
  - make
- -sudo make install
+ - sudo make install
  - cd ..
  - git clone git://anongit.freedesktop.org/git/gstreamer/gst-plugins-ugly
  - cd gst-plugins-ugly
