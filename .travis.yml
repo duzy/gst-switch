@@ -26,7 +26,6 @@ script:
  - ./autogen.sh 
  - make
  - sudo make install
- - sudo ldconfig
  - cd ..
  - git clone git://anongit.freedesktop.org/git/gstreamer/gst-plugins-base
  - cd gst-plugins-base
