@@ -16,7 +16,6 @@ before_install:
  - sudo apt-get install python-scipy
  - export PKG_CONFIG_PATH=$HOME/gst/stage/lib/pkgconfig
 
-
 script: 
  - chmod +x scripts/stage
  - ./scripts/stage
