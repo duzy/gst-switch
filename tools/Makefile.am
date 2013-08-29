@@ -45,7 +45,7 @@ gst_switch_ptz_LDFLAGS = $(GCOV_LFLAGS) $(GST_LIBS) $(GST_BASE_LIBS) \
   $(GST_PLUGINS_BASE_LIBS) $(GST_PLUGINS_BAD_LIBS) $(GSTPB_BASE_LIBS)
 gst_switch_ptz_LDADD = $(GST_LIBS) $(X_LIBS) $(LIBM) $(GTK_LIBS) \
   $(GLIB_LIBS) -lm \
-  $(HOME)/gst/stage/lib/libgstcamcontrol-1.0.so
+  /usr/local/lib/libgstcamcontrol-1.0.so
 
 #  -lgstcamcontrol
 
