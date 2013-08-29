@@ -6,8 +6,8 @@ from gstswitch.server import Server
 from gstswitch.helpers import *
 
 
-PATH = os.getenv("HOME") + '/gst/stage/bin/'
-
+# PATH = os.getenv("HOME") + '/gst/stage/bin/'
+PATH = '/usr/local/bin/'
 
 class TestServerStartStop(object):
     """Test Starting and Stopping the Server

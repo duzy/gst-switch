@@ -12,7 +12,8 @@ from compare import CompareVideo
 
 import subprocess
 
-PATH = os.getenv("HOME") + '/gst/stage/bin/'
+# PATH = os.getenv("HOME") + '/gst/stage/bin/'
+PATH = '/usr/local/bin/'
 
 class TestEstablishConnection(object):
 

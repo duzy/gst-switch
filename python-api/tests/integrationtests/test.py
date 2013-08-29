@@ -22,7 +22,7 @@ import gi
 gi.require_version('Gst', '1.0')
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
-path = os.getenv("HOME") + '/gst/stage/bin/'
+path = '/usr/local/bin/'
 # path = '/usr/local/bin/'
 s = Server(path)
 try:

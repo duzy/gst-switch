@@ -7,8 +7,8 @@ from gstswitch.helpers import *
 import time
 
 
-PATH = os.getenv("HOME") + '/gst/stage/bin/'
-
+# PATH = os.getenv("HOME") + '/gst/stage/bin/'
+PATH = '/usr/local/bin/'
 
 class TestTestSourcesPreviews(object):
 
