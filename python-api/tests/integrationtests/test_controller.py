@@ -34,6 +34,11 @@ class TestEstablishConnection(object):
             s.terminate()
         finally:
             if s.proc:
+                poll = s.poll()
+                if poll == -11:
+                    print "SEGMENTATION FAULT OCCURRED"
+                else:
+                    print "ERROR CODE - {0}".format(poll)
                 s.terminate()
                 f = open('server.log')
                 print f.read()
@@ -70,6 +75,11 @@ class TestGetComposePort(object):
                 s.terminate()
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -109,6 +119,11 @@ class TestGetEncodePort(object):
                 s.terminate()
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -151,6 +166,11 @@ class TestGetAudioPortVideoFirst(object):
                 s.terminate()
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -195,6 +215,11 @@ class TestGetAudioPortAudioFirst(object):
                 s.terminate()
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -237,6 +262,11 @@ class TestGetPreviewPorts(object):
                 s.terminate()
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -304,6 +334,11 @@ class TestSetCompositeMode(object):
 
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -361,6 +396,11 @@ class TestNewRecord(object):
                 assert ((os.path.exists(test_filename)) or (os.path.exists(alt_test_filename))) == True
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -399,6 +439,11 @@ class TestAdjustPIP(object):
 
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -449,6 +494,11 @@ class TestSwitch(object):
                 s.terminate()
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -496,6 +546,11 @@ class TestClickVideo(object):
 
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()
@@ -552,6 +607,11 @@ class TestMarkFace(object):
 
             finally:
                 if s.proc:
+                    poll = s.poll()
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    else:
+                        print "ERROR CODE - {0}".format(poll)
                     s.terminate()
                     f = open('server.log')
                     print f.read()

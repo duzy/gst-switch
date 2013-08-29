@@ -25,6 +25,11 @@ class TestServerStartStop(object):
             assert s.proc is None
         except OSError:
             if s.proc:
+                poll = s.poll()
+                if poll == -11:
+                    print "SEGMENTATION FAULT OCCURRED"
+                else:
+                    print "ERROR CODE - {0}".format(poll)
                 s.kill()
                 f = open('server.log')
                 print f.read()
