@@ -34,7 +34,7 @@ class TestEstablishConnection(object):
             s.terminate()
         finally:
             if s.proc:
-                poll = s.poll()
+                poll = s.proc.poll()
                 if poll == -11:
                     print "SEGMENTATION FAULT OCCURRED"
                 else:
@@ -75,7 +75,7 @@ class TestGetComposePort(object):
                 s.terminate()
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -119,7 +119,7 @@ class TestGetEncodePort(object):
                 s.terminate()
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -166,7 +166,7 @@ class TestGetAudioPortVideoFirst(object):
                 s.terminate()
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -215,7 +215,7 @@ class TestGetAudioPortAudioFirst(object):
                 s.terminate()
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -262,7 +262,7 @@ class TestGetPreviewPorts(object):
                 s.terminate()
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -334,7 +334,7 @@ class TestSetCompositeMode(object):
 
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -396,7 +396,7 @@ class TestNewRecord(object):
                 assert ((os.path.exists(test_filename)) or (os.path.exists(alt_test_filename))) == True
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -439,7 +439,7 @@ class TestAdjustPIP(object):
 
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -494,7 +494,7 @@ class TestSwitch(object):
                 s.terminate()
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -546,7 +546,7 @@ class TestClickVideo(object):
 
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:
@@ -607,7 +607,7 @@ class TestMarkFace(object):
 
             finally:
                 if s.proc:
-                    poll = s.poll()
+                    poll = s.proc.poll()
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     else:

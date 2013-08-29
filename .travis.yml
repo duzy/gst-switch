@@ -60,6 +60,8 @@ script:
  - ./autogen.sh --prefix=$HOME/gst
  - make
  - make install
+ - cd python-api
+ - make test
 
 after_success:
  - coveralls
