@@ -12,7 +12,7 @@ PATH = '/usr/local/bin/'
 
 class TestTestSourcesPreviews(object):
 
-    NUM = 10
+    NUM = 1
 
     def add_video_sources(self, num, video_port):
         sources = TestSources(video_port=video_port)
