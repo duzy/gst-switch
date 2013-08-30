@@ -55,6 +55,8 @@ before_install:
  - make
  - sudo make install
  - cd ..
+ - python -c 'from gi.repository import Gio; print Gio'
+ - python -c 'from gi.repository import Gst; print Gst'
 script: 
  - git clone https://github.com/hyades/gst-switch.git
  - cd gst-switch
