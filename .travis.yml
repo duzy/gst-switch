@@ -63,6 +63,7 @@ script:
  - sudo make install
  - cd python-api
  - make test
+ - cat /usr/lib/python2.7/dist-packages/gi/types.py
 
 after_success:
  - coveralls
