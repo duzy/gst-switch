@@ -25,6 +25,7 @@ before_install:
  - ./configure --prefix=/usr/local --enable-shared --enable-vp8
  - make
  - sudo make install
+ - cd ..
  - git clone git://anongit.freedesktop.org/gstreamer/gstreamer
  - cd gstreamer
  - ./autogen.sh --prefix=/usr/local
