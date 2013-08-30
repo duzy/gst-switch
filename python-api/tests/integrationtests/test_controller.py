@@ -62,7 +62,7 @@ class TestGetComposePort(object):
         res = []
         expected_result = []
         for i in range(self.NUM):
-            video_port = (i+5)*1000
+            video_port = (i+7)*1000
             expected_result.append([video_port+1]*self.NUM*self.FACTOR)
             s = Server(path=PATH, video_port=video_port)
             try:
