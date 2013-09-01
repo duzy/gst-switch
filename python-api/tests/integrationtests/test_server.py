@@ -29,9 +29,9 @@ class TestServerStartStop(object):
                 if poll < 0:
                     error_type, ob, tb = sys.exc_info()
                     server_log = open('server.log').read()
-                    if ob.message:
+                    try:
                         error_msg = ob.message
-                    else:
+                    except Exception:
                         error_msg = ''
                     custom_error = """
 {0}
