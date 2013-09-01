@@ -27,18 +27,21 @@ class TestServerStartStop(object):
                 if s.proc:
                     poll = s.proc.poll()
                     s.terminate()
-                    if poll < 0:
-                        error_type, ob, tb = sys.exc_info()
-                        server_log = open('server.log').read()
-                        error_msg = ob.message
-                        custom_error = """
-                            {0}
-                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-                            gst-switch-srv log:
-                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-                            {2}
-                            """.format(error_msg, abs(poll), server_log)
-                        raise ob.__class__(custom_error)
+                    try:
+                        if poll < 0:
+                            error_type, ob, tb = sys.exc_info()
+                            server_log = open('server.log').read()
+                            error_msg = ob.message
+                            custom_error = """
+                                {0}
+                                -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                                gst-switch-srv log:
+                                Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                                {2}
+                                """.format(error_msg, abs(poll), server_log)
+                            raise ob.__class__(custom_error)
+                    except:
+                        pass
 
     def test_start_stop(self):
         for i in range(self.NUM):
