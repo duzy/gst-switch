@@ -1,0 +1,157 @@
+        -:    0:Source:gio/gsocketinputstream.c
+        -:    0:Programs:7
+        -:    1:/* GIO - GLib Input, Output and Streaming Library
+        -:    2: *
+        -:    3: * Copyright © 2008 Christian Kellner, Samuel Cormier-Iijima
+        -:    4: *           © 2009 codethink
+        -:    5: *
+        -:    6: * This library is free software; you can redistribute it and/or
+        -:    7: * modify it under the terms of the GNU Lesser General Public
+        -:    8: * License as published by the Free Software Foundation; either
+        -:    9: * version 2 of the License, or (at your option) any later version.
+        -:   10: *
+        -:   11: * This library is distributed in the hope that it will be useful,
+        -:   12: * but WITHOUT ANY WARRANTY; without even the implied warranty of
+        -:   13: * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+        -:   14: * Lesser General Public License for more details.
+        -:   15: *
+        -:   16: * You should have received a copy of the GNU Lesser General
+        -:   17: * Public License along with this library; if not, write to the
+        -:   18: * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+        -:   19: * Boston, MA 02111-1307, USA.
+        -:   20: *
+        -:   21: * Authors: Christian Kellner <gicmo@gnome.org>
+        -:   22: *          Samuel Cormier-Iijima <sciyoshi@gmail.com>
+        -:   23: *          Ryan Lortie <desrt@desrt.ca>
+        -:   24: */
+        -:   25:
+        -:   26:#include "config.h"
+        -:   27:#include <glib.h>
+        -:   28:#include <gio/gio.h>
+        -:   29:#include "gsocketinputstream.h"
+        -:   30:
+        -:   31:#define g_socket_input_stream_get_type _g_socket_input_stream_get_type
+        -:   32:
+    #####:   33:G_DEFINE_TYPE (GSocketInputStreamX, g_socket_input_stream, G_TYPE_INPUT_STREAM);
+        -:   34:
+        -:   35:enum
+        -:   36:{
+        -:   37:  PROP_0,
+        -:   38:  PROP_SOCKET
+        -:   39:};
+        -:   40:
+        -:   41:/**
+        -:   42: * @brief socket input stream private stuff
+        -:   43: * @internal
+        -:   44: */
+        -:   45:struct _GSocketInputStreamXPrivate
+        -:   46:{
+        -:   47:  GSocket *socket;
+        -:   48:
+        -:   49:  /* pending operation metadata */
+        -:   50:  GSimpleAsyncResult *result;
+        -:   51:  GCancellable *cancellable;
+        -:   52:  gpointer buffer;
+        -:   53:  gsize count;
+        -:   54:};
+        -:   55:
+        -:   56:static void
+    #####:   57:g_socket_input_stream_get_property (GObject * object,
+        -:   58:    guint prop_id, GValue * value, GParamSpec * pspec)
+        -:   59:{
+    #####:   60:  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
+        -:   61:
+    #####:   62:  switch (prop_id) {
+        -:   63:    case PROP_SOCKET:
+    #####:   64:      g_value_set_object (value, stream->priv->socket);
+    #####:   65:      break;
+        -:   66:
+        -:   67:    default:
+    #####:   68:      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        -:   69:  }
+    #####:   70:}
+        -:   71:
+        -:   72:static void
+    #####:   73:g_socket_input_stream_set_property (GObject * object,
+        -:   74:    guint prop_id, const GValue * value, GParamSpec * pspec)
+        -:   75:{
+    #####:   76:  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
+        -:   77:
+    #####:   78:  switch (prop_id) {
+        -:   79:    case PROP_SOCKET:
+    #####:   80:      stream->priv->socket = g_value_dup_object (value);
+    #####:   81:      break;
+        -:   82:
+        -:   83:    default:
+    #####:   84:      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        -:   85:  }
+    #####:   86:}
+        -:   87:
+        -:   88:static void
+    #####:   89:g_socket_input_stream_finalize (GObject * object)
+        -:   90:{
+    #####:   91:  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (object);
+        -:   92:
+    #####:   93:  if (stream->priv->socket) {
+    #####:   94:    GError *error = NULL;
+        -:   95:    /*
+        -:   96:       g_print ("%s:%d: %s, %d\n", __FILE__, __LINE__, __FUNCTION__,
+        -:   97:       g_socket_get_fd (stream->priv->socket));
+        -:   98:     */
+    #####:   99:    g_socket_close (stream->priv->socket, &error);
+    #####:  100:    if (error) {
+        -:  101:      //ERROR ("%s", error->message);
+        -:  102:    }
+    #####:  103:    g_object_unref (stream->priv->socket);
+        -:  104:  }
+        -:  105:
+    #####:  106:  if (G_OBJECT_CLASS (g_socket_input_stream_parent_class)->finalize)
+    #####:  107:    (*G_OBJECT_CLASS (g_socket_input_stream_parent_class)->finalize) (object);
+    #####:  108:}
+        -:  109:
+        -:  110:static gssize
+    #####:  111:g_socket_input_stream_read (GInputStream * stream,
+        -:  112:    void *buffer, gsize count, GCancellable * cancellable, GError ** error)
+        -:  113:{
+    #####:  114:  GSocketInputStreamX *input_stream = G_SOCKET_INPUT_STREAM (stream);
+        -:  115:
+    #####:  116:  return g_socket_receive_with_blocking (input_stream->priv->socket,
+        -:  117:      buffer, count, TRUE, cancellable, error);
+        -:  118:}
+        -:  119:
+        -:  120:static void
+    #####:  121:g_socket_input_stream_class_init (GSocketInputStreamXClass * klass)
+        -:  122:{
+    #####:  123:  GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+    #####:  124:  GInputStreamClass *ginputstream_class = G_INPUT_STREAM_CLASS (klass);
+        -:  125:
+    #####:  126:  g_type_class_add_private (klass, sizeof (GSocketInputStreamXPrivate));
+        -:  127:
+    #####:  128:  gobject_class->finalize = g_socket_input_stream_finalize;
+    #####:  129:  gobject_class->get_property = g_socket_input_stream_get_property;
+    #####:  130:  gobject_class->set_property = g_socket_input_stream_set_property;
+        -:  131:
+    #####:  132:  ginputstream_class->read_fn = g_socket_input_stream_read;
+        -:  133:
+    #####:  134:  g_object_class_install_property (gobject_class, PROP_SOCKET,
+        -:  135:      g_param_spec_object ("socket",
+        -:  136:          "socket",
+        -:  137:          "The socket that this stream wraps",
+        -:  138:          G_TYPE_SOCKET, G_PARAM_CONSTRUCT_ONLY |
+        -:  139:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+    #####:  140:}
+        -:  141:
+        -:  142:static void
+    #####:  143:g_socket_input_stream_init (GSocketInputStreamX * stream)
+        -:  144:{
+    #####:  145:  stream->priv =
+    #####:  146:      G_TYPE_INSTANCE_GET_PRIVATE (stream, G_TYPE_SOCKET_INPUT_STREAM,
+        -:  147:      GSocketInputStreamXPrivate);
+    #####:  148:}
+        -:  149:
+        -:  150:GSocketInputStreamX *
+    #####:  151:_g_socket_input_stream_new (GSocket * socket)
+        -:  152:{
+    #####:  153:  return G_SOCKET_INPUT_STREAM (g_object_new (G_TYPE_SOCKET_INPUT_STREAM,
+        -:  154:          "socket", socket, NULL));
+        -:  155:}

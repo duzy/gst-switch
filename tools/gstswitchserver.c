@@ -38,6 +38,11 @@
 #include "./gio/gsocketinputstream.h"
 #include "../logutils.h"
 
+#include <stdio.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #define GST_SWITCH_SERVER_DEFAULT_HOST "localhost"
 #define GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT	3000
 #define GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT	4000
@@ -1740,9 +1745,31 @@ error_prepare_recorder:
   }
 }
 
+static unsigned long long i = 0;
+
+void
+my_handler (int signum)
+{
+  printf ("received signal\n");
+  printf ("%llu\n", i);
+  __gcov_flush ();              /* dump coverage data on receiving SIGUSR1 */
+}
+
+
 int
 main (int argc, char *argv[])
 {
+
+  struct sigaction new_action, old_action;
+  int n;
+  /* setup signal hander */
+  new_action.sa_handler = my_handler;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = 0;
+  sigaction (SIGUSR1, NULL, &old_action);
+  if (old_action.sa_handler != SIG_IGN)
+    sigaction (SIGUSR1, &new_action, NULL);
+
   gint exit_code = 0;
   GstSwitchServer *srv;
   gst_switch_server_parse_args (&argc, &argv);

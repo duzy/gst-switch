@@ -1,0 +1,419 @@
+        -:    0:Source:gstrecorder.c
+        -:    0:Programs:7
+        -:    1:/* GstSwitch
+        -:    2: * Copyright (C) 2013 Duzy Chan <code@duzy.info>
+        -:    3: *
+        -:    4: * Redistribution and use in source and binary forms, with or without
+        -:    5: * modification, are permitted provided that the following conditions
+        -:    6: * are met:
+        -:    7: * 1. Redistributions of source code must retain the above copyright
+        -:    8: *    notice, this list of conditions and the following disclaimer.
+        -:    9: * 2. Redistributions in binary form must reproduce the above copyright
+        -:   10: *    notice, this list of conditions and the following disclaimer in the
+        -:   11: *    documentation and/or other materials provided with the distribution.
+        -:   12: *
+        -:   13: * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AS IS'' AND ANY EXPRESS OR
+        -:   14: * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+        -:   15: * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+        -:   16: * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+        -:   17: * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+        -:   18: * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+        -:   19: * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+        -:   20: * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+        -:   21: * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+        -:   22: * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+        -:   23: * POSSIBILITY OF SUCH DAMAGE.
+        -:   24: */
+        -:   25:
+        -:   26:/*! @file */
+        -:   27:
+        -:   28:#ifdef HAVE_CONFIG_H
+        -:   29:#include "config.h"
+        -:   30:#endif
+        -:   31:
+        -:   32:#include <stdlib.h>
+        -:   33:#include <stdio.h>
+        -:   34:#include <string.h>
+        -:   35:#include <time.h>
+        -:   36:#include "gstswitchserver.h"
+        -:   37:#include "gstcomposite.h"
+        -:   38:#include "gstrecorder.h"
+        -:   39:
+        -:   40:enum
+        -:   41:{
+        -:   42:  PROP_0,
+        -:   43:  PROP_MODE,
+        -:   44:  PROP_PORT,
+        -:   45:  PROP_WIDTH,
+        -:   46:  PROP_HEIGHT,
+        -:   47:};
+        -:   48:
+        -:   49:enum
+        -:   50:{
+        -:   51:  SIGNAL__LAST,
+        -:   52:};
+        -:   53:
+        -:   54://static guint gst_recorder_signals[SIGNAL__LAST] = { 0 };
+        -:   55:extern gboolean verbose;
+        -:   56:
+        -:   57:#define parent_class gst_recorder_parent_class
+        -:   58:
+    #####:   59:G_DEFINE_TYPE (GstRecorder, gst_recorder, GST_TYPE_WORKER);
+        -:   60:
+        -:   61:/**
+        -:   62: * @brief Initialize the GstRecorder instance.
+        -:   63: * @param rec The GstRecorder instance.
+        -:   64: * @memberof GstRecorder
+        -:   65: */
+        -:   66:static void
+    #####:   67:gst_recorder_init (GstRecorder * rec)
+        -:   68:{
+    #####:   69:  rec->sink_port = 0;
+    #####:   70:  rec->mode = 0;
+    #####:   71:  rec->width = 0;
+    #####:   72:  rec->height = 0;
+        -:   73:
+        -:   74:  //INFO ("init %p", rec);
+    #####:   75:}
+        -:   76:
+        -:   77:/**
+        -:   78: * @brief Invoked to unref objects.
+        -:   79: * @param rec The GstRecorder instance.
+        -:   80: * @memberof GstRecorder
+        -:   81: * @see GObject
+        -:   82: */
+        -:   83:static void
+    #####:   84:gst_recorder_dispose (GstRecorder * rec)
+        -:   85:{
+    #####:   86:  INFO ("dispose %p", rec);
+    #####:   87:  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (rec));
+    #####:   88:}
+        -:   89:
+        -:   90:/**
+        -:   91: * @param rec The GstRecorder instance.
+        -:   92: * @memberof GstRecorder
+        -:   93: *
+        -:   94: * Destroying the GstRecorder instance.
+        -:   95: *
+        -:   96: * @see GObject
+        -:   97: */
+        -:   98:static void
+    #####:   99:gst_recorder_finalize (GstRecorder * rec)
+        -:  100:{
+    #####:  101:  if (G_OBJECT_CLASS (parent_class)->finalize)
+    #####:  102:    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (rec));
+    #####:  103:}
+        -:  104:
+        -:  105:/**
+        -:  106: * @param rec The GstRecorder instance.
+        -:  107: * @param property_id
+        -:  108: * @param value
+        -:  109: * @param pspec
+        -:  110: * @memberof GstRecorder
+        -:  111: *
+        -:  112: * Fetching the GstRecorder property.
+        -:  113: *
+        -:  114: * @see GObject
+        -:  115: */
+        -:  116:static void
+    #####:  117:gst_recorder_get_property (GstRecorder * rec, guint property_id,
+        -:  118:    GValue * value, GParamSpec * pspec)
+        -:  119:{
+    #####:  120:  switch (property_id) {
+        -:  121:    case PROP_MODE:
+    #####:  122:      g_value_set_uint (value, rec->mode);
+    #####:  123:      break;
+        -:  124:    case PROP_PORT:
+    #####:  125:      g_value_set_uint (value, rec->sink_port);
+    #####:  126:      break;
+        -:  127:    case PROP_WIDTH:
+    #####:  128:      g_value_set_uint (value, rec->width);
+    #####:  129:      break;
+        -:  130:    case PROP_HEIGHT:
+    #####:  131:      g_value_set_uint (value, rec->height);
+    #####:  132:      break;
+        -:  133:    default:
+    #####:  134:      G_OBJECT_WARN_INVALID_PROPERTY_ID (rec, property_id, pspec);
+    #####:  135:      break;
+        -:  136:  }
+    #####:  137:}
+        -:  138:
+        -:  139:/**
+        -:  140: * @param rec The GstRecorder instance.
+        -:  141: * @param property_id
+        -:  142: * @param value
+        -:  143: * @param pspec
+        -:  144: * @memberof GstRecorder
+        -:  145: *
+        -:  146: * Changing the GstRecorder properties.
+        -:  147: *
+        -:  148: * @see GObject
+        -:  149: */
+        -:  150:static void
+    #####:  151:gst_recorder_set_property (GstRecorder * rec, guint property_id,
+        -:  152:    const GValue * value, GParamSpec * pspec)
+        -:  153:{
+    #####:  154:  switch (property_id) {
+        -:  155:    case PROP_MODE:
+    #####:  156:      rec->mode = (GstCompositeMode) (g_value_get_uint (value));
+    #####:  157:      break;
+        -:  158:    case PROP_PORT:
+    #####:  159:      rec->sink_port = g_value_get_uint (value);
+    #####:  160:      break;
+        -:  161:    case PROP_WIDTH:
+    #####:  162:      rec->width = g_value_get_uint (value);
+    #####:  163:      break;
+        -:  164:    case PROP_HEIGHT:
+    #####:  165:      rec->height = g_value_get_uint (value);
+    #####:  166:      break;
+        -:  167:    default:
+    #####:  168:      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (rec), property_id, pspec);
+    #####:  169:      break;
+        -:  170:  }
+    #####:  171:}
+        -:  172:
+        -:  173:/**
+        -:  174: * @param rec The GstRecorder instance.
+        -:  175: * @memberof GstRecorder
+        -:  176: * @return the file name string, need to be freed after used
+        -:  177: *
+        -:  178: * This is used to genearte a new recording file name for the recorder.
+        -:  179: */
+        -:  180:static const gchar *
+    #####:  181:gst_recorder_new_filename (GstRecorder * rec)
+        -:  182:{
+        -:  183:  time_t t;
+        -:  184:  struct tm *tm;
+        -:  185:  gchar stamp[128];
+    #####:  186:  const gchar *dot = NULL;
+    #####:  187:  const gchar *filename = opts.record_filename;
+    #####:  188:  if (!filename) {
+    #####:  189:    return NULL;
+        -:  190:  }
+        -:  191:
+    #####:  192:  t = time (NULL);
+    #####:  193:  tm = localtime (&t);
+        -:  194:
+    #####:  195:  if (tm == NULL) {
+        -:  196:    static gint num = 0;
+    #####:  197:    num += 1;
+    #####:  198:    snprintf (stamp, sizeof (stamp), "%d", num);
+        -:  199:  } else {
+    #####:  200:    strftime (stamp, sizeof (stamp), "%F %H%M%S", tm);
+        -:  201:  }
+        -:  202:
+    #####:  203:  if ((dot = g_strrstr (filename, "."))) {
+    #####:  204:    const gchar *s = g_strndup (filename, dot - filename);
+    #####:  205:    filename = g_strdup_printf ("%s %s%s", s, stamp, dot);
+    #####:  206:    g_free ((gpointer) s);
+        -:  207:  } else {
+    #####:  208:    filename = g_strdup_printf ("%s %s.dat", filename, stamp);
+        -:  209:  }
+        -:  210:
+    #####:  211:  return filename;
+        -:  212:}
+        -:  213:
+        -:  214:/**
+        -:  215: * @param rec The GstRecorder instance.
+        -:  216: * @memberof GstRecorder
+        -:  217: * @return The recorder pipeline string, needs freeing when used
+        -:  218: *
+        -:  219: * Fetching the recorder pipeline invoked by the GstWorker.
+        -:  220: */
+        -:  221:static GString *
+    #####:  222:gst_recorder_get_pipeline_string (GstRecorder * rec)
+        -:  223:{
+    #####:  224:  const gchar *filename = gst_recorder_new_filename (rec);
+        -:  225:  GString *desc;
+        -:  226:
+        -:  227:  //INFO ("Recording to %s and port %d", filename, rec->sink_port);
+        -:  228:
+    #####:  229:  desc = g_string_new ("");
+        -:  230:
+    #####:  231:  g_string_append_printf (desc, "intervideosrc name=source_video "
+        -:  232:      "channel=composite_video ");
+    #####:  233:  g_string_append_printf (desc, "interaudiosrc name=source_audio "
+        -:  234:      "channel=composite_audio ");
+        -:  235:
+    #####:  236:  g_string_append_printf (desc,
+        -:  237:      "source_video. ! video/x-raw,width=%d,height=%d ",
+        -:  238:      rec->width, rec->height);
+        -:  239:  /*
+        -:  240:     ASSESS ("assess-record-video-source");
+        -:  241:   */
+    #####:  242:  g_string_append_printf (desc, "! queue2 ");
+        -:  243:  /*
+        -:  244:     ASSESS ("assess-record-video-encode-queued");
+        -:  245:   */
+    #####:  246:  g_string_append_printf (desc, "! vp8enc ");
+        -:  247:  /*
+        -:  248:     ASSESS ("assess-record-video-encoded");
+        -:  249:   */
+    #####:  250:  g_string_append_printf (desc, "! mux. ");
+        -:  251:
+    #####:  252:  g_string_append_printf (desc, "source_audio. ");
+        -:  253:  /*
+        -:  254:     ASSESS ("assess-record-audio-source");
+        -:  255:   */
+    #####:  256:  g_string_append_printf (desc, "! queue2 ");
+        -:  257:  /*
+        -:  258:     ASSESS ("assess-record-audio-queued");
+        -:  259:   */
+    #####:  260:  g_string_append_printf (desc, "! faac ");
+        -:  261:  /*
+        -:  262:     ASSESS ("assess-record-audio-encoded");
+        -:  263:   */
+    #####:  264:  g_string_append_printf (desc, "! mux. ");
+        -:  265:
+    #####:  266:  g_string_append_printf (desc, "avimux name=mux ");
+        -:  267:  /*
+        -:  268:     ASSESS ("assess-record-mux-result");
+        -:  269:   */
+    #####:  270:  g_string_append_printf (desc, "! tee name=result ");
+        -:  271:
+    #####:  272:  if (filename) {
+    #####:  273:    g_string_append_printf (desc, "filesink name=disk_sink sync=false "
+        -:  274:        "location=\"%s\" ", filename);
+    #####:  275:    g_free ((gpointer) filename);
+    #####:  276:    g_string_append_printf (desc, "result. ");
+        -:  277:    /*
+        -:  278:       ASSESS ("assess-record-file-to-queue");
+        -:  279:     */
+    #####:  280:    g_string_append_printf (desc, "! queue2 ");
+        -:  281:    /*
+        -:  282:       ASSESS ("assess-record-file-to-sink");
+        -:  283:     */
+    #####:  284:    g_string_append_printf (desc, "! disk_sink. ");
+        -:  285:  }
+        -:  286:
+    #####:  287:  g_string_append_printf (desc, "tcpserversink name=tcp_sink sync=false "
+        -:  288:      "port=%d ", rec->sink_port);
+    #####:  289:  g_string_append_printf (desc, "result. ");
+        -:  290:  /*
+        -:  291:     ASSESS ("assess-record-tcp-to-queue");
+        -:  292:   */
+    #####:  293:  g_string_append_printf (desc, "! queue2 ");
+        -:  294:  /*
+        -:  295:     ASSESS ("assess-record-tcp-to-sink");
+        -:  296:   */
+    #####:  297:  g_string_append_printf (desc, "! gdppay ! tcp_sink. ");
+    #####:  298:  return desc;
+        -:  299:}
+        -:  300:
+        -:  301:/**
+        -:  302: * @param rec The GstRecorder instance.
+        -:  303: * @param element
+        -:  304: * @param socket
+        -:  305: * @memberof GstRecorder
+        -:  306: *
+        -:  307: * Invoked when client socket added on the encoding out port.
+        -:  308: */
+        -:  309:static void
+    #####:  310:gst_recorder_client_socket_added (GstElement * element,
+        -:  311:    GSocket * socket, GstRecorder * rec)
+        -:  312:{
+    #####:  313:  g_return_if_fail (G_IS_SOCKET (socket));
+        -:  314:
+    #####:  315:  INFO ("client-socket-added: %d", g_socket_get_fd (socket));
+        -:  316:}
+        -:  317:
+        -:  318:/**
+        -:  319: * @param rec The GstRecorder instance.
+        -:  320: * @param element
+        -:  321: * @param socket
+        -:  322: * @memberof GstRecorder
+        -:  323: *
+        -:  324: * Invoked when the client socket on the encoding out port is closed. We need
+        -:  325: * to manually close the socket to avoid FD leaks.
+        -:  326: */
+        -:  327:static void
+    #####:  328:gst_recorder_client_socket_removed (GstElement * element,
+        -:  329:    GSocket * socket, GstRecorder * rec)
+        -:  330:{
+    #####:  331:  g_return_if_fail (G_IS_SOCKET (socket));
+        -:  332:
+    #####:  333:  INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
+        -:  334:
+    #####:  335:  g_socket_close (socket, NULL);
+        -:  336:}
+        -:  337:
+        -:  338:/**
+        -:  339: * @param rec The GstRecorder instance.
+        -:  340: * @memberof GstRecorder
+        -:  341: * @return TRUE indicating the recorder is prepared, FALSE otherwise.
+        -:  342: *
+        -:  343: * Invoked when the GstWorker is preparing the pipeline.
+        -:  344: */
+        -:  345:static gboolean
+    #####:  346:gst_recorder_prepare (GstRecorder * rec)
+        -:  347:{
+    #####:  348:  GstElement *tcp_sink = NULL;
+        -:  349:
+    #####:  350:  g_return_val_if_fail (GST_IS_RECORDER (rec), FALSE);
+        -:  351:
+    #####:  352:  tcp_sink = gst_worker_get_element_unlocked (GST_WORKER (rec), "tcp_sink");
+        -:  353:
+    #####:  354:  g_return_val_if_fail (GST_IS_ELEMENT (tcp_sink), FALSE);
+        -:  355:
+    #####:  356:  g_signal_connect (tcp_sink, "client-added",
+        -:  357:      G_CALLBACK (gst_recorder_client_socket_added), rec);
+        -:  358:
+    #####:  359:  g_signal_connect (tcp_sink, "client-socket-removed",
+        -:  360:      G_CALLBACK (gst_recorder_client_socket_removed), rec);
+        -:  361:
+    #####:  362:  gst_object_unref (tcp_sink);
+    #####:  363:  return TRUE;
+        -:  364:}
+        -:  365:
+        -:  366:/**
+        -:  367: * @brief Initialize the GstRecorderClass.
+        -:  368: * @param klass The GstRecorderClass instance.
+        -:  369: * @memberof GstRecorderClass
+        -:  370: */
+        -:  371:static void
+    #####:  372:gst_recorder_class_init (GstRecorderClass * klass)
+        -:  373:{
+    #####:  374:  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    #####:  375:  GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
+        -:  376:
+    #####:  377:  object_class->dispose = (GObjectFinalizeFunc) gst_recorder_dispose;
+    #####:  378:  object_class->finalize = (GObjectFinalizeFunc) gst_recorder_finalize;
+    #####:  379:  object_class->set_property =
+        -:  380:      (GObjectSetPropertyFunc) gst_recorder_set_property;
+    #####:  381:  object_class->get_property =
+        -:  382:      (GObjectGetPropertyFunc) gst_recorder_get_property;
+        -:  383:
+    #####:  384:  g_object_class_install_property (object_class, PROP_MODE,
+        -:  385:      g_param_spec_uint ("mode", "Mode",
+        -:  386:          "Composite Mode",
+        -:  387:          COMPOSE_MODE_0,
+        -:  388:          COMPOSE_MODE__LAST,
+        -:  389:          COMPOSE_MODE_0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -:  390:
+    #####:  391:  g_object_class_install_property (object_class, PROP_PORT,
+        -:  392:      g_param_spec_uint ("port", "Port",
+        -:  393:          "Sink port",
+        -:  394:          GST_SWITCH_MIN_SINK_PORT,
+        -:  395:          GST_SWITCH_MAX_SINK_PORT,
+        -:  396:          GST_SWITCH_MIN_SINK_PORT,
+        -:  397:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -:  398:
+    #####:  399:  g_object_class_install_property (object_class, PROP_WIDTH,
+        -:  400:      g_param_spec_uint ("width", "Input Width",
+        -:  401:          "Input video frame width",
+        -:  402:          1, G_MAXINT,
+        -:  403:          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+        -:  404:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -:  405:
+    #####:  406:  g_object_class_install_property (object_class, PROP_HEIGHT,
+        -:  407:      g_param_spec_uint ("height",
+        -:  408:          "Input Height",
+        -:  409:          "Input video frame height",
+        -:  410:          1, G_MAXINT,
+        -:  411:          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+        -:  412:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -:  413:
+    #####:  414:  worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;
+    #####:  415:  worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
+        -:  416:      gst_recorder_get_pipeline_string;
+    #####:  417:}

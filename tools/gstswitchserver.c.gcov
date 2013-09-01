@@ -1,0 +1,1788 @@
+        -:    0:Source:gstswitchserver.c
+        -:    0:Programs:7
+        -:    1:/* GstSwitch
+        -:    2: * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
+        -:    3: *
+        -:    4: * Redistribution and use in source and binary forms, with or without
+        -:    5: * modification, are permitted provided that the following conditions
+        -:    6: * are met:
+        -:    7: * 1. Redistributions of source code must retain the above copyright
+        -:    8: *    notice, this list of conditions and the following disclaimer.
+        -:    9: * 2. Redistributions in binary form must reproduce the above copyright
+        -:   10: *    notice, this list of conditions and the following disclaimer in the
+        -:   11: *    documentation and/or other materials provided with the distribution.
+        -:   12: *
+        -:   13: * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AS IS'' AND ANY EXPRESS OR
+        -:   14: * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+        -:   15: * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+        -:   16: * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+        -:   17: * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+        -:   18: * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+        -:   19: * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+        -:   20: * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+        -:   21: * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+        -:   22: * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+        -:   23: * POSSIBILITY OF SUCH DAMAGE.
+        -:   24: */
+        -:   25:
+        -:   26:/*! @file */
+        -:   27:
+        -:   28:#ifdef HAVE_CONFIG_H
+        -:   29:#include "config.h"
+        -:   30:#endif
+        -:   31:
+        -:   32:#include <gst/gst.h>
+        -:   33:#include <gio/gio.h>
+        -:   34:#include <stdlib.h>
+        -:   35:#include "gstswitchserver.h"
+        -:   36:#include "gstrecorder.h"
+        -:   37:#include "gstcase.h"
+        -:   38:#include "./gio/gsocketinputstream.h"
+        -:   39:#include "../logutils.h"
+        -:   40:
+        -:   41:#include <stdio.h>
+        -:   42:#include <signal.h>
+        -:   43:#include <sys/types.h>
+        -:   44:#include <unistd.h>
+        -:   45:
+        -:   46:#define GST_SWITCH_SERVER_DEFAULT_HOST "localhost"
+        -:   47:#define GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT	3000
+        -:   48:#define GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT	4000
+        -:   49:#define GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT	5000
+        -:   50:#define GST_SWITCH_SERVER_LISTEN_BACKLOG 8      /* client connection queue */
+        -:   51:
+        -:   52:#define GST_SWITCH_SERVER_LOCK_MAIN_LOOP(srv) (g_mutex_lock (&(srv)->main_loop_lock))
+        -:   53:#define GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP(srv) (g_mutex_unlock (&(srv)->main_loop_lock))
+        -:   54:#define GST_SWITCH_SERVER_LOCK_VIDEO_ACCEPTOR(srv) (g_mutex_lock (&(srv)->video_acceptor_lock))
+        -:   55:#define GST_SWITCH_SERVER_UNLOCK_VIDEO_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->video_acceptor_lock))
+        -:   56:#define GST_SWITCH_SERVER_LOCK_AUDIO_ACCEPTOR(srv) (g_mutex_lock (&(srv)->audio_acceptor_lock))
+        -:   57:#define GST_SWITCH_SERVER_UNLOCK_AUDIO_ACCEPTOR(srv) (g_mutex_unlock (&(srv)->audio_acceptor_lock))
+        -:   58:#define GST_SWITCH_SERVER_LOCK_CONTROLLER(srv) (g_mutex_lock (&(srv)->controller_lock))
+        -:   59:#define GST_SWITCH_SERVER_UNLOCK_CONTROLLER(srv) (g_mutex_unlock (&(srv)->controller_lock))
+        -:   60:#define GST_SWITCH_SERVER_LOCK_CASES(srv) (g_mutex_lock (&(srv)->cases_lock))
+        -:   61:#define GST_SWITCH_SERVER_UNLOCK_CASES(srv) (g_mutex_unlock (&(srv)->cases_lock))
+        -:   62:#define GST_SWITCH_SERVER_LOCK_SERVE(srv) (g_mutex_lock (&(srv)->serve_lock))
+        -:   63:#define GST_SWITCH_SERVER_UNLOCK_SERVE(srv) (g_mutex_unlock (&(srv)->serve_lock))
+        -:   64:#define GST_SWITCH_SERVER_LOCK_PIP(srv) (g_mutex_lock (&(srv)->pip_lock))
+        -:   65:#define GST_SWITCH_SERVER_UNLOCK_PIP(srv) (g_mutex_unlock (&(srv)->pip_lock))
+        -:   66:#define GST_SWITCH_SERVER_LOCK_RECORDER(srv) (g_mutex_lock (&(srv)->recorder_lock))
+        -:   67:#define GST_SWITCH_SERVER_UNLOCK_RECORDER(srv) (g_mutex_unlock (&(srv)->recorder_lock))
+        -:   68:#define GST_SWITCH_SERVER_LOCK_CLOCK(srv) (g_mutex_lock (&(srv)->clock_lock))
+        -:   69:#define GST_SWITCH_SERVER_UNLOCK_CLOCK(srv) (g_mutex_unlock (&(srv)->clock_lock))
+        -:   70:
+        -:   71:#define gst_switch_server_parent_class parent_class
+    #####:   72:G_DEFINE_TYPE (GstSwitchServer, gst_switch_server, G_TYPE_OBJECT);
+        -:   73:
+        -:   74:GstSwitchServerOpts opts = {
+        -:   75:  NULL, NULL, NULL,
+        -:   76:  GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT,
+        -:   77:  GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT,
+        -:   78:  GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
+        -:   79:};
+        -:   80:
+        -:   81:gboolean verbose = FALSE;
+        -:   82:
+        -:   83:static GOptionEntry entries[] = {
+        -:   84:  {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
+        -:   85:      "Prompt more messages", NULL},
+        -:   86:  {"test-switch", 't', 0, G_OPTION_ARG_STRING, &opts.test_switch,
+        -:   87:      "Perform switch test", "OUTPUT"},
+        -:   88:  {"record", 'r', 0, G_OPTION_ARG_STRING, &opts.record_filename,
+        -:   89:        "Enable recorder and record into the specified FILENAME",
+        -:   90:      "FILENAME"},
+        -:   91:  {"video-input-port", 'p', 0, G_OPTION_ARG_INT, &opts.video_input_port,
+        -:   92:      "Specify the video input listen port.", "NUM"},
+        -:   93:  {"audio-input-port", 'a', 0, G_OPTION_ARG_INT, &opts.audio_input_port,
+        -:   94:      "Specify the audio input listen port.", "NUM"},
+        -:   95:  {"control-port", 'p', 0, G_OPTION_ARG_INT, &opts.control_port,
+        -:   96:      "Specify the control port.", "NUM"},
+        -:   97:  {NULL}
+        -:   98:};
+        -:   99:
+        -:  100:/**
+        -:  101: * gst_switch_server_parse_args:
+        -:  102: *
+        -:  103: * Parsing commiand line parameters.
+        -:  104: */
+        -:  105:static void
+    #####:  106:gst_switch_server_parse_args (int *argc, char **argv[])
+        -:  107:{
+    #####:  108:  GError *error = NULL;
+        -:  109:  GOptionContext *context;
+        -:  110:
+    #####:  111:  context = g_option_context_new ("");
+    #####:  112:  g_option_context_add_main_entries (context, entries, "gst-switch");
+    #####:  113:  g_option_context_add_group (context, gst_init_get_option_group ());
+    #####:  114:  if (!g_option_context_parse (context, argc, argv, &error)) {
+    #####:  115:    ERROR ("option parsing failed: %s", error->message);
+    #####:  116:    exit (1);
+        -:  117:  }
+        -:  118:
+    #####:  119:  g_option_context_free (context);
+    #####:  120:}
+        -:  121:
+        -:  122:/**
+        -:  123: * gst_switch_server_init:
+        -:  124: *
+        -:  125: * Initialize the GstSwitchServer instance.
+        -:  126: */
+        -:  127:static void
+    #####:  128:gst_switch_server_init (GstSwitchServer * srv)
+        -:  129:{
+    #####:  130:  INFO ("gst_switch_server init %p", srv);
+    #####:  131:  srv->host = g_strdup (GST_SWITCH_SERVER_DEFAULT_HOST);
+        -:  132:
+    #####:  133:  srv->cancellable = g_cancellable_new ();
+    #####:  134:  srv->video_acceptor_port = opts.video_input_port;
+    #####:  135:  srv->video_acceptor_socket = NULL;
+    #####:  136:  srv->video_acceptor = NULL;
+    #####:  137:  srv->audio_acceptor_port = opts.audio_input_port;
+    #####:  138:  srv->audio_acceptor_socket = NULL;
+    #####:  139:  srv->audio_acceptor = NULL;
+    #####:  140:  srv->controller_port = opts.control_port;
+    #####:  141:  srv->controller_socket = NULL;
+    #####:  142:  srv->controller_thread = NULL;
+    #####:  143:  srv->controller = NULL;
+    #####:  144:  srv->main_loop = NULL;
+    #####:  145:  srv->cases = NULL;
+    #####:  146:  srv->composite = NULL;
+    #####:  147:  srv->alloc_port_count = 0;
+        -:  148:
+    #####:  149:  srv->pip_x = 0;
+    #####:  150:  srv->pip_y = 0;
+    #####:  151:  srv->pip_w = 0;
+    #####:  152:  srv->pip_h = 0;
+        -:  153:
+    #####:  154:  srv->clock = gst_system_clock_obtain ();
+        -:  155:
+    #####:  156:  g_mutex_init (&srv->main_loop_lock);
+    #####:  157:  g_mutex_init (&srv->video_acceptor_lock);
+    #####:  158:  g_mutex_init (&srv->audio_acceptor_lock);
+    #####:  159:  g_mutex_init (&srv->controller_lock);
+    #####:  160:  g_mutex_init (&srv->cases_lock);
+    #####:  161:  g_mutex_init (&srv->alloc_port_lock);
+    #####:  162:  g_mutex_init (&srv->pip_lock);
+    #####:  163:  g_mutex_init (&srv->recorder_lock);
+    #####:  164:  g_mutex_init (&srv->clock_lock);
+    #####:  165:}
+        -:  166:
+        -:  167:/**
+        -:  168: * gst_switch_server_finalize:
+        -:  169: *
+        -:  170: * Destroying the GstSwitchServer instance.
+        -:  171: * 
+        -:  172: */
+        -:  173:static void
+    #####:  174:gst_switch_server_finalize (GstSwitchServer * srv)
+        -:  175:{
+    #####:  176:  INFO ("gst_switch_server finalize %p", srv);
+        -:  177:
+    #####:  178:  g_free (srv->host);
+    #####:  179:  srv->host = NULL;
+        -:  180:
+    #####:  181:  if (srv->cancellable) {
+    #####:  182:    g_object_unref (srv->cancellable);
+    #####:  183:    srv->cancellable = NULL;
+        -:  184:  }
+        -:  185:
+    #####:  186:  if (srv->video_acceptor_socket) {
+    #####:  187:    g_object_unref (srv->video_acceptor_socket);
+    #####:  188:    srv->video_acceptor_socket = NULL;
+        -:  189:  }
+        -:  190:/*
+        -:  191:  if (srv->video_acceptor) {
+        -:  192:    DEBUG("Waiting for video_acceptor thread to die.");
+        -:  193:    g_thread_join (srv->video_acceptor);
+        -:  194:  }
+        -:  195:*/
+    #####:  196:  if (srv->audio_acceptor_socket) {
+    #####:  197:    g_object_unref (srv->audio_acceptor_socket);
+    #####:  198:    srv->audio_acceptor_socket = NULL;
+        -:  199:  }
+        -:  200:/*
+        -:  201:  if (srv->audio_acceptor) {
+        -:  202:    DEBUG("Waiting for audio_acceptor thread to die.");
+        -:  203:    g_thread_join (srv->audio_acceptor);
+        -:  204:  }
+        -:  205:*/
+    #####:  206:  if (srv->controller_socket) {
+    #####:  207:    g_object_unref (srv->controller_socket);
+    #####:  208:    srv->controller_socket = NULL;
+        -:  209:  }
+        -:  210:/*
+        -:  211:  if (srv->controller_thread) {
+        -:  212:    DEBUG("Waiting for controller_thread thread to die.");
+        -:  213:    g_thread_join (srv->controller_thread);
+        -:  214:  }
+        -:  215:*/
+    #####:  216:  if (srv->controller) {
+    #####:  217:    g_object_unref (srv->controller);
+    #####:  218:    srv->controller = NULL;
+        -:  219:  }
+        -:  220:
+    #####:  221:  if (srv->cases) {
+    #####:  222:    g_list_free_full (srv->cases, (GDestroyNotify) g_object_unref);
+    #####:  223:    srv->cases = NULL;
+        -:  224:  }
+        -:  225:
+    #####:  226:  if (srv->composite) {
+    #####:  227:    g_object_unref (srv->composite);
+    #####:  228:    srv->composite = NULL;
+        -:  229:  }
+        -:  230:
+    #####:  231:  gst_object_unref (srv->clock);
+        -:  232:
+    #####:  233:  g_mutex_clear (&srv->main_loop_lock);
+    #####:  234:  g_mutex_clear (&srv->video_acceptor_lock);
+    #####:  235:  g_mutex_clear (&srv->audio_acceptor_lock);
+    #####:  236:  g_mutex_clear (&srv->controller_lock);
+    #####:  237:  g_mutex_clear (&srv->cases_lock);
+    #####:  238:  g_mutex_clear (&srv->alloc_port_lock);
+    #####:  239:  g_mutex_clear (&srv->pip_lock);
+    #####:  240:  g_mutex_clear (&srv->recorder_lock);
+    #####:  241:  g_mutex_clear (&srv->clock_lock);
+        -:  242:
+    #####:  243:  if (G_OBJECT_CLASS (parent_class)->finalize)
+    #####:  244:    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (srv));
+    #####:  245:}
+        -:  246:
+        -:  247:/**
+        -:  248: * gst_switch_server_class_init:
+        -:  249: *
+        -:  250: * Initializet the GstSwitchServerClass.
+        -:  251: */
+        -:  252:static void
+    #####:  253:gst_switch_server_class_init (GstSwitchServerClass * klass)
+        -:  254:{
+    #####:  255:  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    #####:  256:  object_class->finalize = (GObjectFinalizeFunc) gst_switch_server_finalize;
+    #####:  257:}
+        -:  258:
+        -:  259:/**
+        -:  260: * gst_switch_server_quit:
+        -:  261: *
+        -:  262: * Force terminating the server. 
+        -:  263: */
+        -:  264:static void
+    #####:  265:gst_switch_server_quit (GstSwitchServer * srv, gint exit_code)
+        -:  266:{
+    #####:  267:  GST_SWITCH_SERVER_LOCK_MAIN_LOOP (srv);
+    #####:  268:  g_main_loop_quit (srv->main_loop);
+    #####:  269:  srv->exit_code = exit_code;
+    #####:  270:  GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP (srv);
+    #####:  271:}
+        -:  272:
+        -:  273:/**
+        -:  274: * gst_switch_server_alloc_port:
+        -:  275: *
+        -:  276: * Allocate a new port number.
+        -:  277: */
+        -:  278:static gint
+    #####:  279:gst_switch_server_alloc_port (GstSwitchServer * srv)
+        -:  280:{
+        -:  281:  gint port;
+    #####:  282:  g_mutex_lock (&srv->alloc_port_lock);
+    #####:  283:  srv->alloc_port_count += 1;
+    #####:  284:  port = srv->video_acceptor_port + srv->alloc_port_count;
+        -:  285:
+        -:  286:  // TODO: new policy for port allocation
+        -:  287:
+    #####:  288:  g_mutex_unlock (&srv->alloc_port_lock);
+    #####:  289:  return port;
+        -:  290:}
+        -:  291:
+        -:  292:/**
+        -:  293: * gst_switch_server_revoke_port:
+        -:  294: *
+        -:  295: * This is intended to revoke a allocated port number.
+        -:  296: */
+        -:  297:static void
+    #####:  298:gst_switch_server_revoke_port (GstSwitchServer * srv, int port)
+        -:  299:{
+    #####:  300:  g_mutex_lock (&srv->alloc_port_lock);
+        -:  301:  //srv->alloc_port_count -= 1;
+        -:  302:
+        -:  303:  // TODO: new policy for port allocation
+        -:  304:
+    #####:  305:  g_mutex_unlock (&srv->alloc_port_lock);
+    #####:  306:}
+        -:  307:
+        -:  308:/**
+        -:  309: * gst_switch_server_end_case:
+        -:  310: *
+        -:  311: * Invoked when a %GstCase is ended.
+        -:  312: */
+        -:  313:static void
+    #####:  314:gst_switch_server_end_case (GstCase * cas, GstSwitchServer * srv)
+        -:  315:{
+    #####:  316:  gint caseport = 0;
+        -:  317:  GList *item;
+        -:  318:
+    #####:  319:  GST_SWITCH_SERVER_LOCK_CASES (srv);
+        -:  320:
+    #####:  321:  switch (cas->type) {
+        -:  322:    default:
+    #####:  323:      srv->cases = g_list_remove (srv->cases, cas);
+    #####:  324:      INFO ("Removed %s (%p, %d) (%d cases left)", GST_WORKER (cas)->name,
+        -:  325:          cas, G_OBJECT (cas)->ref_count, g_list_length (srv->cases));
+    #####:  326:      caseport = cas->sink_port;
+    #####:  327:      g_object_unref (cas);
+    #####:  328:      break;
+        -:  329:    case GST_CASE_INPUT_a:
+        -:  330:    case GST_CASE_INPUT_v:
+    #####:  331:      srv->cases = g_list_remove (srv->cases, cas);
+    #####:  332:      INFO ("Removed %s %p (%d cases left)", GST_WORKER (cas)->name, cas,
+        -:  333:          g_list_length (srv->cases));
+    #####:  334:      caseport = cas->sink_port;
+    #####:  335:      g_object_unref (cas);
+    #####:  336:      for (item = srv->cases; item;) {
+    #####:  337:        GstCase *c = GST_CASE (item->data);
+    #####:  338:        if (c->sink_port == caseport) {
+    #####:  339:          gst_worker_stop (GST_WORKER (c));
+    #####:  340:          item = g_list_next (item);
+        -:  341:          /*
+        -:  342:             srv->cases = g_list_remove (srv->cases, c);
+        -:  343:             g_object_unref (G_OBJECT (c));
+        -:  344:           */
+        -:  345:        } else {
+    #####:  346:          item = g_list_next (item);
+        -:  347:        }
+        -:  348:      }
+    #####:  349:      break;
+        -:  350:  }
+        -:  351:
+    #####:  352:  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+        -:  353:
+    #####:  354:  if (caseport)
+    #####:  355:    gst_switch_server_revoke_port (srv, caseport);
+    #####:  356:}
+        -:  357:
+        -:  358:/**
+        -:  359: * gst_switch_server_start_case:
+        -:  360: *
+        -:  361: * Start a new %GstCase.
+        -:  362: */
+        -:  363:static void
+    #####:  364:gst_switch_server_start_case (GstCase * cas, GstSwitchServer * srv)
+        -:  365:{
+    #####:  366:  gboolean is_branch = FALSE;
+    #####:  367:  switch (cas->type) {
+        -:  368:    case GST_CASE_BRANCH_A:
+        -:  369:    case GST_CASE_BRANCH_B:
+        -:  370:    case GST_CASE_BRANCH_a:
+        -:  371:    case GST_CASE_BRANCH_p:
+    #####:  372:      is_branch = TRUE;
+        -:  373:    default:
+    #####:  374:      break;
+        -:  375:  }
+        -:  376:
+    #####:  377:  if (srv->controller && is_branch) {
+    #####:  378:    GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+    #####:  379:    if (srv->controller && is_branch) {
+    #####:  380:      gst_switch_controller_tell_preview_port (srv->controller,
+    #####:  381:          cas->sink_port, cas->serve_type, cas->type);
+        -:  382:
+    #####:  383:      if (cas->type == GST_CASE_BRANCH_a) {
+    #####:  384:        gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
+        -:  385:      }
+        -:  386:    }
+    #####:  387:    GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+        -:  388:  }
+    #####:  389:}
+        -:  390:
+        -:  391:/**
+        -:  392: * gst_switch_server_suggest_case_type:
+        -:  393: *
+        -:  394: * Get a proper GstCase type according to the stream type.
+        -:  395: */
+        -:  396:static GstCaseType
+    #####:  397:gst_switch_server_suggest_case_type (GstSwitchServer * srv,
+        -:  398:    GstSwitchServeStreamType serve_type)
+        -:  399:{
+    #####:  400:  GstCaseType type = GST_CASE_UNKNOWN;
+    #####:  401:  gboolean has_composite_A = FALSE;
+    #####:  402:  gboolean has_composite_B = FALSE;
+    #####:  403:  gboolean has_composite_a = FALSE;
+    #####:  404:  GList *item = srv->cases;
+        -:  405:
+    #####:  406:  for (; item; item = g_list_next (item)) {
+    #####:  407:    GstCase *cas = GST_CASE (item->data);
+        -:  408:#if 0
+        -:  409:    switch (cas->serve_type) {
+        -:  410:      case GST_SERVE_VIDEO_STREAM:
+        -:  411:      {
+        -:  412:        switch (cas->type) {
+        -:  413:          case GST_CASE_COMPOSITE_A:
+        -:  414:            has_composite_A = TRUE;
+        -:  415:            break;
+        -:  416:          case GST_CASE_COMPOSITE_B:
+        -:  417:            has_composite_B = TRUE;
+        -:  418:            break;
+        -:  419:          default:
+        -:  420:            break;
+        -:  421:        }
+        -:  422:      }
+        -:  423:        break;
+        -:  424:      case GST_SERVE_AUDIO_STREAM:
+        -:  425:      {
+        -:  426:        if (cas->type == GST_CASE_COMPOSITE_a)
+        -:  427:          has_composite_a = TRUE;
+        -:  428:      }
+        -:  429:        break;
+        -:  430:      case GST_SERVE_NOTHING:
+        -:  431:        break;
+        -:  432:    }
+        -:  433:#else
+    #####:  434:    switch (cas->type) {
+        -:  435:      case GST_CASE_COMPOSITE_A:
+    #####:  436:        has_composite_A = TRUE;
+    #####:  437:        break;
+        -:  438:      case GST_CASE_COMPOSITE_B:
+    #####:  439:        has_composite_B = TRUE;
+    #####:  440:        break;
+        -:  441:      case GST_CASE_COMPOSITE_a:
+    #####:  442:        has_composite_a = TRUE;
+    #####:  443:        break;
+        -:  444:      default:
+    #####:  445:        break;
+        -:  446:    }
+        -:  447:#endif
+        -:  448:    //INFO ("case: %d, %d, %d", cas->sink_port, cas->type, cas->serve_type);
+        -:  449:  }
+        -:  450:
+    #####:  451:  switch (serve_type) {
+        -:  452:    case GST_SERVE_VIDEO_STREAM:
+    #####:  453:      if (!has_composite_A)
+    #####:  454:        type = GST_CASE_COMPOSITE_A;
+    #####:  455:      else if (!has_composite_B)
+    #####:  456:        type = GST_CASE_COMPOSITE_B;
+        -:  457:      else
+    #####:  458:        type = GST_CASE_PREVIEW;
+    #####:  459:      break;
+        -:  460:    case GST_SERVE_AUDIO_STREAM:
+    #####:  461:      if (!has_composite_a)
+    #####:  462:        type = GST_CASE_COMPOSITE_a;
+        -:  463:      else
+    #####:  464:        type = GST_CASE_PREVIEW;
+    #####:  465:      break;
+        -:  466:    case GST_SERVE_NOTHING:
+    #####:  467:      break;
+        -:  468:  }
+        -:  469:
+        -:  470:  // TODO: better switching policy?
+        -:  471:
+    #####:  472:  return type;
+        -:  473:}
+        -:  474:
+        -:  475:/**
+        -:  476: * gst_switch_server_serve:
+        -:  477: *
+        -:  478: * The gst-switch-srv serving thread.
+        -:  479: */
+        -:  480:static void
+    #####:  481:gst_switch_server_serve (GstSwitchServer * srv, GSocket * client,
+        -:  482:    GstSwitchServeStreamType serve_type)
+        -:  483:{
+    #####:  484:  GSocketInputStreamX *stream =
+    #####:  485:      G_SOCKET_INPUT_STREAM (g_object_new
+        -:  486:      (G_TYPE_SOCKET_INPUT_STREAM, "socket", client,
+        -:  487:          NULL));
+    #####:  488:  GstCaseType type = GST_CASE_UNKNOWN;
+    #####:  489:  GstCaseType inputtype = GST_CASE_UNKNOWN;
+    #####:  490:  GstCaseType branchtype = GST_CASE_UNKNOWN;
+    #####:  491:  gint num_cases = g_list_length (srv->cases);
+    #####:  492:  GstCase *input = NULL, *branch = NULL, *workcase = NULL;
+        -:  493:  gchar *name;
+    #####:  494:  gint port = 0;
+    #####:  495:  GCallback start_callback = G_CALLBACK (gst_switch_server_start_case);
+    #####:  496:  GCallback end_callback = G_CALLBACK (gst_switch_server_end_case);
+        -:  497:
+    #####:  498:  GST_SWITCH_SERVER_LOCK_SERVE (srv);
+    #####:  499:  GST_SWITCH_SERVER_LOCK_CASES (srv);
+    #####:  500:  switch (serve_type) {
+        -:  501:    case GST_SERVE_AUDIO_STREAM:
+    #####:  502:      inputtype = GST_CASE_INPUT_a;
+    #####:  503:      break;
+        -:  504:    case GST_SERVE_VIDEO_STREAM:
+    #####:  505:      inputtype = GST_CASE_INPUT_v;
+    #####:  506:      break;
+        -:  507:    default:
+    #####:  508:      goto error_unknown_serve_type;
+        -:  509:  }
+        -:  510:
+    #####:  511:  type = gst_switch_server_suggest_case_type (srv, serve_type);
+    #####:  512:  switch (type) {
+        -:  513:    case GST_CASE_COMPOSITE_A:
+    #####:  514:      branchtype = GST_CASE_BRANCH_A;
+    #####:  515:      break;
+        -:  516:    case GST_CASE_COMPOSITE_B:
+    #####:  517:      branchtype = GST_CASE_BRANCH_B;
+    #####:  518:      break;
+        -:  519:    case GST_CASE_COMPOSITE_a:
+    #####:  520:      branchtype = GST_CASE_BRANCH_a;
+    #####:  521:      break;
+        -:  522:    case GST_CASE_PREVIEW:
+    #####:  523:      branchtype = GST_CASE_BRANCH_p;
+    #####:  524:      break;
+        -:  525:    default:
+    #####:  526:      goto error_unknown_case_type;
+        -:  527:  }
+        -:  528:
+    #####:  529:  port = gst_switch_server_alloc_port (srv);
+        -:  530:
+        -:  531:  //INFO ("case-type: %d, %d, %d", type, branchtype, port);
+        -:  532:
+    #####:  533:  name = g_strdup_printf ("input_%d", port);
+    #####:  534:  input = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
+        -:  535:          "type", inputtype, "port", port, "serve",
+        -:  536:          serve_type, "stream", stream, NULL));
+    #####:  537:  g_object_unref (stream);
+    #####:  538:  g_object_unref (client);
+    #####:  539:  g_free (name);
+        -:  540:
+    #####:  541:  name = g_strdup_printf ("branch_%d", port);
+    #####:  542:  branch = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
+        -:  543:          "type", branchtype, "port", port, "serve", serve_type, NULL));
+    #####:  544:  g_free (name);
+        -:  545:
+    #####:  546:  name = g_strdup_printf ("case-%d", num_cases);
+    #####:  547:  workcase = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
+        -:  548:          "type", type, "port", port, "serve",
+        -:  549:          serve_type, "input", input, "branch", branch, NULL));
+    #####:  550:  g_free (name);
+        -:  551:
+    #####:  552:  srv->cases = g_list_append (srv->cases, input);
+    #####:  553:  srv->cases = g_list_append (srv->cases, branch);
+    #####:  554:  srv->cases = g_list_append (srv->cases, workcase);
+    #####:  555:  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+        -:  556:
+    #####:  557:  if (serve_type == GST_SERVE_VIDEO_STREAM) {
+    #####:  558:    g_object_set (input,
+    #####:  559:        "width", srv->composite->width,
+    #####:  560:        "height", srv->composite->height,
+    #####:  561:        "awidth", srv->composite->a_width,
+    #####:  562:        "aheight", srv->composite->a_height,
+    #####:  563:        "bwidth", srv->composite->b_width,
+    #####:  564:        "bheight", srv->composite->b_height, NULL);
+    #####:  565:    g_object_set (branch,
+    #####:  566:        "width", srv->composite->width,
+    #####:  567:        "height", srv->composite->height,
+    #####:  568:        "awidth", srv->composite->a_width,
+    #####:  569:        "aheight", srv->composite->a_height,
+    #####:  570:        "bwidth", srv->composite->b_width,
+    #####:  571:        "bheight", srv->composite->b_height, NULL);
+    #####:  572:    g_object_set (workcase,
+    #####:  573:        "width", srv->composite->width,
+    #####:  574:        "height", srv->composite->height,
+    #####:  575:        "awidth", srv->composite->a_width,
+    #####:  576:        "aheight", srv->composite->a_height,
+    #####:  577:        "bwidth", srv->composite->b_width,
+    #####:  578:        "bheight", srv->composite->b_height, NULL);
+        -:  579:  }
+        -:  580:
+    #####:  581:  g_signal_connect (branch, "start-worker", start_callback, srv);
+    #####:  582:  g_signal_connect (input, "end-worker", end_callback, srv);
+    #####:  583:  g_signal_connect (branch, "end-worker", end_callback, srv);
+    #####:  584:  g_signal_connect (workcase, "end-worker", end_callback, srv);
+        -:  585:
+    #####:  586:  if (!gst_worker_start (GST_WORKER (input)))
+    #####:  587:    goto error_start_branch;
+    #####:  588:  if (!gst_worker_start (GST_WORKER (branch)))
+    #####:  589:    goto error_start_branch;
+    #####:  590:  if (!gst_worker_start (GST_WORKER (workcase)))
+    #####:  591:    goto error_start_workcase;
+        -:  592:
+    #####:  593:  GST_SWITCH_SERVER_UNLOCK_SERVE (srv);
+    #####:  594:  return;
+        -:  595:
+        -:  596:  /* Errors Handling */
+        -:  597:error_unknown_serve_type:
+        -:  598:  {
+    #####:  599:    ERROR ("unknown serve type %d", serve_type);
+    #####:  600:    g_object_unref (stream);
+    #####:  601:    g_object_unref (client);
+    #####:  602:    GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    #####:  603:    GST_SWITCH_SERVER_UNLOCK_SERVE (srv);
+    #####:  604:    return;
+        -:  605:  }
+        -:  606:
+        -:  607:error_unknown_case_type:
+        -:  608:  {
+    #####:  609:    ERROR ("unknown case type (serve type %d)", serve_type);
+    #####:  610:    g_object_unref (stream);
+    #####:  611:    g_object_unref (client);
+    #####:  612:    GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    #####:  613:    GST_SWITCH_SERVER_UNLOCK_SERVE (srv);
+    #####:  614:    return;
+        -:  615:  }
+        -:  616:
+        -:  617:error_start_branch:
+        -:  618:error_start_workcase:
+        -:  619:  {
+    #####:  620:    ERROR ("failed serving new client");
+    #####:  621:    GST_SWITCH_SERVER_LOCK_CASES (srv);
+    #####:  622:    srv->cases = g_list_remove (srv->cases, branch);
+    #####:  623:    srv->cases = g_list_remove (srv->cases, workcase);
+    #####:  624:    GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    #####:  625:    g_object_unref (stream);
+    #####:  626:    g_object_unref (branch);
+    #####:  627:    g_object_unref (workcase);
+    #####:  628:    gst_switch_server_revoke_port (srv, port);
+    #####:  629:    GST_SWITCH_SERVER_UNLOCK_SERVE (srv);
+    #####:  630:    return;
+        -:  631:  }
+        -:  632:}
+        -:  633:
+        -:  634:/**
+        -:  635: * gst_switch_server_allow_tcp_control:
+        -:  636: *
+        -:  637: * (deprecated)
+        -:  638: */
+        -:  639:static void
+    #####:  640:gst_switch_server_allow_tcp_control (GstSwitchServer * srv, GSocket * client)
+        -:  641:{
+    #####:  642:  ERROR ("control via TCP not implemented");
+    #####:  643:  g_object_unref (client);
+    #####:  644:}
+        -:  645:
+        -:  646:/**
+        -:  647: * gst_switch_server_listen:
+        -:  648: * @port: The port number to listen on.
+        -:  649: * @bound_port: The local bound port number of the socket.
+        -:  650: * @return: The socket instance.
+        -:  651: *
+        -:  652: * Create a new socket on the specific port and listen on the created socket.
+        -:  653: */
+        -:  654:static GSocket *
+    #####:  655:gst_switch_server_listen (GstSwitchServer * srv, gint port, gint * bound_port)
+        -:  656:{
+    #####:  657:  GError *err = NULL;
+        -:  658:  GInetAddress *addr;
+    #####:  659:  GSocket *socket = NULL;
+        -:  660:  GSocketAddress *saddr;
+        -:  661:  GResolver *resolver;
+        -:  662:  gchar *ip;
+        -:  663:
+    #####:  664:  *bound_port = 0;
+        -:  665:
+        -:  666:  /* look up name if we need to */
+    #####:  667:  addr = g_inet_address_new_from_string (srv->host);
+    #####:  668:  if (!addr) {
+        -:  669:    GList *results;
+        -:  670:
+    #####:  671:    resolver = g_resolver_get_default ();
+    #####:  672:    results = g_resolver_lookup_by_name (resolver, srv->host,
+        -:  673:        srv->cancellable, &err);
+    #####:  674:    if (!results)
+    #####:  675:      goto resolve_no_name;
+        -:  676:
+    #####:  677:    addr = G_INET_ADDRESS (g_object_ref (results->data));
+        -:  678:
+    #####:  679:    g_resolver_free_addresses (results);
+    #####:  680:    g_object_unref (resolver);
+        -:  681:  }
+        -:  682:
+    #####:  683:  ip = g_inet_address_to_string (addr);
+    #####:  684:  saddr = g_inet_socket_address_new (addr, port);
+    #####:  685:  g_object_unref (addr);
+        -:  686:
+        -:  687:  /* create the server listener socket */
+    #####:  688:  socket = g_socket_new (g_socket_address_get_family (saddr),
+        -:  689:      G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_TCP, &err);
+    #####:  690:  if (!socket)
+    #####:  691:    goto socket_new_failed;
+        -:  692:
+        -:  693:  /* bind it */
+    #####:  694:  if (!g_socket_bind (socket, saddr, TRUE, &err))
+    #####:  695:    goto socket_bind_failed;
+        -:  696:
+    #####:  697:  g_object_unref (saddr);
+        -:  698:
+        -:  699:  /* listen on the socket */
+    #####:  700:  g_socket_set_listen_backlog (socket, GST_SWITCH_SERVER_LISTEN_BACKLOG);
+    #####:  701:  if (!g_socket_listen (socket, &err))
+    #####:  702:    goto socket_listen_failed;
+        -:  703:
+    #####:  704:  if (port == 0) {
+    #####:  705:    saddr = g_socket_get_local_address (socket, NULL);
+    #####:  706:    *bound_port = g_inet_socket_address_get_port ((GInetSocketAddress *) saddr);
+    #####:  707:    g_object_unref (saddr);
+        -:  708:  } else {
+    #####:  709:    *bound_port = port;
+        -:  710:  }
+        -:  711:
+    #####:  712:  INFO ("Listening on %s (%s:%d)", srv->host, ip, *bound_port);
+        -:  713:
+    #####:  714:  g_free (ip);
+        -:  715:
+        -:  716:  //g_atomic_int_set (&srv->bound_port, bound_port);
+        -:  717:  //g_object_notify (G_OBJECT (src), "bound-port");
+    #####:  718:  return socket;
+        -:  719:
+        -:  720:  /* Errors Handling */
+        -:  721:
+        -:  722:resolve_no_name:
+        -:  723:  {
+    #####:  724:    ERROR ("resolve: %s", err->message);
+    #####:  725:    g_object_unref (resolver);
+    #####:  726:    g_object_unref (addr);
+    #####:  727:    return NULL;
+        -:  728:  }
+        -:  729:
+        -:  730:socket_new_failed:
+        -:  731:  {
+    #####:  732:    ERROR ("new socket: %s", err->message);
+    #####:  733:    g_clear_error (&err);
+    #####:  734:    g_object_unref (saddr);
+    #####:  735:    g_free (ip);
+    #####:  736:    return NULL;
+        -:  737:  }
+        -:  738:
+        -:  739:socket_bind_failed:
+        -:  740:  {
+    #####:  741:    ERROR ("bind socket: %s", err->message);
+    #####:  742:    g_clear_error (&err);
+    #####:  743:    g_object_unref (saddr);
+    #####:  744:    g_free (ip);
+    #####:  745:    return NULL;
+        -:  746:  }
+        -:  747:
+        -:  748:socket_listen_failed:
+        -:  749:  {
+    #####:  750:    ERROR ("listen socket: %s", err->message);
+    #####:  751:    g_clear_error (&err);
+    #####:  752:    g_object_unref (saddr);
+    #####:  753:    g_free (ip);
+    #####:  754:    return NULL;
+        -:  755:  }
+        -:  756:}
+        -:  757:
+        -:  758:/**
+        -:  759: * gst_switch_server_video_acceptor:
+        -:  760: *
+        -:  761: * Thread for accepting video inputs.
+        -:  762: */
+        -:  763:static gpointer
+    #####:  764:gst_switch_server_video_acceptor (GstSwitchServer * srv)
+        -:  765:{
+        -:  766:  GSocket *socket;
+        -:  767:  GError *error;
+        -:  768:  gint bound_port;
+        -:  769:
+    #####:  770:  srv->video_acceptor_socket = gst_switch_server_listen (srv,
+        -:  771:      srv->video_acceptor_port, &bound_port);
+    #####:  772:  if (!srv->video_acceptor_socket) {
+    #####:  773:    gst_switch_server_quit (srv, -__LINE__);
+    #####:  774:    return NULL;
+        -:  775:  }
+        -:  776:
+    #####:  777:  while (srv->video_acceptor && srv->video_acceptor_socket && srv->cancellable) {
+    #####:  778:    socket =
+    #####:  779:        g_socket_accept (srv->video_acceptor_socket, srv->cancellable, &error);
+    #####:  780:    if (!socket) {
+    #####:  781:      ERROR ("accept: %s", error->message);
+    #####:  782:      continue;
+        -:  783:    }
+        -:  784:
+    #####:  785:    gst_switch_server_serve (srv, socket, GST_SERVE_VIDEO_STREAM);
+        -:  786:  }
+        -:  787:
+    #####:  788:  GST_SWITCH_SERVER_LOCK_VIDEO_ACCEPTOR (srv);
+    #####:  789:  g_thread_unref (srv->video_acceptor);
+    #####:  790:  srv->video_acceptor = NULL;
+    #####:  791:  GST_SWITCH_SERVER_UNLOCK_VIDEO_ACCEPTOR (srv);
+    #####:  792:  return NULL;
+        -:  793:}
+        -:  794:
+        -:  795:/**
+        -:  796: * gst_switch_server_audio_acceptor:
+        -:  797: *
+        -:  798: * Thread for accepting audio inputs.
+        -:  799: */
+        -:  800:static gpointer
+    #####:  801:gst_switch_server_audio_acceptor (GstSwitchServer * srv)
+        -:  802:{
+        -:  803:  GSocket *socket;
+        -:  804:  GError *error;
+        -:  805:  gint bound_port;
+        -:  806:
+    #####:  807:  srv->audio_acceptor_socket = gst_switch_server_listen (srv,
+        -:  808:      srv->audio_acceptor_port, &bound_port);
+    #####:  809:  if (!srv->audio_acceptor_socket) {
+    #####:  810:    gst_switch_server_quit (srv, -__LINE__);
+    #####:  811:    return NULL;
+        -:  812:  }
+        -:  813:
+    #####:  814:  while (srv->audio_acceptor && srv->audio_acceptor_socket && srv->cancellable) {
+    #####:  815:    socket =
+    #####:  816:        g_socket_accept (srv->audio_acceptor_socket, srv->cancellable, &error);
+    #####:  817:    if (!socket) {
+    #####:  818:      ERROR ("accept: %s", error->message);
+    #####:  819:      continue;
+        -:  820:    }
+        -:  821:
+    #####:  822:    gst_switch_server_serve (srv, socket, GST_SERVE_AUDIO_STREAM);
+        -:  823:  }
+        -:  824:
+    #####:  825:  GST_SWITCH_SERVER_LOCK_AUDIO_ACCEPTOR (srv);
+    #####:  826:  g_thread_unref (srv->audio_acceptor);
+    #####:  827:  srv->audio_acceptor = NULL;
+    #####:  828:  GST_SWITCH_SERVER_UNLOCK_AUDIO_ACCEPTOR (srv);
+    #####:  829:  return NULL;
+        -:  830:}
+        -:  831:
+        -:  832:/**
+        -:  833: * gst_switch_server_controller:
+        -:  834: *
+        -:  835: * The controller serving thread.
+        -:  836: *
+        -:  837: * (Deprecated.)
+        -:  838: */
+        -:  839:static gpointer
+    #####:  840:gst_switch_server_controller (GstSwitchServer * srv)
+        -:  841:{
+        -:  842:  GSocket *socket;
+        -:  843:  GError *error;
+        -:  844:  gint bound_port;
+        -:  845:
+    #####:  846:  srv->controller_socket = gst_switch_server_listen (srv,
+        -:  847:      srv->controller_port, &bound_port);
+    #####:  848:  if (!srv->controller_socket) {
+    #####:  849:    return NULL;
+        -:  850:  }
+        -:  851:
+    #####:  852:  while (srv->controller_thread && srv->controller_socket && srv->cancellable) {
+    #####:  853:    socket = g_socket_accept (srv->controller_socket, srv->cancellable, &error);
+    #####:  854:    if (!socket) {
+    #####:  855:      ERROR ("accept: %s", error->message);
+    #####:  856:      continue;
+        -:  857:    }
+        -:  858:
+    #####:  859:    gst_switch_server_allow_tcp_control (srv, socket);
+        -:  860:  }
+        -:  861:
+    #####:  862:  GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+    #####:  863:  g_thread_unref (srv->controller_thread);
+    #####:  864:  srv->controller_thread = NULL;
+    #####:  865:  GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+    #####:  866:  return NULL;
+        -:  867:}
+        -:  868:
+        -:  869:/**
+        -:  870: * gst_switch_server_prepare_bus_controller:
+        -:  871: *
+        -:  872: * Preparing the dbus controller.
+        -:  873: */
+        -:  874:static void
+    #####:  875:gst_switch_server_prepare_bus_controller (GstSwitchServer * srv)
+        -:  876:{
+    #####:  877:  if (srv->controller == NULL) {
+    #####:  878:    GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+    #####:  879:    if (srv->controller == NULL) {
+    #####:  880:      srv->controller =
+    #####:  881:          GST_SWITCH_CONTROLLER (g_object_new
+        -:  882:          (GST_TYPE_SWITCH_CONTROLLER, NULL));
+    #####:  883:      if (!gst_switch_controller_is_valid (srv->controller)) {
+    #####:  884:        gst_switch_server_quit (srv, -__LINE__);
+        -:  885:      }
+    #####:  886:      srv->controller->server = srv;
+        -:  887:    }
+    #####:  888:    GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+        -:  889:  }
+    #####:  890:}
+        -:  891:
+        -:  892:/**
+        -:  893: * gst_switch_server_get_composite_sink_port:
+        -:  894: *  @srv: the GstSwitchServer instance
+        -:  895: *  @return: the composite sink port
+        -:  896: *
+        -:  897: *  Get the composite port.
+        -:  898: *  
+        -:  899: */
+        -:  900:gint
+    #####:  901:gst_switch_server_get_composite_sink_port (GstSwitchServer * srv)
+        -:  902:{
+    #####:  903:  gint port = 0;
+    #####:  904:  if (srv->composite) {
+        -:  905:    //gst_composite_lock (srv->composite);
+    #####:  906:    port = srv->composite->sink_port;
+        -:  907:    //gst_composite_unlock (srv->composite);
+        -:  908:  }
+    #####:  909:  return port;
+        -:  910:}
+        -:  911:
+        -:  912:/**
+        -:  913: * gst_switch_server_get_encode_sink_port:
+        -:  914: *  @srv: the GstSwitchServer instance
+        -:  915: *  @return: the encode sink port number
+        -:  916: *
+        -:  917: *  Get the encode port.
+        -:  918: *
+        -:  919: */
+        -:  920:gint
+    #####:  921:gst_switch_server_get_encode_sink_port (GstSwitchServer * srv)
+        -:  922:{
+    #####:  923:  gint port = 0;
+    #####:  924:  if (srv->composite) {
+        -:  925:    //gst_composite_lock (srv->composite);
+    #####:  926:    port = srv->composite->encode_sink_port;
+        -:  927:    //gst_composite_unlock (srv->composite);
+        -:  928:  }
+    #####:  929:  return port;
+        -:  930:}
+        -:  931:
+        -:  932:/**
+        -:  933: * gst_switch_server_get_audio_sink_port:
+        -:  934: *  @param srv the GstSwitchServer instance
+        -:  935: *
+        -:  936: *  Get the audio port.
+        -:  937: *
+        -:  938: *  @return: the audio sink port number.
+        -:  939: */
+        -:  940:gint
+    #####:  941:gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
+        -:  942:{
+    #####:  943:  gint port = 0;
+        -:  944:  GList *item;
+    #####:  945:  GST_SWITCH_SERVER_LOCK_CASES (srv);
+    #####:  946:  for (item = srv->cases; item; item = g_list_next (item)) {
+    #####:  947:    if (GST_CASE (item->data)->type == GST_CASE_COMPOSITE_a) {
+    #####:  948:      port = GST_CASE (item->data)->sink_port;
+    #####:  949:      break;
+        -:  950:    }
+        -:  951:  }
+    #####:  952:  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    #####:  953:  return port;
+        -:  954:}
+        -:  955:
+        -:  956:/**
+        -:  957: *  @brief Get the preview ports.
+        -:  958: *  @param srv
+        -:  959: *  @param s (output) the preview serve types.
+        -:  960: *  @param t (output) the preview types.
+        -:  961: *  @return: The array of preview ports.
+        -:  962: */
+        -:  963:GArray *
+    #####:  964:gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
+        -:  965:    GArray ** s, GArray ** t)
+        -:  966:{
+    #####:  967:  GArray *a = g_array_new (FALSE, TRUE, sizeof (gint));
+        -:  968:  GList *item;
+        -:  969:
+    #####:  970:  if (s)
+    #####:  971:    *s = g_array_new (FALSE, TRUE, sizeof (gint));
+    #####:  972:  if (t)
+    #####:  973:    *t = g_array_new (FALSE, TRUE, sizeof (gint));
+        -:  974:
+    #####:  975:  GST_SWITCH_SERVER_LOCK_CASES (srv);
+    #####:  976:  for (item = srv->cases; item; item = g_list_next (item)) {
+    #####:  977:    switch (GST_CASE (item->data)->type) {
+        -:  978:      case GST_CASE_BRANCH_A:
+        -:  979:      case GST_CASE_BRANCH_B:
+        -:  980:      case GST_CASE_BRANCH_a:
+        -:  981:      case GST_CASE_PREVIEW:
+    #####:  982:        a = g_array_append_val (a, GST_CASE (item->data)->sink_port);
+    #####:  983:        if (s)
+    #####:  984:          *s = g_array_append_val (*s, GST_CASE (item->data)->serve_type);
+    #####:  985:        if (t)
+    #####:  986:          *t = g_array_append_val (*t, GST_CASE (item->data)->type);
+        -:  987:      default:
+    #####:  988:        break;
+        -:  989:    }
+        -:  990:  }
+    #####:  991:  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    #####:  992:  return a;
+        -:  993:}
+        -:  994:
+        -:  995:/**
+        -:  996: * gst_switch_server_set_composite_mode:
+        -:  997: *  @return: TRUE if succeeded.
+        -:  998: *
+        -:  999: *  Change a composite mode.
+        -: 1000: *
+        -: 1001: */
+        -: 1002:gboolean
+    #####: 1003:gst_switch_server_set_composite_mode (GstSwitchServer * srv, gint mode)
+        -: 1004:{
+    #####: 1005:  gboolean result = FALSE;
+        -: 1006:
+    #####: 1007:  GST_SWITCH_SERVER_LOCK_PIP (srv);
+        -: 1008:
+    #####: 1009:  if (mode == srv->composite->mode) {
+    #####: 1010:    WARN ("ignore the same composite mode %d", mode);
+    #####: 1011:    goto end;
+        -: 1012:  }
+        -: 1013:
+    #####: 1014:  g_object_set (srv->composite, "mode", mode, NULL);
+        -: 1015:
+    #####: 1016:  result = (mode == srv->composite->mode);
+        -: 1017:
+    #####: 1018:  if (result) {
+    #####: 1019:    srv->pip_x = srv->composite->b_x;
+    #####: 1020:    srv->pip_y = srv->composite->b_y;
+    #####: 1021:    srv->pip_w = srv->composite->b_width;
+    #####: 1022:    srv->pip_h = srv->composite->b_height;
+        -: 1023:  }
+        -: 1024:
+        -: 1025:end:
+    #####: 1026:  GST_SWITCH_SERVER_UNLOCK_PIP (srv);
+    #####: 1027:  return result;
+        -: 1028:}
+        -: 1029:
+        -: 1030:static void
+    #####: 1031:gst_switch_server_start_audio (GstCase * cas, GstSwitchServer * srv)
+        -: 1032:{
+    #####: 1033:  INFO ("audio %d started", cas->sink_port);
+    #####: 1034:  gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
+    #####: 1035:}
+        -: 1036:
+        -: 1037:/**
+        -: 1038: * gst_switch_server_new_record:
+        -: 1039: *  @return: TRUE if succeeded.
+        -: 1040: *
+        -: 1041: *  Start a new recording.
+        -: 1042: *  
+        -: 1043: */
+        -: 1044:gboolean
+    #####: 1045:gst_switch_server_new_record (GstSwitchServer * srv)
+        -: 1046:{
+        -: 1047:  GstWorkerClass *worker_class;
+    #####: 1048:  gboolean result = FALSE;
+        -: 1049:
+    #####: 1050:  g_return_val_if_fail (GST_IS_RECORDER (srv->recorder), FALSE);
+        -: 1051:
+    #####: 1052:  if (srv->recorder) {
+    #####: 1053:    GST_SWITCH_SERVER_LOCK_RECORDER (srv);
+    #####: 1054:    if (srv->recorder) {
+    #####: 1055:      gst_worker_stop (GST_WORKER (srv->recorder));
+    #####: 1056:      g_object_set (G_OBJECT (srv->recorder),
+    #####: 1057:          "mode", srv->composite->mode,
+    #####: 1058:          "port", srv->composite->encode_sink_port,
+    #####: 1059:          "width", srv->composite->width,
+    #####: 1060:          "height", srv->composite->height, NULL);
+    #####: 1061:      worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (srv->recorder));
+    #####: 1062:      if (worker_class->reset (GST_WORKER (srv->recorder))) {
+    #####: 1063:        result = gst_worker_start (GST_WORKER (srv->recorder));
+        -: 1064:      } else {
+    #####: 1065:        ERROR ("failed to reset composite recorder");
+        -: 1066:      }
+        -: 1067:    }
+    #####: 1068:    GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+        -: 1069:  }
+    #####: 1070:  return result;
+        -: 1071:}
+        -: 1072:
+        -: 1073:/**
+        -: 1074: * gst_switch_server_adjust_pip:
+        -: 1075: *  @return: a unsigned number of indicating which compononent (x,y,w,h) has
+        -: 1076: *           been changed
+        -: 1077: *
+        -: 1078: *  Adjust the PIP position and size.
+        -: 1079: *
+        -: 1080: */
+        -: 1081:guint
+    #####: 1082:gst_switch_server_adjust_pip (GstSwitchServer * srv,
+        -: 1083:    gint dx, gint dy, gint dw, gint dh)
+        -: 1084:{
+    #####: 1085:  guint result = 0;
+        -: 1086:
+    #####: 1087:  g_return_val_if_fail (GST_IS_COMPOSITE (srv->composite), 0);
+        -: 1088:
+    #####: 1089:  GST_SWITCH_SERVER_LOCK_PIP (srv);
+        -: 1090:
+    #####: 1091:  srv->pip_x += dx, srv->pip_y += dy;
+    #####: 1092:  srv->pip_w += dw, srv->pip_h += dh;
+    #####: 1093:  if (srv->pip_x < 0)
+    #####: 1094:    srv->pip_x = 0;
+    #####: 1095:  if (srv->pip_y < 0)
+    #####: 1096:    srv->pip_y = 0;
+    #####: 1097:  if (srv->pip_w < GST_SWITCH_COMPOSITE_MIN_PIP_W)
+    #####: 1098:    srv->pip_w = GST_SWITCH_COMPOSITE_MIN_PIP_W;
+    #####: 1099:  if (srv->pip_h < GST_SWITCH_COMPOSITE_MIN_PIP_H)
+    #####: 1100:    srv->pip_h = GST_SWITCH_COMPOSITE_MIN_PIP_H;
+        -: 1101:
+    #####: 1102:  result = gst_composite_adjust_pip (srv->composite,
+        -: 1103:      srv->pip_x, srv->pip_y, srv->pip_w, srv->pip_h);
+        -: 1104:
+    #####: 1105:  if (dx != 0)
+    #####: 1106:    result |= (1 << 0);
+    #####: 1107:  if (dy != 0)
+    #####: 1108:    result |= (1 << 1);
+    #####: 1109:  if (dw != 0)
+    #####: 1110:    result |= (1 << 2);
+    #####: 1111:  if (dh != 0)
+    #####: 1112:    result |= (1 << 3);
+        -: 1113:
+    #####: 1114:  GST_SWITCH_SERVER_UNLOCK_PIP (srv);
+    #####: 1115:  return result;
+        -: 1116:}
+        -: 1117:
+        -: 1118:static void gst_switch_server_worker_start (GstWorker *, GstSwitchServer *);
+        -: 1119:static void gst_switch_server_worker_null (GstWorker *, GstSwitchServer *);
+        -: 1120:
+        -: 1121:/**
+        -: 1122: * gst_switch_server_switch:
+        -: 1123: *  @return: TRUE if succeeded.
+        -: 1124: *
+        -: 1125: *  Switch the channel to the specific port.
+        -: 1126: *
+        -: 1127: */
+        -: 1128:gboolean
+    #####: 1129:gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
+        -: 1130:{
+        -: 1131:  GList *item;
+    #####: 1132:  gboolean result = FALSE;
+        -: 1133:  GstCase *compose_case, *candidate_case;
+        -: 1134:  GstCase *work1, *work2;
+    #####: 1135:  GCallback callback = G_CALLBACK (gst_switch_server_end_case);
+        -: 1136:  gchar *name;
+        -: 1137:
+    #####: 1138:  compose_case = NULL;
+    #####: 1139:  candidate_case = NULL;
+        -: 1140:
+    #####: 1141:  GST_SWITCH_SERVER_LOCK_CASES (srv);
+        -: 1142:
+    #####: 1143:  for (item = srv->cases; item; item = g_list_next (item)) {
+    #####: 1144:    GstCase *cas = GST_CASE (item->data);
+    #####: 1145:    switch (channel) {
+        -: 1146:      case 'A':
+    #####: 1147:        if (cas->type == GST_CASE_COMPOSITE_A)
+    #####: 1148:          goto get_target_stream;
+    #####: 1149:        break;
+        -: 1150:      case 'B':
+    #####: 1151:        if (cas->type == GST_CASE_COMPOSITE_B)
+    #####: 1152:          goto get_target_stream;
+    #####: 1153:        break;
+        -: 1154:      case 'a':
+    #####: 1155:        if (cas->type == GST_CASE_COMPOSITE_a)
+    #####: 1156:          goto get_target_stream;
+    #####: 1157:        break;
+        -: 1158:      default:
+    #####: 1159:        WARN ("unknown channel %c", (gchar) channel);
+    #####: 1160:        break;
+        -: 1161:      get_target_stream:
+    #####: 1162:        if (compose_case == NULL) {
+    #####: 1163:          compose_case = cas;
+        -: 1164:        }
+        -: 1165:    }
+    #####: 1166:    switch (cas->type) {
+        -: 1167:      case GST_CASE_COMPOSITE_A:
+        -: 1168:      case GST_CASE_COMPOSITE_B:
+        -: 1169:      case GST_CASE_COMPOSITE_a:
+        -: 1170:      case GST_CASE_PREVIEW:
+    #####: 1171:        if (cas->sink_port == port) {
+    #####: 1172:          candidate_case = cas;
+        -: 1173:        }
+        -: 1174:      default:
+    #####: 1175:        break;
+        -: 1176:    }
+        -: 1177:  }
+        -: 1178:
+    #####: 1179:  if (!candidate_case) {
+    #####: 1180:    ERROR ("no stream for port %d (candidate)", port);
+    #####: 1181:    goto end;
+        -: 1182:  }
+        -: 1183:
+    #####: 1184:  if (!compose_case) {
+    #####: 1185:    ERROR ("no stream for port %d (compose)", port);
+    #####: 1186:    goto end;
+        -: 1187:  }
+        -: 1188:
+    #####: 1189:  if (candidate_case == compose_case) {
+    #####: 1190:    ERROR ("stream on %d already at %c", port, (gchar) channel);
+    #####: 1191:    goto end;
+        -: 1192:  }
+        -: 1193:
+    #####: 1194:  INFO ("switching: %s (%d), %s (%d)",
+        -: 1195:      GST_WORKER (compose_case)->name, compose_case->type,
+        -: 1196:      GST_WORKER (candidate_case)->name, candidate_case->type);
+        -: 1197:
+    #####: 1198:  if (candidate_case->serve_type != compose_case->serve_type) {
+    #####: 1199:    ERROR ("stream type not matched");
+    #####: 1200:    goto end;
+        -: 1201:  }
+        -: 1202:
+    #####: 1203:  name = g_strdup (GST_WORKER (compose_case)->name);
+    #####: 1204:  work1 = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
+        -: 1205:          "type", compose_case->type,
+        -: 1206:          "serve", compose_case->serve_type,
+        -: 1207:          "port", candidate_case->sink_port,
+        -: 1208:          "input", candidate_case->input,
+        -: 1209:          "branch", candidate_case->branch, NULL));
+    #####: 1210:  g_free (name);
+        -: 1211:
+    #####: 1212:  name = g_strdup (GST_WORKER (candidate_case)->name);
+    #####: 1213:  work2 = GST_CASE (g_object_new (GST_TYPE_CASE, "name", name,
+        -: 1214:          "type", candidate_case->type,
+        -: 1215:          "serve", candidate_case->serve_type,
+        -: 1216:          "port", compose_case->sink_port,
+        -: 1217:          "input", compose_case->input, "branch", compose_case->branch, NULL));
+    #####: 1218:  g_free (name);
+        -: 1219:
+    #####: 1220:  if (compose_case->serve_type == GST_SERVE_VIDEO_STREAM) {
+    #####: 1221:    g_object_set (work1,
+        -: 1222:        "width", compose_case->width,
+        -: 1223:        "height", compose_case->height,
+        -: 1224:        "awidth", compose_case->a_width,
+        -: 1225:        "aheight", compose_case->a_height,
+        -: 1226:        "bwidth", compose_case->b_width,
+        -: 1227:        "bheight", compose_case->b_height, NULL);
+    #####: 1228:    g_object_set (work2,
+        -: 1229:        "width", candidate_case->width,
+        -: 1230:        "height", candidate_case->height,
+        -: 1231:        "awidth", candidate_case->a_width,
+        -: 1232:        "aheight", candidate_case->a_height,
+        -: 1233:        "bwidth", candidate_case->b_width,
+        -: 1234:        "bheight", candidate_case->b_height, NULL);
+        -: 1235:  } else {
+    #####: 1236:    g_signal_connect (G_OBJECT (work1), "start-worker",
+        -: 1237:        G_CALLBACK (gst_switch_server_start_audio), srv);
+        -: 1238:  }
+        -: 1239:
+    #####: 1240:  compose_case->switching = TRUE;
+    #####: 1241:  candidate_case->switching = TRUE;
+        -: 1242:
+    #####: 1243:  g_signal_connect (compose_case, "worker-null",
+        -: 1244:      G_CALLBACK (gst_switch_server_worker_null), srv);
+    #####: 1245:  g_signal_connect (candidate_case, "worker-null",
+        -: 1246:      G_CALLBACK (gst_switch_server_worker_null), srv);
+        -: 1247:
+    #####: 1248:  gst_worker_stop (GST_WORKER (compose_case));
+    #####: 1249:  gst_worker_stop (GST_WORKER (candidate_case));
+        -: 1250:
+    #####: 1251:  g_signal_connect (work1, "start-worker",
+        -: 1252:      G_CALLBACK (gst_switch_server_worker_start), srv);
+    #####: 1253:  g_signal_connect (work2, "start-worker",
+        -: 1254:      G_CALLBACK (gst_switch_server_worker_start), srv);
+        -: 1255:
+    #####: 1256:  g_signal_connect (work1, "end-worker", callback, srv);
+    #####: 1257:  g_signal_connect (work2, "end-worker", callback, srv);
+        -: 1258:
+    #####: 1259:  if (!gst_worker_start (GST_WORKER (work1)))
+    #####: 1260:    goto error_start_work;
+    #####: 1261:  if (!gst_worker_start (GST_WORKER (work2)))
+    #####: 1262:    goto error_start_work;
+        -: 1263:
+    #####: 1264:  srv->cases = g_list_append (srv->cases, work1);
+    #####: 1265:  srv->cases = g_list_append (srv->cases, work2);
+        -: 1266:
+    #####: 1267:  result = TRUE;
+        -: 1268:
+    #####: 1269:  INFO ("switched: %s <-> %s",
+        -: 1270:      GST_WORKER (work1)->name, GST_WORKER (work2)->name);
+        -: 1271:
+        -: 1272:end:
+    #####: 1273:  GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    #####: 1274:  return result;
+        -: 1275:
+        -: 1276:error_start_work:
+        -: 1277:  {
+    #####: 1278:    ERROR ("failed to start works");
+    #####: 1279:    g_object_unref (work1);
+    #####: 1280:    g_object_unref (work2);
+    #####: 1281:    GST_SWITCH_SERVER_UNLOCK_CASES (srv);
+    #####: 1282:    return result;
+        -: 1283:  }
+        -: 1284:}
+        -: 1285:
+        -: 1286:gboolean
+    #####: 1287:gst_switch_server_click_video (GstSwitchServer * srv,
+        -: 1288:    gint avx, gint avy, gint avw, gint avh)
+        -: 1289:{
+    #####: 1290:  const double w = (double) srv->composite->width;
+    #####: 1291:  const double h = (double) srv->composite->height;
+    #####: 1292:  const double ax = (double) srv->composite->a_x;
+    #####: 1293:  const double ay = (double) srv->composite->a_y;
+    #####: 1294:  const double aw = (double) srv->composite->a_width;
+    #####: 1295:  const double ah = (double) srv->composite->a_height;
+    #####: 1296:  const double bx = (double) srv->composite->b_x;
+    #####: 1297:  const double by = (double) srv->composite->b_y;
+    #####: 1298:  const double bw = (double) srv->composite->b_width;
+    #####: 1299:  const double bh = (double) srv->composite->b_height;
+        -: 1300:  //const double sw = (double) GST_SWITCH_FACEDETECT_FRAME_WIDTH;
+        -: 1301:  //const double sh = (double) GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+    #####: 1302:  const double r = w / h;
+    #####: 1303:  double vx = (double) avx;
+    #####: 1304:  double vy = (double) avy;
+    #####: 1305:  double vw = (double) avw;
+    #####: 1306:  double vh = (double) avh;
+    #####: 1307:  double vr = vw / vh;
+    #####: 1308:  double rx = 1.0, ry = 1.0, x1 = .0, y1 = .0;
+    #####: 1309:  char chan = '?';
+        -: 1310:
+        -: 1311:  // convert to video space
+    #####: 1312:  if (vr < r) {
+    #####: 1313:    rx = ry = w / vw;
+    #####: 1314:    vy -= (vh - (vw * h) / w) / 2;
+        -: 1315:  } else {
+    #####: 1316:    rx = ry = h / vh;
+    #####: 1317:    vx -= (vw - (vh * w) / h) / 2;
+        -: 1318:  }
+        -: 1319:
+    #####: 1320:  x1 = rx * vx;
+    #####: 1321:  y1 = ry * vy;
+        -: 1322:
+    #####: 1323:  if (bx <= x1 && x1 <= bx + bw && by <= y1 && y1 <= by + bh) {
+    #####: 1324:    chan = 'B', x1 -= bx, y1 -= by;
+    #####: 1325:  } else if (ax <= x1 && x1 <= ax + aw && ay <= y1 && y1 <= ay + ah) {
+    #####: 1326:    chan = 'A', x1 -= ax, y1 -= ay;
+        -: 1327:  }
+        -: 1328:
+    #####: 1329:  g_print ("select-face: %c, (%d, %d)\n", chan, (gint) x1, (gint) y1);
+        -: 1330:
+        -: 1331:  // conert to detect space
+        -: 1332:  //rx = sw / w, ry = sh / h; FIXME: This final (x,y) is not accurate.
+    #####: 1333:  rx = 1.0, ry = 1.0;
+    #####: 1334:  avx = (gint) (rx * x1 + 0.5);
+    #####: 1335:  avy = (gint) (ry * y1 + 0.5);
+        -: 1336:
+    #####: 1337:  if (chan == 'A') {
+    #####: 1338:    return gst_switch_controller_select_face (srv->controller, avx, avy);
+        -: 1339:  } else if (chan == 'B') {
+        -: 1340:    //return gst_switch_controller_select_face (srv->controller, avx, avy);
+        -: 1341:  }
+    #####: 1342:  return 0;
+        -: 1343:}
+        -: 1344:
+        -: 1345:void
+    #####: 1346:gst_switch_server_mark_face (GstSwitchServer * srv, GVariant * faces,
+        -: 1347:    gboolean tracking)
+        -: 1348:{
+    #####: 1349:  const int size = g_variant_n_children (faces);
+    #####: 1350:  const double cw = srv->composite->a_width;
+    #####: 1351:  const double ch = srv->composite->a_height;
+    #####: 1352:  double rx = 1.0, ry = 1.0, dx, dy,
+    #####: 1353:      sw = GST_SWITCH_FACEDETECT_FRAME_WIDTH,
+    #####: 1354:      sh = GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+    #####: 1355:  GVariantBuilder *vb = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
+        -: 1356:  int x, y, w, h, n;
+        -: 1357:
+    #####: 1358:  rx = sw / cw;
+    #####: 1359:  ry = sh / ch;
+    #####: 1360:  dx = rx * ((double) srv->composite->a_x);
+    #####: 1361:  dy = ry * ((double) srv->composite->a_y);
+    #####: 1362:  for (n = 0; n < size; ++n) {
+    #####: 1363:    g_variant_get_child (faces, n, "(iiii)", &x, &y, &w, &h);
+    #####: 1364:    x = rx * ((double) x) + 0.5 + dx;
+    #####: 1365:    y = ry * ((double) y) + 0.5 + dy;
+    #####: 1366:    w = rx * ((double) w) + 0.5;
+    #####: 1367:    h = ry * ((double) h) + 0.5;
+    #####: 1368:    g_variant_builder_add (vb, "(iiii)", x, y, w, h);
+        -: 1369:  }
+        -: 1370:
+    #####: 1371:  if (tracking) {
+    #####: 1372:    gst_switch_controller_show_track_marker (srv->controller,
+        -: 1373:        g_variant_builder_end (vb));
+        -: 1374:  } else {
+    #####: 1375:    gst_switch_controller_show_face_marker (srv->controller,
+        -: 1376:        g_variant_builder_end (vb));
+        -: 1377:  }
+    #####: 1378:  g_variant_builder_unref (vb);
+    #####: 1379:}
+        -: 1380:
+        -: 1381:/**
+        -: 1382: * gst_switch_server_worker_start:
+        -: 1383: *
+        -: 1384: * Invoked when a worker is started.
+        -: 1385: */
+        -: 1386:static void
+    #####: 1387:gst_switch_server_worker_start (GstWorker * worker, GstSwitchServer * srv)
+        -: 1388:{
+    #####: 1389:  GstClockTime t = GST_CLOCK_TIME_NONE;
+        -: 1390:
+    #####: 1391:  g_return_if_fail (GST_IS_WORKER (worker));
+        -: 1392:
+    #####: 1393:  GST_SWITCH_SERVER_LOCK_CLOCK (srv);
+    #####: 1394:  t = gst_clock_get_time (srv->clock);
+    #####: 1395:  GST_SWITCH_SERVER_UNLOCK_CLOCK (srv);
+        -: 1396:
+    #####: 1397:  g_print ("online: %s @%lld\n", worker->name, (long long int) t);
+        -: 1398:}
+        -: 1399:
+        -: 1400:/**
+        -: 1401: * gst_switch_server_worker_null:
+        -: 1402: *
+        -: 1403: * Invoked when a worker is trunning into NULL. 
+        -: 1404: */
+        -: 1405:static void
+    #####: 1406:gst_switch_server_worker_null (GstWorker * worker, GstSwitchServer * srv)
+        -: 1407:{
+    #####: 1408:  GstClockTime t = GST_CLOCK_TIME_NONE;
+        -: 1409:
+    #####: 1410:  g_return_if_fail (GST_IS_WORKER (worker));
+        -: 1411:
+    #####: 1412:  GST_SWITCH_SERVER_LOCK_CLOCK (srv);
+    #####: 1413:  t = gst_clock_get_time (srv->clock);
+    #####: 1414:  GST_SWITCH_SERVER_UNLOCK_CLOCK (srv);
+        -: 1415:
+    #####: 1416:  g_print ("offline: %s @%lld\n", worker->name, (long long int) t);
+        -: 1417:}
+        -: 1418:
+        -: 1419:/**
+        -: 1420: * gst_switch_server_start_output:
+        -: 1421: *
+        -: 1422: * Start the composite output worker.
+        -: 1423: */
+        -: 1424:static void
+    #####: 1425:gst_switch_server_start_output (GstWorker * worker, GstSwitchServer * srv)
+        -: 1426:{
+    #####: 1427:  g_return_if_fail (GST_IS_WORKER (worker));
+        -: 1428:
+    #####: 1429:  GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+    #####: 1430:  if (srv->controller) {
+    #####: 1431:    gst_switch_controller_tell_compose_port (srv->controller,
+    #####: 1432:        srv->composite->sink_port);
+        -: 1433:  }
+    #####: 1434:  GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+        -: 1435:}
+        -: 1436:
+        -: 1437:/**
+        -: 1438: * gst_switch_server_start_recorder:
+        -: 1439: *
+        -: 1440: * Start the recorder worker.
+        -: 1441: */
+        -: 1442:static void
+    #####: 1443:gst_switch_server_start_recorder (GstWorker * worker, GstSwitchServer * srv)
+        -: 1444:{
+    #####: 1445:  g_return_if_fail (GST_IS_WORKER (worker));
+        -: 1446:
+    #####: 1447:  GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+    #####: 1448:  if (srv->controller) {
+    #####: 1449:    gst_switch_controller_tell_encode_port (srv->controller,
+    #####: 1450:        srv->composite->encode_sink_port);
+        -: 1451:  }
+    #####: 1452:  GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+        -: 1453:}
+        -: 1454:
+        -: 1455:/**
+        -: 1456: * gst_switch_server_end_transition:
+        -: 1457: *
+        -: 1458: * The composite worker has finished a transition of modes.
+        -: 1459: */
+        -: 1460:static void
+    #####: 1461:gst_switch_server_end_transition (GstWorker * worker, GstSwitchServer * srv)
+        -: 1462:{
+    #####: 1463:  g_return_if_fail (GST_IS_WORKER (worker));
+        -: 1464:
+    #####: 1465:  GST_SWITCH_SERVER_LOCK_CONTROLLER (srv);
+    #####: 1466:  if (srv->controller) {
+    #####: 1467:    gint mode = srv->composite->mode;
+    #####: 1468:    gst_switch_controller_tell_new_mode_onlne (srv->controller, mode);
+        -: 1469:  }
+    #####: 1470:  GST_SWITCH_SERVER_UNLOCK_CONTROLLER (srv);
+        -: 1471:}
+        -: 1472:
+        -: 1473:/**
+        -: 1474: * gst_switch_server_output_client_socket_added:
+        -: 1475: *
+        -: 1476: * Invoekd when a client socket is added.
+        -: 1477: */
+        -: 1478:static void
+    #####: 1479:gst_switch_server_output_client_socket_added (GstElement * element,
+        -: 1480:    GSocket * socket, GstSwitchServer * srv)
+        -: 1481:{
+    #####: 1482:  g_return_if_fail (G_IS_SOCKET (socket));
+        -: 1483:
+        -: 1484:  //INFO ("client-socket-added: %d", g_socket_get_fd (socket));
+        -: 1485:}
+        -: 1486:
+        -: 1487:/**
+        -: 1488: * gst_switch_server_output_client_socket_removed:
+        -: 1489: *
+        -: 1490: * Invoked when a client socket is removed on the output port. The socket
+        -: 1491: * is required to be freed manually here.
+        -: 1492: */
+        -: 1493:static void
+    #####: 1494:gst_switch_server_output_client_socket_removed (GstElement * element,
+        -: 1495:    GSocket * socket, GstSwitchServer * srv)
+        -: 1496:{
+    #####: 1497:  g_return_if_fail (G_IS_SOCKET (socket));
+        -: 1498:
+        -: 1499:  //INFO ("client-socket-removed: %d", g_socket_get_fd (socket));
+        -: 1500:
+    #####: 1501:  g_socket_close (socket, NULL);
+        -: 1502:}
+        -: 1503:
+        -: 1504:/**
+        -: 1505: * gst_switch_server_prepare_composite:
+        -: 1506: * @return TRUE if the composite worker is prepared.
+        -: 1507: *
+        -: 1508: * Preparing the composite worker.
+        -: 1509: */
+        -: 1510:static gboolean
+    #####: 1511:gst_switch_server_prepare_composite (GstSwitchServer * srv,
+        -: 1512:    GstCompositeMode mode)
+        -: 1513:{
+        -: 1514:  gint port, encode;
+        -: 1515:
+    #####: 1516:  if (srv->composite) {
+    #####: 1517:    return TRUE;
+        -: 1518:  }
+        -: 1519:
+    #####: 1520:  port = gst_switch_server_alloc_port (srv);
+    #####: 1521:  encode = gst_switch_server_alloc_port (srv);
+        -: 1522:
+    #####: 1523:  INFO ("Compose sink to %d, %d", port, encode);
+        -: 1524:
+    #####: 1525:  g_assert (srv->composite == NULL);
+    #####: 1526:  srv->composite = GST_COMPOSITE (g_object_new (GST_TYPE_COMPOSITE,
+        -: 1527:          "name", "composite", "port",
+        -: 1528:          port, "encode", encode, "mode", mode, NULL));
+        -: 1529:
+    #####: 1530:  g_signal_connect (srv->composite, "start-worker",
+        -: 1531:      G_CALLBACK (gst_switch_server_worker_start), srv);
+    #####: 1532:  g_signal_connect (srv->composite, "worker-null",
+        -: 1533:      G_CALLBACK (gst_switch_server_worker_null), srv);
+        -: 1534:
+        -: 1535:  /*
+        -: 1536:     g_signal_connect (srv->composite, "start-output",
+        -: 1537:     G_CALLBACK (gst_switch_server_start_output), srv);
+        -: 1538:     g_signal_connect (srv->composite, "start-recorder",
+        -: 1539:     G_CALLBACK (gst_switch_server_start_recorder), srv);
+        -: 1540:   */
+    #####: 1541:  g_signal_connect (srv->composite, "end-transition",
+        -: 1542:      G_CALLBACK (gst_switch_server_end_transition), srv);
+        -: 1543:
+    #####: 1544:  GST_SWITCH_SERVER_LOCK_PIP (srv);
+    #####: 1545:  srv->pip_x = srv->composite->b_x;
+    #####: 1546:  srv->pip_y = srv->composite->b_y;
+    #####: 1547:  srv->pip_w = srv->composite->b_width;
+    #####: 1548:  srv->pip_h = srv->composite->b_height;
+    #####: 1549:  GST_SWITCH_SERVER_UNLOCK_PIP (srv);
+        -: 1550:
+    #####: 1551:  if (!gst_worker_start (GST_WORKER (srv->composite)))
+    #####: 1552:    goto error_start_composite;
+        -: 1553:
+    #####: 1554:  return TRUE;
+        -: 1555:
+        -: 1556:error_start_composite:
+        -: 1557:  {
+    #####: 1558:    g_object_unref (srv->composite);
+    #####: 1559:    srv->composite = NULL;
+    #####: 1560:    return FALSE;
+        -: 1561:  }
+        -: 1562:}
+        -: 1563:
+        -: 1564:/**
+        -: 1565: * gst_switch_server_get_output_string:
+        -: 1566: * @return The composite output pipeline string, needs freeing after used
+        -: 1567: *
+        -: 1568: * Fetching the composite output pipeline.
+        -: 1569: */
+        -: 1570:static GString *
+    #####: 1571:gst_switch_server_get_output_string (GstWorker * worker, GstSwitchServer * srv)
+        -: 1572:{
+        -: 1573:  GString *desc;
+        -: 1574:
+    #####: 1575:  desc = g_string_new ("");
+        -: 1576:
+    #####: 1577:  g_string_append_printf (desc, "intervideosrc name=source "
+        -: 1578:      "channel=composite_out ");
+    #####: 1579:  g_string_append_printf (desc, "tcpserversink name=sink "
+    #####: 1580:      "port=%d ", srv->composite->sink_port);
+    #####: 1581:  g_string_append_printf (desc, "source. ! video/x-raw,width=%d,height=%d ",
+    #####: 1582:      srv->composite->width, srv->composite->height);
+        -: 1583:  ASSESS ("assess-output");
+    #####: 1584:  g_string_append_printf (desc, "! gdppay ");
+        -: 1585:  /*
+        -: 1586:     ASSESS ("assess-output-payed");
+        -: 1587:   */
+    #####: 1588:  g_string_append_printf (desc, "! sink. ");
+        -: 1589:
+    #####: 1590:  return desc;
+        -: 1591:}
+        -: 1592:
+        -: 1593:/**
+        -: 1594: * gst_switch_server_prepare_output:
+        -: 1595: *
+        -: 1596: * Preparing the composite output worker.
+        -: 1597: */
+        -: 1598:static void
+    #####: 1599:gst_switch_server_prepare_output (GstWorker * worker, GstSwitchServer * srv)
+        -: 1600:{
+    #####: 1601:  GstElement *sink = NULL;
+    #####: 1602:  sink = gst_worker_get_element_unlocked (worker, "sink");
+        -: 1603:
+    #####: 1604:  g_return_if_fail (GST_IS_ELEMENT (sink));
+        -: 1605:
+    #####: 1606:  g_signal_connect (sink, "client-added",
+        -: 1607:      G_CALLBACK (gst_switch_server_output_client_socket_added), srv);
+        -: 1608:
+    #####: 1609:  g_signal_connect (sink, "client-socket-removed",
+        -: 1610:      G_CALLBACK (gst_switch_server_output_client_socket_removed), srv);
+        -: 1611:
+    #####: 1612:  gst_object_unref (sink);
+        -: 1613:}
+        -: 1614:
+        -: 1615:/**
+        -: 1616: * gst_switch_server_create_output:
+        -: 1617: * @return TRUE if the composite output worker is created.
+        -: 1618: *
+        -: 1619: * Create the composite output worker.
+        -: 1620: */
+        -: 1621:static gboolean
+    #####: 1622:gst_switch_server_create_output (GstSwitchServer * srv)
+        -: 1623:{
+    #####: 1624:  if (srv->output) {
+    #####: 1625:    return TRUE;
+        -: 1626:  }
+        -: 1627:
+    #####: 1628:  srv->output = GST_WORKER (g_object_new (GST_TYPE_WORKER,
+        -: 1629:          "name", "output", NULL));
+    #####: 1630:  srv->output->pipeline_func_data = srv;
+    #####: 1631:  srv->output->pipeline_func = (GstWorkerGetPipelineString)
+        -: 1632:      gst_switch_server_get_output_string;
+        -: 1633:
+    #####: 1634:  g_signal_connect (srv->output, "prepare-worker",
+        -: 1635:      G_CALLBACK (gst_switch_server_prepare_output), srv);
+    #####: 1636:  g_signal_connect (srv->output, "start-worker",
+        -: 1637:      G_CALLBACK (gst_switch_server_start_output), srv);
+        -: 1638:
+    #####: 1639:  gst_worker_start (srv->output);
+    #####: 1640:  return TRUE;
+        -: 1641:}
+        -: 1642:
+        -: 1643:/**
+        -: 1644: * gst_switch_server_create_recorder:
+        -: 1645: * @return TRUE if the recorder is created successfully.
+        -: 1646: *
+        -: 1647: * Creating the recorder.
+        -: 1648: */
+        -: 1649:static gboolean
+    #####: 1650:gst_switch_server_create_recorder (GstSwitchServer * srv)
+        -: 1651:{
+    #####: 1652:  if (srv->recorder) {
+    #####: 1653:    return TRUE;
+        -: 1654:  }
+        -: 1655:
+    #####: 1656:  GST_SWITCH_SERVER_LOCK_RECORDER (srv);
+    #####: 1657:  srv->recorder = GST_RECORDER (g_object_new (GST_TYPE_RECORDER,
+        -: 1658:          "name", "recorder", "port",
+        -: 1659:          srv->composite->encode_sink_port, "mode",
+        -: 1660:          srv->composite->mode, "width",
+        -: 1661:          srv->composite->width, "height", srv->composite->height, NULL));
+        -: 1662:
+    #####: 1663:  g_signal_connect (srv->recorder, "start-worker",
+        -: 1664:      G_CALLBACK (gst_switch_server_start_recorder), srv);
+        -: 1665:
+    #####: 1666:  gst_worker_start (GST_WORKER (srv->recorder));
+    #####: 1667:  GST_SWITCH_SERVER_UNLOCK_RECORDER (srv);
+    #####: 1668:  return TRUE;
+        -: 1669:}
+        -: 1670:
+        -: 1671:/*
+        -: 1672:gboolean timeout(gpointer user_data) {
+        -: 1673:  INFO ("Exiting!");
+        -: 1674:  GstSwitchServer *srv = (GstSwitchServer*)user_data;
+        -: 1675:  g_main_loop_quit (srv->main_loop);
+        -: 1676:  return FALSE;
+        -: 1677:} */
+        -: 1678:
+        -: 1679:/**
+        -: 1680: * gst_switch_server_run:
+        -: 1681: *
+        -: 1682: * Running the GstSwitchServer instance.
+        -: 1683: */
+        -: 1684:static void
+    #####: 1685:gst_switch_server_run (GstSwitchServer * srv)
+        -: 1686:{
+    #####: 1687:  GST_SWITCH_SERVER_LOCK_MAIN_LOOP (srv);
+    #####: 1688:  srv->main_loop = g_main_loop_new (NULL, TRUE);
+    #####: 1689:  GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP (srv);
+        -: 1690:
+        -: 1691:  //g_timeout_add_seconds (15, &timeout, srv);
+        -: 1692:
+    #####: 1693:  if (!gst_switch_server_prepare_composite (srv, DEFAULT_COMPOSE_MODE))
+    #####: 1694:    goto error_prepare_composite;
+        -: 1695:
+    #####: 1696:  if (!gst_switch_server_create_output (srv))
+    #####: 1697:    goto error_prepare_output;
+        -: 1698:
+    #####: 1699:  if (!gst_switch_server_create_recorder (srv))
+    #####: 1700:    goto error_prepare_recorder;
+        -: 1701:
+    #####: 1702:  srv->video_acceptor = g_thread_new ("switch-server-video-acceptor",
+        -: 1703:      (GThreadFunc)
+        -: 1704:      gst_switch_server_video_acceptor, srv);
+        -: 1705:
+    #####: 1706:  srv->audio_acceptor = g_thread_new ("switch-server-audio-acceptor",
+        -: 1707:      (GThreadFunc)
+        -: 1708:      gst_switch_server_audio_acceptor, srv);
+        -: 1709:
+    #####: 1710:  srv->controller_thread = g_thread_new ("switch-server-controller",
+        -: 1711:      (GThreadFunc)
+        -: 1712:      gst_switch_server_controller, srv);
+        -: 1713:
+        -: 1714:  // TODO: quit the server if controller is not ready
+    #####: 1715:  gst_switch_server_prepare_bus_controller (srv);
+        -: 1716:
+    #####: 1717:  g_main_loop_run (srv->main_loop);
+        -: 1718:
+    #####: 1719:  GST_SWITCH_SERVER_LOCK_MAIN_LOOP (srv);
+    #####: 1720:  srv->main_loop = NULL;
+    #####: 1721:  GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP (srv);
+        -: 1722:
+        -: 1723:/*
+        -: 1724:  g_thread_join (srv->video_acceptor);
+        -: 1725:  g_thread_join (srv->audio_acceptor);
+        -: 1726:  g_thread_join (srv->controller_thread);
+        -: 1727:*/
+    #####: 1728:  return;
+        -: 1729:
+        -: 1730:  /* Errors Handling */
+        -: 1731:error_prepare_composite:
+        -: 1732:  {
+    #####: 1733:    ERROR ("error preparing server");
+    #####: 1734:    return;
+        -: 1735:  }
+        -: 1736:error_prepare_output:
+        -: 1737:  {
+    #####: 1738:    ERROR ("error preparing server");
+    #####: 1739:    return;
+        -: 1740:  }
+        -: 1741:error_prepare_recorder:
+        -: 1742:  {
+    #####: 1743:    ERROR ("error preparing server");
+    #####: 1744:    return;
+        -: 1745:  }
+        -: 1746:}
+        -: 1747:
+        -: 1748:static unsigned long long i = 0;
+        -: 1749:
+        -: 1750:
+        1: 1751:void my_handler(int signum)
+        -: 1752:{
+        1: 1753:printf("received signal\n");
+        1: 1754:printf("%llu\n", i);
+        1: 1755:__gcov_flush(); /* dump coverage data on receiving SIGUSR1 */
+        1: 1756:}
+        -: 1757:
+        -: 1758:
+        -: 1759:int
+    #####: 1760:main (int argc, char *argv[])
+        -: 1761:{
+        -: 1762:
+        -: 1763:  struct sigaction new_action, old_action;
+        -: 1764:  int n;
+        -: 1765:  /* setup signal hander */
+    #####: 1766:  new_action.sa_handler = my_handler;
+    #####: 1767:  sigemptyset(&new_action.sa_mask);
+    #####: 1768:  new_action.sa_flags = 0;
+    #####: 1769:  sigaction(SIGUSR1, NULL, &old_action);
+    #####: 1770:  if (old_action.sa_handler != SIG_IGN)
+    #####: 1771:  sigaction (SIGUSR1, &new_action, NULL);
+        -: 1772:
+    #####: 1773:  gint exit_code = 0;
+        -: 1774:  GstSwitchServer *srv;
+    #####: 1775:  gst_switch_server_parse_args (&argc, &argv);
+        -: 1776:
+    #####: 1777:  srv = GST_SWITCH_SERVER (g_object_new (GST_TYPE_SWITCH_SERVER, NULL));
+        -: 1778:
+    #####: 1779:  gst_switch_server_run (srv);
+        -: 1780:
+    #####: 1781:  exit_code = srv->exit_code;
+    #####: 1782:  g_object_unref (srv);
+        -: 1783:
+    #####: 1784:  gst_deinit ();
+    #####: 1785:  return exit_code;
+        -: 1786:}

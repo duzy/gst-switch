@@ -1,0 +1,1123 @@
+        -:    0:Source:gstcomposite.c
+        -:    0:Programs:7
+        -:    1:/* GstSwitch
+        -:    2: * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
+        -:    3: *
+        -:    4: * Redistribution and use in source and binary forms, with or without
+        -:    5: * modification, are permitted provided that the following conditions
+        -:    6: * are met:
+        -:    7: * 1. Redistributions of source code must retain the above copyright
+        -:    8: *    notice, this list of conditions and the following disclaimer.
+        -:    9: * 2. Redistributions in binary form must reproduce the above copyright
+        -:   10: *    notice, this list of conditions and the following disclaimer in the
+        -:   11: *    documentation and/or other materials provided with the distribution.
+        -:   12: *
+        -:   13: * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AS IS'' AND ANY EXPRESS OR
+        -:   14: * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+        -:   15: * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+        -:   16: * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+        -:   17: * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+        -:   18: * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+        -:   19: * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+        -:   20: * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+        -:   21: * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+        -:   22: * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+        -:   23: * POSSIBILITY OF SUCH DAMAGE.
+        -:   24: */
+        -:   25:
+        -:   26:/*! @file */
+        -:   27:
+        -:   28:#ifdef HAVE_CONFIG_H
+        -:   29:#include "config.h"
+        -:   30:#endif
+        -:   31:
+        -:   32:#include <stdlib.h>
+        -:   33:#include <string.h>
+        -:   34:#include "gstswitchserver.h"
+        -:   35:
+        -:   36:#define GST_COMPOSITE_LOCK(composite) (g_mutex_lock (&(composite)->lock))
+        -:   37:#define GST_COMPOSITE_UNLOCK(composite) (g_mutex_unlock (&(composite)->lock))
+        -:   38:#define GST_COMPOSITE_LOCK_TRANSITION(composite) (g_mutex_lock (&(composite)->transition_lock))
+        -:   39:#define GST_COMPOSITE_UNLOCK_TRANSITION(composite) (g_mutex_unlock (&(composite)->transition_lock))
+        -:   40:#define GST_COMPOSITE_LOCK_ADJUSTMENT(composite) (g_mutex_lock (&(composite)->adjustment_lock))
+        -:   41:#define GST_COMPOSITE_UNLOCK_ADJUSTMENT(composite) (g_mutex_unlock (&(composite)->adjustment_lock))
+        -:   42:
+        -:   43:enum
+        -:   44:{
+        -:   45:  PROP_0,
+        -:   46:  PROP_MODE,
+        -:   47:  PROP_PORT,
+        -:   48:  PROP_ENCODE_PORT,
+        -:   49:  PROP_A_X,
+        -:   50:  PROP_A_Y,
+        -:   51:  PROP_A_WIDTH,
+        -:   52:  PROP_A_HEIGHT,
+        -:   53:  PROP_B_X,
+        -:   54:  PROP_B_Y,
+        -:   55:  PROP_B_WIDTH,
+        -:   56:  PROP_B_HEIGHT,
+        -:   57:  PROP_WIDTH,
+        -:   58:  PROP_HEIGHT,
+        -:   59:};
+        -:   60:
+        -:   61:enum
+        -:   62:{
+        -:   63:  SIGNAL_END_TRANSITION,
+        -:   64:  SIGNAL__LAST,                 /*!< @internal */
+        -:   65:};
+        -:   66:
+        -:   67:static guint gst_composite_signals[SIGNAL__LAST] = { 0 };
+        -:   68:
+        -:   69:extern gboolean verbose;
+        -:   70:
+        -:   71:/*!< @internal */
+        -:   72:#define gst_composite_parent_class parent_class
+        -:   73:
+        -:   74:/*!< @internal */
+    #####:   75:G_DEFINE_TYPE (GstComposite, gst_composite, GST_TYPE_WORKER);
+        -:   76:
+        -:   77:static void gst_composite_set_mode (GstComposite *, GstCompositeMode);
+        -:   78:static void gst_composite_start_transition (GstComposite *);
+        -:   79:
+        -:   80:/**
+        -:   81: * Initialize the GstComposite instance.
+        -:   82: * 
+        -:   83: * @see GObject
+        -:   84: */
+        -:   85:static void
+    #####:   86:gst_composite_init (GstComposite * composite)
+        -:   87:{
+    #####:   88:  INFO ("gst_composite init %p", composite);
+        -:   89:
+    #####:   90:  composite->adjusting = FALSE;
+    #####:   91:  composite->transition = FALSE;
+    #####:   92:  composite->deprecated = FALSE;
+        -:   93:
+    #####:   94:  g_mutex_init (&composite->lock);
+    #####:   95:  g_mutex_init (&composite->transition_lock);
+    #####:   96:  g_mutex_init (&composite->adjustment_lock);
+        -:   97:
+    #####:   98:  gst_composite_set_mode (composite, DEFAULT_COMPOSE_MODE);
+        -:   99:
+        -:  100:  /* Indicating transition from no-mode to default mode.
+        -:  101:   */
+    #####:  102:  composite->transition = TRUE;
+        -:  103:
+        -:  104:  //INFO ("init %p", composite);
+    #####:  105:}
+        -:  106:
+        -:  107:/**
+        -:  108: * gst_composite_dispose:
+        -:  109: *
+        -:  110: * Disposing from it's parent class.
+        -:  111: *
+        -:  112: * @see GObject
+        -:  113: */
+        -:  114:static void
+    #####:  115:gst_composite_dispose (GstComposite * composite)
+        -:  116:{
+        -:  117:  //INFO ("gst_composite dispose %p", composite);
+        -:  118:
+    #####:  119:  if (composite->scaler) {
+    #####:  120:    gst_object_unref (composite->scaler);
+    #####:  121:    composite->scaler = NULL;
+        -:  122:  }
+        -:  123:
+    #####:  124:  G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (composite));
+    #####:  125:}
+        -:  126:
+        -:  127:/**
+        -:  128: * gst_composite_finalize:
+        -:  129: *
+        -:  130: * Destroying the GstComposite instance.
+        -:  131: */
+        -:  132:static void
+    #####:  133:gst_composite_finalize (GstComposite * composite)
+        -:  134:{
+    #####:  135:  INFO ("gst_composite finalize %p", composite);
+    #####:  136:  g_mutex_clear (&composite->lock);
+    #####:  137:  g_mutex_clear (&composite->transition_lock);
+    #####:  138:  g_mutex_clear (&composite->adjustment_lock);
+        -:  139:
+    #####:  140:  if (G_OBJECT_CLASS (parent_class)->finalize)
+    #####:  141:    (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (composite));
+    #####:  142:}
+        -:  143:
+        -:  144:/**
+        -:  145: * gst_composite_set_mode:
+        -:  146: *
+        -:  147: * Changing the composite mode.
+        -:  148: *
+        -:  149: * @see %GstCompositeMode
+        -:  150: */
+        -:  151:static void
+    #####:  152:gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
+        -:  153:{
+    #####:  154:  if (composite->transition) {
+    #####:  155:    WARN ("ignore changing mode in transition");
+    #####:  156:    return;
+        -:  157:  }
+        -:  158:
+    #####:  159:  composite->width = GST_SWITCH_COMPOSITE_DEFAULT_WIDTH;
+    #####:  160:  composite->height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
+        -:  161:
+    #####:  162:  switch ((composite->mode = mode)) {
+        -:  163:    case COMPOSE_MODE_0:
+    #####:  164:      composite->a_x = 0;
+    #####:  165:      composite->a_y = 0;
+    #####:  166:      composite->a_width = composite->width;
+    #####:  167:      composite->a_height = composite->height;
+    #####:  168:      composite->b_x = 0;
+    #####:  169:      composite->b_y = 0;
+    #####:  170:      composite->b_width = 0;
+    #####:  171:      composite->b_height = 0;
+    #####:  172:      composite->width = composite->a_width;
+    #####:  173:      composite->height = composite->a_height;
+    #####:  174:      break;
+        -:  175:    case COMPOSE_MODE_1:
+    #####:  176:      composite->a_x = 0;
+    #####:  177:      composite->a_y = 0;
+    #####:  178:      composite->a_width = composite->width;
+    #####:  179:      composite->a_height = composite->height;
+    #####:  180:      composite->b_x = (guint) ((double) composite->a_width * 0.08 + 0.5);
+    #####:  181:      composite->b_y = (guint) ((double) composite->a_height * 0.08 + 0.5);
+    #####:  182:      composite->b_width = (guint) ((double) composite->a_width * 0.3 + 0.5);
+    #####:  183:      composite->b_height = (guint) ((double) composite->a_height * 0.3 + 0.5);
+    #####:  184:      composite->width = composite->a_width;
+    #####:  185:      composite->height = composite->a_height;
+    #####:  186:      break;
+        -:  187:    case COMPOSE_MODE_2:
+    #####:  188:      composite->a_x = 0;
+    #####:  189:      composite->a_y = 0;
+    #####:  190:      composite->a_width = (guint) ((double) composite->width * 0.7 + 0.5);
+    #####:  191:      composite->a_height = (guint) ((double) composite->height * 0.7 + 0.5);
+    #####:  192:      composite->b_x = composite->a_width + 1;
+    #####:  193:      composite->b_y = composite->a_y;
+    #####:  194:      composite->b_width =
+    #####:  195:          composite->width - composite->a_x - composite->a_width;
+    #####:  196:      composite->b_height =
+    #####:  197:          composite->height - composite->a_y - composite->a_height;
+    #####:  198:      break;
+        -:  199:    case COMPOSE_MODE_3:
+    #####:  200:      composite->a_width = (guint) ((double) composite->width * 0.5 + 0.5);
+    #####:  201:      composite->a_height = (guint) ((double) composite->height * 0.5 + 0.5);
+    #####:  202:      composite->a_x = 0;
+    #####:  203:      composite->a_y = (composite->height - composite->a_height) / 2;
+    #####:  204:      composite->b_x = composite->a_width + 1;
+    #####:  205:      composite->b_y = composite->a_y;
+    #####:  206:      composite->b_width =
+    #####:  207:          composite->width - composite->a_x - composite->a_width;
+    #####:  208:      composite->b_height = composite->a_height;
+    #####:  209:      break;
+        -:  210:    default:
+    #####:  211:      break;
+        -:  212:  }
+        -:  213:
+        -:  214:  /*
+        -:  215:     INFO ("new mode %d, %dx%d (%dx%d, %dx%d)", mode,
+        -:  216:     composite->width, composite->height,
+        -:  217:     composite->a_width, composite->a_height,
+        -:  218:     composite->b_width, composite->b_height);
+        -:  219:   */
+        -:  220:
+    #####:  221:  gst_composite_start_transition (composite);
+        -:  222:}
+        -:  223:
+        -:  224:/**
+        -:  225: * gst_composite_ready_for_transition:
+        -:  226: * @return TRUE if okay to do new transition.
+        -:  227: *
+        -:  228: * Predictor telling if it's ready for transition.
+        -:  229: */
+        -:  230:static gboolean
+    #####:  231:gst_composite_ready_for_transition (GstComposite * composite)
+        -:  232:{
+    #####:  233:  return !composite->transition;
+        -:  234:}
+        -:  235:
+        -:  236:/**
+        -:  237: * gst_composite_start_transition:
+        -:  238: *
+        -:  239: * Start the new transtition request, this will set the %transition flag into
+        -:  240: * TRUE.
+        -:  241: */
+        -:  242:static void
+    #####:  243:gst_composite_start_transition (GstComposite * composite)
+        -:  244:{
+    #####:  245:  g_return_if_fail (GST_IS_COMPOSITE (composite));
+        -:  246:
+    #####:  247:  GST_COMPOSITE_LOCK_TRANSITION (composite);
+        -:  248:
+    #####:  249:  if (gst_composite_ready_for_transition (composite)) {
+    #####:  250:    composite->transition = gst_worker_stop (GST_WORKER (composite));
+        -:  251:    /*
+        -:  252:       INFO ("transtion ok=%d, %d, %dx%d", composite->transition,
+        -:  253:       composite->mode, composite->width, composite->height);
+        -:  254:     */
+        -:  255:  }
+        -:  256:
+    #####:  257:  GST_COMPOSITE_UNLOCK_TRANSITION (composite);
+        -:  258:}
+        -:  259:
+        -:  260:/**
+        -:  261: * gst_composite_set_property:
+        -:  262: *
+        -:  263: * Setting the GstComposite property.
+        -:  264: *
+        -:  265: * @see GObject
+        -:  266: */
+        -:  267:static void
+    #####:  268:gst_composite_set_property (GstComposite * composite, guint property_id,
+        -:  269:    const GValue * value, GParamSpec * pspec)
+        -:  270:{
+    #####:  271:  switch (property_id) {
+        -:  272:    case PROP_PORT:
+    #####:  273:      composite->sink_port = g_value_get_uint (value);
+    #####:  274:      break;
+        -:  275:    case PROP_ENCODE_PORT:
+    #####:  276:      composite->encode_sink_port = g_value_get_uint (value);
+    #####:  277:      break;
+        -:  278:    case PROP_A_X:
+    #####:  279:      composite->a_x = g_value_get_uint (value);
+    #####:  280:      break;
+        -:  281:    case PROP_A_Y:
+    #####:  282:      composite->a_y = g_value_get_uint (value);
+    #####:  283:      break;
+        -:  284:    case PROP_A_WIDTH:
+    #####:  285:      composite->a_width = g_value_get_uint (value);
+    #####:  286:      break;
+        -:  287:    case PROP_A_HEIGHT:
+    #####:  288:      composite->a_height = g_value_get_uint (value);
+    #####:  289:      break;
+        -:  290:    case PROP_B_X:
+    #####:  291:      composite->b_x = g_value_get_uint (value);
+    #####:  292:      break;
+        -:  293:    case PROP_B_Y:
+    #####:  294:      composite->b_y = g_value_get_uint (value);
+    #####:  295:      break;
+        -:  296:    case PROP_B_WIDTH:
+    #####:  297:      composite->b_width = g_value_get_uint (value);
+    #####:  298:      break;
+        -:  299:    case PROP_B_HEIGHT:
+    #####:  300:      composite->b_height = g_value_get_uint (value);
+    #####:  301:      break;
+        -:  302:    case PROP_MODE:
+        -:  303:    {
+    #####:  304:      guint mode = g_value_get_uint (value);
+    #####:  305:      if (COMPOSE_MODE_0 <= mode && mode <= COMPOSE_MODE__LAST) {
+    #####:  306:        gst_composite_set_mode (composite, (GstCompositeMode) mode);
+        -:  307:      } else {
+    #####:  308:        WARN ("invalid composite mode %d", mode);
+        -:  309:      }
+        -:  310:    }
+    #####:  311:      break;
+        -:  312:    default:
+    #####:  313:      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
+        -:  314:          pspec);
+    #####:  315:      break;
+        -:  316:  }
+    #####:  317:}
+        -:  318:
+        -:  319:/**
+        -:  320: * gst_composite_get_property:
+        -:  321: *
+        -:  322: * Fetching the GstComposite property.
+        -:  323: *
+        -:  324: * @see GObject
+        -:  325: */
+        -:  326:static void
+    #####:  327:gst_composite_get_property (GstComposite * composite, guint property_id,
+        -:  328:    GValue * value, GParamSpec * pspec)
+        -:  329:{
+    #####:  330:  switch (property_id) {
+        -:  331:    case PROP_MODE:
+    #####:  332:      g_value_set_uint (value, composite->mode);
+    #####:  333:      break;
+        -:  334:    case PROP_PORT:
+    #####:  335:      g_value_set_uint (value, composite->sink_port);
+    #####:  336:      break;
+        -:  337:    case PROP_ENCODE_PORT:
+    #####:  338:      g_value_set_uint (value, composite->encode_sink_port);
+    #####:  339:      break;
+        -:  340:    case PROP_A_X:
+    #####:  341:      g_value_set_uint (value, composite->a_x);
+    #####:  342:      break;
+        -:  343:    case PROP_A_Y:
+    #####:  344:      g_value_set_uint (value, composite->a_y);
+    #####:  345:      break;
+        -:  346:    case PROP_A_WIDTH:
+    #####:  347:      g_value_set_uint (value, composite->a_width);
+    #####:  348:      break;
+        -:  349:    case PROP_A_HEIGHT:
+    #####:  350:      g_value_set_uint (value, composite->a_height);
+    #####:  351:      break;
+        -:  352:    case PROP_B_X:
+    #####:  353:      g_value_set_uint (value, composite->b_x);
+    #####:  354:      break;
+        -:  355:    case PROP_B_Y:
+    #####:  356:      g_value_set_uint (value, composite->b_y);
+    #####:  357:      break;
+        -:  358:    case PROP_B_WIDTH:
+    #####:  359:      g_value_set_uint (value, composite->b_width);
+    #####:  360:      break;
+        -:  361:    case PROP_B_HEIGHT:
+    #####:  362:      g_value_set_uint (value, composite->b_height);
+    #####:  363:      break;
+        -:  364:    case PROP_WIDTH:
+    #####:  365:      g_value_set_uint (value, composite->width);
+    #####:  366:      break;
+        -:  367:    case PROP_HEIGHT:
+    #####:  368:      g_value_set_uint (value, composite->height);
+    #####:  369:      break;
+        -:  370:    default:
+    #####:  371:      G_OBJECT_WARN_INVALID_PROPERTY_ID (G_OBJECT (composite), property_id,
+        -:  372:          pspec);
+    #####:  373:      break;
+        -:  374:  }
+    #####:  375:}
+        -:  376:
+        -:  377:/**
+        -:  378: * gst_composite_apply_parameters:
+        -:  379: *
+        -:  380: * Applying new composite parameters such as PIP position. This is actually
+        -:  381: * resetting the composite pipeline with the new parameters.
+        -:  382: */
+        -:  383:static void
+    #####:  384:gst_composite_apply_parameters (GstComposite * composite)
+        -:  385:{
+        -:  386:  GstWorkerClass *worker_class;
+        -:  387:
+    #####:  388:  g_return_if_fail (GST_IS_COMPOSITE (composite));
+        -:  389:
+    #####:  390:  worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
+        -:  391:
+    #####:  392:  if (!worker_class->reset (GST_WORKER (composite))) {
+    #####:  393:    ERROR ("failed to reset composite");
+        -:  394:  }
+        -:  395:  /*
+        -:  396:     if (!worker_class->reset (GST_WORKER (composite->output))) {
+        -:  397:     ERROR ("failed to reset composite output");
+        -:  398:     }
+        -:  399:   */
+        -:  400:
+        -:  401:  /*
+        -:  402:     g_object_set (composite->recorder,
+        -:  403:     "port", composite->encode_sink_port,
+        -:  404:     "mode", composite->mode, "width", composite->width,
+        -:  405:     "height", composite->height, NULL);
+        -:  406:
+        -:  407:     if (!worker_class->reset (GST_WORKER (composite->recorder))) {
+        -:  408:     ERROR ("failed to reset composite recorder");
+        -:  409:     }
+        -:  410:   */
+        -:  411:}
+        -:  412:
+        -:  413:/**
+        -:  414: * gst_composite_get_pipeline_string:
+        -:  415: *
+        -:  416: * Fetching the composite pipeline string, it's invoked by %GstWorker when
+        -:  417: * preparing the worker.
+        -:  418: */
+        -:  419:static GString *
+    #####:  420:gst_composite_get_pipeline_string (GstComposite * composite)
+        -:  421:{
+        -:  422:  GString *desc;
+        -:  423:
+    #####:  424:  desc = g_string_new ("");
+        -:  425:
+    #####:  426:  g_string_append_printf (desc,
+        -:  427:      "intervideosrc name=source_a channel=composite_a_scaled ");
+    #####:  428:  if (composite->mode == COMPOSE_MODE_0) {
+    #####:  429:    g_string_append_printf (desc,
+        -:  430:        "source_a. ! video/x-raw,width=%d,height=%d ",
+        -:  431:        composite->a_width, composite->a_height);
+        -:  432:    /*
+        -:  433:       ASSESS ("assess-compose-a-source");
+        -:  434:     */
+    #####:  435:    g_string_append_printf (desc, "! queue2 ");
+    #####:  436:    g_string_append_printf (desc, "! identity name=mix ");
+        -:  437:  } else {
+    #####:  438:    g_string_append_printf (desc,
+        -:  439:        "intervideosrc name=source_b channel=composite_b_scaled ");
+    #####:  440:    g_string_append_printf (desc,
+        -:  441:        "videomixer name=mix "
+        -:  442:        "sink_0::xpos=%d "
+        -:  443:        "sink_0::ypos=%d "
+        -:  444:        "sink_0::zorder=0 "
+        -:  445:        "sink_1::xpos=%d "
+        -:  446:        "sink_1::ypos=%d "
+        -:  447:        "sink_1::zorder=1 ",
+        -:  448:        composite->a_x, composite->a_y, composite->b_x, composite->b_y);
+        -:  449:
+        -:  450:    // ===== B =====
+    #####:  451:    g_string_append_printf (desc,
+        -:  452:        "source_b. ! video/x-raw,width=%d,height=%d ",
+        -:  453:        composite->b_width, composite->b_height);
+        -:  454:    ASSESS ("assess-compose-b-source");
+    #####:  455:    g_string_append_printf (desc, "! queue2 ");
+        -:  456:#if 0
+        -:  457:    if (composite->width != composite->b_width ||
+        -:  458:        composite->height != composite->b_height) {
+        -:  459:      g_string_append_printf (desc,
+        -:  460:          "! videoscale ! video/x-raw,width=%d,height=%d ",
+        -:  461:          composite->b_width, composite->b_height);
+        -:  462:      /*
+        -:  463:         ASSESS ("assess-compose-b-scaled");
+        -:  464:       */
+        -:  465:    }
+        -:  466:#endif
+    #####:  467:    g_string_append_printf (desc, "! mix.sink_1 ");
+        -:  468:
+        -:  469:    // ===== A =====
+    #####:  470:    g_string_append_printf (desc,
+        -:  471:        "source_a. ! video/x-raw,width=%d,height=%d ",
+        -:  472:        composite->a_width, composite->a_height);
+        -:  473:    ASSESS ("assess-compose-a-source");
+    #####:  474:    g_string_append_printf (desc, "! queue2 ");
+        -:  475:#if 0
+        -:  476:    if (composite->width != composite->a_width ||
+        -:  477:        composite->height != composite->a_height) {
+        -:  478:      g_string_append_printf (desc,
+        -:  479:          "! videoscale ! video/x-raw,width=%d,height=%d ",
+        -:  480:          composite->a_width, composite->a_height);
+        -:  481:      /*
+        -:  482:         ASSESS ("assess-compose-b-scaled");
+        -:  483:       */
+        -:  484:    }
+        -:  485:#endif
+    #####:  486:    g_string_append_printf (desc, "! mix.sink_0 ");
+        -:  487:  }
+        -:  488:
+    #####:  489:  g_string_append_printf (desc, "mix. ! video/x-raw,width=%d,height=%d ",
+        -:  490:      composite->width, composite->height);
+        -:  491:  ASSESS ("assess-compose-result");
+    #####:  492:  g_string_append_printf (desc, "! tee name=result ");
+        -:  493:
+    #####:  494:  g_string_append_printf (desc, "result. ! queue2 ");
+        -:  495:  /*
+        -:  496:     ASSESS ("assess-compose-to-output");
+        -:  497:   */
+    #####:  498:  g_string_append_printf (desc, "! out. ");
+    #####:  499:  g_string_append_printf (desc,
+        -:  500:      "intervideosink name=out channel=composite_out ");
+        -:  501:
+    #####:  502:  if (opts.record_filename) {
+    #####:  503:    g_string_append_printf (desc, "result. ! queue2 ");
+        -:  504:    /*
+        -:  505:       ASSESS ("assess-compose-to-record");
+        -:  506:     */
+    #####:  507:    g_string_append_printf (desc, "! record. ");
+    #####:  508:    g_string_append_printf (desc, "intervideosink name=record "
+        -:  509:        "channel=composite_video ");
+        -:  510:  }
+        -:  511:
+    #####:  512:  return desc;
+        -:  513:}
+        -:  514:
+        -:  515:/**
+        -:  516: * gst_composite_get_scaler_string:
+        -:  517: *
+        -:  518: * Getting the scaler pipeline string.
+        -:  519: *
+        -:  520: * <b>The Scaler Pipeline</b>
+        -:  521: *     The scaler pipeline is tending to scale the A/B inputs into the proper
+        -:  522: *     video size for composite.
+        -:  523: */
+        -:  524:static GString *
+    #####:  525:gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
+        -:  526:{
+        -:  527:  GString *desc;
+        -:  528:
+    #####:  529:  desc = g_string_new ("");
+        -:  530:
+    #####:  531:  g_string_append_printf (desc,
+        -:  532:      "intervideosrc name=source_a channel=composite_a ");
+    #####:  533:  g_string_append_printf (desc,
+        -:  534:      "intervideosink name=sink_a sync=false channel=composite_a_scaled ");
+        -:  535:
+    #####:  536:  g_string_append_printf (desc,
+        -:  537:      "source_a. ! video/x-raw,width=%d,height=%d ",
+        -:  538:      composite->width, composite->height);
+    #####:  539:  g_string_append_printf (desc, "! queue2 ");
+        -:  540:  /*
+        -:  541:     g_string_append_printf (desc,
+        -:  542:     "! videoconvert ! facedetect2 ! speakertrack ! videoconvert ");
+        -:  543:   */
+    #####:  544:  g_string_append_printf (desc,
+        -:  545:      "! videoscale ! video/x-raw,width=%d,height=%d ! sink_a. ",
+        -:  546:      composite->a_width, composite->a_height);
+        -:  547:
+    #####:  548:  if (composite->mode == COMPOSE_MODE_0) {
+        -:  549:  } else {
+    #####:  550:    g_string_append_printf (desc,
+        -:  551:        "intervideosrc name=source_b channel=composite_b ");
+    #####:  552:    g_string_append_printf (desc,
+        -:  553:        "intervideosink name=sink_b sync=false channel=composite_b_scaled ");
+        -:  554:
+    #####:  555:    g_string_append_printf (desc,
+        -:  556:        "source_b. ! video/x-raw,width=%d,height=%d ",
+        -:  557:        composite->width, composite->height);
+    #####:  558:    g_string_append_printf (desc, "! queue2 ");
+        -:  559:    /*
+        -:  560:       g_string_append_printf (desc,
+        -:  561:       "! videoconvert ! facedetect2 ! speakertrack ! videoconvert ");
+        -:  562:     */
+    #####:  563:    g_string_append_printf (desc,
+        -:  564:        "! videoscale ! video/x-raw,width=%d,height=%d ! sink_b. ",
+        -:  565:        composite->b_width, composite->b_height);
+        -:  566:  }
+    #####:  567:  return desc;
+        -:  568:}
+        -:  569:
+        -:  570:/**
+        -:  571: * gst_composite_prepare:
+        -:  572: * @return TRUE if the composite pipeline is well prepared.
+        -:  573: *
+        -:  574: * Prepare the composite pipeline.
+        -:  575: */
+        -:  576:static gboolean
+    #####:  577:gst_composite_prepare (GstComposite * composite)
+        -:  578:{
+    #####:  579:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  580:
+    #####:  581:  if (composite->scaler == NULL) {
+    #####:  582:    composite->scaler = GST_WORKER (g_object_new (GST_TYPE_WORKER,
+        -:  583:            "name", "scale", NULL));
+    #####:  584:    composite->scaler->pipeline_func_data = composite;
+    #####:  585:    composite->scaler->pipeline_func = (GstWorkerGetPipelineString)
+        -:  586:        gst_composite_get_scaler_string;
+        -:  587:  } else {
+        -:  588:    GstWorkerClass *worker_class;
+    #####:  589:    worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite->scaler));
+    #####:  590:    if (!worker_class->reset (GST_WORKER (composite->scaler))) {
+    #####:  591:      ERROR ("failed to reset scaler");
+        -:  592:    }
+        -:  593:  }
+    #####:  594:  return TRUE;
+        -:  595:}
+        -:  596:
+        -:  597:/**
+        -:  598: * gst_composite_start:
+        -:  599: *
+        -:  600: * This is invokved when the composite pipeline started.
+        -:  601: */
+        -:  602:static void
+    #####:  603:gst_composite_start (GstComposite * composite)
+        -:  604:{
+    #####:  605:  g_return_if_fail (GST_IS_COMPOSITE (composite));
+        -:  606:
+    #####:  607:  gst_worker_start (composite->scaler);
+        -:  608:}
+        -:  609:
+        -:  610:/**
+        -:  611: * gst_composite_end:
+        -:  612: *
+        -:  613: * This is invoked when the composite pipeline is ended.
+        -:  614: */
+        -:  615:static void
+    #####:  616:gst_composite_end (GstComposite * composite)
+        -:  617:{
+    #####:  618:  g_return_if_fail (GST_IS_COMPOSITE (composite));
+        -:  619:
+    #####:  620:  gst_worker_stop (composite->scaler);
+        -:  621:}
+        -:  622:
+        -:  623:/**
+        -:  624: * gst_composite_end_transition:
+        -:  625: * @return Always return FALSE to allow glib to free the event source.
+        -:  626: *
+        -:  627: * Invoked when the transition is finished.
+        -:  628: *
+        -:  629: * @see %gst_composite_commit_transition
+        -:  630: */
+        -:  631:static gboolean
+    #####:  632:gst_composite_end_transition (GstComposite * composite)
+        -:  633:{
+    #####:  634:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  635:
+    #####:  636:  if (composite->transition) {
+    #####:  637:    GST_COMPOSITE_LOCK_TRANSITION (composite);
+    #####:  638:    if (composite->transition) {
+        -:  639:      /*
+        -:  640:         INFO ("new mode %d, %dx%d transited", composite->mode,
+        -:  641:         composite->width, composite->height);
+        -:  642:       */
+    #####:  643:      composite->transition = FALSE;
+    #####:  644:      g_signal_emit (composite,
+        -:  645:          gst_composite_signals[SIGNAL_END_TRANSITION],
+        -:  646:          0 /*, composite->mode */ );
+        -:  647:    }
+    #####:  648:    GST_COMPOSITE_UNLOCK_TRANSITION (composite);
+        -:  649:  }
+    #####:  650:  return FALSE;
+        -:  651:}
+        -:  652:
+        -:  653:/**
+        -:  654: * gst_composite_commit_transition:
+        -:  655: * @return Always return FALSE to tell glib to cleanup the event source.
+        -:  656: *
+        -:  657: * Commit a transition request.
+        -:  658: *
+        -:  659: * @see %gst_composite_end_transition
+        -:  660: */
+        -:  661:static gboolean
+    #####:  662:gst_composite_commit_transition (GstComposite * composite)
+        -:  663:{
+    #####:  664:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  665:
+    #####:  666:  if (composite->transition) {
+    #####:  667:    GST_COMPOSITE_LOCK_TRANSITION (composite);
+    #####:  668:    if (composite->transition) {
+        -:  669:      /*
+        -:  670:         INFO ("new mode %d, %dx%d applying...",
+        -:  671:         composite->mode, composite->width, composite->height);
+        -:  672:       */
+    #####:  673:      gst_composite_apply_parameters (composite);
+        -:  674:    }
+    #####:  675:    GST_COMPOSITE_UNLOCK_TRANSITION (composite);
+        -:  676:  }
+    #####:  677:  return FALSE;
+        -:  678:}
+        -:  679:
+        -:  680:/**
+        -:  681: * gst_composite_close_transition:
+        -:  682: *
+        -:  683: * Invoked when the composite pipeline is coming alive. This will emit
+        -:  684: * %gst_composite_end_transition.
+        -:  685: *
+        -:  686: * @see %gst_composite_end_transition
+        -:  687: */
+        -:  688:static gboolean
+    #####:  689:gst_composite_close_transition (GstComposite * composite)
+        -:  690:{
+    #####:  691:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  692:
+    #####:  693:  if (composite->transition) {
+    #####:  694:    GST_COMPOSITE_LOCK_TRANSITION (composite);
+    #####:  695:    if (composite->transition) {
+        -:  696:      //gst_worker_start (GST_WORKER (composite->output));
+        -:  697:      /* It's ok to discard the source ID here, the timeout is one-shot. */
+    #####:  698:      g_timeout_add (200, (GSourceFunc) gst_composite_end_transition,
+        -:  699:          composite);
+        -:  700:    }
+    #####:  701:    GST_COMPOSITE_UNLOCK_TRANSITION (composite);
+        -:  702:  }
+    #####:  703:  return FALSE;
+        -:  704:}
+        -:  705:
+        -:  706:/**
+        -:  707: * gst_composite_commit_adjustment:
+        -:  708: * @return Always FALSE to tell glib to cleanup the timeout source.
+        -:  709: *
+        -:  710: * Commit a PIP adjustment request.
+        -:  711: */
+        -:  712:static gboolean
+    #####:  713:gst_composite_commit_adjustment (GstComposite * composite)
+        -:  714:{
+    #####:  715:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  716:
+    #####:  717:  if (composite->adjusting) {
+    #####:  718:    GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
+    #####:  719:    if (composite->adjusting) {
+        -:  720:      GstWorkerClass *worker_class;
+    #####:  721:      worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
+    #####:  722:      if (!worker_class->reset (GST_WORKER (composite))) {
+    #####:  723:        ERROR ("failed to reset composite");
+        -:  724:      }
+        -:  725:    }
+    #####:  726:    GST_COMPOSITE_UNLOCK_ADJUSTMENT (composite);
+        -:  727:  }
+    #####:  728:  return FALSE;
+        -:  729:}
+        -:  730:
+        -:  731:/**
+        -:  732: * gst_composite_close_adjustment:
+        -:  733: * @return Always return false to let glib to cleanup timeout source
+        -:  734: *
+        -:  735: * Invoked when composite pipeline is coming alive and it's currently
+        -:  736: * adjusting the PIP.
+        -:  737: */
+        -:  738:static gboolean
+    #####:  739:gst_composite_close_adjustment (GstComposite * composite)
+        -:  740:{
+    #####:  741:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  742:
+    #####:  743:  if (composite->adjusting) {
+    #####:  744:    GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
+    #####:  745:    composite->adjusting = FALSE;
+    #####:  746:    GST_COMPOSITE_UNLOCK_ADJUSTMENT (composite);
+        -:  747:  }
+    #####:  748:  return FALSE;
+        -:  749:}
+        -:  750:
+        -:  751:/**
+        -:  752: * gst_composite_alive:
+        -:  753: *
+        -:  754: * Invoked when the compisite pipeline is online.
+        -:  755: */
+        -:  756:static void
+    #####:  757:gst_composite_alive (GstComposite * composite)
+        -:  758:{
+    #####:  759:  g_return_if_fail (GST_IS_COMPOSITE (composite));
+        -:  760:
+    #####:  761:  if (composite->transition) {
+        -:  762:#if 0
+        -:  763:    g_timeout_add (10, (GSourceFunc) gst_composite_close_transition, composite);
+        -:  764:#else
+    #####:  765:    gst_composite_close_transition (composite);
+        -:  766:#endif
+    #####:  767:  } else if (composite->adjusting) {
+    #####:  768:    g_timeout_add (10, (GSourceFunc) gst_composite_close_adjustment, composite);
+        -:  769:  }
+        -:  770:}
+        -:  771:
+        -:  772:/**
+        -:  773: * gst_composite_null:
+        -:  774: *
+        -:  775: * Invoked when the composite pipeline is going NULL.
+        -:  776: */
+        -:  777:static GstWorkerNullReturn
+    #####:  778:gst_composite_null (GstComposite * composite)
+        -:  779:{
+    #####:  780:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), GST_WORKER_NR_END);
+        -:  781:
+    #####:  782:  if (composite->transition) {
+        -:  783:#if 0
+        -:  784:    g_timeout_add (10, (GSourceFunc) gst_composite_commit_transition,
+        -:  785:        composite);
+        -:  786:#else
+    #####:  787:    gst_composite_commit_transition (composite);
+        -:  788:#endif
+    #####:  789:  } else if (composite->adjusting) {
+    #####:  790:    g_timeout_add (10, (GSourceFunc) gst_composite_commit_adjustment,
+        -:  791:        composite);
+        -:  792:  }
+        -:  793:
+    #####:  794:  return composite->deprecated ? GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
+        -:  795:}
+        -:  796:
+        -:  797:/**
+        -:  798: * gst_composite_adjust_pip:
+        -:  799: *  @param composite The GstComposite instance
+        -:  800: *  @param x the X position of the PIP
+        -:  801: *  @param y the Y position of the PIP
+        -:  802: *  @param w the width of the PIP
+        -:  803: *  @param h the height of the PIP
+        -:  804: *  @return PIP has been changed succefully 
+        -:  805: *
+        -:  806: *  Change the PIP position and size.
+        -:  807: */
+        -:  808:gboolean
+    #####:  809:gst_composite_adjust_pip (GstComposite * composite, gint x, gint y,
+        -:  810:    gint w, gint h)
+        -:  811:{
+    #####:  812:  gboolean result = FALSE;
+    #####:  813:  GstIterator *iter = NULL;
+    #####:  814:  GValue value = { 0 };
+    #####:  815:  GstElement *element = NULL;
+    #####:  816:  gboolean done = FALSE;
+        -:  817:
+    #####:  818:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  819:
+    #####:  820:  GST_COMPOSITE_LOCK (composite);
+    #####:  821:  if (composite->adjusting) {
+    #####:  822:    WARN ("last PIP adjustment request is progressing");
+    #####:  823:    goto end;
+        -:  824:  }
+        -:  825:
+    #####:  826:  composite->b_x = x;
+    #####:  827:  composite->b_y = y;
+        -:  828:
+    #####:  829:  if (composite->b_width != w || composite->b_height != h) {
+    #####:  830:    composite->b_width = w;
+    #####:  831:    composite->b_height = h;
+    #####:  832:    composite->adjusting = TRUE;
+    #####:  833:    gst_worker_stop (GST_WORKER (composite));
+    #####:  834:    result = TRUE;
+    #####:  835:    goto end;
+        -:  836:  }
+        -:  837:
+    #####:  838:  element = gst_worker_get_element (GST_WORKER (composite), "mix");
+    #####:  839:  iter = gst_element_iterate_sink_pads (element);
+    #####:  840:  while (iter && !done) {
+    #####:  841:    switch (gst_iterator_next (iter, &value)) {
+        -:  842:      case GST_ITERATOR_OK:
+        -:  843:      {
+    #####:  844:        GstPad *pad = g_value_get_object (&value);
+    #####:  845:        if (g_strcmp0 (gst_pad_get_name (pad), "sink_1") == 0) {
+    #####:  846:          g_object_set (pad, "xpos", composite->b_x,
+        -:  847:              "ypos", composite->b_y, NULL);
+    #####:  848:          done = TRUE;
+    #####:  849:          result = TRUE;
+        -:  850:        }
+    #####:  851:        g_value_reset (&value);
+        -:  852:      }
+    #####:  853:        break;
+        -:  854:      case GST_ITERATOR_RESYNC:
+    #####:  855:        gst_iterator_resync (iter);
+    #####:  856:        break;
+        -:  857:      case GST_ITERATOR_DONE:
+    #####:  858:        done = TRUE;
+    #####:  859:        break;
+        -:  860:      default:
+        -:  861:        /* iterator returned _ERROR or premature end with _OK,
+        -:  862:         * mark an error and exit */
+    #####:  863:        done = TRUE;
+    #####:  864:        result = FALSE;
+    #####:  865:        break;
+        -:  866:    }
+        -:  867:  }
+        -:  868:
+    #####:  869:  if (G_IS_VALUE (&value))
+    #####:  870:    g_value_unset (&value);
+    #####:  871:  if (iter)
+    #####:  872:    gst_iterator_free (iter);
+        -:  873:
+    #####:  874:  composite->adjusting = FALSE;
+        -:  875:
+        -:  876:  /*
+        -:  877:     if (!result) {
+        -:  878:     WARN ("failed to adjust PIP: %d, %d, %d, %d", x, y, w, h);
+        -:  879:     }
+        -:  880:   */
+        -:  881:
+        -:  882:end:
+    #####:  883:  GST_COMPOSITE_UNLOCK (composite);
+    #####:  884:  return result;
+        -:  885:}
+        -:  886:
+        -:  887:/**
+        -:  888: * gst_composite_retry_transition:
+        -:  889: * @return Always FALSE to allow glib to cleanup the timeout source
+        -:  890: *
+        -:  891: * This is invoked when the pipeline's getting errors to retry the transition
+        -:  892: * request.
+        -:  893: */
+        -:  894:static gboolean
+    #####:  895:gst_composite_retry_transition (GstComposite * composite)
+        -:  896:{
+    #####:  897:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  898:
+    #####:  899:  if (composite->transition) {
+    #####:  900:    GST_COMPOSITE_LOCK_TRANSITION (composite);
+    #####:  901:    if (composite->transition) {
+    #####:  902:      WARN ("new mode %d, %dx%d (error transition)",
+        -:  903:          composite->mode, composite->width, composite->height);
+    #####:  904:      gst_composite_apply_parameters (composite);
+    #####:  905:      gst_worker_start (GST_WORKER (composite));
+        -:  906:    }
+    #####:  907:    GST_COMPOSITE_UNLOCK_TRANSITION (composite);
+        -:  908:  }
+        -:  909:
+    #####:  910:  return FALSE;
+        -:  911:}
+        -:  912:
+        -:  913:/**
+        -:  914: * gst_composite_retry_adjustment:
+        -:  915: * @return Always FALSE to allow glib to cleanup the timeout source
+        -:  916: *
+        -:  917: * This is invoked when the pipeline is reporting errors and requiring PIP
+        -:  918: * adjustment.
+        -:  919: */
+        -:  920:static gboolean
+    #####:  921:gst_composite_retry_adjustment (GstComposite * composite)
+        -:  922:{
+    #####:  923:  g_return_val_if_fail (GST_IS_COMPOSITE (composite), FALSE);
+        -:  924:
+    #####:  925:  if (composite->adjusting) {
+    #####:  926:    GST_COMPOSITE_LOCK_ADJUSTMENT (composite);
+    #####:  927:    if (composite->adjusting) {
+        -:  928:      GstWorkerClass *worker_class;
+    #####:  929:      WARN ("adjusting PIP error, retry..");
+    #####:  930:      worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (composite));
+    #####:  931:      if (!worker_class->reset (GST_WORKER (composite))) {
+    #####:  932:        ERROR ("failed to reset composite");
+        -:  933:      }
+    #####:  934:      gst_worker_start (GST_WORKER (composite));
+        -:  935:    }
+    #####:  936:    GST_COMPOSITE_UNLOCK_ADJUSTMENT (composite);
+        -:  937:  }
+        -:  938:
+    #####:  939:  return FALSE;
+        -:  940:}
+        -:  941:
+        -:  942:/**
+        -:  943: * gst_composite_error:
+        -:  944: *
+        -:  945: * Handling the composite pipeline errors.
+        -:  946: */
+        -:  947:static void
+    #####:  948:gst_composite_error (GstComposite * composite)
+        -:  949:{
+    #####:  950:  g_return_if_fail (GST_IS_COMPOSITE (composite));
+        -:  951:
+    #####:  952:  if (composite->transition) {
+    #####:  953:    g_timeout_add (10, (GSourceFunc) gst_composite_retry_transition, composite);
+    #####:  954:  } else if (composite->adjusting) {
+    #####:  955:    g_timeout_add (10, (GSourceFunc) gst_composite_retry_adjustment, composite);
+        -:  956:  }
+        -:  957:}
+        -:  958:
+        -:  959:/**
+        -:  960: * @brief Pipeline message handling.
+        -:  961: *
+        -:  962: * Handle the composite pipeline messages. It's current only taking care
+        -:  963: * of GST_MESSAGE_ERROR.
+        -:  964: *
+        -:  965: * @see GstMessage
+        -:  966: */
+        -:  967:static gboolean
+    #####:  968:gst_composite_message (GstComposite * composite, GstMessage * message)
+        -:  969:{
+    #####:  970:  switch (GST_MESSAGE_TYPE (message)) {
+        -:  971:    case GST_MESSAGE_ERROR:
+    #####:  972:      gst_composite_error (composite);
+    #####:  973:      break;
+        -:  974:    default:
+    #####:  975:      break;
+        -:  976:  }
+    #####:  977:  return TRUE;
+        -:  978:}
+        -:  979:
+        -:  980:/**
+        -:  981: * gst_composite_class_init:
+        -:  982: *
+        -:  983: * Initialize the GstCompositeClass.
+        -:  984: */
+        -:  985:static void
+    #####:  986:gst_composite_class_init (GstCompositeClass * klass)
+        -:  987:{
+    #####:  988:  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    #####:  989:  GstWorkerClass *worker_class = GST_WORKER_CLASS (klass);
+        -:  990:
+    #####:  991:  object_class->dispose = (GObjectFinalizeFunc) gst_composite_dispose;
+    #####:  992:  object_class->finalize = (GObjectFinalizeFunc) gst_composite_finalize;
+    #####:  993:  object_class->set_property =
+        -:  994:      (GObjectSetPropertyFunc) gst_composite_set_property;
+    #####:  995:  object_class->get_property =
+        -:  996:      (GObjectGetPropertyFunc) gst_composite_get_property;
+        -:  997:
+        -:  998:  /*
+        -:  999:     gst_composite_signals[SIGNAL_START_OUTPUT] = 
+        -: 1000:     g_signal_new ("start-output", G_TYPE_FROM_CLASS (klass),
+        -: 1001:     G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, start_output),
+        -: 1002:     NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+        -: 1003:
+        -: 1004:     gst_composite_signals[SIGNAL_START_RECORDER] = 
+        -: 1005:     g_signal_new ("start-recorder", G_TYPE_FROM_CLASS (klass),
+        -: 1006:     G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, start_recorder),
+        -: 1007:     NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+        -: 1008:
+        -: 1009:     gst_composite_signals[SIGNAL_END_OUTPUT] = 
+        -: 1010:     g_signal_new ("end-output", G_TYPE_FROM_CLASS (klass),
+        -: 1011:     G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_output),
+        -: 1012:     NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+        -: 1013:
+        -: 1014:     gst_composite_signals[SIGNAL_END_RECORDER] = 
+        -: 1015:     g_signal_new ("end-recorder", G_TYPE_FROM_CLASS (klass),
+        -: 1016:     G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass, end_recorder),
+        -: 1017:     NULL, NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0);
+        -: 1018:   */
+        -: 1019:
+    #####: 1020:  gst_composite_signals[SIGNAL_END_TRANSITION] =
+    #####: 1021:      g_signal_new ("end-transition", G_TYPE_FROM_CLASS (klass),
+        -: 1022:      G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstCompositeClass,
+        -: 1023:          end_transition), NULL,
+        -: 1024:      NULL, g_cclosure_marshal_generic, G_TYPE_NONE, 0 /*1, G_TYPE_INT */ );
+        -: 1025:
+    #####: 1026:  g_object_class_install_property (object_class, PROP_MODE,
+        -: 1027:      g_param_spec_uint ("mode", "Mode",
+        -: 1028:          "Composite Mode",
+        -: 1029:          COMPOSE_MODE_0,
+        -: 1030:          COMPOSE_MODE__LAST,
+        -: 1031:          DEFAULT_COMPOSE_MODE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1032:
+    #####: 1033:  g_object_class_install_property (object_class, PROP_PORT,
+        -: 1034:      g_param_spec_uint ("port", "Port",
+        -: 1035:          "Sink port",
+        -: 1036:          GST_SWITCH_MIN_SINK_PORT,
+        -: 1037:          GST_SWITCH_MAX_SINK_PORT,
+        -: 1038:          GST_SWITCH_MIN_SINK_PORT,
+        -: 1039:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1040:
+    #####: 1041:  g_object_class_install_property (object_class, PROP_ENCODE_PORT,
+        -: 1042:      g_param_spec_uint ("encode", "EncodePort",
+        -: 1043:          "Encoding Sink port",
+        -: 1044:          GST_SWITCH_MIN_SINK_PORT,
+        -: 1045:          GST_SWITCH_MAX_SINK_PORT,
+        -: 1046:          GST_SWITCH_MIN_SINK_PORT,
+        -: 1047:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1048:
+    #####: 1049:  g_object_class_install_property (object_class, PROP_A_X,
+        -: 1050:      g_param_spec_uint ("ax", "A xpos",
+        -: 1051:          "Channel A frame xpos",
+        -: 1052:          0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1053:
+    #####: 1054:  g_object_class_install_property (object_class, PROP_A_Y,
+        -: 1055:      g_param_spec_uint ("ay", "A ypos",
+        -: 1056:          "Channel A frame ypos",
+        -: 1057:          0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1058:
+    #####: 1059:  g_object_class_install_property (object_class, PROP_A_WIDTH,
+        -: 1060:      g_param_spec_uint ("awidth", "A Width",
+        -: 1061:          "Channel A frame width",
+        -: 1062:          1, G_MAXINT,
+        -: 1063:          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+        -: 1064:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1065:
+    #####: 1066:  g_object_class_install_property (object_class, PROP_A_HEIGHT,
+        -: 1067:      g_param_spec_uint ("aheight", "A Height",
+        -: 1068:          "Channel A frame height",
+        -: 1069:          1, G_MAXINT,
+        -: 1070:          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+        -: 1071:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1072:
+    #####: 1073:  g_object_class_install_property (object_class, PROP_B_X,
+        -: 1074:      g_param_spec_uint ("bx", "B xpos",
+        -: 1075:          "Channel B frame xpos",
+        -: 1076:          0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1077:
+    #####: 1078:  g_object_class_install_property (object_class, PROP_B_Y,
+        -: 1079:      g_param_spec_uint ("by", "B ypos",
+        -: 1080:          "Channel B frame ypos",
+        -: 1081:          0, G_MAXINT, 0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1082:
+    #####: 1083:  g_object_class_install_property (object_class, PROP_B_WIDTH,
+        -: 1084:      g_param_spec_uint ("bwidth", "B Width",
+        -: 1085:          "Channel B frame width",
+        -: 1086:          1, G_MAXINT,
+        -: 1087:          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+        -: 1088:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1089:
+    #####: 1090:  g_object_class_install_property (object_class, PROP_B_HEIGHT,
+        -: 1091:      g_param_spec_uint ("bheight", "B Height",
+        -: 1092:          "Channel B frame height",
+        -: 1093:          1, G_MAXINT,
+        -: 1094:          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+        -: 1095:          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+        -: 1096:
+    #####: 1097:  g_object_class_install_property (object_class, PROP_WIDTH,
+        -: 1098:      g_param_spec_uint ("width",
+        -: 1099:          "Composite Width",
+        -: 1100:          "Output frame width", 1,
+        -: 1101:          G_MAXINT,
+        -: 1102:          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+        -: 1103:          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+        -: 1104:
+    #####: 1105:  g_object_class_install_property (object_class, PROP_HEIGHT,
+        -: 1106:      g_param_spec_uint ("height",
+        -: 1107:          "Composite Height",
+        -: 1108:          "Output frame height",
+        -: 1109:          1, G_MAXINT,
+        -: 1110:          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+        -: 1111:          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+        -: 1112:
+    #####: 1113:  worker_class->alive = (GstWorkerAliveFunc) gst_composite_alive;
+    #####: 1114:  worker_class->null = (GstWorkerNullFunc) gst_composite_null;
+    #####: 1115:  worker_class->prepare = (GstWorkerPrepareFunc) gst_composite_prepare;
+    #####: 1116:  worker_class->start_worker = (GstWorkerAliveFunc) gst_composite_start;
+    #####: 1117:  worker_class->end_worker = (GstWorkerAliveFunc) gst_composite_end;
+    #####: 1118:  worker_class->message = (GstWorkerMessageFunc) gst_composite_message;
+    #####: 1119:  worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
+        -: 1120:      gst_composite_get_pipeline_string;
+    #####: 1121:}
