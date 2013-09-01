@@ -23,25 +23,22 @@ class TestServerStartStop(object):
             assert pid > 0
             s.terminate()
             assert s.proc is None
-        except OSError:
-            if s.proc:
-                poll = s.proc.poll()
-                if poll < 0:
-                    error_type, ob, tb = sys.exc_info()
-                    server_log = open('server.log').read()
-                    try:
+        finally:
+                if s.proc:
+                    poll = s.proc.poll()
+                    s.terminate()
+                    if poll < 0:
+                        error_type, ob, tb = sys.exc_info()
+                        server_log = open('server.log').read()
                         error_msg = ob.message
-                    except Exception:
-                        error_msg = ''
-                    custom_error = """
-{0}
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-gst-switch-srv log:
-Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-{2}
-""".format(error_msg, abs(poll), server_log)
-                s.terminate()
-                raise ob.__class__(custom_error)
+                        custom_error = """
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
     def test_start_stop(self):
         for i in range(self.NUM):

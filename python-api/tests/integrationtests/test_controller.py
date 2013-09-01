@@ -36,23 +36,20 @@ class TestEstablishConnection(object):
         finally:
             if s.proc:
                 poll = s.proc.poll()
+                s.terminate()
                 if poll < 0:
                     error_type, ob, tb = sys.exc_info()
                     server_log = open('server.log').read()
-                    try:
-                        error_msg = ob.message
-                    except Exception:
-                        error_msg = ''
+                    error_msg = ob.message
                     custom_error = """
-{0}
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-gst-switch-srv log:
-Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-{2}
-""".format(error_msg, abs(poll), server_log)
-                s.terminate()
-                raise ob.__class__(custom_error)
-
+                        {0}
+                        -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                        gst-switch-srv log:
+                        Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                        {2}
+                        """.format(error_msg, abs(poll), server_log)
+                    raise ob.__class__(custom_error)
+                    
 
 
 class TestGetComposePort(object):
@@ -86,22 +83,19 @@ class TestGetComposePort(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
         
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
@@ -139,22 +133,19 @@ class TestGetEncodePort(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
         
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
@@ -195,22 +186,19 @@ class TestGetAudioPortVideoFirst(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
         # print res
         # print expected_result
         at = [ tuple(i) for i in expected_result]
@@ -253,22 +241,19 @@ class TestGetAudioPortAudioFirst(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
         at = [ tuple(i) for i in expected_result]
         bt = [ tuple(i) for i in res]
@@ -309,22 +294,19 @@ class TestGetPreviewPorts(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
 
 class VideoFileSink(object):
@@ -390,23 +372,19 @@ class TestSetCompositeMode(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
-                pass
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
     def verify_output(self, mode, video):
         test = 'composite_mode_{0}'.format(mode)
@@ -461,22 +439,19 @@ class TestNewRecord(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
 
 class TestAdjustPIP(object):
@@ -513,22 +488,19 @@ class TestAdjustPIP(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
     def verify_output(self, index, video):
         test = 'adjust_pip_{0}'.format(index)
@@ -577,22 +549,19 @@ class TestSwitch(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
     def test_switch(self):
         d = [
@@ -638,22 +607,19 @@ class TestClickVideo(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
     def verify_output(self, index, video):
         test = 'click_video_{0}'.format(index)
@@ -708,22 +674,19 @@ class TestMarkFace(object):
             finally:
                 if s.proc:
                     poll = s.proc.poll()
+                    s.terminate()
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        try:
-                            error_msg = ob.message
-                        except Exception:
-                            error_msg = ''
+                        error_msg = ob.message
                         custom_error = """
-    {0}
-    -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    gst-switch-srv log:
-    Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-    {2}
-    """.format(error_msg, abs(poll), server_log)
-                    s.terminate()
-                    raise ob.__class__(custom_error)
+                            {0}
+                            -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                            gst-switch-srv log:
+                            Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
+                            {2}
+                            """.format(error_msg, abs(poll), server_log)
+                        raise ob.__class__(custom_error)
 
     def verify_output(self, index, video):
         test = 'mark_face_{0}'.format(index)
