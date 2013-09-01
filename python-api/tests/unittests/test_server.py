@@ -10,6 +10,8 @@ import subprocess
 from mock import Mock
 
 
+path = '/usr/local/bin/'
+
 class TestPath(object):
     # Path Tests
     def test_invalid_path(self):
@@ -28,21 +30,18 @@ class TestPath(object):
 class TestVideoPort(object):
     # Video Port Tests
     def test_invalid_video_port_null(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         video_ports = [None, '', [], {}]
         for video_port in video_ports:
             with pytest.raises(ValueError):
                 Server(path=path, video_port=video_port)
 
     def test_invalid_video_port_type(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         video_ports = [[1, 2, 3], {1: 2, 2: 3}]
         for video_port in video_ports:
             with pytest.raises(TypeError):
                 Server(path=path, video_port=video_port)
 
     def test_invalid_video_port_range(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         video_ports = [-99, -1, 1e6]
         for video_port in video_ports:
             with pytest.raises(ValueError):
@@ -52,21 +51,18 @@ class TestVideoPort(object):
 class TestAudioPort(object):
     # Audio Port Tests
     def test_invalid_audio_port_null(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         audio_ports = [None, '', [], {}]
         for audio_port in audio_ports:
             with pytest.raises(ValueError):
                 Server(path=path, audio_port=audio_port)
 
     def test_invalid_audio_port_type(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         audio_ports = [[1, 2, 3], {1: 2, 2: 3}]
         for audio_port in audio_ports:
             with pytest.raises(TypeError):
                 Server(path=path, audio_port=audio_port)
 
     def test_invalid_audio_port_range(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         audio_ports = [-99, -1, 1e6]
         for audio_port in audio_ports:
             with pytest.raises(ValueError):
@@ -76,21 +72,18 @@ class TestAudioPort(object):
 class TestControlPort(object):
     # Control Port Tests
     def test_invalid_control_port_null(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         control_ports = [None, '', [], {}]
         for control_port in control_ports:
             with pytest.raises(ValueError):
                 Server(path=path, control_port=control_port)
 
     def test_invalid_control_port_type(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         control_ports = [[1, 2, 3], {1: 2, 2: 3}]
         for control_port in control_ports:
             with pytest.raises(TypeError):
                 Server(path=path, control_port=control_port)
 
     def test_invalid_control_port_range(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         control_ports = [-99, -1, 1e6]
         for control_port in control_ports:
             with pytest.raises(ValueError):
@@ -101,7 +94,6 @@ class TestRecordFile(object):
     # Record File
     def test_record_file_blank(self):
         files = ['', None, [], {}]
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         for record_file in files:
             with pytest.raises(ValueError):
                 Server(path=path, record_file=record_file)
@@ -109,7 +101,7 @@ class TestRecordFile(object):
     def test_record_file_slashes(self):
         file = 'abcd/xyz/'
         with pytest.raises(ValueError):
-            path = '/home/hyades/gst/master/gstreamer/tools/'
+
             Server(path=path, record_file=file)
 
 
@@ -123,14 +115,12 @@ class TestKillTerminate(object):
             def terminate(self):
                 raise OSError
 
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         s = Server(path=path)
         s.proc = fake_proc()
         with pytest.raises(ServerProcessError):
             s.terminate()
 
     def test_kill_fail(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         s = Server(path=path)
         s.proc = 1
         s.pid = -300
@@ -138,16 +128,28 @@ class TestKillTerminate(object):
             s.kill()
 
     def test_no_process_kill(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         s = Server(path=path)
         with pytest.raises(ServerProcessError):
             s.kill()
 
     def test_no_process_terminate(self):
-        path = '/home/hyades/gst/master/gstreamer/tools/'
         s = Server(path=path)
         with pytest.raises(ServerProcessError):
             s.terminate()
+
+    def test_no_process_gov_flush(self):
+        s = Server(path=path)
+        with pytest.raises(ServerProcessError):
+            s.gcov_flush()
+
+    def test_gcov_flush_fail(self):
+        s = Server(path=path)
+        s.proc = 1
+        s.pid = -300
+        with pytest.raises(ServerProcessError):
+            s.gcov_flush()
+
+
 
 
 class TestRun(object):
@@ -219,3 +221,11 @@ class TestNormal(object):
         monkeypatch.setattr(os, 'kill', Mock(side_effect=OSError))
         with pytest.raises(ServerProcessError):
             s.kill()
+
+    def test_normal_gcov_flush(self, monkeypatch):
+        s = Server(path='abc')
+        s.proc = Mock()
+        monkeypatch.setattr(os, 'kill', Mock())
+        res = s.gcov_flush()
+        assert res == True
+        assert s.proc is not None

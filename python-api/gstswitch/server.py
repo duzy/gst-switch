@@ -234,7 +234,7 @@ class Server(object):
             except OSError:
                 raise ServerProcessError("Cannot terminate server process. "
                                          "Try killing it")
-        return False
+
 
     def kill(self):
         """Kill the server process by sending signal.SIGKILL
@@ -254,7 +254,6 @@ class Server(object):
                 return True
             except OSError:
                 raise ServerProcessError('Cannot kill process')
-        return False
 
 
     def gcov_flush(self):
@@ -276,6 +275,5 @@ class Server(object):
                 return True
             except OSError:
                 raise ServerProcessError('Unable to send signal')
-        return False
 
 
