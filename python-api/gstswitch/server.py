@@ -234,6 +234,7 @@ class Server(object):
             except OSError:
                 raise ServerProcessError("Cannot terminate server process. "
                                          "Try killing it")
+        return False
 
     def kill(self):
         """Kill the server process by sending signal.SIGKILL
@@ -253,3 +254,28 @@ class Server(object):
                 return True
             except OSError:
                 raise ServerProcessError('Cannot kill process')
+        return False
+
+
+    def gcov_flush(self):
+        """Generate gcov coverage by sending the signal SIGUSR1
+        The generated gcda files are dumped in tools directory.
+        Does not kill the process
+
+        :param: None
+        :returns: True when success
+        :raises ServerProcessError: If Server is not running
+        :raises ServerProcessError: Unable to send signal
+        """
+
+        if self.proc is None:
+            raise ServerProcessError('Server process does not exist')
+        else:
+            try:
+                os.kill(self.pid, signal.SIGUSR1)
+                return True
+            except OSError:
+                raise ServerProcessError('Unable to send signal')
+        return False
+
+
