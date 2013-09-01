@@ -39,9 +39,9 @@ class TestEstablishConnection(object):
                 if poll < 0:
                     error_type, ob, tb = sys.exc_info()
                     server_log = open('server.log').read()
-                    if ob.message:
+                    try:
                         error_msg = ob.message
-                    else:
+                    except Exception:
                         error_msg = ''
                     custom_error = """
 {0}
@@ -50,7 +50,7 @@ gst-switch-srv log:
 Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
 {2}
 """.format(error_msg, abs(poll), server_log)
-                s.kill()
+                s.terminate()
                 raise ob.__class__(custom_error)
 
 
@@ -89,9 +89,9 @@ class TestGetComposePort(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -100,7 +100,7 @@ class TestGetComposePort(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
         
         at = [ tuple(i) for i in expected_result]
@@ -142,9 +142,9 @@ class TestGetEncodePort(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -153,7 +153,7 @@ class TestGetEncodePort(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
         
         at = [ tuple(i) for i in expected_result]
@@ -198,9 +198,9 @@ class TestGetAudioPortVideoFirst(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -209,7 +209,7 @@ class TestGetAudioPortVideoFirst(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
         # print res
         # print expected_result
@@ -256,9 +256,9 @@ class TestGetAudioPortAudioFirst(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -267,7 +267,7 @@ class TestGetAudioPortAudioFirst(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
 
         at = [ tuple(i) for i in expected_result]
@@ -312,9 +312,9 @@ class TestGetPreviewPorts(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -323,7 +323,7 @@ class TestGetPreviewPorts(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
 
 
@@ -393,9 +393,9 @@ class TestSetCompositeMode(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -404,7 +404,7 @@ class TestSetCompositeMode(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
                 pass
 
@@ -464,9 +464,9 @@ class TestNewRecord(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -475,7 +475,7 @@ class TestNewRecord(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
 
 
@@ -516,9 +516,9 @@ class TestAdjustPIP(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -527,7 +527,7 @@ class TestAdjustPIP(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
 
     def verify_output(self, index, video):
@@ -580,9 +580,9 @@ class TestSwitch(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -641,9 +641,9 @@ class TestClickVideo(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -652,7 +652,7 @@ class TestClickVideo(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
 
     def verify_output(self, index, video):
@@ -711,9 +711,9 @@ class TestMarkFace(object):
                     if poll < 0:
                         error_type, ob, tb = sys.exc_info()
                         server_log = open('server.log').read()
-                        if ob.message:
+                        try:
                             error_msg = ob.message
-                        else:
+                        except Exception:
                             error_msg = ''
                         custom_error = """
     {0}
@@ -722,7 +722,7 @@ class TestMarkFace(object):
     Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
     {2}
     """.format(error_msg, abs(poll), server_log)
-                    s.kill()
+                    s.terminate()
                     raise ob.__class__(custom_error)
 
     def verify_output(self, index, video):
