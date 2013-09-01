@@ -29,7 +29,10 @@ class TestServerStartStop(object):
                 if poll < 0:
                     error_type, ob, tb = sys.exc_info()
                     server_log = open('server.log').read()
-                    error_msg = ob.message
+                    if ob.message:
+                        error_msg = ob.message
+                    else:
+                        error_msg = ''
                     custom_error = """
 {0}
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -37,7 +40,7 @@ gst-switch-srv log:
 Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
 {2}
 """.format(error_msg, abs(poll), server_log)
-                s.kill()
+                s.terminate()
                 raise ob.__class__(custom_error)
 
     def test_start_stop(self):
