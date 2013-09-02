@@ -35,24 +35,14 @@ class TestEstablishConnection(object):
             s.terminate()
         finally:
             if s.proc:
-                poll = s.proc.poll()
-                s.terminate()
-                if poll < 0:
-                    try:
-                        if poll < 0:
-                            error_type, ob, tb = sys.exc_info()
-                            server_log = open('server.log').read()
-                            error_msg = ob.message
-                            custom_error = """
-                                {0}
-                                -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-                                gst-switch-srv log:
-                                Error Code - {1} (http://tldp.org/LDP/abs/html/exitcodes.html)
-                                {2}
-                                """.format(error_msg, poll, server_log)
-                            raise ob.__class__(custom_error)
-                    except:
-                        pass
+                    poll = s.proc.poll()
+                    print self.__class__
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    print "ERROR CODE - {0}".format(poll)
+                    s.terminate()
+                    f = open('server.log')
+                    print f.read()
 
 
 
