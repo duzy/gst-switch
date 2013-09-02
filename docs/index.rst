@@ -1,9 +1,9 @@
 .. gstswitch documentation master file, created by
-   sphinx-quickstart on Fri Aug 23 04:33:13 2013.
+   sphinx-quickstart on Mon Sep  2 04:27:31 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Gst-Switch's Documentation!
+Welcome to gstswitch's documentation!
 =====================================
 
 Contents:

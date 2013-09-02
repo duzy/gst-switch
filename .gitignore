@@ -19,6 +19,7 @@
 /config.sub
 /configure
 /depcomp
+/docs/_build
 /html
 /htmlcov
 /install-sh
