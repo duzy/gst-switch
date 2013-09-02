@@ -227,7 +227,6 @@ class Server(object):
             raise ServerProcessError('Server Process does not exist')
         else:
             try:
-                self.gcov_flush()
                 proc.terminate()
                 print 'Server Killed'
                 self.proc = None
@@ -250,7 +249,6 @@ class Server(object):
             raise ServerProcessError('Server Process does not exist')
         else:
             try:
-                self.gcov_flush()
                 os.kill(self.pid, signal.SIGKILL)
                 self.proc = None
                 return True
