@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # gstswitch documentation build configuration file, created by
-# sphinx-quickstart on Fri Aug 23 04:33:13 2013.
+# sphinx-quickstart on Mon Sep  2 03:55:42 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
 #
@@ -12,10 +12,11 @@
 # serve to show the default.
 
 import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../python-api")))
+sys.path.insert(0, os.path.abspath('../python-api'))
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+#sys.path.insert(0, os.path.abspath('.'))
 
 # -- General configuration -----------------------------------------------------
 
