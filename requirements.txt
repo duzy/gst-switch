@@ -1,4 +1,3 @@
 mock
 pytest-cov
 python-coveralls
-cpp-coveralls
