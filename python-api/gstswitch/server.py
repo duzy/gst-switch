@@ -10,6 +10,8 @@ from time import sleep
 __all__ = ["Server", ]
 
 
+TOOLS_DIR = '/'.join(os.getcwd().split('/')[:-1]) + '/tools/'
+
 class Server(object):
     """Control all server related operations
 
@@ -212,7 +214,20 @@ class Server(object):
                 raise ServerProcessError("Internal error "
                                          "while launching process")
 
-    def terminate(self):
+
+    def make_coverage(self):
+        cmd = 'make -C {0} coverage'.format(TOOLS_DIR)
+        print TOOLS_DIR
+        with open(os.devnull, 'w') as tempf:
+                    proc = subprocess.Popen(
+                        cmd.split(),
+                        bufsize=-1,
+                        shell=False)
+                    out, err = proc.communicate()
+                    print out
+
+
+    def terminate(self, cov=False):
         """Terminate the server.
         self.proc is made None on success
 
@@ -227,7 +242,9 @@ class Server(object):
             raise ServerProcessError('Server Process does not exist')
         else:
             try:
-                self.gcov_flush()
+                if cov:
+                    self.gcov_flush()
+                    self.make_coverage()
                 proc.terminate()
                 print 'Server Killed'
                 self.proc = None
@@ -236,8 +253,7 @@ class Server(object):
                 raise ServerProcessError("Cannot terminate server process. "
                                          "Try killing it")
 
-
-    def kill(self):
+    def kill(self, cov=False):
         """Kill the server process by sending signal.SIGKILL
         self.proc is made None on success
 
@@ -250,7 +266,9 @@ class Server(object):
             raise ServerProcessError('Server Process does not exist')
         else:
             try:
-                self.gcov_flush
+                if cov:
+                    self.gcov_flush()
+                    self.make_coverage
                 os.kill(self.pid, signal.SIGKILL)
                 self.proc = None
                 return True
@@ -273,6 +291,7 @@ class Server(object):
             raise ServerProcessError('Server process does not exist')
         else:
             try:
+                print "GCOV FLUSH"
                 os.kill(self.pid, signal.SIGUSR1)
                 return True
             except OSError:

@@ -1,3 +1,5 @@
+.PHONY: lint unittests pytest integration test
+
 lint:
 	mkdir -p reports
 	mkdir -p reports/pylint

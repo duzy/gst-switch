@@ -3,6 +3,8 @@
 *.lo
 *.la
 *.pyc
+*.gcda
+*.gcov
 .coverage
 /INSTALL
 /Makefile

@@ -15,6 +15,7 @@ import subprocess
 # PATH = os.getenv("HOME") + '/gst/stage/bin/'
 PATH = '/usr/local/bin/'
 
+
 class TestEstablishConnection(object):
 
     NUM = 1
@@ -32,7 +33,7 @@ class TestEstablishConnection(object):
             for i in range(self.NUM):
                 print i
                 self.establish_connection()
-            s.terminate()
+            s.terminate(1)
         finally:
             if s.proc:
                     poll = s.proc.poll()
@@ -40,7 +41,7 @@ class TestEstablishConnection(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
@@ -73,7 +74,7 @@ class TestGetComposePort(object):
 
                 res.append(self.get_compose_port())
                 sources.terminate_video()
-                s.terminate()
+                s.terminate(1)
             finally:
                 if s.proc:
                     poll = s.proc.poll()
@@ -81,7 +82,7 @@ class TestGetComposePort(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
         
@@ -117,7 +118,7 @@ class TestGetEncodePort(object):
 
                 res.append(self.get_encode_port())
                 sources.terminate_video()
-                s.terminate()
+                s.terminate(1)
             finally:
                 if s.proc:
                     poll = s.proc.poll()
@@ -125,7 +126,7 @@ class TestGetEncodePort(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
         
@@ -164,7 +165,7 @@ class TestGetAudioPortVideoFirst(object):
 
                 sources.terminate_video()
                 sources.terminate_audio()
-                s.terminate()
+                s.terminate(1)
             finally:
                 if s.proc:
                     poll = s.proc.poll()
@@ -172,7 +173,7 @@ class TestGetAudioPortVideoFirst(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
         # print res
@@ -213,7 +214,7 @@ class TestGetAudioPortAudioFirst(object):
 
                 sources.terminate_video()
                 sources.terminate_audio()
-                s.terminate()
+                s.terminate(1)
             finally:
                 if s.proc:
                     poll = s.proc.poll()
@@ -221,7 +222,7 @@ class TestGetAudioPortAudioFirst(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
@@ -260,7 +261,7 @@ class TestGetPreviewPorts(object):
                 assert set(expected_result) == set(res)
                 sources.terminate_video()
                 sources.terminate_audio()
-                s.terminate()
+                s.terminate(1)
             finally:
                 if s.proc:
                     poll = s.proc.poll()
@@ -268,7 +269,7 @@ class TestGetPreviewPorts(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
@@ -323,7 +324,7 @@ class TestSetCompositeMode(object):
                 video_sink.terminate()
                 preview.terminate()
                 sources.terminate_video()
-                s.terminate()
+                s.terminate(1)
                 if not generate_frames:
                     if mode == 3:
                         assert res is False
@@ -340,7 +341,7 @@ class TestSetCompositeMode(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
@@ -391,7 +392,7 @@ class TestNewRecord(object):
                 res = self.new_record()
                 print res
                 sources.terminate_video()
-                s.terminate()
+                s.terminate(1)
                 # print ((os.path.exists(test_filename)) or (os.path.exists(alt_test_filename)))
                 assert ((os.path.exists(test_filename)) or (os.path.exists(alt_test_filename))) == True
             finally:
@@ -401,7 +402,7 @@ class TestNewRecord(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
@@ -431,7 +432,7 @@ class TestAdjustPIP(object):
                 sources.terminate_video()
                 preview.terminate()
                 video_sink.terminate()
-                s.terminate()
+                s.terminate(1)
                 if not generate_frames:
                     assert res is not None
                     assert self.verify_output(index, out_file) == True
@@ -444,7 +445,7 @@ class TestAdjustPIP(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
@@ -491,7 +492,7 @@ class TestSwitch(object):
                 video_sink.terminate()
                 sources.terminate_video()
                 preview.terminate()
-                s.terminate()
+                s.terminate(1)
             finally:
                 if s.proc:
                     poll = s.proc.poll()
@@ -499,7 +500,7 @@ class TestSwitch(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
@@ -538,7 +539,7 @@ class TestClickVideo(object):
                 sources.terminate_video()
                 preview.terminate()
                 video_sink.terminate()
-                s.terminate()
+                s.terminate(1)
                 if not generate_frames:
                     assert res is not None
                     assert self.verify_output(index, out_file) == True
@@ -551,7 +552,7 @@ class TestClickVideo(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
@@ -599,7 +600,7 @@ class TestMarkFace(object):
                 sources.terminate_video()
                 preview.terminate()
                 video_sink.terminate()
-                s.terminate()
+                s.terminate(1)
                 if not generate_frames:
                     assert res is not None
                     assert self.verify_output(index, out_file) == True
@@ -612,7 +613,7 @@ class TestMarkFace(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(poll)
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 

@@ -21,7 +21,7 @@ class TestServerStartStop(object):
             s.run()
             pid = s.pid
             assert pid > 0
-            s.terminate()
+            s.terminate(1)
             assert s.proc is None
         finally:
                 if s.proc:
@@ -30,7 +30,7 @@ class TestServerStartStop(object):
                     if poll == -11:
                         print "SEGMENTATION FAULT OCCURRED"
                     print "ERROR CODE - {0}".format(abs(poll))
-                    s.terminate()
+                    s.terminate(1)
                     f = open('server.log')
                     print f.read()
 
