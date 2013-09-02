@@ -13,6 +13,7 @@
 
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../python-api")))
+sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../fake-lib")))
 # print sys.path
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the

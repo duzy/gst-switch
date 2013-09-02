@@ -319,7 +319,7 @@ class Connection(object):
             raise ConnectionError(new_message)
 
     def adjust_pip(self, xpos, ypos, width, height):
-        """adjust_pip(in  i dx,
+        """adjust_pip(in i dx,
                            in  i dy,
                            in  i dw,
                            in  i dh,
