@@ -12,8 +12,9 @@
 # serve to show the default.
 
 import sys, os
+sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.abspath('../python-api'))
-sys.path.insert(0, os.path.abspath('fake-dir'))
+sys.path.insert(0, os.path.abspath('fake-lib'))
 print sys.path
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
