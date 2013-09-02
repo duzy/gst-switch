@@ -51,7 +51,6 @@ cd ..
 ./autogen.sh --prefix=/usr/local
 make
 sudo make install
-cd python-api
 
 if [ $TYPE == 'c' ]; then
 	sudo pip install cpp-coveralls

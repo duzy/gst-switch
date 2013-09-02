@@ -1,5 +1,7 @@
 #! /bin/bash
 
+cd python-api
+
 case $TEST in
 
 	python-api )
