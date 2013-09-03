@@ -23,7 +23,7 @@ class Connection(object):
     def __init__(
             self,
             address="unix:abstract=gstswitch",
-            bus_name=None,
+            bus_name='info.duzy.gst.switch.SwitchController',
             object_path="/info/duzy/gst/switch/SwitchController",
             default_interface="info.duzy.gst.switch.SwitchControllerInterface"):
 
