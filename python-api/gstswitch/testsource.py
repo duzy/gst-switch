@@ -1,3 +1,9 @@
+"""
+The testsource contains all gstreamer pipelines
+It provides the abse for all the other gstreamer 
+components are build upon.
+"""
+
 import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import GObject, Gst
@@ -5,7 +11,7 @@ from gi.repository import GObject, Gst
 GObject.threads_init()
 Gst.init(None)
 
-from exception import RangeError
+from .exception import RangeError
 import random
 
 # from pipeline import *
@@ -19,7 +25,6 @@ class BasePipeline(Gst.Pipeline):
     """
 
     def __init__(self):
-        super(BasePipeline, self).__init__()
         Gst.Pipeline.__init__(self)
         self._playing = False
 
@@ -122,7 +127,8 @@ class VideoPipeline(BasePipeline):
         element = self.make("capsfilter", "vfilter")
         width = str(width)
         height = str(height)
-        capsstring = "video/x-raw, format=(string)I420, width={0}, height={1}".format(width, height)
+        capsstring = "video/x-raw, format=(string)I420, width={0},\
+         height={1}".format(width, height)
         print capsstring
         caps = Gst.Caps.from_string(capsstring)
         element.set_property('caps', caps)
