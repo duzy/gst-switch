@@ -23,7 +23,7 @@ class BaseCompareVideo(object):
         'composite_mode_3': 3,
         'adjust_pip_4': 4
     }
-    REF_FRAME_DIR = os.getenv("HOME") + '/gst/gst-switch/python-api/tests/integrationtests/reference_frames'
+    REF_FRAME_DIR = os.getcwd() + '/tests/integrationtests/reference_frames'
     def __init__(self):
         pass
 
