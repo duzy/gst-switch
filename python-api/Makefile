@@ -3,9 +3,9 @@
 lint:
 	mkdir -p reports
 	mkdir -p reports/pylint
-	-pylint --rcfile=.pylintrc gstswitch
-	-pylint --rcfile=.pylintrc tests/unittests/*
-	-pylint --rcfile=.pylintrc tests/integrationtests/*.py
+	-pylint --disable=E0611 --disable=E0202 --rcfile=.pylintrc gstswitch
+	-pylint --disable=E0611 --disable=E0202 --rcfile=.pylintrc tests/unittests/*
+	-pylint --disable=E0611 --disable=E0202 --rcfile=.pylintrc tests/integrationtests/*.py
 	mv -f *.html reports/pylint
 	@echo "Lint report generated in reports/pylint"
 

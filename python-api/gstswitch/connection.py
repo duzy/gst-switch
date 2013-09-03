@@ -1,7 +1,10 @@
-#IMPORTS
-#all dbus variables need to be setup here
+"""
+connection deals with all low level method calls over dbus
+The Connection object is capable of invoking remote methods over dbus
+"""
+
 from gi.repository import Gio, GLib
-from exception import ConnectionError
+from ..gstswitch.exception import ConnectionError
 import sys
 
 __all__ = ["Connection", ]
@@ -26,6 +29,10 @@ class Connection(object):
 
         super(Connection, self).__init__()
         self.connection = None
+        self._address = None
+        self._bus_name = None
+        self._object_path = None
+        self._default_interface = None
 
         self.address = address
         self.bus_name = bus_name
@@ -34,6 +41,8 @@ class Connection(object):
 
     @property
     def address(self):
+        """Get the address
+        """
         return self._address
 
     @address.setter
@@ -54,6 +63,7 @@ class Connection(object):
 
     @property
     def bus_name(self):
+        """Get the bus name"""
         if self._bus_name is None:
             return None
         return self._bus_name
@@ -71,6 +81,7 @@ class Connection(object):
 
     @property
     def object_path(self):
+        """Get the object path"""
         return self._object_path
 
     @object_path.setter
@@ -93,6 +104,7 @@ class Connection(object):
 
     @property
     def default_interface(self):
+        """Get the default interface"""
         return self._default_interface
 
     @default_interface.setter

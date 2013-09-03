@@ -24,7 +24,7 @@ case $TEST in
 				;;
 			c )
 				make test
-				cd ..
-				coveralls -r tools/
+				cd ../tools
+				coveralls -r .
 		esac
 esac
