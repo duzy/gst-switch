@@ -4,7 +4,7 @@ The Connection object is capable of invoking remote methods over dbus
 """
 
 from gi.repository import Gio, GLib
-from ..gstswitch.exception import ConnectionError
+from .exception import ConnectionError
 import sys
 
 __all__ = ["Connection", ]

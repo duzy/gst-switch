@@ -5,8 +5,8 @@ which can be used to invoke the remote methods.
 """
 
 import ast
-from ..gstswitch.connection import Connection
-from ..gstswitch.exception import ConnectionReturnError
+from .connection import Connection
+from .exception import ConnectionReturnError
 
 __all__ = ["Controller", ]
 
@@ -194,7 +194,7 @@ class Controller(object):
         conn = self.connection.get_preview_ports()
         try:
             res = conn.unpack()[0]
-            preview_ports = parse_preview_ports(res)
+            preview_ports = self._parse_preview_ports(res)
             return preview_ports
         except AttributeError:
             raise ConnectionReturnError('Connection returned invalid values. '
@@ -346,15 +346,16 @@ class Controller(object):
         self.establish_connection()
         self.connection.mark_tracking(faces)
 
-def parse_preview_ports(res):
-    """Parses the preview_ports string"""
-    # res = '[(a, b, c), (a, b, c)*]'
-    try:
-        liststr = ast.literal_eval(res)
-    except (ValueError, SyntaxError):
-        raise ConnectionReturnError("Connection returned invalid values:{0}"
-            .format(res))
-    preview_ports = []
-    for tupl in liststr:
-        preview_ports.append(int(tupl[0]))
-    return preview_ports
+    @classmethod
+    def _parse_preview_ports(cls, res):
+        """Parses the preview_ports string"""
+        # res = '[(a, b, c), (a, b, c)*]'
+        try:
+            liststr = ast.literal_eval(res)
+        except (ValueError, SyntaxError):
+            raise ConnectionReturnError("Connection returned invalid values:{0}"
+                .format(res))
+        preview_ports = []
+        for tupl in liststr:
+            preview_ports.append(int(tupl[0]))
+        return preview_ports

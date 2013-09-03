@@ -1,6 +1,7 @@
 import testsource
 from exception import RangeError, InvalidIndexError
 
+
 __all__ = ["TestSources", "PreviewSinks"]
 
 
@@ -118,7 +119,8 @@ class TestSources(object):
         try:
             testsrc = self._running_tests_video[int(index)]
         except IndexError:
-            raise InvalidIndexError("No video source with index:{0}, use get_test_video() to determine index"
+            raise InvalidIndexError(
+        "No video source with index:{0},use get_test_video() to determine index"
                 .format(index))
         except ValueError:
             raise InvalidIndexError("Index should be a valid integer")
@@ -178,7 +180,8 @@ class TestSources(object):
         try:
             testsrc = self._running_tests_audio[int(index)]
         except IndexError:
-            raise InvalidIndexError("No audio source with index:{0}, use get_test_audio() to determine index"
+            raise InvalidIndexError(
+        "No audio source with index:{0},use get_test_audio() to determine index"
                 .format(index))
         except ValueError:
             raise InvalidIndexError("Index should be a valid integer")
@@ -201,10 +204,11 @@ class PreviewSinks(object):
     """A Controller for preview sinks to preview ports of gst-switch-srv
     :param preview_port: The preview port to get the preview
     """
-    # TODO set preview port from dbus call
+
 
     def __init__(self, preview_port=3001):
         super(PreviewSinks, self).__init__()
+
         self.preview_port = preview_port
 
     @property

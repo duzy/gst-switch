@@ -1,185 +1,214 @@
+mkdir -p reports
+mkdir -p reports/coverage/unittests
+py.test --cov-report html --cov gstswitch tests/unittests/ -v -s
 ============================= test session starts ==============================
 platform linux2 -- Python 2.7.3 -- pytest-2.3.5 -- /usr/bin/python
 plugins: cov
-collecting ... collected 167 items / 1 skipped
+collecting ... collected 170 items / 1 skipped
 
-tests/unittests/test_connection.py:14: TestAddress.test_address_null PASSED
-tests/unittests/test_connection.py:20: TestAddress.test_address_colon PASSED
-tests/unittests/test_connection.py:25: TestAddress.test_address_normal PASSED
-tests/unittests/test_connection.py:34: TestBusName.test_normal PASSED
-tests/unittests/test_connection.py:40: TestBusName.test_normal_none PASSED
-tests/unittests/test_connection.py:48: TestObjectPath.test_object_path_blank PASSED
-tests/unittests/test_connection.py:54: TestObjectPath.test_object_path_slash PASSED
-tests/unittests/test_connection.py:59: TestObjectPath.test_object_path_normal PASSED
-tests/unittests/test_connection.py:67: TestInterface.test_interface_none PASSED
-tests/unittests/test_connection.py:73: TestInterface.test_interface_dot PASSED
-tests/unittests/test_connection.py:79: TestInterface.test_interface_normal PASSED
-tests/unittests/test_connection.py:87: TestConnectDBus.test_bad_address PASSED
-tests/unittests/test_connection.py:93: TestConnectDBus.test_bad_address2 PASSED
-tests/unittests/test_connection.py:99: TestConnectDBus.test_bad_address3 PASSED
-tests/unittests/test_connection.py:105: TestConnectDBus.test_mock1 PASSED
-tests/unittests/test_connection.py:112: TestConnectDBus.test_mock2 PASSED
-tests/unittests/test_connection.py:157: test_get_compose_port PASSED
-tests/unittests/test_connection.py:171: test_get_encode_port PASSED
-tests/unittests/test_connection.py:185: test_get_audio_port PASSED
-tests/unittests/test_connection.py:199: test_get_preview_ports PASSED
-tests/unittests/test_connection.py:213: test_set_composite_mode PASSED
-tests/unittests/test_connection.py:227: test_set_encode_mode PASSED
-tests/unittests/test_connection.py:241: test_new_record PASSED
-tests/unittests/test_connection.py:255: test_adjust_pip PASSED
-tests/unittests/test_connection.py:269: test_switch PASSED
-tests/unittests/test_connection.py:283: test_click_video PASSED
-tests/unittests/test_connection.py:297: test_mark_face PASSED
-tests/unittests/test_connection.py:313: test_mark_tracking PASSED
-tests/unittests/test_controller.py:15: TestAddress.test_address_null PASSED
-tests/unittests/test_controller.py:21: TestAddress.test_address_colon PASSED
-tests/unittests/test_controller.py:26: TestAddress.test_address_normal PASSED
-tests/unittests/test_controller.py:35: TestBusName.test_normal PASSED
-tests/unittests/test_controller.py:41: TestBusName.test_normal_none PASSED
-tests/unittests/test_controller.py:49: TestObjectPath.test_object_path_blank PASSED
-tests/unittests/test_controller.py:55: TestObjectPath.test_object_path_slash PASSED
-tests/unittests/test_controller.py:60: TestObjectPath.test_object_path_normal PASSED
-tests/unittests/test_controller.py:68: TestInterface.test_interface_none PASSED
-tests/unittests/test_controller.py:74: TestInterface.test_interface_dot PASSED
-tests/unittests/test_controller.py:80: TestInterface.test_interface_normal PASSED
-tests/unittests/test_controller.py:88: TestEstablishConnection.test_normal PASSED
-tests/unittests/test_controller.py:170: TestGetComposePort.test_unpack PASSED
-tests/unittests/test_controller.py:176: TestGetComposePort.test_normal_unpack PASSED
-tests/unittests/test_controller.py:184: TestGetEncodePort.test_unpack PASSED
-tests/unittests/test_controller.py:190: TestGetEncodePort.test_normal_unpack PASSED
-tests/unittests/test_controller.py:198: TestGetAudioPort.test_unpack PASSED
-tests/unittests/test_controller.py:204: TestGetAudioPort.test_normal_unpack PASSED
-tests/unittests/test_controller.py:212: TestGetPreviewPorts.test_unpack PASSED
-tests/unittests/test_controller.py:218: TestGetPreviewPorts.test_normal_unpack PASSED
-tests/unittests/test_controller.py:227: TestSetCompositeMode.test_unpack PASSED
-tests/unittests/test_controller.py:234: TestSetCompositeMode.test_normal_unpack PASSED
-tests/unittests/test_controller.py:244: TestSetEncodeMode.test_unpack PASSED
-tests/unittests/test_controller.py:251: TestSetEncodeMode.test_normal_unpack PASSED
-tests/unittests/test_controller.py:260: TestNewRecord.test_unpack PASSED
-tests/unittests/test_controller.py:267: TestNewRecord.test_normal_unpack PASSED
-tests/unittests/test_controller.py:276: TestAdjustPIP.test_unpack PASSED
-tests/unittests/test_controller.py:283: TestAdjustPIP.test_normal_unpack PASSED
-tests/unittests/test_controller.py:293: TestSwitch.test_unpack PASSED
-tests/unittests/test_controller.py:300: TestSwitch.test_normal_unpack PASSED
-tests/unittests/test_controller.py:310: TestClickVideo.test_unpack PASSED
-tests/unittests/test_controller.py:317: TestClickVideo.test_normal_unpack PASSED
-tests/unittests/test_controller.py:326: TestMarkFaces.test_normal PASSED
-tests/unittests/test_controller.py:336: TestMarkTracking.test_normal PASSED
-tests/unittests/test_controller.py:345: TestParsePreviewPorts.test_value_error PASSED
-tests/unittests/test_controller.py:351: TestParsePreviewPorts.test_syntax_error PASSED
-tests/unittests/test_controller.py:357: TestParsePreviewPorts.test_normal PASSED
-tests/unittests/test_helpers.py:13: TestTestSourcesVideoPort.test_range PASSED
-tests/unittests/test_helpers.py:19: TestTestSourcesVideoPort.test_invalid PASSED
-tests/unittests/test_helpers.py:25: TestTestSourcesVideoPort.test_normal PASSED
-tests/unittests/test_helpers.py:34: TestTestSourcesAudioPort.test_range PASSED
-tests/unittests/test_helpers.py:40: TestTestSourcesAudioPort.test_invalid PASSED
-tests/unittests/test_helpers.py:46: TestTestSourcesAudioPort.test_normal PASSED
-tests/unittests/test_helpers.py:70: TestTestSources.test_new_test_video PASSED
-tests/unittests/test_helpers.py:85: TestTestSources.test_get_test_video PASSED
-tests/unittests/test_helpers.py:91: TestTestSources.test_terminate_index_error_video PASSED
-tests/unittests/test_helpers.py:99: TestTestSources.test_terminate_index_normal_video PASSED
-tests/unittests/test_helpers.py:105: TestTestSources.test_terminate1_video PASSED
-tests/unittests/test_helpers.py:130: TestTestSources.test_new_test_audio PASSED
-tests/unittests/test_helpers.py:145: TestTestSources.test_get_test_audio PASSED
-tests/unittests/test_helpers.py:151: TestTestSources.test_terminate_index_error_audio PASSED
-tests/unittests/test_helpers.py:159: TestTestSources.test_terminate_index_normal_audio PASSED
-tests/unittests/test_helpers.py:165: TestTestSources.test_terminate1_audio PASSED
-tests/unittests/test_helpers.py:170: TestTestSources.test_terminate2_audio PASSED
-tests/unittests/test_helpers.py:178: TestPreviewSinksPreviewPort.test_blank PASSED
-tests/unittests/test_helpers.py:184: TestPreviewSinksPreviewPort.test_range PASSED
-tests/unittests/test_helpers.py:190: TestPreviewSinksPreviewPort.test_invalid PASSED
-tests/unittests/test_helpers.py:196: TestPreviewSinksPreviewPort.test_normal PASSED
-tests/unittests/test_helpers.py:217: TestPreviewSinks.test_run PASSED
-tests/unittests/test_helpers.py:223: TestPreviewSinks.test_terminate_fail PASSED
-tests/unittests/test_helpers.py:228: TestPreviewSinks.test_terminate_normal PASSED
-tests/unittests/test_server.py:17: TestPath.test_invalid_path PASSED
-tests/unittests/test_server.py:23: TestPath.test_invalid_path_none PASSED
-tests/unittests/test_server.py:32: TestVideoPort.test_invalid_video_port_null PASSED
-tests/unittests/test_server.py:38: TestVideoPort.test_invalid_video_port_type PASSED
-tests/unittests/test_server.py:44: TestVideoPort.test_invalid_video_port_range PASSED
-tests/unittests/test_server.py:53: TestAudioPort.test_invalid_audio_port_null PASSED
-tests/unittests/test_server.py:59: TestAudioPort.test_invalid_audio_port_type PASSED
-tests/unittests/test_server.py:65: TestAudioPort.test_invalid_audio_port_range PASSED
-tests/unittests/test_server.py:74: TestControlPort.test_invalid_control_port_null PASSED
-tests/unittests/test_server.py:80: TestControlPort.test_invalid_control_port_type PASSED
-tests/unittests/test_server.py:86: TestControlPort.test_invalid_control_port_range PASSED
-tests/unittests/test_server.py:95: TestRecordFile.test_record_file_blank PASSED
-tests/unittests/test_server.py:101: TestRecordFile.test_record_file_slashes PASSED
-tests/unittests/test_server.py:110: TestKillTerminate.test_terminate_fail PASSED
-tests/unittests/test_server.py:123: TestKillTerminate.test_kill_fail PASSED
-tests/unittests/test_server.py:130: TestKillTerminate.test_no_process_kill PASSED
-tests/unittests/test_server.py:135: TestKillTerminate.test_no_process_terminate PASSED
-tests/unittests/test_server.py:140: TestKillTerminate.test_no_process_gov_flush PASSED
-tests/unittests/test_server.py:145: TestKillTerminate.test_gcov_flush_fail PASSED
-tests/unittests/test_server.py:157: TestRun.test_run PASSED
-tests/unittests/test_server.py:164: TestRun.test_run_process PASSED
-tests/unittests/test_server.py:171: TestRun.test_start_process_error PASSED
-tests/unittests/test_server.py:177: TestRun.test_start_process_normal PASSED
-tests/unittests/test_server.py:198: TestNormal.test_normal_terminate PASSED
-tests/unittests/test_server.py:204: TestNormal.test_normal_kill PASSED
-tests/unittests/test_server.py:212: TestNormal.test_terminate PASSED
-tests/unittests/test_server.py:218: TestNormal.test_kill PASSED
-tests/unittests/test_server.py:225: TestNormal.test_normal_gcov_flush PASSED
-tests/unittests/test_testsource.py:14: TestVideoSrcPort.test_blank PASSED
-tests/unittests/test_testsource.py:20: TestVideoSrcPort.test_range PASSED
-tests/unittests/test_testsource.py:26: TestVideoSrcPort.test_invalid PASSED
-tests/unittests/test_testsource.py:32: TestVideoSrcPort.test_normal PASSED
-tests/unittests/test_testsource.py:40: TestVideoSrcWidth.test_blank PASSED
-tests/unittests/test_testsource.py:47: TestVideoSrcWidth.test_non_positive PASSED
-tests/unittests/test_testsource.py:54: TestVideoSrcWidth.test_invalid PASSED
-tests/unittests/test_testsource.py:61: TestVideoSrcWidth.test_normal PASSED
-tests/unittests/test_testsource.py:71: TestVideoSrcHeight.test_blank PASSED
-tests/unittests/test_testsource.py:78: TestVideoSrcHeight.test_non_positive PASSED
-tests/unittests/test_testsource.py:85: TestVideoSrcHeight.test_invalid PASSED
-tests/unittests/test_testsource.py:92: TestVideoSrcHeight.test_normal PASSED
-tests/unittests/test_testsource.py:102: TestVideoSrcPattern.test_range PASSED
-tests/unittests/test_testsource.py:109: TestVideoSrcPattern.test_invalid PASSED
-tests/unittests/test_testsource.py:116: TestVideoSrcPattern.test_normal PASSED
-tests/unittests/test_testsource.py:126: TestVideoSrcTimeOverlay.test_fail PASSED
-tests/unittests/test_testsource.py:133: TestVideoSrcTimeOverlay.test_normal PASSED
-tests/unittests/test_testsource.py:144: TestVideoSrcClockOverlay.test_fail PASSED
-tests/unittests/test_testsource.py:151: TestVideoSrcClockOverlay.test_normal PASSED
-tests/unittests/test_testsource.py:172: TestVideoSrcPlay.test_run PASSED
-tests/unittests/test_testsource.py:177: TestVideoSrcPlay.test_pause PASSED
-tests/unittests/test_testsource.py:182: TestVideoSrcPlay.test_end PASSED
-tests/unittests/test_testsource.py:190: TestPreviewPort.test_blank PASSED
-tests/unittests/test_testsource.py:196: TestPreviewPort.test_range PASSED
-tests/unittests/test_testsource.py:202: TestPreviewPort.test_invalid PASSED
-tests/unittests/test_testsource.py:208: TestPreviewPort.test_normal PASSED
-tests/unittests/test_testsource.py:216: TestPreviewPlay.test_run PASSED
-tests/unittests/test_testsource.py:221: TestPreviewPlay.test_pause PASSED
-tests/unittests/test_testsource.py:226: TestPreviewPlay.test_end PASSED
-tests/unittests/test_testsource.py:235: TestBasePipeline.test_play PASSED
-tests/unittests/test_testsource.py:241: TestBasePipeline.test_pause PASSED
-tests/unittests/test_testsource.py:247: TestBasePipeline.test_disable PASSED
-tests/unittests/test_testsource.py:256: TestVideoPipeline.test_permuate_time_clock_1 PASSED
-tests/unittests/test_testsource.py:259: TestVideoPipeline.test_permuate_time_clock_2 PASSED
-tests/unittests/test_testsource.py:262: TestVideoPipeline.test_permuate_time_clock_3 PASSED
-tests/unittests/test_testsource.py:265: TestVideoPipeline.test_permuate_time_clock_4 
-(python:10410): GStreamer-WARNING **: Name 'timeoverlay' is not unique in bin 'gstswitch+testsource+videopipeline23', not adding
+tests/unittests/test_connection_unit.py:14: TestAddress.test_address_null PASSED
+tests/unittests/test_connection_unit.py:20: TestAddress.test_address_colon PASSED
+tests/unittests/test_connection_unit.py:25: TestAddress.test_address_normal PASSED
+tests/unittests/test_connection_unit.py:34: TestBusName.test_normal PASSED
+tests/unittests/test_connection_unit.py:40: TestBusName.test_normal_none PASSED
+tests/unittests/test_connection_unit.py:48: TestObjectPath.test_object_path_blank PASSED
+tests/unittests/test_connection_unit.py:54: TestObjectPath.test_object_path_slash PASSED
+tests/unittests/test_connection_unit.py:59: TestObjectPath.test_object_path_normal PASSED
+tests/unittests/test_connection_unit.py:67: TestInterface.test_interface_none PASSED
+tests/unittests/test_connection_unit.py:73: TestInterface.test_interface_dot PASSED
+tests/unittests/test_connection_unit.py:79: TestInterface.test_interface_normal PASSED
+tests/unittests/test_connection_unit.py:87: TestConnectDBus.test_bad_address PASSED
+tests/unittests/test_connection_unit.py:93: TestConnectDBus.test_bad_address2 PASSED
+tests/unittests/test_connection_unit.py:99: TestConnectDBus.test_bad_address3 PASSED
+tests/unittests/test_connection_unit.py:105: TestConnectDBus.test_mock1 PASSED
+tests/unittests/test_connection_unit.py:112: TestConnectDBus.test_mock2 PASSED
+tests/unittests/test_connection_unit.py:157: test_get_compose_port PASSED
+tests/unittests/test_connection_unit.py:171: test_get_encode_port PASSED
+tests/unittests/test_connection_unit.py:185: test_get_audio_port PASSED
+tests/unittests/test_connection_unit.py:199: test_get_preview_ports PASSED
+tests/unittests/test_connection_unit.py:213: test_set_composite_mode PASSED
+tests/unittests/test_connection_unit.py:227: test_set_encode_mode PASSED
+tests/unittests/test_connection_unit.py:241: test_new_record PASSED
+tests/unittests/test_connection_unit.py:255: test_adjust_pip PASSED
+tests/unittests/test_connection_unit.py:269: test_switch PASSED
+tests/unittests/test_connection_unit.py:283: test_click_video PASSED
+tests/unittests/test_connection_unit.py:297: test_mark_face PASSED
+tests/unittests/test_connection_unit.py:313: test_mark_tracking PASSED
+tests/unittests/test_controller_unit.py:15: TestAddress.test_address_null PASSED
+tests/unittests/test_controller_unit.py:21: TestAddress.test_address_colon PASSED
+tests/unittests/test_controller_unit.py:26: TestAddress.test_address_normal PASSED
+tests/unittests/test_controller_unit.py:35: TestBusName.test_normal PASSED
+tests/unittests/test_controller_unit.py:41: TestBusName.test_normal_none PASSED
+tests/unittests/test_controller_unit.py:49: TestObjectPath.test_object_path_blank PASSED
+tests/unittests/test_controller_unit.py:55: TestObjectPath.test_object_path_slash PASSED
+tests/unittests/test_controller_unit.py:60: TestObjectPath.test_object_path_normal PASSED
+tests/unittests/test_controller_unit.py:68: TestInterface.test_interface_none PASSED
+tests/unittests/test_controller_unit.py:74: TestInterface.test_interface_dot PASSED
+tests/unittests/test_controller_unit.py:80: TestInterface.test_interface_normal PASSED
+tests/unittests/test_controller_unit.py:88: TestEstablishConnection.test_normal PASSED
+tests/unittests/test_controller_unit.py:170: TestGetComposePort.test_unpack PASSED
+tests/unittests/test_controller_unit.py:176: TestGetComposePort.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:184: TestGetEncodePort.test_unpack PASSED
+tests/unittests/test_controller_unit.py:190: TestGetEncodePort.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:198: TestGetAudioPort.test_unpack PASSED
+tests/unittests/test_controller_unit.py:204: TestGetAudioPort.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:212: TestGetPreviewPorts.test_unpack PASSED
+tests/unittests/test_controller_unit.py:218: TestGetPreviewPorts.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:227: TestSetCompositeMode.test_unpack PASSED
+tests/unittests/test_controller_unit.py:234: TestSetCompositeMode.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:244: TestSetEncodeMode.test_unpack PASSED
+tests/unittests/test_controller_unit.py:251: TestSetEncodeMode.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:260: TestNewRecord.test_unpack PASSED
+tests/unittests/test_controller_unit.py:267: TestNewRecord.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:276: TestAdjustPIP.test_unpack PASSED
+tests/unittests/test_controller_unit.py:283: TestAdjustPIP.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:293: TestSwitch.test_unpack PASSED
+tests/unittests/test_controller_unit.py:300: TestSwitch.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:310: TestClickVideo.test_unpack PASSED
+tests/unittests/test_controller_unit.py:317: TestClickVideo.test_normal_unpack PASSED
+tests/unittests/test_controller_unit.py:326: TestMarkFaces.test_normal PASSED
+tests/unittests/test_controller_unit.py:336: TestMarkTracking.test_normal PASSED
+tests/unittests/test_controller_unit.py:345: TestParsePreviewPorts.test_value_error PASSED
+tests/unittests/test_controller_unit.py:351: TestParsePreviewPorts.test_syntax_error PASSED
+tests/unittests/test_controller_unit.py:357: TestParsePreviewPorts.test_normal PASSED
+tests/unittests/test_helpers_unit.py:13: TestTestSourcesVideoPort.test_range PASSED
+tests/unittests/test_helpers_unit.py:19: TestTestSourcesVideoPort.test_invalid PASSED
+tests/unittests/test_helpers_unit.py:25: TestTestSourcesVideoPort.test_normal PASSED
+tests/unittests/test_helpers_unit.py:34: TestTestSourcesAudioPort.test_range PASSED
+tests/unittests/test_helpers_unit.py:40: TestTestSourcesAudioPort.test_invalid PASSED
+tests/unittests/test_helpers_unit.py:46: TestTestSourcesAudioPort.test_normal PASSED
+tests/unittests/test_helpers_unit.py:70: TestTestSources.test_new_test_video PASSED
+tests/unittests/test_helpers_unit.py:85: TestTestSources.test_get_test_video PASSED
+tests/unittests/test_helpers_unit.py:91: TestTestSources.test_terminate_index_error_video PASSED
+tests/unittests/test_helpers_unit.py:99: TestTestSources.test_terminate_index_normal_video PASSED
+tests/unittests/test_helpers_unit.py:105: TestTestSources.test_terminate1_video PASSED
+tests/unittests/test_helpers_unit.py:130: TestTestSources.test_new_test_audio PASSED
+tests/unittests/test_helpers_unit.py:145: TestTestSources.test_get_test_audio PASSED
+tests/unittests/test_helpers_unit.py:151: TestTestSources.test_terminate_index_error_audio PASSED
+tests/unittests/test_helpers_unit.py:159: TestTestSources.test_terminate_index_normal_audio PASSED
+tests/unittests/test_helpers_unit.py:165: TestTestSources.test_terminate1_audio PASSED
+tests/unittests/test_helpers_unit.py:170: TestTestSources.test_terminate2_audio PASSED
+tests/unittests/test_helpers_unit.py:178: TestPreviewSinksPreviewPort.test_blank FAILED
+tests/unittests/test_helpers_unit.py:184: TestPreviewSinksPreviewPort.test_range FAILED
+tests/unittests/test_helpers_unit.py:190: TestPreviewSinksPreviewPort.test_invalid FAILED
+tests/unittests/test_helpers_unit.py:196: TestPreviewSinksPreviewPort.test_normal FAILED
+tests/unittests/test_helpers_unit.py:217: TestPreviewSinks.test_run FAILED
+tests/unittests/test_helpers_unit.py:223: TestPreviewSinks.test_terminate_fail PASSED
+tests/unittests/test_helpers_unit.py:228: TestPreviewSinks.test_terminate_normal PASSED
+tests/unittests/test_server_unit.py:17: TestPath.test_invalid_path PASSED
+tests/unittests/test_server_unit.py:23: TestPath.test_invalid_path_none PASSED
+tests/unittests/test_server_unit.py:32: TestVideoPort.test_invalid_video_port_null PASSED
+tests/unittests/test_server_unit.py:38: TestVideoPort.test_invalid_video_port_type PASSED
+tests/unittests/test_server_unit.py:44: TestVideoPort.test_invalid_video_port_range PASSED
+tests/unittests/test_server_unit.py:53: TestAudioPort.test_invalid_audio_port_null PASSED
+tests/unittests/test_server_unit.py:59: TestAudioPort.test_invalid_audio_port_type PASSED
+tests/unittests/test_server_unit.py:65: TestAudioPort.test_invalid_audio_port_range PASSED
+tests/unittests/test_server_unit.py:74: TestControlPort.test_invalid_control_port_null PASSED
+tests/unittests/test_server_unit.py:80: TestControlPort.test_invalid_control_port_type PASSED
+tests/unittests/test_server_unit.py:86: TestControlPort.test_invalid_control_port_range PASSED
+tests/unittests/test_server_unit.py:95: TestRecordFile.test_record_file_blank PASSED
+tests/unittests/test_server_unit.py:101: TestRecordFile.test_record_file_slashes PASSED
+tests/unittests/test_server_unit.py:110: TestKillTerminate.test_terminate_fail PASSED
+tests/unittests/test_server_unit.py:123: TestKillTerminate.test_kill_fail PASSED
+tests/unittests/test_server_unit.py:130: TestKillTerminate.test_no_process_kill PASSED
+tests/unittests/test_server_unit.py:135: TestKillTerminate.test_no_process_terminate PASSED
+tests/unittests/test_server_unit.py:140: TestKillTerminate.test_no_process_gov_flush PASSED
+tests/unittests/test_server_unit.py:145: TestKillTerminate.test_gcov_flush_fail PASSED
+tests/unittests/test_server_unit.py:157: TestRun.test_run 
 
-(python:10410): GStreamer-WARNING **: Name 'clockoverlay' is not unique in bin 'gstswitch+testsource+videopipeline23', not adding
-PASSED
-tests/unittests/test_testsource.py:271: TestAudioSrcPort.test_blank PASSED
-tests/unittests/test_testsource.py:277: TestAudioSrcPort.test_range PASSED
-tests/unittests/test_testsource.py:283: TestAudioSrcPort.test_invalid PASSED
-tests/unittests/test_testsource.py:289: TestAudioSrcPort.test_normal PASSED
-tests/unittests/test_testsource.py:298: TestAudioSrcFreq.test_blank PASSED
-tests/unittests/test_testsource.py:305: TestAudioSrcFreq.test_range PASSED
-tests/unittests/test_testsource.py:312: TestAudioSrcFreq.test_invalid PASSED
-tests/unittests/test_testsource.py:319: TestAudioSrcFreq.test_normal /home/hyades/Github/gst-switch/python-api/gstswitch/testsource.py:189: Warning: value "65535.000000" of type `gdouble' is invalid or out of range for property `freq' of type `gdouble'
-  element.set_property('freq', int(freq))
-PASSED
-tests/unittests/test_testsource.py:328: TestAudioSrcWave.test_range PASSED
-tests/unittests/test_testsource.py:335: TestAudioSrcWave.test_invalid PASSED
-tests/unittests/test_testsource.py:342: TestAudioSrcWave.test_normal PASSED
-tests/unittests/test_testsource.py:351: TestAudioSrcPlay.test_run PASSED
-tests/unittests/test_testsource.py:356: TestAudioSrcPlay.test_pause PASSED
-tests/unittests/test_testsource.py:361: TestAudioSrcPlay.test_end PASSED
+=================================== FAILURES ===================================
+____________________ TestPreviewSinksPreviewPort.test_blank ____________________
+
+self = <unittests.test_helpers_unit.TestPreviewSinksPreviewPort object at 0x36bc150>
+
+    def test_blank(self):
+        tests = ['', None, [], {}]
+        for test in tests:
+            with pytest.raises(ValueError):
+>               PreviewSinks(preview_port=test)
+E               Failed: DID NOT RAISE
+
+tests/unittests/test_helpers_unit.py:182: Failed
+____________________ TestPreviewSinksPreviewPort.test_range ____________________
+
+self = <unittests.test_helpers_unit.TestPreviewSinksPreviewPort object at 0x36bce50>
+
+    def test_range(self):
+        tests = [-100, 1e7, 65536]
+        for test in tests:
+            with pytest.raises(RangeError):
+>               PreviewSinks(preview_port=test)
+E               Failed: DID NOT RAISE
+
+tests/unittests/test_helpers_unit.py:188: Failed
+___________________ TestPreviewSinksPreviewPort.test_invalid ___________________
+
+self = <unittests.test_helpers_unit.TestPreviewSinksPreviewPort object at 0x36bc1d0>
+
+    def test_invalid(self):
+        tests = [[1, 2, 3, 4], {1: 2, 2: 3}, '1e10']
+        for test in tests:
+            with pytest.raises(TypeError):
+>               PreviewSinks(preview_port=test)
+E               Failed: DID NOT RAISE
+
+tests/unittests/test_helpers_unit.py:194: Failed
+___________________ TestPreviewSinksPreviewPort.test_normal ____________________
+
+self = <unittests.test_helpers_unit.TestPreviewSinksPreviewPort object at 0x36bc850>
+
+    def test_normal(self):
+        tests = [1, 65535, 1000]
+        for test in tests:
+            src = PreviewSinks(preview_port=test)
+>           assert src.preview_port == test
+
+tests/unittests/test_helpers_unit.py:200: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <gstswitch.helpers.PreviewSinks object at 0x36bc750>
+
+    @property
+    def preview_port(self):
+>       return self._preview_port
+E       AttributeError: 'PreviewSinks' object has no attribute '_preview_port'
+
+gstswitch/helpers.py:213: AttributeError
+__________________________ TestPreviewSinks.test_run ___________________________
+
+self = <unittests.test_helpers_unit.TestPreviewSinks object at 0x36bcb10>
+monkeypatch = <_pytest.monkeypatch.monkeypatch instance at 0x36e17a0>
+
+    def test_run(self, monkeypatch):
+        preview = PreviewSinks()
+        monkeypatch.setattr(gstswitch.testsource, 'Preview', self.MockPreview)
+>       preview.run()
+
+tests/unittests/test_helpers_unit.py:220: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <gstswitch.helpers.PreviewSinks object at 0x36bc7d0>
+
+    def run(self):
+        """Run the Preview Sink"""
+>       self.preview = testsource.Preview(self.preview_port)
+
+gstswitch/helpers.py:236: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <gstswitch.helpers.PreviewSinks object at 0x36bc7d0>
+
+    @property
+    def preview_port(self):
+>       return self._preview_port
+E       AttributeError: 'PreviewSinks' object has no attribute '_preview_port'
+
+gstswitch/helpers.py:213: AttributeError
 --------------- coverage: platform linux2, python 2.7.3-final-0 ----------------
 Coverage HTML written to dir htmlcov
-
-==================== 167 passed, 1 skipped in 2.71 seconds =====================
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/hyades/Github/gst-switch/python-api/gstswitch/server.py:172: KeyboardInterrupt
+=============== 5 failed, 103 passed, 1 skipped in 2.32 seconds ================
 (False,)
 (true,)
 Set composite mode to 1
@@ -193,7 +222,7 @@ Click video: xpos:1 ypos:2 width:3 height:4
 2 pattern: 3
 3 pattern: 19
 End source with pattern 1
-TESTS: [<unittests.test_helpers.MockTest object at 0x3096f10>, <unittests.test_helpers.MockTest object at 0x3096f50>, <unittests.test_helpers.MockTest object at 0x3096f90>, <unittests.test_helpers.MockTest object at 0x3096fd0>]
+TESTS: [<unittests.test_helpers_unit.MockTest object at 0x36bbb90>, <unittests.test_helpers_unit.MockTest object at 0x36bba10>, <unittests.test_helpers_unit.MockTest object at 0x36bba50>, <unittests.test_helpers_unit.MockTest object at 0x36bba90>]
 End source with pattern 1
 End source with pattern 2
 End source with pattern 3
@@ -203,54 +232,16 @@ End source with pattern 19
 2 wave: 3
 3 wave: 10
 End source with wave 1
-TESTS: [<unittests.test_helpers.MockTest2 object at 0x3098590>, <unittests.test_helpers.MockTest2 object at 0x3098410>, <unittests.test_helpers.MockTest2 object at 0x3098450>, <unittests.test_helpers.MockTest2 object at 0x3098490>]
+TESTS: [<unittests.test_helpers_unit.MockTest2 object at 0x36bbf90>, <unittests.test_helpers_unit.MockTest2 object at 0x36bbfd0>, <unittests.test_helpers_unit.MockTest2 object at 0x36bbf10>, <unittests.test_helpers_unit.MockTest2 object at 0x36bc050>]
 End source with wave 1
 End source with wave 2
 End source with wave 3
 End source with wave 10
 TESTS: []
-start preview
 end preview
 Starting server
 Creating process /usr/gst-switch-srv --video-input-port=3000 --audio-input-port=4000 --control-port=5000 --record=record.data
 Killing server
-GCOV FLUSH
-GCOV FLUSH
 Killing server
 GCOV FLUSH
 Starting server
-Creating process cmd
-Creating process cmd
-cmd
-Killing server
-GCOV FLUSH
-Server Killed
-GCOV FLUSH
-Killing server
-GCOV FLUSH
-GCOV FLUSH
-GCOV FLUSH
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=1000000.0, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=200, height=200
-video/x-raw, format=(string)I420, width=300, height=1000000.0
-video/x-raw, format=(string)I420, width=300, height=300
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
-video/x-raw, format=(string)I420, width=300, height=200
