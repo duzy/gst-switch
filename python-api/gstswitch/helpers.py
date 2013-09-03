@@ -1,5 +1,11 @@
-import testsource
-from exception import RangeError, InvalidIndexError
+"""
+Has helper classes which create test video and audio sources.
+It is also possible to create a preview out source showing the
+compose port output.
+"""
+
+from gstswitch import testsource
+from .exception import RangeError, InvalidIndexError
 
 
 __all__ = ["TestSources", "PreviewSinks"]
@@ -19,6 +25,9 @@ class TestSources(object):
         super(TestSources, self).__init__()
         self._running_tests_video = []
         self._running_tests_audio = []
+        self._audio_port = None
+        self._video_port = None
+
         if video_port:
             self.video_port = video_port
         if audio_port:
@@ -26,10 +35,16 @@ class TestSources(object):
 
     @property
     def video_port(self):
+        """Get the video port"""
         return self._video_port
 
     @video_port.setter
     def video_port(self, video_port):
+        """Set the video port
+        :raises RangeError: Video Port must be range 1 to 65535
+        :raises TypeError: should be a integer or should be able to
+        covert to an integer
+        """
         try:
             i = int(video_port)
             if i < 1 or i > 65535:
@@ -44,36 +59,47 @@ class TestSources(object):
 
     @property
     def audio_port(self):
+        """Get the audio port"""
         return self._audio_port
 
     @audio_port.setter
     def audio_port(self, audio_port):
+        """Set the audio port
+        :raises RangeError: audio port must be range 1 to 65535
+        :raises TypeError: should be a integer or should be able to
+        covert to an integer
+        """
         try:
             i = int(audio_port)
             if i < 1 or i > 65535:
-                raise RangeError('audio must be in range 1 to 65535')
+                raise RangeError('audio port must be in range 1 to 65535')
             else:
                 self._audio_port = audio_port
         except TypeError:
-            raise TypeError("audio must be a string or number,"
+            raise TypeError("audio port must be a string or number,"
                 "not, '{0}'".format(type(audio_port)))
         except ValueError:
             raise TypeError("Port must be a valid number")
 
     @property
     def running_tests_video(self):
+        """Get the currently running test video list"""
         return self._running_tests_video
 
     @running_tests_video.setter
     def running_tests_video(self, tests):
+        """Set the running test video list
+        """
         self._running_tests_video = tests
 
     @property
     def running_tests_audio(self):
+        """Get the currently running test audio list"""
         return self._running_tests_audio
 
     @running_tests_audio.setter
     def running_tests_audio(self, tests):
+        """Set the currently running test audio list"""
         self._running_tests_audio = tests
 
     def new_test_video(self,
@@ -135,7 +161,7 @@ class TestSources(object):
         """Terminate all test video sources
         """
         print 'TESTS:', self._running_tests_video
-        for i in range(len(self._running_tests_video)):
+        for _ in range(len(self._running_tests_video)):
             self.terminate_index_video(0)
 
 
@@ -196,7 +222,7 @@ class TestSources(object):
         """Terminate all test audio sources
         """
         print 'TESTS:', self._running_tests_audio
-        for i in range(len(self._running_tests_audio)):
+        for _ in range(len(self._running_tests_audio)):
             self.terminate_index_audio(0)
 
 
@@ -208,15 +234,23 @@ class PreviewSinks(object):
 
     def __init__(self, preview_port=3001):
         super(PreviewSinks, self).__init__()
-
+        self._preview_port = None
+        self.preview = None
+        
         self.preview_port = preview_port
 
     @property
     def preview_port(self):
+        """Get the preview port"""
         return self._preview_port
 
     @preview_port.setter
     def preview_port(self, preview_port):
+        """Set the preview port
+        :raises RangeError: preview port must be in range 1 to 65535
+        :raises TypeError: preview port must be a integer or convertable to
+        an integer
+        """
         if not preview_port:
             raise ValueError("Preview_port: '{0}' cannot be blank"
                              .format(preview_port))
@@ -224,7 +258,7 @@ class PreviewSinks(object):
             try:
                 i = int(preview_port)
                 if i < 1 or i > 65535:
-                    raise RangeError('Preview_port must be in range 1 to 65535')
+                    raise RangeError('Preview port must be in range 1 to 65535')
                 else:
                     self._preview_port = preview_port
             except TypeError:
