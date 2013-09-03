@@ -22,8 +22,8 @@ script:
  - ./.travis-run.sh
 
 after_success:
- - coveralls --exclude gio
- # - coveralls
+ # - coveralls --exclude tools/gio
+ - coveralls
 notifications:
   email:
     - gst-switch-spam@googlegroups.com

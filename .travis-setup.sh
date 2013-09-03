@@ -55,7 +55,7 @@ sudo make install
 if [ $TYPE == 'c' ]; then
 	git clone https://github.com/hyades/cpp-coveralls.git
 	cd cpp-coveralls
-	sudo setup.py install
+	sudo python setup.py install
 else
 	sudo pip install python-coveralls
 fi
