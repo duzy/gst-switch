@@ -23,7 +23,8 @@ script:
 
 after_success:
  # - coveralls --exclude tools/gio
- - coveralls
+ - sudo apt-get install pastebinit
+ - coveralls 2>&1 | pastebinit
 notifications:
   email:
     - gst-switch-spam@googlegroups.com
