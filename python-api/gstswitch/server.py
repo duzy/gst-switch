@@ -218,7 +218,7 @@ class Server(object):
     def make_coverage(self):
         cmd = 'make -C {0} coverage'.format(TOOLS_DIR)
         print TOOLS_DIR
-        with open(os.devnull, 'w') as tempf:
+        with open(os.devnull, 'w'):
                     proc = subprocess.Popen(
                         cmd.split(),
                         bufsize=-1,

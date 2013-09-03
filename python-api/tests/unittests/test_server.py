@@ -191,6 +191,25 @@ class MockProcess(object):
             if self.mode == False:
                 raise OSError('Testing terminate')
 
+        def kill(selfd):
+            if self.mode == True:
+                pass
+            if self.mode == False:
+                raise OSError('Testing kill')
+
+        def make_coverage(self):
+            pass
+
+
+
+class MockPopen(object):
+    def __init__(self, cmd, bufsize, shell):
+        pass
+
+    def communicate(self):
+        return 0, 0
+
+
 
 class TestNormal(object):
     # Normal Functioning Tests    
@@ -215,12 +234,29 @@ class TestNormal(object):
         with pytest.raises(ServerProcessError):
             s.terminate()
 
+    def test_terminate_cov(self):
+        s = Server(path='abc')
+        s.proc = MockProcess(False)
+        s.gcov_flush = Mock()
+        s.make_coverage = Mock()
+        with pytest.raises(ServerProcessError):
+            s.terminate(True)
+
     def test_kill(self, monkeypatch):
         s = Server(path='abc')
         s.proc = Mock()
         monkeypatch.setattr(os, 'kill', Mock(side_effect=OSError))
         with pytest.raises(ServerProcessError):
             s.kill()
+
+    def test_kill_cov(self, monkeypatch):
+        s = Server(path='abc')
+        s.proc = MockProcess(False)
+        s.gcov_flush = Mock()
+        s.make_coverage = Mock()
+        monkeypatch.setattr(os, 'kill', Mock(side_effect=OSError))
+        with pytest.raises(ServerProcessError):
+            s.kill(True)
 
     def test_normal_gcov_flush(self, monkeypatch):
         s = Server(path='abc')
@@ -229,3 +265,8 @@ class TestNormal(object):
         res = s.gcov_flush()
         assert res == True
         assert s.proc is not None
+
+    def test_make_coverage(self, monkeypatch):
+        s = Server(path='abc')
+        monkeypatch.setattr(subprocess, 'Popen', MockPopen)
+        s.make_coverage()
