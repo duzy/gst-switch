@@ -1,9 +1,14 @@
+"""
+The server deals with all operations controlling gst-switch-srv
+These include all OS related tasks
+"""
+
 import os
 import signal
 import subprocess
 
 from errno import ENOENT
-from exception import PathError, ServerProcessError
+from .exception import PathError, ServerProcessError
 from time import sleep
 
 
@@ -33,6 +38,14 @@ class Server(object):
             record_file='record.data'):
 
         super(Server, self).__init__()
+
+        self._path = None
+        self._video_port = None
+        self._audio_port = None
+        self._control_port = None
+        self._record_file = None
+        self.gst_option_string = None
+
         self.path = path
         self.video_port = video_port
         self.audio_port = audio_port
@@ -44,6 +57,7 @@ class Server(object):
 
     @property
     def path(self):
+        """Get the path"""
         return self._path
 
     @path.setter
@@ -58,6 +72,7 @@ class Server(object):
 
     @property
     def video_port(self):
+        """Get the video port"""
         return self._video_port
 
     @video_port.setter
@@ -83,6 +98,7 @@ class Server(object):
 
     @property
     def audio_port(self):
+        """Get the audio port"""
         return self._audio_port
 
     @audio_port.setter
@@ -108,6 +124,7 @@ class Server(object):
 
     @property
     def control_port(self):
+        """Get the control port"""
         return self._control_port
 
     @control_port.setter
@@ -133,6 +150,7 @@ class Server(object):
 
     @property
     def record_file(self):
+        """Get the record file"""
         return self._record_file
 
     @record_file.setter
@@ -168,7 +186,6 @@ class Server(object):
         self.proc = self._run_process()
         if self.proc:
             self.pid = self.proc.pid
-        # TODO: Sleep time may vary
         sleep(self.SLEEP_TIME)
 
     def _run_process(self):
@@ -214,17 +231,20 @@ class Server(object):
                 raise ServerProcessError("Internal error "
                                          "while launching process")
 
-
-    def make_coverage(self):
+    @classmethod
+    def make_coverage(cls):
+        """Generate coverage
+        Calls 'make coverage' to generate coverage in .gcov files
+        """
         cmd = 'make -C {0} coverage'.format(TOOLS_DIR)
         print TOOLS_DIR
         with open(os.devnull, 'w'):
-                    proc = subprocess.Popen(
+            proc = subprocess.Popen(
                         cmd.split(),
                         bufsize=-1,
                         shell=False)
-                    out, err = proc.communicate()
-                    print out
+            out, _ = proc.communicate()
+            print out
 
 
     def terminate(self, cov=False):
@@ -268,7 +288,7 @@ class Server(object):
             try:
                 if cov:
                     self.gcov_flush()
-                    self.make_coverage
+                    self.make_coverage()
                 os.kill(self.pid, signal.SIGKILL)
                 self.proc = None
                 return True
