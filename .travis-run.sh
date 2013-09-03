@@ -8,12 +8,23 @@ case $TEST in
 		case $TYPE in
 			unittest )
 				make unittests
+				coveralls
 				;;
 			integration )
 				make integration
+				coveralls
 				;;
 		esac
 		;;
 	module )
-		make test
+		case $TYPE in
+			python )
+				make test
+				coveralls
+				;;
+			c )
+				make test
+				cd ..
+				coveralls -r tools/
+		esac
 esac
