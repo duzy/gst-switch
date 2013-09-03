@@ -1,9 +1,15 @@
-#IMPORTS
+"""
+The controller is the interface for all remote method calls over dbus.
+The Controller class creates the controller, 
+which can be used to invoke the remote methods.
+"""
+
 import ast
-from connection import Connection
-from exception import ConnectionReturnError
+from ..gstswitch.connection import Connection
+from ..gstswitch.exception import ConnectionReturnError
 
 __all__ = ["Controller", ]
+
 
 
 class Controller(object):
@@ -20,6 +26,13 @@ class Controller(object):
             default_interface="info.duzy.gst.switch.SwitchControllerInterface"):
 
         super(Controller, self).__init__()
+
+        self._address = None
+        self._bus_name = None
+        self._object_path = None
+        self._default_interface = None
+        self.connection = None
+
         self.address = address
         self.bus_name = bus_name
         self.object_path = object_path
@@ -27,6 +40,9 @@ class Controller(object):
 
     @property
     def address(self):
+        """
+        Get the address
+        """
         return self._address
 
     @address.setter
@@ -47,6 +63,8 @@ class Controller(object):
 
     @property
     def bus_name(self):
+        """Get the bus name
+        """
         if self._bus_name is None:
             return None
         return self._bus_name
@@ -64,6 +82,8 @@ class Controller(object):
 
     @property
     def object_path(self):
+        """Get the object path
+        """
         return self._object_path
 
     @object_path.setter
@@ -86,6 +106,8 @@ class Controller(object):
 
     @property
     def default_interface(self):
+        """Get the default interface
+        """
         return self._default_interface
 
     @default_interface.setter
@@ -132,7 +154,8 @@ class Controller(object):
             compose_port = conn.unpack()[0]
             return compose_port
         except AttributeError:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values.'
+             'Should return a GVariant tuple')
 
     def get_encode_port(self):
         """Get the encode port number
@@ -145,7 +168,8 @@ class Controller(object):
             encode_port = conn.unpack()[0]
             return encode_port
         except AttributeError:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values.'
+                ' Should return a GVariant tuple')
 
     def get_audio_port(self):
         """Get the audio port number
@@ -158,7 +182,8 @@ class Controller(object):
             audio_port = conn.unpack()[0]
             return audio_port
         except AttributeError:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. '
+                'Should return a GVariant tuple')
 
     def get_preview_ports(self):
         """Get all the preview ports
@@ -169,10 +194,11 @@ class Controller(object):
         conn = self.connection.get_preview_ports()
         try:
             res = conn.unpack()[0]
-            preview_ports = self._parse_preview_ports(res)
+            preview_ports = parse_preview_ports(res)
             return preview_ports
         except AttributeError:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. '
+                'Should return a GVariant tuple')
 
     def set_composite_mode(self, mode):
         """Set the current composite mode. Modes between 0 and 3 are allowed.
@@ -190,7 +216,8 @@ class Controller(object):
                 if res is True:
                     print "Set composite mode to %s" % (str(mode))
             except AttributeError:
-                raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+                raise ConnectionReturnError('Connection returned invalid '
+                    'values. Should return a GVariant tuple')
         else:
             pass
             # raise some Exception
@@ -214,7 +241,8 @@ class Controller(object):
                 # raise some exception
             return res
         except AttributeError:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. '
+                'Should return a GVariant tuple')
 
     def new_record(self):
         """Start a new recording
@@ -231,7 +259,8 @@ class Controller(object):
             else:
                 pass
         except AttributeError:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. '
+                'Should return a GVariant tuple')
         return res
 
     def adjust_pip(self, xpos, ypos, width, height):
@@ -247,10 +276,11 @@ class Controller(object):
         try:
             conn = self.connection.adjust_pip(xpos, ypos, width, height)
             res = conn.unpack()[0]
-            print "adjust pip xpos:%s ypos:%s w:%s h:%s" % (str(xpos), str(ypos),
-                                                            str(width), str(height))
+            print "adjust pip xpos:%s ypos:%s w:%s h:%s" % (
+                str(xpos), str(ypos), str(width), str(height))
         except AttributeError:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. '
+                'Should return a GVariant tuple')
         #to-do - parse
         return res
 
@@ -271,7 +301,8 @@ class Controller(object):
                 pass
             return res
         except AttributeError:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. '
+                'Should return a GVariant tuple')
 
     def click_video(self, xpos, ypos, width, height):
         """User click on the video
@@ -287,12 +318,13 @@ class Controller(object):
             conn = self.connection.click_video(xpos, ypos, width, height)
             res = conn.unpack()[0]
             if res is True:
-                print "Click video: xpos:%s ypos:%s width:%s height:%s" % (str(xpos), str(ypos),
-                                                                           str(width), str(height))
+                print "Click video: xpos:%s ypos:%s width:%s height:%s" % (
+                    str(xpos), str(ypos), str(width), str(height))
             else:
                 pass
         except:
-            raise ConnectionReturnError('Connection returned invalid values. Should return a GVariant tuple')
+            raise ConnectionReturnError('Connection returned invalid values. '
+                'Should return a GVariant tuple')
         return res
 
     def mark_face(self, faces):
@@ -314,14 +346,15 @@ class Controller(object):
         self.establish_connection()
         self.connection.mark_tracking(faces)
 
-    def _parse_preview_ports(self, res):
-        """Parses the preview_ports string"""
-        # res = '[(a, b, c), (a, b, c)*]'
-        try:
-            liststr = ast.literal_eval(res)
-        except (ValueError, SyntaxError):
-            raise ConnectionReturnError("Connection returned invalid values: {0}".format(res))
-        preview_ports = []
-        for tupl in liststr:
-            preview_ports.append(int(tupl[0]))
-        return preview_ports
+def parse_preview_ports(res):
+    """Parses the preview_ports string"""
+    # res = '[(a, b, c), (a, b, c)*]'
+    try:
+        liststr = ast.literal_eval(res)
+    except (ValueError, SyntaxError):
+        raise ConnectionReturnError("Connection returned invalid values:{0}"
+            .format(res))
+    preview_ports = []
+    for tupl in liststr:
+        preview_ports.append(int(tupl[0]))
+    return preview_ports
