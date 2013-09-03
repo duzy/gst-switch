@@ -5,6 +5,7 @@
 *.pyc
 *.gcda
 *.gcov
+*.txt
 .coverage
 /INSTALL
 /Makefile
