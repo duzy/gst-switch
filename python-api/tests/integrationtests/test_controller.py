@@ -107,7 +107,7 @@ class TestGetEncodePort(object):
         res = []
         expected_result = []
         for i in range(self.NUM):
-            video_port = (i+1)*1000
+            video_port = (i+6)*1000
             expected_result.append([video_port+2]*self.NUM*self.FACTOR)
             s = Server(path=PATH, video_port=video_port)
             try:
