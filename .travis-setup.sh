@@ -8,8 +8,6 @@ sudo apt-get install python-gi python3-gi gstreamer1.0-tools gir1.2-gstreamer-1.
 sudo apt-get install python-scipy ffmpeg
 sudo apt-get build-dep gstreamer1.0
 sudo apt-get install autoconf automake autopoint libbz2-dev libdv4-dev libfaac-dev libfaad-dev libgtk-3-dev libmjpegtools-dev libtag1-dev libasound2-dev libtool libvpx-dev libxv-dev libx11-dev libogg-dev libvorbis-dev libopencv-dev libcv-dev libhighgui-dev libv4l-dev pkg-config zlib1g-dev gtk-doc-tools yasm bison flex
-mkdir -p /usr/lib/pkgconfig
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 git clone http://git.chromium.org/webm/libvpx.git
 cd libvpx
 git checkout v1.2.0
@@ -17,6 +15,7 @@ git checkout v1.2.0
 make
 sudo make install
 cd ..
+export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 git clone git://anongit.freedesktop.org/gstreamer/gstreamer
 cd gstreamer
 ./autogen.sh --prefix=/usr/local

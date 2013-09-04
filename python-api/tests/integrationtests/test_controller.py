@@ -351,7 +351,7 @@ class TestSetCompositeMode(object):
         res1, res2 = cmpr.compare()
         print "RESULTS", res1, res2
         # TODO Experimental Value
-        if res1 == 0 and res2 == 0:
+        if res1 <= 0.04 and res2 <= 0.04:
             return True
         return False
 
@@ -455,7 +455,7 @@ class TestAdjustPIP(object):
         res1, res2 = cmpr.compare()
         print "RESULTS", res1, res2
         # TODO Experimental Value
-        if res1 == 0 and res2 == 0:
+        if res1 <= 0.04 and res2 <= 0.04:
             return True
         return False
 
@@ -562,7 +562,7 @@ class TestClickVideo(object):
         res1, res2 = cmpr.compare()
         print "RESULTS", res1, res2
         # TODO Experimental Value
-        if res1 == 0 and res2 == 0:
+        if res1 <= 0.04 and res2 <= 0.04:
             return True
         return False
 
@@ -623,7 +623,7 @@ class TestMarkFace(object):
         res1, res2 = cmpr.compare()
         print "RESULTS", res1, res2
         # TODO Experimental Value
-        if res1 == 0 and res2 == 0:
+        if res1 <= 0.04 and res2 <= 0.04:
             return True
         return False
 

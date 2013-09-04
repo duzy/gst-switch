@@ -73,16 +73,13 @@ class BaseCompareVideo(object):
         cmd1.split(),
         bufsize=-1,
         shell=False)
-        o, e = proc.communicate()
-        print o
+        proc.wait()
 
         proc = subprocess.Popen(
         cmd2.split(),
         bufsize=-1,
         shell=False)
-        o, e = proc.communicate()
-        print o
-
+        proc.wait()
         
 
 class GenerateReferenceFrames(BaseCompareVideo):
