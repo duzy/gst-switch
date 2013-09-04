@@ -12,42 +12,49 @@ git clone http://git.chromium.org/webm/libvpx.git
 cd libvpx
 git checkout v1.2.0
 ./configure  --enable-shared --enable-vp8
+make clean
 make
 sudo make install
 cd ..
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 git clone git://anongit.freedesktop.org/gstreamer/gstreamer
 cd gstreamer
-./autogen.sh 
+./autogen.sh
+make clean
 make
 sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-base
 cd gst-plugins-base
-./autogen.sh 
+./autogen.sh
+make clean
 make
 sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-good
 cd gst-plugins-good
 ./autogen.sh  --enable-experimental
+make clean
 make
 sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-ugly
 cd gst-plugins-ugly
-./autogen.sh 
+./autogen.sh
+make clean
 make
 sudo make install
 cd ..
 git clone https://github.com/hyades/gst-plugins-bad.git
 cd gst-plugins-bad
-./autogen.sh 
+./autogen.sh
+make clean
 make
 sudo make install
 cd ..
 
-./autogen.sh 
+./autogen.sh
+make clean
 make
 sudo make install
 
