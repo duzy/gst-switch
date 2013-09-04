@@ -58,6 +58,7 @@ cd ..
 make clean
 make
 sudo make install
+sudo cp /usr/local/lib/girepository-1.0/*.* /usr/lib/girepository-1.0/
 
 if [ $TYPE == 'c' ]; then
 	sudo pip install cpp-coveralls
