@@ -11,43 +11,43 @@ sudo apt-get install autoconf automake autopoint libbz2-dev libdv4-dev libfaac-d
 git clone http://git.chromium.org/webm/libvpx.git
 cd libvpx
 git checkout v1.2.0
-./configure --prefix=/usr/local --enable-shared --enable-vp8
+./configure  --enable-shared --enable-vp8
 make
 sudo make install
 cd ..
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 git clone git://anongit.freedesktop.org/gstreamer/gstreamer
 cd gstreamer
-./autogen.sh --prefix=/usr/local
+./autogen.sh 
 make
 sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-base
 cd gst-plugins-base
-./autogen.sh --prefix=/usr/local
+./autogen.sh 
 make
 sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-good
 cd gst-plugins-good
-./autogen.sh --prefix=/usr/local --enable-experimental
+./autogen.sh  --enable-experimental
 make
 sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-ugly
 cd gst-plugins-ugly
-./autogen.sh --prefix=/usr/local
+./autogen.sh 
 make
 sudo make install
 cd ..
 git clone https://github.com/hyades/gst-plugins-bad.git
 cd gst-plugins-bad
-./autogen.sh --prefix=/usr/local
+./autogen.sh 
 make
 sudo make install
 cd ..
 
-./autogen.sh --prefix=/usr/local
+./autogen.sh 
 make
 sudo make install
 
