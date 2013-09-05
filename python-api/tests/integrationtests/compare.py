@@ -54,8 +54,8 @@ class BaseCompareVideo(object):
     def compare_images(self, img1, img2):
         # normalize to compensate for exposure difference, this may be unnecessary
         # consider disabling it
-        img1 = self.normalize(img1)
-        img2 = self.normalize(img2)
+        # img1 = self.normalize(img1)
+        # img2 = self.normalize(img2)
         # calculate the difference and its norms
         diff = img1 - img2  # elementwise for scipy arrays
         # m_norm = sum(abs(diff))  # Manhattan norm

@@ -16,7 +16,7 @@ import subprocess
 PATH = '/usr/local/bin/'
 
 
-class _TestEstablishConnection(object):
+class TestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -47,7 +47,7 @@ class _TestEstablishConnection(object):
 
 
 
-class _TestGetComposePort(object):
+class TestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -91,7 +91,7 @@ class _TestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class _TestGetEncodePort(object):
+class TestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -135,7 +135,7 @@ class _TestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class _TestGetAudioPortVideoFirst(object):
+class TestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -183,7 +183,7 @@ class _TestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class _TestGetAudioPortAudioFirst(object):
+class TestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -231,7 +231,7 @@ class _TestGetAudioPortAudioFirst(object):
         assert set(at) == set(bt)
 
 
-class _TestGetPreviewPorts(object):
+class TestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -291,7 +291,7 @@ class VideoFileSink(object):
         self.proc.terminate()
 
 
-class _TestSetCompositeMode(object):
+class TestSetCompositeMode(object):
 
     NUM = 1
     FACTOR = 1
@@ -360,7 +360,7 @@ class _TestSetCompositeMode(object):
             self.set_composite_mode(i)
 
 
-class _TestNewRecord(object):
+class TestNewRecord(object):
 
     NUM = 1
     FACTOR = 1
@@ -407,7 +407,7 @@ class _TestNewRecord(object):
                     print f.read()
 
 
-class _TestAdjustPIP(object):
+class TestAdjustPIP(object):
     NUM = 1
     FACTOR = 1
     
@@ -467,7 +467,7 @@ class _TestAdjustPIP(object):
             self.adjust_pip(d[i-4][0], d[i-4][1], d[i-4][2], d[i-4][3], i)
 
 
-class _TestSwitch(object):
+class TestSwitch(object):
 
     NUM = 1
 
@@ -514,7 +514,7 @@ class _TestSwitch(object):
 
 
 
-class _TestClickVideo(object):
+class TestClickVideo(object):
     NUM = 1
     FACTOR = 1
     
@@ -575,7 +575,7 @@ class _TestClickVideo(object):
             self.click_video(d[i-start][0], d[i-start][1], d[i-start][2], d[i-start][3], i, True)
 
 
-class _TestMarkFace(object):
+class TestMarkFace(object):
 
     NUM = 1
 
