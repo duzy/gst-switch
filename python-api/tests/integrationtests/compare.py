@@ -106,6 +106,7 @@ class CompareVideo(BaseCompareVideo):
         self.test = test
         self.video = video
         self.TEST_FRAME_DIR = tempfile.mkdtemp()
+        print self.TEST_FRAME_DIR
         
     def  compare(self):
         x = '/out{0}_1.png'.format(self.TESTS[self.test])

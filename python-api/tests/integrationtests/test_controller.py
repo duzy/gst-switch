@@ -16,7 +16,7 @@ import subprocess
 PATH = '/usr/local/bin/'
 
 
-class TestEstablishConnection(object):
+class _TestEstablishConnection(object):
 
     NUM = 1
     # fails above 3
@@ -47,7 +47,7 @@ class TestEstablishConnection(object):
 
 
 
-class TestGetComposePort(object):
+class _TestGetComposePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -91,7 +91,7 @@ class TestGetComposePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetEncodePort(object):
+class _TestGetEncodePort(object):
 
     NUM = 1
     FACTOR = 1
@@ -135,7 +135,7 @@ class TestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortVideoFirst(object):
+class _TestGetAudioPortVideoFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -183,7 +183,7 @@ class TestGetAudioPortVideoFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortAudioFirst(object):
+class _TestGetAudioPortAudioFirst(object):
 
     NUM = 1
     FACTOR = 1
@@ -231,7 +231,7 @@ class TestGetAudioPortAudioFirst(object):
         assert set(at) == set(bt)
 
 
-class TestGetPreviewPorts(object):
+class _TestGetPreviewPorts(object):
 
     NUM = 1
     FACTOR = 1
@@ -291,7 +291,7 @@ class VideoFileSink(object):
         self.proc.terminate()
 
 
-class TestSetCompositeMode(object):
+class _TestSetCompositeMode(object):
 
     NUM = 1
     FACTOR = 1
@@ -360,7 +360,7 @@ class TestSetCompositeMode(object):
             self.set_composite_mode(i)
 
 
-class TestNewRecord(object):
+class _TestNewRecord(object):
 
     NUM = 1
     FACTOR = 1
@@ -407,7 +407,7 @@ class TestNewRecord(object):
                     print f.read()
 
 
-class TestAdjustPIP(object):
+class _TestAdjustPIP(object):
     NUM = 1
     FACTOR = 1
     
@@ -463,11 +463,11 @@ class TestAdjustPIP(object):
         d = [
                 [50, 75, 0, 0],
             ]
-        for i in range(4,5):
+        for i in range(4, 5):
             self.adjust_pip(d[i-4][0], d[i-4][1], d[i-4][2], d[i-4][3], i)
 
 
-class TestSwitch(object):
+class _TestSwitch(object):
 
     NUM = 1
 
@@ -514,7 +514,7 @@ class TestSwitch(object):
 
 
 
-class TestClickVideo(object):
+class _TestClickVideo(object):
     NUM = 1
     FACTOR = 1
     
@@ -568,14 +568,14 @@ class TestClickVideo(object):
 
     def test_click_video(self):
         d = [
-                [0,0, 10, 10],
+                [0, 0, 10, 10],
             ]
         start = 6
         for i in range(start, 7):
             self.click_video(d[i-start][0], d[i-start][1], d[i-start][2], d[i-start][3], i, True)
 
 
-class TestMarkFace(object):
+class _TestMarkFace(object):
 
     NUM = 1
 
@@ -634,3 +634,65 @@ class TestMarkFace(object):
         start = 7
         for i in range(start, 8):
             self.mark_face(d[i-start], i, True)
+
+
+
+class TestMarkTracking(object):
+
+    NUM = 1
+
+    def mark_tracking(self, faces, index, generate_frames=False):
+        
+        for i in range(self.NUM):
+            s = Server(path=PATH)
+            try:
+                s.run()
+                sources = TestSources(video_port=3000)
+                preview = PreviewSinks()
+                preview.run()
+                out_file = "output-{0}.data".format(index)
+                video_sink = VideoFileSink(PATH, 3001, out_file)
+                sources.new_test_video(pattern=4)
+                sources.new_test_video(pattern=5)
+                controller = Controller()
+                time.sleep(1)
+                res = controller.mark_tracking(faces)
+                print res
+                time.sleep(5)
+                sources.terminate_video()
+                preview.terminate()
+                video_sink.terminate()
+                s.terminate(1)
+                if not generate_frames:
+                    assert res is not None
+                    assert self.verify_output(index, out_file) == True
+
+
+            finally:
+                if s.proc:
+                    poll = s.proc.poll()
+                    print self.__class__
+                    if poll == -11:
+                        print "SEGMENTATION FAULT OCCURRED"
+                    print "ERROR CODE - {0}".format(poll)
+                    s.terminate(1)
+                    f = open('server.log')
+                    print f.read()
+
+    def verify_output(self, index, video):
+        test = 'mark_tracking_{0}'.format(index)
+        cmpr = CompareVideo(test, video)
+        res1, res2 = cmpr.compare()
+        print "RESULTS", res1, res2
+        # TODO Experimental Value
+        if res1 <= 0.04 and res2 <= 0.04:
+            return True
+        return False
+
+    def test_mark_tracking(self):
+        d = [
+                [(1, 1, 1, 1), (10, 10, 1, 1)],
+            ]
+        start = 7
+        for i in range(start, 8):
+            self.mark_tracking(d[i-start], i, True)
