@@ -1,10 +1,13 @@
 .. gstswitch documentation master file, created by
-   sphinx-quickstart on Fri Sep  6 10:05:15 2013.
+   sphinx-quickstart on Sat Sep  7 01:21:43 2013.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to gstswitch's documentation!
-=====================================
+gst-switch
+==========
+
+A replacement for DVSwitch based on Gstreamer
+---------------------------------------------
 
 Contents:
 
@@ -12,6 +15,12 @@ Contents:
    :maxdepth: 4
 
    gstswitch
+
+
+   unittests
+
+
+   integrationtests
 
 
 Indices and tables
