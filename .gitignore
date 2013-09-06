@@ -6,6 +6,7 @@
 *.gcda
 *.gcov
 *.txt
+imgurbash.sh.*
 .coverage
 /INSTALL
 /Makefile
