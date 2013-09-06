@@ -3,7 +3,7 @@
 lint:
 	rm -rf tests/unittests/__pycache__
 	rm -rf tests/integrationtests/__pycache__
-	mkdir -p reports
+	rm -rf reports
 	mkdir -p reports/pylint
 	-pylint --rcfile=.pylintrc gstswitch
 	-pylint --rcfile=.pylintrc --disable=R0201 --disable=W0613 tests/unittests/*
@@ -13,7 +13,7 @@ lint:
 
 # runs py.test also
 unittests:
-	mkdir -p reports
+	rm -rf reports
 	mkdir -p reports/coverage/unittests
 	-py.test --cov-report html --cov gstswitch tests/unittests/ -v -s
 	mv htmlcov/*.* reports/coverage/unittests
@@ -23,7 +23,7 @@ pytest:
 	-py.test tests/unittests -v
 
 integration:
-	mkdir -p reports
+	rm -rf reports
 	mkdir -p reports/coverage/integration
 	-py.test --cov-report html --cov gstswitch tests/integrationtests/ -s -v 2>/dev/null
 	mv htmlcov/*.* reports/coverage/integration
