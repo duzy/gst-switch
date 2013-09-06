@@ -1,4 +1,4 @@
-.PHONY: lint unittests pytest integration test
+.PHONY: lint unittests pytest integration test clean
 
 lint:
 	rm -rf tests/unittests/__pycache__
@@ -15,20 +15,24 @@ lint:
 unittests:
 	rm -rf reports
 	mkdir -p reports/coverage/unittests
-	-py.test --cov-report html --cov gstswitch tests/unittests/ -v -s
+	py.test --cov-report html --cov gstswitch tests/unittests/ -v -s
 	mv htmlcov/*.* reports/coverage/unittests
 	rmdir htmlcov
-
+	make clean
 pytest:
 	-py.test tests/unittests -v
 
 integration:
 	rm -rf reports
 	mkdir -p reports/coverage/integration
-	-py.test --cov-report html --cov gstswitch tests/integrationtests/ -s -v 2>/dev/null
+	py.test --cov-report html --cov gstswitch tests/integrationtests/ -s -v 2>/dev/null
 	mv htmlcov/*.* reports/coverage/integration
+	make clean
+
+clean:
 	rm -f *.data
 	rm -f tests/integrationtests/*.data
+
 
 test: unittests integration
 
