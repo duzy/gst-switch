@@ -20,7 +20,8 @@ TOOLS_DIR = '/'.join(os.getcwd().split('/')[:-1]) + '/tools/'
 class Server(object):
     """Control all server related operations
 
-    :param path: Path where all executables gst-switch-srv, gst-launch-1.0, etc are located
+    :param path: Path where all executables
+    gst-switch-srv, gst-launch-1.0, etc are located
     :param video_port: The video port number - default = 3000
     :param audio_port: The audio port number - default = 4000
     :param control_port: The control port number - default = 5000
@@ -174,12 +175,14 @@ class Server(object):
         """Launch the server process
 
         :param: None
-        :gst-option: Any gstreamer option. Refer to http://www.linuxmanpages.com/man1/gst-launch-0.8.1.php#lbAF.
+        :gst-option: Any gstreamer option.
+        Refer to http://www.linuxmanpages.com/man1/gst-launch-0.8.1.php#lbAF.
         Multiple can be added separated by spaces
         :returns: nothing
         :raises IOError: Fail to open /dev/null (os.devnull)
         :raises PathError: Unable to find gst-switch-srv at path specified
-        :raises ServerProcessError: Running gst-switch-srv gives a OS based error.
+        :raises ServerProcessError: Running gst-switch-srv
+        gives a OS based error.
         """
         self.gst_option_string = gst_option
         print "Starting server"

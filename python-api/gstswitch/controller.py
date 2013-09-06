@@ -1,6 +1,6 @@
 """
 The controller is the interface for all remote method calls over dbus.
-The Controller class creates the controller, 
+The Controller class creates the controller,
 which can be used to invoke the remote methods.
 """
 
