@@ -77,26 +77,28 @@ class TestInterface(object):
     def test_interface_none(self):
         """Test when the default_interface is null"""
         default_interface = [None, '', [], {}]
-        for x in default_interface:
+        for interface in default_interface:
             with pytest.raises(ValueError):
-                Controller(default_interface=x)
+                Controller(default_interface=interface)
 
     def test_interface_dot(self):
         """Test when the default_interface has <2 dots"""
         default_interface = ['.', 'info.', 'info']
-        for x in default_interface:
+        for interface in default_interface:
             with pytest.raises(ValueError):
-                Controller(default_interface=x)
+                Controller(default_interface=interface)
 
     def test_interface_normal(self):
+        """Test when the interface is valid"""
         default_interface = "info.duzy.gst.switch.SwitchControllerInterface"
         conn = Controller(default_interface=default_interface)
         assert default_interface == conn.default_interface
 
 
 class TestEstablishConnection(object):
-
+    """Test the establish_connection method"""
     def test_normal(self, monkeypatch):
+        """Test if the parameters are valid"""
         monkeypatch.setattr(Connection, 'connect_dbus', Mock())
         controller = Controller(address='unix:abstract=abcd')
         controller.establish_connection()
@@ -104,87 +106,101 @@ class TestEstablishConnection(object):
 
 
 class MockConnection(object):
-
+    """A class which mocks the Connection class"""
     def __init__(self, mode):
         self.mode = mode
 
     def get_compose_port(self):
+        """mock of get_compose_port"""
         if self.mode is False:
             return GLib.Variant('(i)', (3001,))
         else:
             return (0,)
 
     def get_encode_port(self):
+        """mock of get_encode_port"""
         if self.mode is False:
             return GLib.Variant('(i)', (3002,))
         else:
             return (0,)
 
     def get_audio_port(self):
+        """mock of get_audio_port"""
         if self.mode is False:
             return GLib.Variant('(i)', (4000,))
         else:
             return (0,)
 
     def get_preview_ports(self):
+        """mock of get_preview_ports"""
         if self.mode is False:
             return GLib.Variant('(s)', ('[(3002, 1, 7), (3003, 1, 8)]',))
         else:
             return (0,)
 
-    def set_composite_mode(self, m):
+    def set_composite_mode(self, mode):
+        """mock of set_composite_mode"""
         if self.mode is False:
             return GLib.Variant('(b)', (True,))
         else:
             return (False,)
 
-    def set_encode_mode(self, m):
+    def set_encode_mode(self, mode):
+        """mock of get_set_encode_mode"""
         if self.mode is False:
             return GLib.Variant('(b)', (True,))
         else:
             return (True,)
 
     def new_record(self):
+        """mock of new_record"""
         if self.mode is False:
             return GLib.Variant('(b)', (True,))
         else:
             return (True,)
 
     def adjust_pip(self, xpos, ypos, width, height):
+        """mock of adjust_pip"""
         if self.mode is False:
             return GLib.Variant('(u)', (1,))
         else:
             return (1,)
 
     def switch(self, channel, port):
+        """mock of switch"""
         if self.mode is False:
             return GLib.Variant('(b)', (True,))
         else:
             return (True,)
 
     def click_video(self, xpos, ypos, width, height):
+        """mock of click_video"""
         if self.mode is False:
             return GLib.Variant('(b)', (True,))
         else:
             return (True,)
 
     def mark_face(self, face):
+        """mock of mark_face"""
         pass
 
     def mark_tracking(self, face):
+        """mock of mark_tracking"""
         pass
 
 
 
 class TestGetComposePort(object):
-
+    """Test the get_compose_port"""
     def test_unpack(self):
+        """Test when values cant unpack"""
         controller = Controller(address='unix:abstract=abcdefghijk')
         controller.connection = MockConnection(True)
         with pytest.raises(ConnectionReturnError):
             controller.get_compose_port()
 
     def test_normal_unpack(self):
+        """Test when valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.connection = MockConnection(False)
         assert controller.get_compose_port() == 3001
