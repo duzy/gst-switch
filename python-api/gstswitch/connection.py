@@ -228,7 +228,8 @@ class Connection(object):
         Calls get_preview_ports remotely
 
         :param: None
-        :returns: tuple with first element a string in the form of '[(3002, 1, 7), (3003, 1, 8)]'
+        :returns: tuple with first element a string in the form of
+        '[(3002, 1, 7), (3003, 1, 8)]'
         """
         try:
             args = None
@@ -342,7 +343,8 @@ class Connection(object):
         :param ypos: the Y position of the PIP
         :param width: the width of the PIP
         :param height: the height of the PIP
-        :returns: tuple with first element as result - PIP has been changed succefully
+        :returns: tuple with first element as result -
+        PIP has been changed succefully
         """
         try:
             args = GLib.Variant('(iiii)', (xpos, ypos, width, height,))

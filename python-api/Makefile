@@ -1,11 +1,13 @@
 .PHONY: lint unittests pytest integration test
 
 lint:
+	rm -rf tests/unittests/__pycache__
+	rm -rf tests/integrationtests/__pycache__
 	mkdir -p reports
 	mkdir -p reports/pylint
 	-pylint --rcfile=.pylintrc gstswitch
-	-pylint --rcfile=.pylintrc tests/unittests/*
-	-pylint --rcfile=.pylintrc tests/integrationtests/*.py
+	-pylint --rcfile=.pylintrc --disable=R0201 --disable=W0613 tests/unittests/*
+	-pylint --rcfile=.pylintrc --disable=R0201 tests/integrationtests/*.py
 	mv -f *.html reports/pylint
 	@echo "Lint report generated in reports/pylint"
 

@@ -1,6 +1,6 @@
 """
 The testsource contains all gstreamer pipelines
-It provides the abse for all the other gstreamer 
+It provides the abse for all the other gstreamer
 components are build upon.
 """
 
@@ -217,8 +217,8 @@ class AudioPipeline(BasePipeline):
         element.set_property('host', self.host)
         element.set_property('port', int(port))
         return element
-        
-        
+
+
 
 
 class PreviewPipeline(BasePipeline):
@@ -580,7 +580,7 @@ class AudioSrc(object):
             wave = random.randint(0, 12)
         wave = str(wave)
         return wave
-        
+
 
 
 class Preview(object):
@@ -590,7 +590,7 @@ class Preview(object):
     def __init__(self, port):
         super(Preview, self).__init__()
         self._preview_port = None
-        
+
         self.preview_port = port
         self.pipeline = PreviewPipeline(self.preview_port)
 

@@ -3,7 +3,7 @@ All custom exceptions come here
 """
 
 __all__ = [
-            'BaseError', 'PathError', 'ServerProcessError', 'ConnectionError', 
+            'BaseError', 'PathError', 'ServerProcessError', 'ConnectionError',
             'ConnectionReturnError', 'RangeError', 'InvalidIndexError',
            ]
 

@@ -152,7 +152,7 @@ class TestSources(object):
             raise InvalidIndexError("Index should be a valid integer")
         except TypeError:
             raise InvalidIndexError("Index should be a valid integer")
-                
+
         print 'End source with pattern %s' % (str(testsrc.pattern))
         testsrc.end()
         self._running_tests_video.remove(self._running_tests_video[index])
@@ -213,7 +213,7 @@ class TestSources(object):
             raise InvalidIndexError("Index should be a valid integer")
         except TypeError:
             raise InvalidIndexError("Index should be a valid integer")
-                
+
         print 'End source with wave %s' % (str(testsrc.wave))
         testsrc.end()
         self._running_tests_audio.remove(self._running_tests_audio[index])
@@ -236,7 +236,7 @@ class PreviewSinks(object):
         super(PreviewSinks, self).__init__()
         self._preview_port = None
         self.preview = None
-        
+
         self.preview_port = preview_port
 
     @property
