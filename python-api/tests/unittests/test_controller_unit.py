@@ -1,3 +1,4 @@
+"""Unittests for Controller class in controller.py"""
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
@@ -11,67 +12,77 @@ from gi.repository import GLib
 
 
 class TestAddress(object):
-
+    """Test the address parameter"""
     def test_address_null(self):
+        """Test if address is null"""
         address = ['', None, [], {}]
-        for x in address:
+        for addr in address:
             with pytest.raises(ValueError):
-                Controller(address=x)
+                Controller(address=addr)
 
     def test_address_colon(self):
+        """Test if address has no colon"""
         address = 'abcdefghijk'
         with pytest.raises(ValueError):
             Controller(address=address)
 
     def test_address_normal(self):
+        """Test if address is valid"""
         address = ['unix:abstract=gstswitch', 'unix:temp=/tmp/abcd/xyz']
-        for x in address:
-            conn = Controller(address=x)
-            assert conn.address == x
+        for addr in address:
+            conn = Controller(address=addr)
+            assert conn.address == addr
 
 
 class TestBusName(object):
-
+    """Test bus_name parameter"""
     def test_normal(self):
+        """Test when bus_name is not null"""
         names = ['', 'abcd', 12345]
         for bus in names:
             conn = Controller(bus_name=bus)
             assert conn.bus_name == str(bus)
 
     def test_normal_none(self):
+        """Test when bus_name is null"""
         name = None
         conn = Controller(bus_name=name)
         assert conn.bus_name == name
 
 
 class TestObjectPath(object):
-
+    """Test object_path parameter"""
     def test_object_path_blank(self):
+        """Test when the object_path is null"""
         paths = [None, '', {}, []]
         for object_path in paths:
             with pytest.raises(ValueError):
                 Controller(object_path=object_path)
 
     def test_object_path_slash(self):
+        """Test when object_path doesn't have slash in start"""
         object_path = 'a/////////'
         with pytest.raises(ValueError):
             Controller(object_path=object_path)
 
     def test_object_path_normal(self):
+        """Test when object_path is valid"""
         object_path = "/info/duzy/gst/switch/SwitchController"
         conn = Controller(object_path=object_path)
         assert conn.object_path == object_path
 
 
 class TestInterface(object):
-
+    """Test the default_interface parameter"""
     def test_interface_none(self):
+        """Test when the default_interface is null"""
         default_interface = [None, '', [], {}]
         for x in default_interface:
             with pytest.raises(ValueError):
                 Controller(default_interface=x)
 
     def test_interface_dot(self):
+        """Test when the default_interface has <2 dots"""
         default_interface = ['.', 'info.', 'info']
         for x in default_interface:
             with pytest.raises(ValueError):
@@ -94,75 +105,75 @@ class TestEstablishConnection(object):
 
 class MockConnection(object):
 
-        def __init__(self, mode):
-            self.mode = mode
+    def __init__(self, mode):
+        self.mode = mode
 
-        def get_compose_port(self):
-            if self.mode is False:
-                return GLib.Variant('(i)', (3001,))
-            else:
-                return (0,)
+    def get_compose_port(self):
+        if self.mode is False:
+            return GLib.Variant('(i)', (3001,))
+        else:
+            return (0,)
 
-        def get_encode_port(self):
-            if self.mode is False:
-                return GLib.Variant('(i)', (3002,))
-            else:
-                return (0,)
+    def get_encode_port(self):
+        if self.mode is False:
+            return GLib.Variant('(i)', (3002,))
+        else:
+            return (0,)
 
-        def get_audio_port(self):
-            if self.mode is False:
-                return GLib.Variant('(i)', (4000,))
-            else:
-                return (0,)
+    def get_audio_port(self):
+        if self.mode is False:
+            return GLib.Variant('(i)', (4000,))
+        else:
+            return (0,)
 
-        def get_preview_ports(self):
-            if self.mode is False:
-                return GLib.Variant('(s)', ('[(3002, 1, 7), (3003, 1, 8)]',))
-            else:
-                return (0,)
+    def get_preview_ports(self):
+        if self.mode is False:
+            return GLib.Variant('(s)', ('[(3002, 1, 7), (3003, 1, 8)]',))
+        else:
+            return (0,)
 
-        def set_composite_mode(self, m):
-            if self.mode is False:
-                return GLib.Variant('(b)', (True,))
-            else:
-                return (False,)
+    def set_composite_mode(self, m):
+        if self.mode is False:
+            return GLib.Variant('(b)', (True,))
+        else:
+            return (False,)
 
-        def set_encode_mode(self, m):
-            if self.mode is False:
-                return GLib.Variant('(b)', (True,))
-            else:
-                return (True,)
+    def set_encode_mode(self, m):
+        if self.mode is False:
+            return GLib.Variant('(b)', (True,))
+        else:
+            return (True,)
 
-        def new_record(self):
-            if self.mode is False:
-                return GLib.Variant('(b)', (True,))
-            else:
-                return (True,)
+    def new_record(self):
+        if self.mode is False:
+            return GLib.Variant('(b)', (True,))
+        else:
+            return (True,)
 
-        def adjust_pip(self, xpos, ypos, width, height):
-            if self.mode is False:
-                return GLib.Variant('(u)', (1,))
-            else:
-                return (1,)
+    def adjust_pip(self, xpos, ypos, width, height):
+        if self.mode is False:
+            return GLib.Variant('(u)', (1,))
+        else:
+            return (1,)
 
-        def switch(self, channel, port):
-            if self.mode is False:
-                return GLib.Variant('(b)', (True,))
-            else:
-                return (True,)
+    def switch(self, channel, port):
+        if self.mode is False:
+            return GLib.Variant('(b)', (True,))
+        else:
+            return (True,)
 
-        def click_video(self, xpos, ypos, width, height):
-            if self.mode is False:
-                return GLib.Variant('(b)', (True,))
-            else:
-                return (True,)
+    def click_video(self, xpos, ypos, width, height):
+        if self.mode is False:
+            return GLib.Variant('(b)', (True,))
+        else:
+            return (True,)
 
-        def mark_face(self, face):
-            pass
+    def mark_face(self, face):
+        pass
 
-        def mark_tracking(self, face):
-            pass
-            
+    def mark_tracking(self, face):
+        pass
+
 
 
 class TestGetComposePort(object):

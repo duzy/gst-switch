@@ -462,31 +462,6 @@ class TestAdjustPIP(object):
         cmpr = CompareVideo(test, video)
         res1, res2 = cmpr.compare()
         print "RESULTS", res1, res2
-
-        # Sending data to imgur through a file
-        folder = cmpr.TEST_FRAME_DIR
-        cmd = "wget http://imgur.com/tools/imgurbash.sh"
-        print cmd
-        p = subprocess.Popen(
-            cmd.split(),
-            bufsize=-1,
-            shell=False)
-        p.wait()
-        cmd = "chmod +x imgurbash.sh"
-        print cmd
-        p = subprocess.Popen(
-            cmd.split(),
-            bufsize=-1,
-            shell=False)
-        p.wait()
-        cmd = "sh imgurbash.sh {0}/*".format(folder)
-        print cmd
-        p = subprocess.Popen(
-            cmd.split(),
-            bufsize=-1,
-            shell=False)
-        o, e = p.communicate()
-        print o, e
         # TODO Experimental Value
         if res1 <= 0.04 and res2 <= 0.04:
             return True

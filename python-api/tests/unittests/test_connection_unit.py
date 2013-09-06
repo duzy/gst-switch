@@ -59,7 +59,7 @@ class TestObjectPath(object):
                 Connection(object_path=object_path)
 
     def test_object_path_slash(self):
-        """Test if object_path has atleast a slash"""
+        """Test when object_path doesn't have slash in start"""
         object_path = 'a/////////'
         with pytest.raises(ValueError):
             Connection(object_path=object_path)
@@ -81,7 +81,7 @@ class TestInterface(object):
                 Connection(default_interface=interface_name)
 
     def test_interface_dot(self):
-        """Test if default_interface has single dot"""
+        """Test when the default_interface has <2 dots"""
         default_interface = ['.', 'info.', 'info']
         for interface_name in default_interface:
             with pytest.raises(ValueError):
