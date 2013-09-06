@@ -1,17 +1,16 @@
-.PHONY: lint unittests pytest integration test clean
+.PHONY: lint unittests pytest integration test clean all
 
 lint:
 	rm -rf tests/unittests/__pycache__
 	rm -rf tests/integrationtests/__pycache__
 	rm -rf reports
 	mkdir -p reports/pylint
-	-pylint --rcfile=.pylintrc gstswitch
-	-pylint --rcfile=.pylintrc --disable=R0201 --disable=W0613 tests/unittests/*
-	-pylint --rcfile=.pylintrc --disable=R0201 tests/integrationtests/*.py
+	-pylint --rcfile=.pylintrc_gstswitch gstswitch
+	-pylint --rcfile=.pylintrc_unittests tests/unittests/*
+	-pylint --rcfile=.pylintrc_integrationtests tests/integrationtests/*.py
 	mv -f *.html reports/pylint
 	@echo "Lint report generated in reports/pylint"
 
-# runs py.test also
 unittests:
 	rm -rf reports
 	mkdir -p reports/coverage/unittests
@@ -19,8 +18,9 @@ unittests:
 	mv htmlcov/*.* reports/coverage/unittests
 	rmdir htmlcov
 	make clean
+
 pytest:
-	-py.test tests/unittests -v
+	py.test tests/unittests -v
 
 integration:
 	rm -rf reports
@@ -35,4 +35,6 @@ clean:
 
 
 test: unittests integration
+
+all: lint test
 
