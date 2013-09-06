@@ -19,6 +19,7 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig
 export LD_LIBRARY_PATH=/usr/local/lib
 git clone git://anongit.freedesktop.org/gstreamer/gstreamer
 cd gstreamer
+git checkout 6c11da1
 ./autogen.sh
 make clean
 make
@@ -26,6 +27,7 @@ sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-base
 cd gst-plugins-base
+git checkout a8df760
 ./autogen.sh
 make clean
 make
@@ -33,6 +35,7 @@ sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-good
 cd gst-plugins-good
+git checkout d14d4c4
 ./autogen.sh --enable-experimental
 make clean
 make
@@ -40,13 +43,16 @@ sudo make install
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-ugly
 cd gst-plugins-ugly
+git checkout 68985ba
 ./autogen.sh
 make clean
 make
 sudo make install
 cd ..
-git clone https://github.com/hyades/gst-plugins-bad.git
+git clone https://github.com/duzy/gst-plugins-bad.git
 cd gst-plugins-bad
+git checkout speakertrack_new
+git checkout 
 ./autogen.sh
 make clean
 make
