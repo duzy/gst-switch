@@ -23,21 +23,20 @@ pytest:
 	py.test tests/unittests -v
 
 integration:
-	wget http://imgur.com/tools/imgurbash.sh
-	chmod +x imgurbash.sh
+	-wget http://imgur.com/tools/imgurbash.sh
+	-chmod +x imgurbash.sh
 	rm -rf reports
 	mkdir -p reports/coverage/integration
 	py.test --cov-report html --cov gstswitch tests/integrationtests/ -s -v 2>/dev/null
 	mv htmlcov/*.* reports/coverage/integration
-	make clean
-	rm imgurbash.sh
+	-rm imgurbash.sh
 
 clean:
 	rm -f *.data
 	rm -f tests/integrationtests/*.data
 
 
-test: unittests integration
+test: unittests integration clean
 
 all: lint test
 

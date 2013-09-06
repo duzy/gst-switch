@@ -135,7 +135,7 @@ class TestGetEncodePort(object):
         assert set(at) == set(bt)
 
 
-class TestGetAudioPortVideoFirst(object):
+class TestGetAudioPort(object):
 
     NUM = 1
     FACTOR = 1
@@ -152,18 +152,15 @@ class TestGetAudioPortVideoFirst(object):
         expected_result = []
         for i in range(1, self.NUM+1):
             audio_port = (i+10)*1000
-            expected_result.append([3003 + i] * self.NUM * self.FACTOR)
+            expected_result.append([3003] * self.NUM * self.FACTOR)
             s = Server(path=PATH, video_port=3000, audio_port=audio_port)
             try:
                 s.run()
                 sources = TestSources(video_port=3000, audio_port=audio_port)
-                for j in range(i):
-                    sources.new_test_video()
                 sources.new_test_audio()
 
                 res.append(self.get_audio_port())
 
-                sources.terminate_video()
                 sources.terminate_audio()
                 s.terminate(1)
             finally:
@@ -182,53 +179,6 @@ class TestGetAudioPortVideoFirst(object):
         bt = [ tuple(i) for i in res]
         assert set(at) == set(bt)
 
-
-class TestGetAudioPortAudioFirst(object):
-
-    NUM = 1
-    FACTOR = 1
-    def get_audio_port(self):
-        r = []
-        controller = Controller()
-        controller.establish_connection()
-        for i in range(self.NUM * self.FACTOR):
-            r.append(controller.get_audio_port())
-        return r
-
-    def test_audio_ports(self):
-        res = []
-        expected_result = []
-        for i in range(1, self.NUM+1):
-            audio_port = (i+10)*1000
-            expected_result.append([3003] * self.NUM * self.FACTOR)
-            s = Server(path=PATH, video_port=3000, audio_port=audio_port)
-            try:
-                s.run()
-                sources = TestSources(video_port=3000, audio_port=audio_port)
-                
-                sources.new_test_audio()
-                for j in range(i):
-                    sources.new_test_video()
-
-                res.append(self.get_audio_port())
-
-                sources.terminate_video()
-                sources.terminate_audio()
-                s.terminate(1)
-            finally:
-                if s.proc:
-                    poll = s.proc.poll()
-                    print self.__class__
-                    if poll == -11:
-                        print "SEGMENTATION FAULT OCCURRED"
-                    print "ERROR CODE - {0}".format(poll)
-                    s.terminate(1)
-                    f = open('server.log')
-                    print f.read()
-
-        at = [ tuple(i) for i in expected_result]
-        bt = [ tuple(i) for i in res]
-        assert set(at) == set(bt)
 
 
 class TestGetPreviewPorts(object):
