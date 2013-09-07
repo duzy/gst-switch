@@ -1,26 +1,29 @@
+"""Unittests for Server class in server.py"""
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
 
 from gstswitch.server import Server
 import pytest
-from gstswitch.exception import *
-import os
+from gstswitch.exception import ServerProcessError, PathError
 import subprocess
 from mock import Mock
 
 
-path = '/usr/local/bin/'
+PATH = '/usr/local/bin/'
 
 class TestPath(object):
+    """Test the path parameter"""
     # Path Tests
     def test_invalid_path(self):
+        """Test if path specified does not have executables"""
         path = '/usr/'
-        s = Server(path=path)
+        serv = Server(path=path)
         with pytest.raises(PathError):
-            s.run()
+            serv.run()
 
     def test_invalid_path_none(self):
+        """Test if null path is given"""
         paths = [None, '', [], {}]
         for path in paths:
             with pytest.raises(ValueError):
@@ -28,245 +31,293 @@ class TestPath(object):
 
 
 class TestVideoPort(object):
+    """Test for video_port parameter"""
     # Video Port Tests
     def test_invalid_video_port_null(self):
+        """Test when the video_port is null"""
         video_ports = [None, '', [], {}]
         for video_port in video_ports:
             with pytest.raises(ValueError):
-                Server(path=path, video_port=video_port)
+                Server(path=PATH, video_port=video_port)
 
     def test_invalid_video_port_type(self):
+        """Test when the video port given is not a valid
+        integral value"""
         video_ports = [[1, 2, 3], {1: 2, 2: 3}]
         for video_port in video_ports:
             with pytest.raises(TypeError):
-                Server(path=path, video_port=video_port)
+                Server(path=PATH, video_port=video_port)
 
     def test_invalid_video_port_range(self):
+        """Test when the video port is not in range"""
         video_ports = [-99, -1, 1e6]
         for video_port in video_ports:
             with pytest.raises(ValueError):
-                Server(path=path, video_port=video_port)
+                Server(path=PATH, video_port=video_port)
 
 
 class TestAudioPort(object):
+    """Test for audio_port parameter"""
     # Audio Port Tests
     def test_invalid_audio_port_null(self):
+        """Test when the audio_port is null"""
         audio_ports = [None, '', [], {}]
         for audio_port in audio_ports:
             with pytest.raises(ValueError):
-                Server(path=path, audio_port=audio_port)
+                Server(path=PATH, audio_port=audio_port)
 
     def test_invalid_audio_port_type(self):
+        """Test when the audio port given is not a valid
+        integral value"""
         audio_ports = [[1, 2, 3], {1: 2, 2: 3}]
         for audio_port in audio_ports:
             with pytest.raises(TypeError):
-                Server(path=path, audio_port=audio_port)
+                Server(path=PATH, audio_port=audio_port)
 
     def test_invalid_audio_port_range(self):
+        """Test when the audio port is not in range"""
         audio_ports = [-99, -1, 1e6]
         for audio_port in audio_ports:
             with pytest.raises(ValueError):
-                Server(path=path, audio_port=audio_port)
+                Server(path=PATH, audio_port=audio_port)
 
 
 class TestControlPort(object):
+    """Test the control_port parameter"""
     # Control Port Tests
     def test_invalid_control_port_null(self):
+        """Test when the control port is null"""
         control_ports = [None, '', [], {}]
         for control_port in control_ports:
             with pytest.raises(ValueError):
-                Server(path=path, control_port=control_port)
+                Server(path=PATH, control_port=control_port)
 
     def test_invalid_control_port_type(self):
+        """Test when the control port is not a valid
+        integral value"""
         control_ports = [[1, 2, 3], {1: 2, 2: 3}]
         for control_port in control_ports:
             with pytest.raises(TypeError):
-                Server(path=path, control_port=control_port)
+                Server(path=PATH, control_port=control_port)
 
     def test_invalid_control_port_range(self):
+        """Test when the control port is not in range"""
         control_ports = [-99, -1, 1e6]
         for control_port in control_ports:
             with pytest.raises(ValueError):
-                Server(path=path, control_port=control_port)
+                Server(path=PATH, control_port=control_port)
 
 
 class TestRecordFile(object):
+    """Test the record_file parameter"""
     # Record File
     def test_record_file_blank(self):
+        """Test when the record_file is null"""
         files = ['', None, [], {}]
         for record_file in files:
             with pytest.raises(ValueError):
-                Server(path=path, record_file=record_file)
+                Server(path=PATH, record_file=record_file)
 
     def test_record_file_slashes(self):
-        file = 'abcd/xyz/'
+        """Test when the record_file has forward slashes"""
+        filename = 'abcd/xyz/'
         with pytest.raises(ValueError):
 
-            Server(path=path, record_file=file)
+            Server(path=PATH, record_file=filename)
 
 
 class TestKillTerminate(object):
+    """Test kill, terminate and gcov_flush methods"""
     # OS Errors
     def test_terminate_fail(self):
-        class fake_proc(object):
+        """Test when terminate fails"""
+        class FakeProc(object):
+            """A mock process"""
             def __init__(self):
                 pass
 
             def terminate(self):
+                """Terminate the mock process"""
                 raise OSError
 
-        s = Server(path=path)
-        s.proc = fake_proc()
+        serv = Server(path=PATH)
+        serv.proc = FakeProc()
         with pytest.raises(ServerProcessError):
-            s.terminate()
+            serv.terminate()
 
     def test_kill_fail(self):
-        s = Server(path=path)
-        s.proc = 1
-        s.pid = -300
+        """Test when kill fails"""
+        serv = Server(path=PATH)
+        serv.proc = 1
+        serv.pid = -300
         with pytest.raises(ServerProcessError):
-            s.kill()
+            serv.kill()
 
     def test_no_process_kill(self):
-        s = Server(path=path)
+        """Test when no process exists and kill is called"""
+        serv = Server(path=PATH)
         with pytest.raises(ServerProcessError):
-            s.kill()
+            serv.kill()
 
     def test_no_process_terminate(self):
-        s = Server(path=path)
+        """Test when no process exists and terminate is called"""
+        serv = Server(path=PATH)
         with pytest.raises(ServerProcessError):
-            s.terminate()
+            serv.terminate()
 
     def test_no_process_gov_flush(self):
-        s = Server(path=path)
+        """Test when no process exists and gcov_flush is called"""
+        serv = Server(path=PATH)
         with pytest.raises(ServerProcessError):
-            s.gcov_flush()
+            serv.gcov_flush()
 
     def test_gcov_flush_fail(self):
-        s = Server(path=path)
-        s.proc = 1
-        s.pid = -300
+        """Test when gcov_flush fails"""
+        serv = Server(path=PATH)
+        serv.proc = 1
+        serv.pid = -300
         with pytest.raises(ServerProcessError):
-            s.gcov_flush()
+            serv.gcov_flush()
 
 
 
 
 class TestRun(object):
-
+    """Test running the server"""
     def test_run(self):
-        s = Server(path='abc')
-        s._run_process = Mock(return_value=MockProcess())
-        s.run()
-        assert s.pid == 1
-        assert s.proc is not None
+        """Test the run method"""
+        serv = Server(path='abc')
+        serv._run_process = Mock(return_value=MockProcess())
+        serv.run()
+        assert serv.pid == 1
+        assert serv.proc is not None
 
     def test_run_process(self):
-        s = Server(path='abc')
-        s._start_process = Mock(return_value=MockProcess())
-        s.gst_option_string = ''
-        ret = s._run_process()
+        """Test _run_process method"""
+        serv = Server(path='abc')
+        serv._start_process = Mock(return_value=MockProcess())
+        serv.gst_option_string = ''
+        ret = serv._run_process()
         assert ret is not None
 
     def test_start_process_error(self, monkeypatch):
-        s = Server(path='abc')
+        """Test _start_process method"""
+        serv = Server(path='abc')
         monkeypatch.setattr(subprocess, 'Popen', Mock(side_effect=OSError))
         with pytest.raises(ServerProcessError):
-            s._start_process('cmd')
+            serv._start_process('cmd')
 
     def test_start_process_normal(self, monkeypatch):
-        s = Server(path='abc')
-        monkeypatch.setattr(subprocess, 'Popen', Mock(return_value=MockProcess()))
-        s._start_process('cmd') 
+        """Test _start_process normally"""
+        serv = Server(path='abc')
+        monkeypatch.setattr(
+            subprocess,
+            'Popen',
+            Mock(return_value=MockProcess()))
+        serv._start_process('cmd')
 
 
 class MockProcess(object):
-        def __init__(self, mode=True):
-            self.mode = mode
-            self.pid = 1
+    """A mock process"""
+    def __init__(self, mode=True):
+        self.mode = mode
+        self.pid = 1
 
-        def terminate(self):
-            if self.mode == True:
-                pass
-            if self.mode == False:
-                raise OSError('Testing terminate')
-
-        def kill(selfd):
-            if self.mode == True:
-                pass
-            if self.mode == False:
-                raise OSError('Testing kill')
-
-        def make_coverage(self):
+    def terminate(self):
+        """Terminate the mock process"""
+        if self.mode == True:
             pass
+        if self.mode == False:
+            raise OSError('Testing terminate')
+
+    def kill(self):
+        """Kill the mock process"""
+        if self.mode == True:
+            pass
+        if self.mode == False:
+            raise OSError('Testing kill')
+
+    def make_coverage(self):
+        """Dump coverage"""
+        pass
 
 
 
 class MockPopen(object):
+    """Mock Popen method"""
     def __init__(self, cmd, bufsize, shell):
         pass
 
     def communicate(self):
+        """Mock communicate method of Popen"""
         return 0, 0
 
 
 
 class TestNormal(object):
-    # Normal Functioning Tests    
-
+    # Normal Functioning Tests
+    """Test the functioning of tests under valid conditions"""
     def test_normal_terminate(self):
-        s = Server(path='abc')
-        s.proc = MockProcess(True)
-        s.terminate()
-        assert s.proc is None
+        """Test terminal when normally called"""
+        serv = Server(path='abc')
+        serv.proc = MockProcess(True)
+        serv.terminate()
+        assert serv.proc is None
 
     def test_normal_kill(self, monkeypatch):
-        s = Server(path='abc')
-        s.proc = Mock()
+        """Test kill when normally called"""
+        serv = Server(path='abc')
+        serv.proc = Mock()
         monkeypatch.setattr(os, 'kill', Mock())
-        res = s.kill()
+        res = serv.kill()
         assert  res == True
-        assert s.proc is None
+        assert serv.proc is None
 
     def test_terminate(self):
-        s = Server(path='abc')
-        s.proc = MockProcess(False)
+        """Test terminate ServerProcessError"""
+        serv = Server(path='abc')
+        serv.proc = MockProcess(False)
         with pytest.raises(ServerProcessError):
-            s.terminate()
+            serv.terminate()
 
     def test_terminate_cov(self):
-        s = Server(path='abc')
-        s.proc = MockProcess(False)
-        s.gcov_flush = Mock()
-        s.make_coverage = Mock()
+        """Test terminate and gcov_flush ServerProcessError"""
+        serv = Server(path='abc')
+        serv.proc = MockProcess(False)
+        serv.gcov_flush = Mock()
+        serv.make_coverage = Mock()
         with pytest.raises(ServerProcessError):
-            s.terminate(True)
+            serv.terminate(True)
 
     def test_kill(self, monkeypatch):
-        s = Server(path='abc')
-        s.proc = Mock()
+        """Test kill ServerProcessError"""
+        serv = Server(path='abc')
+        serv.proc = Mock()
         monkeypatch.setattr(os, 'kill', Mock(side_effect=OSError))
         with pytest.raises(ServerProcessError):
-            s.kill()
+            serv.kill()
 
     def test_kill_cov(self, monkeypatch):
-        s = Server(path='abc')
-        s.proc = MockProcess(False)
-        s.gcov_flush = Mock()
-        s.make_coverage = Mock()
+        """Test kill and gcov_flush ServerProcessError"""
+        serv = Server(path='abc')
+        serv.proc = MockProcess(False)
+        serv.gcov_flush = Mock()
+        serv.make_coverage = Mock()
         monkeypatch.setattr(os, 'kill', Mock(side_effect=OSError))
         with pytest.raises(ServerProcessError):
-            s.kill(True)
+            serv.kill(True)
 
     def test_normal_gcov_flush(self, monkeypatch):
-        s = Server(path='abc')
-        s.proc = Mock()
+        """Test gcov_flush"""
+        serv = Server(path='abc')
+        serv.proc = Mock()
         monkeypatch.setattr(os, 'kill', Mock())
-        res = s.gcov_flush()
+        res = serv.gcov_flush()
         assert res == True
-        assert s.proc is not None
+        assert serv.proc is not None
 
     def test_make_coverage(self, monkeypatch):
-        s = Server(path='abc')
+        """Test dumping coverage"""
+        serv = Server(path='abc')
         monkeypatch.setattr(subprocess, 'Popen', MockPopen)
-        s.make_coverage()
+        serv.make_coverage()

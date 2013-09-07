@@ -143,7 +143,7 @@ class TestGetAudioPort(object):
         r = []
         controller = Controller()
         controller.establish_connection()
-        for i in range(self.NUM*self.FACTOR):
+        for i in range(self.NUM * self.FACTOR):
             r.append(controller.get_audio_port())
         return r
 
@@ -300,7 +300,7 @@ class TestSetCompositeMode(object):
         cmpr = CompareVideo(test, video)
         res1, res2 = cmpr.compare()
         print "RESULTS", res1, res2
-        folder = cmpr.TEST_FRAME_DIR
+        folder = cmpr.test_frame_dir
         cmd = "./imgurbash.sh {0}/*.*".format(folder)
         print cmd
         p = subprocess.Popen(
@@ -554,7 +554,7 @@ class TestMarkFace(object):
                 time.sleep(1)
                 res = controller.mark_face(faces)
                 print res
-                time.sleep(5)
+                time.sleep(1)
                 sources.terminate_video()
                 preview.terminate()
                 video_sink.terminate()
@@ -616,7 +616,7 @@ class TestMarkTracking(object):
                 time.sleep(1)
                 res = controller.mark_tracking(faces)
                 print res
-                time.sleep(5)
+                time.sleep(1)
                 sources.terminate_video()
                 preview.terminate()
                 video_sink.terminate()
