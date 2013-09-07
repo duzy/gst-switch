@@ -191,7 +191,7 @@ class MockConnection(object):
 
 
 class TestGetComposePort(object):
-    """Test the get_compose_port"""
+    """Test the get_compose_port method"""
     def test_unpack(self):
         """Test when values cant unpack"""
         controller = Controller(address='unix:abstract=abcdefghijk')
@@ -207,51 +207,58 @@ class TestGetComposePort(object):
 
 
 class TestGetEncodePort(object):
-
+    """Test the get_encode_port method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcdefghijk')
         controller.connection = MockConnection(True)
         with pytest.raises(ConnectionReturnError):
             controller.get_encode_port()
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.connection = MockConnection(False)
         assert controller.get_encode_port() == 3002
 
 
 class TestGetAudioPort(object):
-
+    """ Test the get_audio_port method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcdefghijk')
         controller.connection = MockConnection(True)
         with pytest.raises(ConnectionReturnError):
             controller.get_audio_port()
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.connection = MockConnection(False)
         assert controller.get_audio_port() == 4000
 
 
 class TestGetPreviewPorts(object):
-
+    """Test the get_preview_ports method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcdefghijk')
         controller.connection = MockConnection(True)
         with pytest.raises(ConnectionReturnError):
             controller.get_preview_ports()
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.connection = MockConnection(False)
-        controller._parse_preview_ports = Mock(return_value=[3001, 3002])
+        controller.parse_preview_ports = Mock(return_value=[3001, 3002])
         assert controller.get_preview_ports() == [3001, 3002]
 
 
 class TestSetCompositeMode(object):
-
+    """Test the set_composite_mode method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcdefghijk')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(True)
@@ -259,6 +266,7 @@ class TestSetCompositeMode(object):
             controller.set_composite_mode(1)
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
@@ -267,8 +275,9 @@ class TestSetCompositeMode(object):
 
 
 class TestSetEncodeMode(object):
-
+    """Test the set_encode_mode method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(True)
@@ -276,6 +285,7 @@ class TestSetEncodeMode(object):
             controller.set_encode_mode(1)
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
@@ -283,8 +293,9 @@ class TestSetEncodeMode(object):
 
 
 class TestNewRecord(object):
-
+    """Test the new_record method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(True)
@@ -292,6 +303,7 @@ class TestNewRecord(object):
             controller.new_record()
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
@@ -299,58 +311,65 @@ class TestNewRecord(object):
 
 
 class TestAdjustPIP(object):
-
+    """Test the adjust_pip method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(True)
         with pytest.raises(ConnectionReturnError):
-            controller.adjust_pip(1,2,3,4)
+            controller.adjust_pip(1, 2, 3, 4)
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
-        assert controller.adjust_pip(1,2,3,4) == 1
+        assert controller.adjust_pip(1, 2, 3, 4) == 1
 
 
 
 class TestSwitch(object):
-
+    """Test the switch method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(True)
         with pytest.raises(ConnectionReturnError):
-            controller.switch(1,2)
+            controller.switch(1, 2)
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
-        assert controller.switch(1,2) == True
+        assert controller.switch(1, 2) == True
 
 
 
 class TestClickVideo(object):
-
+    """Test the click_video method"""
     def test_unpack(self):
+        """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(True)
         with pytest.raises(ConnectionReturnError):
-            controller.click_video(1,2,3,4)
+            controller.click_video(1, 2, 3, 4)
 
     def test_normal_unpack(self):
+        """Test if valid"""
         controller =  Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
-        assert controller.click_video(1,2,3,4) == True
+        assert controller.click_video(1, 2, 3, 4) == True
 
 
 class TestMarkFaces(object):
-
+    """Tes the mark_face method"""
     def test_normal(self):
+        """Test if valid"""
         controller = Controller(address='unix:abstract=abcde')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(True)
@@ -359,8 +378,9 @@ class TestMarkFaces(object):
 
 
 class TestMarkTracking(object):
-
+    """Test the mark_tracking method"""
     def test_normal(self):
+        """Test if valid"""
         controller = Controller(address='unix:abstract=abcde')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(True)
@@ -368,20 +388,23 @@ class TestMarkTracking(object):
         controller.mark_tracking(face)
 
 class TestParsePreviewPorts(object):
-
+    """Test the parse_preview_ports class method"""
     def test_value_error(self):
+        """Test if invalid"""
         controller = Controller(address='unix:abstract=abcde')
         test = 1234
         with pytest.raises(ConnectionReturnError):
-            controller._parse_preview_ports(test)
+            controller.parse_preview_ports(test)
 
     def test_syntax_error(self):
+        """Test if syntax error detected"""
         controller = Controller(address='unix:abstract=abcde')
         test = '{}[]'
         with pytest.raises(ConnectionReturnError):
-            controller._parse_preview_ports(test)
+            controller.parse_preview_ports(test)
 
     def test_normal(self):
+        """Test if valid"""
         controller = Controller(address='unix:abstract=abcde')
         test = '[(1, 2, 3), (2, 2, 2)]'
-        assert controller._parse_preview_ports(test) == [1, 2]
+        assert controller.parse_preview_ports(test) == [1, 2]

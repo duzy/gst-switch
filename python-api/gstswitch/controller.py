@@ -194,7 +194,7 @@ class Controller(object):
         conn = self.connection.get_preview_ports()
         try:
             res = conn.unpack()[0]
-            preview_ports = self._parse_preview_ports(res)
+            preview_ports = self.parse_preview_ports(res)
             return preview_ports
         except AttributeError:
             raise ConnectionReturnError('Connection returned invalid values. '
@@ -347,7 +347,7 @@ class Controller(object):
         self.connection.mark_tracking(faces)
 
     @classmethod
-    def _parse_preview_ports(cls, res):
+    def parse_preview_ports(cls, res):
         """Parses the preview_ports string"""
         # res = '[(a, b, c), (a, b, c)*]'
         try:
