@@ -227,26 +227,30 @@ class TestTestSources(object):
 
 
 class TestPreviewSinksPreviewPort(object):
-
+    """Test preview_port parameter"""
     def test_blank(self):
+        """Test when preview_port is blank"""
         tests = ['', None, [], {}]
         for test in tests:
             with pytest.raises(ValueError):
                 PreviewSinks(preview_port=test)
 
     def test_range(self):
+        """Test when preview_port is out of range"""
         tests = [-100, 1e7, 65536]
         for test in tests:
             with pytest.raises(RangeError):
                 PreviewSinks(preview_port=test)
 
     def test_invalid(self):
+        """Test when preview_port is not a integral value"""
         tests = [[1, 2, 3, 4], {1: 2, 2: 3}, '1e10']
         for test in tests:
             with pytest.raises(TypeError):
                 PreviewSinks(preview_port=test)
 
     def test_normal(self):
+        """Test when preview_port is valid"""
         tests = [1, 65535, 1000]
         for test in tests:
             src = PreviewSinks(preview_port=test)
@@ -255,30 +259,35 @@ class TestPreviewSinksPreviewPort(object):
 
 
 class TestPreviewSinks(object):
-
+    """Test Preview Sinks"""
     class MockPreview(object):
-
+        """A mock preview class"""
         def __init__(self, preview_port=3001):
             pass
 
         def run(self):
+            """Run the preview"""
             pass
 
         def end(self):
+            """End the preview"""
             pass
 
     def test_run(self, monkeypatch):
+        """Test running preview"""
         preview = PreviewSinks()
         monkeypatch.setattr(testsource, 'Preview', self.MockPreview)
         preview.run()
         assert preview.preview is not None
 
     def test_terminate_fail(self):
+        """Test terminating a preview when none exists"""
         preview = PreviewSinks()
         with pytest.raises(AttributeError):
             preview.terminate()
 
     def test_terminate_normal(self, monkeypatch):
+        """Test terminating a preview when valid exists"""
         preview = PreviewSinks()
         preview.preview = self.MockPreview()
         preview.terminate()

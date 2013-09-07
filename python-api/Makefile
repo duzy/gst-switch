@@ -30,12 +30,12 @@ integration:
 	py.test --cov-report html --cov gstswitch tests/integrationtests/ -s -v 2>/dev/null
 	mv htmlcov/*.* reports/coverage/integration
 	-rm imgurbash.sh
-	rm -f *.log
-	rm -f *.html
 
 clean:
 	rm -f *.data
 	rm -f tests/integrationtests/*.data
+	rm -f *.log
+	rm -f *.html
 
 
 test: unittests integration clean
