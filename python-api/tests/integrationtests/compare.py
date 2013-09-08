@@ -13,11 +13,13 @@ import tempfile
 import subprocess
 
 __all__ = [
-            'GenerateReferenceFrames',
-            'CompareVideo',
-            ]
+    'GenerateReferenceFrames',
+    'CompareVideo',
+]
+
 
 class BaseCompareVideo(object):
+
     """Base class containing image operations"""
 
     TESTS = {
@@ -28,6 +30,7 @@ class BaseCompareVideo(object):
         'adjust_pip_4': 4
     }
     REF_FRAME_DIR = os.getcwd() + '/tests/integrationtests/reference_frames'
+
     def __init__(self):
         pass
 
@@ -39,16 +42,15 @@ class BaseCompareVideo(object):
         img2 = imread(file2).astype(float)
         # compare
         n_0 = self.compare_images(img1, img2)
-        return n_0*1.0/img1.size
+        return n_0 * 1.0 / img1.size
         # print "Manhattan norm:", n_m, "/ per pixel:", n_m/img1.size
         # print "Zero norm:", n_0, "/ per pixel:", n_0*1.0/img1.size
 
     def normalize(self, arr):
         """Normalize an image"""
-        rng = arr.max()-arr.min() + 1e-10
+        rng = arr.max() - arr.min() + 1e-10
         amin = arr.min()
-        return (arr-amin)*255/rng
-
+        return (arr - amin) * 255 / rng
 
     def compare_images(self, img1, img2):
         """Calculate the zero norm between two images"""
@@ -74,19 +76,20 @@ class BaseCompareVideo(object):
         {1}/out{2}_2.png".format(self.video, directory, self.TESTS[self.test])
         # print cmd
         proc = subprocess.Popen(
-        cmd1.split(),
-        bufsize=-1,
-        shell=False)
+            cmd1.split(),
+            bufsize=-1,
+            shell=False)
         proc.wait()
 
         proc = subprocess.Popen(
-        cmd2.split(),
-        bufsize=-1,
-        shell=False)
+            cmd2.split(),
+            bufsize=-1,
+            shell=False)
         proc.wait()
 
 
 class GenerateReferenceFrames(BaseCompareVideo):
+
     """Generate the original frames for storage in reference_frames/
     """
 
@@ -96,9 +99,8 @@ class GenerateReferenceFrames(BaseCompareVideo):
         self.video = video
 
 
-
-
 class CompareVideo(BaseCompareVideo):
+
     """Compare a video with pre-stored frames
     :parameter test: The test which is conducted.
     self.TESTS stores these tests and maps them with frames
@@ -112,7 +114,7 @@ class CompareVideo(BaseCompareVideo):
         self.video = video
         print self.test_frame_dir
 
-    def  compare(self):
+    def compare(self):
         """Compare videos"""
         img1 = '/out{0}_1.png'.format(self.TESTS[self.test])
         img2 = '/out{0}_2.png'.format(self.TESTS[self.test])
@@ -120,9 +122,9 @@ class CompareVideo(BaseCompareVideo):
         self.generate_frames(self.test_frame_dir)
 
         res1 = self.comp_image(
-            self.REF_FRAME_DIR+img1,
-            self.test_frame_dir+img1)
+            self.REF_FRAME_DIR + img1,
+            self.test_frame_dir + img1)
         res2 = self.comp_image(
-            self.REF_FRAME_DIR+img2,
-            self.test_frame_dir+img2)
+            self.REF_FRAME_DIR + img2,
+            self.test_frame_dir + img2)
         return (res1, res2)

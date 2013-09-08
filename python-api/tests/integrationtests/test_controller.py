@@ -21,9 +21,11 @@ PATH = '/usr/local/bin/'
 
 
 class TestEstablishConnection(object):
+
     """Test establish_connection method"""
     NUM = 1
     # fails above 3
+
     def establish_connection(self):
         """Create Controller object and call establish_connection"""
         controller = Controller()
@@ -52,17 +54,18 @@ class TestEstablishConnection(object):
                 print log.read()
 
 
-
 class TestGetComposePort(object):
+
     """Test get_compose_port method"""
     NUM = 1
     FACTOR = 1
+
     def get_compose_port(self):
         """Create Controller and call get_compose_port method"""
         res = []
         controller = Controller()
         controller.establish_connection()
-        for _ in range(self.NUM*self.FACTOR):
+        for _ in range(self.NUM * self.FACTOR):
             res.append(controller.get_compose_port())
         return res
 
@@ -71,8 +74,8 @@ class TestGetComposePort(object):
         res = []
         expected_result = []
         for i in range(self.NUM):
-            video_port = (i+7)*1000
-            expected_result.append([video_port+1]*self.NUM*self.FACTOR)
+            video_port = (i + 7) * 1000
+            expected_result.append([video_port + 1] * self.NUM * self.FACTOR)
             serv = Server(path=PATH, video_port=video_port)
             try:
                 serv.run()
@@ -94,21 +97,23 @@ class TestGetComposePort(object):
                     log = open('server.log')
                     print log.read()
 
-        set_expected = [ tuple(i) for i in expected_result]
-        set_res = [ tuple(i) for i in res]
+        set_expected = [tuple(i) for i in expected_result]
+        set_res = [tuple(i) for i in res]
         assert set(set_expected) == set(set_res)
 
 
 class TestGetEncodePort(object):
+
     """Test get_encode_port method"""
     NUM = 1
     FACTOR = 1
+
     def get_encode_port(self):
         """Create a Controller object and call get_encode_port method"""
         res = []
         controller = Controller()
         controller.establish_connection()
-        for _ in range(self.NUM*self.FACTOR):
+        for _ in range(self.NUM * self.FACTOR):
             res.append(controller.get_encode_port())
         return res
 
@@ -117,8 +122,8 @@ class TestGetEncodePort(object):
         res = []
         expected_result = []
         for i in range(self.NUM):
-            video_port = (i+8)*1000
-            expected_result.append([video_port+2]*self.NUM*self.FACTOR)
+            video_port = (i + 8) * 1000
+            expected_result.append([video_port + 2] * self.NUM * self.FACTOR)
             serv = Server(path=PATH, video_port=video_port)
             try:
                 serv.run()
@@ -140,15 +145,17 @@ class TestGetEncodePort(object):
                     log = open('server.log')
                     print log.read()
 
-        set_expected = [ tuple(i) for i in expected_result]
-        set_res = [ tuple(i) for i in res]
+        set_expected = [tuple(i) for i in expected_result]
+        set_res = [tuple(i) for i in res]
         assert set(set_expected) == set(set_res)
 
 
 class TestGetAudioPort(object):
+
     """Test get_audio_port method"""
     NUM = 1
     FACTOR = 1
+
     def get_audio_port(self):
         """Create Controller object and call get_audio_port method"""
         res = []
@@ -162,8 +169,8 @@ class TestGetAudioPort(object):
         """Test get_audio_port"""
         res = []
         expected_result = []
-        for i in range(1, self.NUM+1):
-            audio_port = (i+10)*1000
+        for i in range(1, self.NUM + 1):
+            audio_port = (i + 10) * 1000
             expected_result.append([3003] * self.NUM * self.FACTOR)
             serv = Server(path=PATH, video_port=3000, audio_port=audio_port)
             try:
@@ -188,16 +195,17 @@ class TestGetAudioPort(object):
                     print log.read()
         # print res
         # print expected_result
-        set_expected = [ tuple(i) for i in expected_result]
-        set_res = [ tuple(i) for i in res]
+        set_expected = [tuple(i) for i in expected_result]
+        set_res = [tuple(i) for i in res]
         assert set(set_expected) == set(set_res)
 
 
-
 class TestGetPreviewPorts(object):
+
     """Test get_preview_ports method"""
     NUM = 1
     FACTOR = 1
+
     def get_preview_ports(self):
         """Create Controller object and call get_preview_ports method"""
         res = []
@@ -221,7 +229,7 @@ class TestGetPreviewPorts(object):
                 expected_result = map(
                     tuple,
                     [[x for x in range(3003, 3004 + self.NUM)]]
-                    * self.NUM*self.FACTOR)
+                    * self.NUM * self.FACTOR)
                 res = map(tuple, self.get_preview_ports())
                 print '\n', res, '\n'
                 print expected_result
@@ -242,18 +250,20 @@ class TestGetPreviewPorts(object):
 
 
 class VideoFileSink(object):
+
     """Sink the video to a file
     """
+
     def __init__(self, path, port, filename):
         cmd = "{0}/gst-launch-1.0 tcpclientsrc port={1} ! gdpdepay !  jpegenc \
         ! avimux ! filesink location={2}".format(path, port, filename)
         with open(os.devnull, 'w') as tempf:
             self.proc = subprocess.Popen(
-            cmd.split(),
-            stdout=tempf,
-            stderr=tempf,
-            bufsize=-1,
-            shell=False)
+                cmd.split(),
+                stdout=tempf,
+                stderr=tempf,
+                bufsize=-1,
+                shell=False)
 
     def terminate(self):
         """Terminate sinking"""
@@ -261,6 +271,7 @@ class VideoFileSink(object):
 
 
 class TestSetCompositeMode(object):
+
     """Test set_composite_mode method"""
     NUM = 1
     FACTOR = 1
@@ -277,7 +288,7 @@ class TestSetCompositeMode(object):
                 preview.run()
 
                 out_file = 'output-{0}.data'.format(mode)
-                video_sink = VideoFileSink(PATH, serv.video_port+1, out_file)
+                video_sink = VideoFileSink(PATH, serv.video_port + 1, out_file)
 
                 sources = TestSources(video_port=3000)
                 sources.new_test_video(pattern=4)
@@ -299,7 +310,7 @@ class TestSetCompositeMode(object):
                         assert res is False
                     else:
                         assert res is True
-                    assert self.verify_output(mode, out_file) == True
+                    assert self.verify_output(mode, out_file) is True
                 # assert expected_result == res
 
             finally:
@@ -339,9 +350,11 @@ class TestSetCompositeMode(object):
 
 
 class TestNewRecord(object):
+
     """Test new_record method"""
     NUM = 1
     FACTOR = 1
+
     def new_record(self):
         """Create a Controller object and call new_record method"""
         res = []
@@ -363,7 +376,7 @@ class TestNewRecord(object):
 
                 curr_time = datetime.datetime.now()
                 alt_curr_time = curr_time + datetime.timedelta(0, 1)
-                time_str =  curr_time.strftime('%Y-%m-%d %H%M%S')
+                time_str = curr_time.strftime('%Y-%m-%d %H%M%S')
                 alt_time_str = alt_curr_time.strftime('%Y-%m-%d %H%M%S')
                 test_filename = "test {0}.data".format(time_str)
                 alt_test_filename = "test {0}.data".format(alt_time_str)
@@ -373,7 +386,7 @@ class TestNewRecord(object):
                 sources.terminate_video()
                 serv.terminate(1)
                 assert ((os.path.exists(test_filename)) or
-                    (os.path.exists(alt_test_filename))) == True
+                       (os.path.exists(alt_test_filename))) is True
             finally:
                 if serv.proc:
                     poll = serv.proc.poll()
@@ -387,6 +400,7 @@ class TestNewRecord(object):
 
 
 class TestAdjustPIP(object):
+
     """Test adjust_pip method"""
     NUM = 1
     FACTOR = 1
@@ -398,7 +412,7 @@ class TestAdjustPIP(object):
         width,
         heigth,
         index,
-        generate_frames=False):
+            generate_frames=False):
         """Create Controller object and call adjust_pip"""
         for _ in range(self.NUM):
             serv = Server(path=PATH)
@@ -422,8 +436,7 @@ class TestAdjustPIP(object):
                 serv.terminate(1)
                 if not generate_frames:
                     assert res is not None
-                    assert self.verify_output(index, out_file) == True
-
+                    assert self.verify_output(index, out_file) is True
 
             finally:
                 if serv.proc:
@@ -450,18 +463,19 @@ class TestAdjustPIP(object):
     def test_adjust_pip(self):
         """Test adjust_pip"""
         dic = [
-                [50, 75, 0, 0],
-            ]
+            [50, 75, 0, 0],
+        ]
         for i in range(4, 5):
             self.adjust_pip(
-                dic[i-4][0],
-                dic[i-4][1],
-                dic[i-4][2],
-                dic[i-4][3],
+                dic[i - 4][0],
+                dic[i - 4][1],
+                dic[i - 4][2],
+                dic[i - 4][3],
                 i)
 
 
 class TestSwitch(object):
+
     """Test switch method"""
 
     NUM = 1
@@ -501,7 +515,6 @@ class TestSwitch(object):
                     log = open('server.log')
                     print log.read()
 
-
     def test_switch(self):
         """Test switch"""
         dic = [
@@ -509,11 +522,11 @@ class TestSwitch(object):
         ]
         start = 5
         for i in range(start, 6):
-            self.switch(dic[i-start][0], dic[i-start][1], i)
-
+            self.switch(dic[i - start][0], dic[i - start][1], i)
 
 
 class TestClickVideo(object):
+
     """Test click_video method"""
     NUM = 1
     FACTOR = 1
@@ -525,7 +538,7 @@ class TestClickVideo(object):
         width,
         heigth,
         index,
-        generate_frames=False):
+            generate_frames=False):
         """Create Controller object and call click_video method"""
         for _ in range(self.NUM):
             serv = Server(path=PATH)
@@ -549,8 +562,7 @@ class TestClickVideo(object):
                 serv.terminate(1)
                 if not generate_frames:
                     assert res is not None
-                    assert self.verify_output(index, out_file) == True
-
+                    assert self.verify_output(index, out_file) is True
 
             finally:
                 if serv.proc:
@@ -577,20 +589,21 @@ class TestClickVideo(object):
     def test_click_video(self):
         """Test click_video"""
         dic = [
-                [0, 0, 10, 10],
-            ]
+            [0, 0, 10, 10],
+        ]
         start = 6
         for i in range(start, 7):
             self.click_video(
-                dic[i-start][0],
-                dic[i-start][1],
-                dic[i-start][2],
-                dic[i-start][3],
+                dic[i - start][0],
+                dic[i - start][1],
+                dic[i - start][2],
+                dic[i - start][3],
                 i,
                 True)
 
 
 class TestMarkFace(object):
+
     """Test mark_face method"""
     NUM = 1
 
@@ -618,8 +631,7 @@ class TestMarkFace(object):
                 serv.terminate(1)
                 if not generate_frames:
                     assert res is not None
-                    assert self.verify_output(index, out_file) == True
-
+                    assert self.verify_output(index, out_file) is True
 
             finally:
                 if serv.proc:
@@ -646,15 +658,15 @@ class TestMarkFace(object):
     def test_mark_face(self):
         """Test mark_face"""
         dic = [
-                [(1, 1, 1, 1), (10, 10, 1, 1)],
-            ]
+            [(1, 1, 1, 1), (10, 10, 1, 1)],
+        ]
         start = 7
         for i in range(start, 8):
-            self.mark_face(dic[i-start], i, True)
-
+            self.mark_face(dic[i - start], i, True)
 
 
 class TestMarkTracking(object):
+
     """Test mark_tracking method"""
     NUM = 1
 
@@ -682,8 +694,7 @@ class TestMarkTracking(object):
                 serv.terminate(1)
                 if not generate_frames:
                     assert res is not None
-                    assert self.verify_output(index, out_file) == True
-
+                    assert self.verify_output(index, out_file) is True
 
             finally:
                 if serv.proc:
@@ -710,8 +721,8 @@ class TestMarkTracking(object):
     def test_mark_tracking(self):
         """Test mark_tracking"""
         dic = [
-                [(1, 1, 1, 1), (10, 10, 1, 1)],
-            ]
+            [(1, 1, 1, 1), (10, 10, 1, 1)],
+        ]
         start = 7
         for i in range(start, 8):
-            self.mark_tracking(dic[i-start], i, True)
+            self.mark_tracking(dic[i - start], i, True)

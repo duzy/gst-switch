@@ -13,7 +13,9 @@ import time
 # PATH = os.getenv("HOME") + '/gst/stage/bin/'
 PATH = '/usr/local/bin/'
 
+
 class TestTestSourcesPreviews(object):
+
     """Test for TestSources and PreviewSinks"""
     NUM = 1
 
@@ -36,7 +38,7 @@ class TestTestSourcesPreviews(object):
             preview = PreviewSinks()
             preview.run()
             for i in range(self.NUM):
-                self.add_video_sources(i*10+1, video_port)
+                self.add_video_sources(i * 10 + 1, video_port)
             preview.terminate()
             serv.terminate()
         finally:
@@ -63,7 +65,7 @@ class TestTestSourcesPreviews(object):
             preview = PreviewSinks()
             preview.run()
             for i in range(self.NUM):
-                self.add_audio_sources(i*10+1, audio_port)
+                self.add_audio_sources(i * 10 + 1, audio_port)
 
             preview.terminate()
             serv.terminate()
