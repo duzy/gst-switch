@@ -37,6 +37,3 @@ class TestServerStartStop(object):
     def test_start_stop(self):
         for i in range(self.NUM):
             self.startstop()
-        # remove all .data files generated
-        # for f1 in glob.glob(os.getcwd()+'/*.data'):
-        #     os.remove(f1)
