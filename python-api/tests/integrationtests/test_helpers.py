@@ -23,7 +23,7 @@ class TestTestSourcesPreviews(object):
         """Add a video source"""
         sources = TestSources(video_port=video_port)
         for _ in range(num):
-            sources.new_test_video(pattern=18)
+            sources.new_test_video(pattern=6)
         # print "done adding" + str(num)
         time.sleep(2)
         sources.terminate_video()
@@ -52,9 +52,9 @@ class TestTestSourcesPreviews(object):
             sources.new_test_audio(wave=10)
         # print "done adding" + str(num)
         # print sources.get_test_audio()
-        time.sleep(5)
+        time.sleep(2)
         sources.terminate_audio()
-        time.sleep(5)
+        time.sleep(2)
 
     def test_audio_sources(self):
         """Test audio sources"""
