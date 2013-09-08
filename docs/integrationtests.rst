@@ -1,6 +1,14 @@
 integrationtests Package
 ========================
 
+:mod:`integrationtests` Package
+-------------------------------
+
+.. automodule:: integrationtests.__init__
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 :mod:`compare` Module
 ---------------------
 

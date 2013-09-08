@@ -1,3 +1,3 @@
 """
-Unittest can be found here
+Unittests for gst-switch Python-API
 """

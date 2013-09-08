@@ -4,7 +4,7 @@ unittests Package
 :mod:`unittests` Package
 ------------------------
 
-.. automodule:: unittests
+.. automodule:: unittests.__init__
     :members:
     :undoc-members:
     :show-inheritance:
