@@ -35,6 +35,7 @@ imgurbash.sh.*
 /plugins/.libs/
 /plugins/Makefile
 /plugins/Makefile.in
+/python-api/imgurbash.sh*
 /python-api/reports/
 /python-api/htmlcov/
 /stamp-h1
