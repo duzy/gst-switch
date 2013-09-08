@@ -1,5 +1,5 @@
-gstswitch Package
-=================
+gst-switch python API
+=====================
 
 :mod:`gstswitch` Package
 ------------------------

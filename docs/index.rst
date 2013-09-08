@@ -9,15 +9,20 @@ gst-switch
 A replacement of DVSwitch based on gstreamer
 --------------------------------------------
 
-Contents:
+Python - API:
 
 .. toctree::
    :maxdepth: 4
 
    gstswitch
 
+Tests:
+
+.. toctree::
+   :maxdepth: 4
+
    unittests
-   
+
    integrationtests
 
 

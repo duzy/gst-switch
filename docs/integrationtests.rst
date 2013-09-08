@@ -1,5 +1,5 @@
-integrationtests Package
-========================
+Integration Tests for gstswitch and Python-API
+==============================================
 
 :mod:`integrationtests` Package
 -------------------------------
