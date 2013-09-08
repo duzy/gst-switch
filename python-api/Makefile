@@ -34,7 +34,7 @@ integration:
 	-chmod +x imgurbash.sh
 	@rm -rf reports
 	@mkdir -p reports/coverage/integration
-	py.test --cov-report html --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v 'GStreamer'
+	py.test --cov-report html --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v 'python' | tr -s '\n'
 	@mv htmlcov/*.* reports/coverage/integration
 	-rm imgurbash.sh*
 
