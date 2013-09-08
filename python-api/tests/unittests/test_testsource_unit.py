@@ -12,7 +12,9 @@ from gi.repository import Gst
 
 
 class TestVideoSrcPort(object):
+
     """Test the port parameter"""
+
     def test_blank(self):
         """Test when the port is null"""
         tests = ['', None, [], {}]
@@ -41,8 +43,11 @@ class TestVideoSrcPort(object):
             src = VideoSrc(port=test)
             assert src.port == test
 
+
 class TestVideoSrcWidth(object):
+
     """Test the width parameter"""
+
     def test_blank(self):
         """Test when the width is null"""
         tests = ['', None, [], {}]
@@ -69,7 +74,7 @@ class TestVideoSrcWidth(object):
 
     def test_normal(self):
         """Test when the width is valid"""
-        tests = [  1e6, 300, '200']
+        tests = [1e6, 300, '200']
         port = 1000
         for test in tests:
             src = VideoSrc(port=port, width=test)
@@ -77,7 +82,9 @@ class TestVideoSrcWidth(object):
 
 
 class TestVideoSrcHeight(object):
+
     """Test for height parameter"""
+
     def test_blank(self):
         """Test when the height is a null"""
         tests = ['', None, [], {}]
@@ -112,7 +119,9 @@ class TestVideoSrcHeight(object):
 
 
 class TestVideoSrcPattern(object):
+
     """Test the pattern parameter"""
+
     def test_range(self):
         """Test when pattern is not in range"""
         tests = [-100, 1e7, 65536, -1, 20]
@@ -139,7 +148,9 @@ class TestVideoSrcPattern(object):
 
 
 class TestVideoSrcTimeOverlay(object):
+
     """Test timeoverlay parameter"""
+
     def test_fail(self):
         """Test when timeoverlay is not boolean/valid"""
         tests = ['', 1234, 'hi', [1, 2], {1: 2}, None, 0, []]
@@ -157,9 +168,10 @@ class TestVideoSrcTimeOverlay(object):
             assert src.timeoverlay == test
 
 
-
 class TestVideoSrcClockOverlay(object):
+
     """Test clockoverlay pattern"""
+
     def test_fail(self):
         """Test when clockoverlay is not boolean/valid"""
         tests = ['', 1234, 'hi', [1, 2], {1: 2}, None, 0, []]
@@ -176,8 +188,11 @@ class TestVideoSrcClockOverlay(object):
             src = VideoSrc(port=port, clockoverlay=test)
             assert src.clockoverlay == test
 
+
 class MockPipeline(object):
+
     """Mock Pipeline"""
+
     def play(self):
         """Play the pipeline"""
         pass
@@ -192,7 +207,9 @@ class MockPipeline(object):
 
 
 class TestVideoSrcPlay(object):
+
     """Test Video Source options - play, pause, disable"""
+
     def test_run(self):
         """Test run method"""
         src = VideoSrc(port=3000)
@@ -213,7 +230,9 @@ class TestVideoSrcPlay(object):
 
 
 class TestPreviewPort(object):
+
     """Test port parameter"""
+
     def test_blank(self):
         """Test when port is null"""
         tests = ['', None, [], {}]
@@ -242,8 +261,11 @@ class TestPreviewPort(object):
             src = Preview(port=test)
             assert src.preview_port == test
 
+
 class TestPreviewPlay(object):
+
     """Test preview options - play, pause, end"""
+
     def test_run(self):
         """Test play method"""
         src = Preview(port=3001)
@@ -263,9 +285,10 @@ class TestPreviewPlay(object):
         src.end()
 
 
-
 class TestBasePipeline(object):
+
     """Test Base Pipeline"""
+
     def test_play(self, monkeypatch):
         """Test play method"""
         monkeypatch.setattr(Gst.Pipeline, '__init__', Mock())
@@ -289,7 +312,9 @@ class TestBasePipeline(object):
 
 
 class TestVideoPipeline(object):
+
     """Test VideoPipeline"""
+
     def test_permuate_time_clock_1(self):
         """Test when timeoverlay False and clockoverlay False"""
         VideoPipeline(
@@ -324,7 +349,9 @@ class TestVideoPipeline(object):
 
 
 class TestAudioSrcPort(object):
+
     """Test port parameter"""
+
     def test_blank(self):
         """Test when port is null"""
         tests = ['', None, [], {}]
@@ -355,7 +382,9 @@ class TestAudioSrcPort(object):
 
 
 class TestAudioSrcFreq(object):
+
     """Test frequency parameter"""
+
     def test_blank(self):
         """Test when frequency is null"""
         tests = ['', None, [], {}, 0]
@@ -389,7 +418,9 @@ class TestAudioSrcFreq(object):
 
 
 class TestAudioSrcWave(object):
+
     """Test wave parameter"""
+
     def test_range(self):
         """Test when wave is not in range"""
         tests = [-100,  -1, 13, 1e2, '1e10']
@@ -400,7 +431,7 @@ class TestAudioSrcWave(object):
 
     def test_invalid(self):
         """Test when wave is not a valid integral value"""
-        tests = [[1, 2, 3, 4], {1: 2, 2: 3},]
+        tests = [[1, 2, 3, 4], {1: 2, 2: 3}, ]
         port = 4000
         for test in tests:
             with pytest.raises(TypeError):
@@ -415,7 +446,9 @@ class TestAudioSrcWave(object):
 
 
 class TestAudioSrcPlay(object):
+
     """Test Audio Source options - play, pause, end"""
+
     def test_run(self):
         """Run the audio source"""
         src = AudioSrc(port=3000)

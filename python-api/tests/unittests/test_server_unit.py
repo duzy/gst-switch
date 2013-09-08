@@ -12,9 +12,12 @@ from mock import Mock
 
 PATH = '/usr/local/bin/'
 
+
 class TestPath(object):
+
     """Test the path parameter"""
     # Path Tests
+
     def test_invalid_path(self):
         """Test if path specified does not have executables"""
         path = '/usr/'
@@ -31,8 +34,10 @@ class TestPath(object):
 
 
 class TestVideoPort(object):
+
     """Test for video_port parameter"""
     # Video Port Tests
+
     def test_invalid_video_port_null(self):
         """Test when the video_port is null"""
         video_ports = [None, '', [], {}]
@@ -57,8 +62,10 @@ class TestVideoPort(object):
 
 
 class TestAudioPort(object):
+
     """Test for audio_port parameter"""
     # Audio Port Tests
+
     def test_invalid_audio_port_null(self):
         """Test when the audio_port is null"""
         audio_ports = [None, '', [], {}]
@@ -83,8 +90,10 @@ class TestAudioPort(object):
 
 
 class TestControlPort(object):
+
     """Test the control_port parameter"""
     # Control Port Tests
+
     def test_invalid_control_port_null(self):
         """Test when the control port is null"""
         control_ports = [None, '', [], {}]
@@ -109,8 +118,10 @@ class TestControlPort(object):
 
 
 class TestRecordFile(object):
+
     """Test the record_file parameter"""
     # Record File
+
     def test_record_file_blank(self):
         """Test when the record_file is null"""
         files = ['', None, [], {}]
@@ -127,12 +138,16 @@ class TestRecordFile(object):
 
 
 class TestKillTerminate(object):
+
     """Test kill, terminate and gcov_flush methods"""
     # OS Errors
+
     def test_terminate_fail(self):
         """Test when terminate fails"""
         class FakeProc(object):
+
             """A mock process"""
+
             def __init__(self):
                 pass
 
@@ -180,10 +195,10 @@ class TestKillTerminate(object):
             serv.gcov_flush()
 
 
-
-
 class TestRun(object):
+
     """Test running the server"""
+
     def test_run(self):
         """Test the run method"""
         serv = Server(path='abc')
@@ -218,23 +233,25 @@ class TestRun(object):
 
 
 class MockProcess(object):
+
     """A mock process"""
+
     def __init__(self, mode=True):
         self.mode = mode
         self.pid = 1
 
     def terminate(self):
         """Terminate the mock process"""
-        if self.mode == True:
+        if self.mode is True:
             pass
-        if self.mode == False:
+        if self.mode is False:
             raise OSError('Testing terminate')
 
     def kill(self):
         """Kill the mock process"""
-        if self.mode == True:
+        if self.mode is True:
             pass
-        if self.mode == False:
+        if self.mode is False:
             raise OSError('Testing kill')
 
     def make_coverage(self):
@@ -242,9 +259,10 @@ class MockProcess(object):
         pass
 
 
-
 class MockPopen(object):
+
     """Mock Popen method"""
+
     def __init__(self, cmd, bufsize, shell):
         pass
 
@@ -253,10 +271,11 @@ class MockPopen(object):
         return 0, 0
 
 
-
 class TestNormal(object):
     # Normal Functioning Tests
+
     """Test the functioning of tests under valid conditions"""
+
     def test_normal_terminate(self):
         """Test terminal when normally called"""
         serv = Server(path='abc')
@@ -270,7 +289,7 @@ class TestNormal(object):
         serv.proc = Mock()
         monkeypatch.setattr(os, 'kill', Mock())
         res = serv.kill()
-        assert  res == True
+        assert res is True
         assert serv.proc is None
 
     def test_terminate(self):
@@ -313,7 +332,7 @@ class TestNormal(object):
         serv.proc = Mock()
         monkeypatch.setattr(os, 'kill', Mock())
         res = serv.gcov_flush()
-        assert res == True
+        assert res is True
         assert serv.proc is not None
 
     def test_make_coverage(self, monkeypatch):

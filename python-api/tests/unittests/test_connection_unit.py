@@ -11,7 +11,9 @@ from mock import Mock
 
 
 class TestAddress(object):
+
     """Unittests for address parameter"""
+
     def test_address_null(self):
         """Test if address is null"""
         addresses = ['', None, [], {}]
@@ -34,7 +36,9 @@ class TestAddress(object):
 
 
 class TestBusName(object):
+
     """Unittests for bus_name parameter"""
+
     def test_normal(self):
         """Test if bus_name is not null"""
         names = ['', 'abcd', 12345]
@@ -50,7 +54,9 @@ class TestBusName(object):
 
 
 class TestObjectPath(object):
+
     """Unittests for object_path parameter"""
+
     def test_object_path_blank(self):
         """Test if object_path is null"""
         paths = [None, '', {}, []]
@@ -72,7 +78,9 @@ class TestObjectPath(object):
 
 
 class TestInterface(object):
+
     """Unittests for default_interface parameter"""
+
     def test_interface_none(self):
         """Test if default_interface is null"""
         default_interface = [None, '', [], {}]
@@ -95,7 +103,9 @@ class TestInterface(object):
 
 
 class TestConnectDBus(object):
+
     """Unittests for the connect_dbus method of Connection class"""
+
     def test_bad_address(self):
         """Test if wrong address is given - 1"""
         address = 'unix:path=gstswitch'
@@ -130,7 +140,7 @@ class TestConnectDBus(object):
     def test_mock2(self, monkeypatch):
         """Test GLib.GError exception"""
         monkeypatch.setattr(
-            Gio.DBusConnection,'new_for_address_sync',
+            Gio.DBusConnection, 'new_for_address_sync',
             Mock(return_value=1))
         conn = Connection()
         conn.connect_dbus()
@@ -138,6 +148,7 @@ class TestConnectDBus(object):
 
 
 class MockConnection(object):
+
     """A class which mocks the Connection class"""
     funs = {
         'get_compose_port': (3001,),

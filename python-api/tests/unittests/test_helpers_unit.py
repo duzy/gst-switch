@@ -10,7 +10,9 @@ from gstswitch import testsource
 
 
 class TestTestSourcesVideoPort(object):
+
     """Test for video_port parameter"""
+
     def test_range(self):
         """Test when out of range"""
         tests = [-100, 1e7, 65536]
@@ -34,7 +36,9 @@ class TestTestSourcesVideoPort(object):
 
 
 class TestTestSourcesAudioPort(object):
+
     """Test for audio_port parameter"""
+
     def test_range(self):
         """Test when out of range"""
         tests = [-100, 1e7, 65536]
@@ -56,10 +60,14 @@ class TestTestSourcesAudioPort(object):
             src = TestSources(audio_port=test)
             assert src.audio_port == test
 
+
 class TestTestSources(object):
+
     """Test for testsources"""
     class MockVideoSrc(object):
+
         """A mock video source"""
+
         def __init__(
             self,
             port,
@@ -67,13 +75,12 @@ class TestTestSources(object):
             height=200,
             pattern=None,
             timeoverlay=False,
-            clockoverlay=False):
+                clockoverlay=False):
             pass
 
         def run(self):
             """Run the mock video source"""
             pass
-
 
     def test_new_test_video(self, monkeypatch):
         """Test for new_test_video"""
@@ -84,7 +91,9 @@ class TestTestSources(object):
         assert len(test.running_tests_video) != 0
 
     class MockTest(object):
+
         """A mock test"""
+
         def __init__(self, pattern):
             self.pattern = pattern
 
@@ -96,20 +105,20 @@ class TestTestSources(object):
         """Test for get_test_video"""
         test = TestSources(video_port=3000)
         test.running_tests_video = [
-        self.MockTest(1),
-        self.MockTest(2),
-        self.MockTest(3),
-        self.MockTest(19)]
+            self.MockTest(1),
+            self.MockTest(2),
+            self.MockTest(3),
+            self.MockTest(19)]
         test.get_test_video()
 
     def test_terminate_index_error_video(self):
         """Test for terminate_video"""
         testsrc = TestSources(video_port=3000)
         testsrc.running_tests_video = [
-        self.MockTest(1),
-        self.MockTest(2),
-        self.MockTest(3),
-        self.MockTest(19)]
+            self.MockTest(1),
+            self.MockTest(2),
+            self.MockTest(3),
+            self.MockTest(19)]
         tests = [-100, 20, 1e10, "hi", [1, 2, 3]]
         for test in tests:
             with pytest.raises(InvalidIndexError):
@@ -119,21 +128,20 @@ class TestTestSources(object):
         """Test terminate_index_video"""
         test = TestSources(video_port=3000)
         test.running_tests_video = [
-        self.MockTest(1),
-        self.MockTest(2),
-        self.MockTest(3),
-        self.MockTest(19)]
+            self.MockTest(1),
+            self.MockTest(2),
+            self.MockTest(3),
+            self.MockTest(19)]
         test.terminate_index_video(0)
-
 
     def test_terminate1_video(self):
         """Test terminate_video multiple"""
         test = TestSources(video_port=3000)
         test.running_tests_video = [
-        self.MockTest(1),
-        self.MockTest(2),
-        self.MockTest(3),
-        self.MockTest(19)]
+            self.MockTest(1),
+            self.MockTest(2),
+            self.MockTest(3),
+            self.MockTest(19)]
         test.terminate_video()
 
     def test_terminate2_video(self):
@@ -142,21 +150,20 @@ class TestTestSources(object):
         test.running_tests_video = []
         test.terminate_video()
 
-
-
     class MockAudioSrc(object):
+
         """A Mock audio source"""
+
         def __init__(
             self,
             port,
             freq=110,
-            wave=None):
+                wave=None):
             pass
 
         def run(self):
             """Run the source"""
             pass
-
 
     def test_new_test_audio(self, monkeypatch):
         """Test new_test_audio"""
@@ -167,7 +174,9 @@ class TestTestSources(object):
         assert len(test.running_tests_audio) != 0
 
     class MockTest2(object):
+
         """A mock audio source"""
+
         def __init__(self, wave):
             self.wave = wave
 
@@ -179,20 +188,20 @@ class TestTestSources(object):
         """Test get_test_audio"""
         test = TestSources(audio_port=4000)
         test.running_tests_audio = [
-        self.MockTest2(1),
-        self.MockTest2(2),
-        self.MockTest2(3),
-        self.MockTest2(10)]
+            self.MockTest2(1),
+            self.MockTest2(2),
+            self.MockTest2(3),
+            self.MockTest2(10)]
         test.get_test_audio()
 
     def test_terminate_index_error_audio(self):
         """Test terminate_index_audio - invalid index"""
         testsrc = TestSources(audio_port=4000)
         testsrc.running_tests_audio = [
-        self.MockTest2(1),
-        self.MockTest2(2),
-        self.MockTest2(3),
-        self.MockTest2(10)]
+            self.MockTest2(1),
+            self.MockTest2(2),
+            self.MockTest2(3),
+            self.MockTest2(10)]
         tests = [-100, 20, 1e10, "hi", [1, 2, 3]]
         for test in tests:
             with pytest.raises(InvalidIndexError):
@@ -202,21 +211,20 @@ class TestTestSources(object):
         """Test terminate_index_audio valid index"""
         test = TestSources(audio_port=4000)
         test.running_tests_audio = [
-        self.MockTest2(1),
-        self.MockTest2(2),
-        self.MockTest2(3),
-        self.MockTest2(10)]
+            self.MockTest2(1),
+            self.MockTest2(2),
+            self.MockTest2(3),
+            self.MockTest2(10)]
         test.terminate_index_audio(0)
-
 
     def test_terminate1_audio(self):
         """Test terminate_audio multiple"""
         test = TestSources(audio_port=4000)
         test.running_tests_audio = [
-        self.MockTest2(1),
-        self.MockTest2(2),
-        self.MockTest2(3),
-        self.MockTest2(10)]
+            self.MockTest2(1),
+            self.MockTest2(2),
+            self.MockTest2(3),
+            self.MockTest2(10)]
         test.terminate_audio()
 
     def test_terminate2_audio(self):
@@ -227,7 +235,9 @@ class TestTestSources(object):
 
 
 class TestPreviewSinksPreviewPort(object):
+
     """Test preview_port parameter"""
+
     def test_blank(self):
         """Test when preview_port is blank"""
         tests = ['', None, [], {}]
@@ -257,11 +267,13 @@ class TestPreviewSinksPreviewPort(object):
             assert src.preview_port == test
 
 
-
 class TestPreviewSinks(object):
+
     """Test Preview Sinks"""
     class MockPreview(object):
+
         """A mock preview class"""
+
         def __init__(self, preview_port=3001):
             pass
 

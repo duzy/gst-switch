@@ -12,7 +12,9 @@ from gi.repository import GLib
 
 
 class TestAddress(object):
+
     """Test the address parameter"""
+
     def test_address_null(self):
         """Test if address is null"""
         address = ['', None, [], {}]
@@ -35,7 +37,9 @@ class TestAddress(object):
 
 
 class TestBusName(object):
+
     """Test bus_name parameter"""
+
     def test_normal(self):
         """Test when bus_name is not null"""
         names = ['', 'abcd', 12345]
@@ -51,7 +55,9 @@ class TestBusName(object):
 
 
 class TestObjectPath(object):
+
     """Test object_path parameter"""
+
     def test_object_path_blank(self):
         """Test when the object_path is null"""
         paths = [None, '', {}, []]
@@ -73,7 +79,9 @@ class TestObjectPath(object):
 
 
 class TestInterface(object):
+
     """Test the default_interface parameter"""
+
     def test_interface_none(self):
         """Test when the default_interface is null"""
         default_interface = [None, '', [], {}]
@@ -96,7 +104,9 @@ class TestInterface(object):
 
 
 class TestEstablishConnection(object):
+
     """Test the establish_connection method"""
+
     def test_normal(self, monkeypatch):
         """Test if the parameters are valid"""
         monkeypatch.setattr(Connection, 'connect_dbus', Mock())
@@ -106,7 +116,9 @@ class TestEstablishConnection(object):
 
 
 class MockConnection(object):
+
     """A class which mocks the Connection class"""
+
     def __init__(self, mode):
         self.mode = mode
 
@@ -189,9 +201,10 @@ class MockConnection(object):
         pass
 
 
-
 class TestGetComposePort(object):
+
     """Test the get_compose_port method"""
+
     def test_unpack(self):
         """Test when values cant unpack"""
         controller = Controller(address='unix:abstract=abcdefghijk')
@@ -201,13 +214,15 @@ class TestGetComposePort(object):
 
     def test_normal_unpack(self):
         """Test when valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.connection = MockConnection(False)
         assert controller.get_compose_port() == 3001
 
 
 class TestGetEncodePort(object):
+
     """Test the get_encode_port method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcdefghijk')
@@ -217,13 +232,15 @@ class TestGetEncodePort(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.connection = MockConnection(False)
         assert controller.get_encode_port() == 3002
 
 
 class TestGetAudioPort(object):
+
     """ Test the get_audio_port method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcdefghijk')
@@ -233,13 +250,15 @@ class TestGetAudioPort(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.connection = MockConnection(False)
         assert controller.get_audio_port() == 4000
 
 
 class TestGetPreviewPorts(object):
+
     """Test the get_preview_ports method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcdefghijk')
@@ -249,14 +268,16 @@ class TestGetPreviewPorts(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.connection = MockConnection(False)
         controller.parse_preview_ports = Mock(return_value=[3001, 3002])
         assert controller.get_preview_ports() == [3001, 3002]
 
 
 class TestSetCompositeMode(object):
+
     """Test the set_composite_mode method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcdefghijk')
@@ -267,15 +288,16 @@ class TestSetCompositeMode(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
-        assert controller.set_composite_mode(1) == True
-
+        assert controller.set_composite_mode(1) is True
 
 
 class TestSetEncodeMode(object):
+
     """Test the set_encode_mode method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
@@ -286,14 +308,16 @@ class TestSetEncodeMode(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
-        assert controller.set_encode_mode(1) == True
+        assert controller.set_encode_mode(1) is True
 
 
 class TestNewRecord(object):
+
     """Test the new_record method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
@@ -304,14 +328,16 @@ class TestNewRecord(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
-        assert controller.new_record() == True
+        assert controller.new_record() is True
 
 
 class TestAdjustPIP(object):
+
     """Test the adjust_pip method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
@@ -322,15 +348,16 @@ class TestAdjustPIP(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
         assert controller.adjust_pip(1, 2, 3, 4) == 1
 
 
-
 class TestSwitch(object):
+
     """Test the switch method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
@@ -341,15 +368,16 @@ class TestSwitch(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
-        assert controller.switch(1, 2) == True
-
+        assert controller.switch(1, 2) is True
 
 
 class TestClickVideo(object):
+
     """Test the click_video method"""
+
     def test_unpack(self):
         """Test if unpack fails"""
         controller = Controller(address='unix:abstract=abcde')
@@ -360,14 +388,16 @@ class TestClickVideo(object):
 
     def test_normal_unpack(self):
         """Test if valid"""
-        controller =  Controller(address='unix:abstract=abcdef')
+        controller = Controller(address='unix:abstract=abcdef')
         controller.establish_connection = Mock(return_value=None)
         controller.connection = MockConnection(False)
-        assert controller.click_video(1, 2, 3, 4) == True
+        assert controller.click_video(1, 2, 3, 4) is True
 
 
 class TestMarkFaces(object):
+
     """Tes the mark_face method"""
+
     def test_normal(self):
         """Test if valid"""
         controller = Controller(address='unix:abstract=abcde')
@@ -378,7 +408,9 @@ class TestMarkFaces(object):
 
 
 class TestMarkTracking(object):
+
     """Test the mark_tracking method"""
+
     def test_normal(self):
         """Test if valid"""
         controller = Controller(address='unix:abstract=abcde')
@@ -387,8 +419,11 @@ class TestMarkTracking(object):
         face = [(1, 2, 3, 4), (1, 1, 1, 1)]
         controller.mark_tracking(face)
 
+
 class TestParsePreviewPorts(object):
+
     """Test the parse_preview_ports class method"""
+
     def test_value_error(self):
         """Test if invalid"""
         controller = Controller(address='unix:abstract=abcde')
