@@ -14,7 +14,7 @@ lint:
 unittests:
 	@rm -rf reports
 	@mkdir -p reports/coverage/unittests
-	py.test --cov-report html --cov gstswitch tests/unittests/ --pep8 -v -s
+	py.test --cov gstswitch tests/unittests/ --pep8 -v -s
 	@mv htmlcov/*.* reports/coverage/unittests
 	@rmdir htmlcov
 	@make clean
@@ -34,9 +34,13 @@ integration:
 	-chmod +x imgurbash.sh
 	@rm -rf reports
 	@mkdir -p reports/coverage/integration
-	py.test --cov-report html --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v 'python' | tr -s '\n'
+	py.test --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v 'python' | tr -s '\n'
 	@mv htmlcov/*.* reports/coverage/integration
 	-rm imgurbash.sh*
+
+performance:
+	py.test tests/performancetests/*.py -v
+	make clean
 
 clean:
 	rm -f *.data
