@@ -23,7 +23,8 @@ pytest:
 	py.test tests/unittests -v
 
 integration:
-	rm -f ../tools/*.gcov
+	rm -f ../tools/*.c.gcov
+	rm -f ../tools/*.gcda
 	-wget http://imgur.com/tools/imgurbash.sh
 	-chmod +x imgurbash.sh
 	rm -rf reports
