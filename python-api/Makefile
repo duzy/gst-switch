@@ -40,7 +40,7 @@ clean:
 	rm -f *.html
 
 
-test: unittests integration clean
+test: lint unittests integration clean
 
 all: lint test
 
