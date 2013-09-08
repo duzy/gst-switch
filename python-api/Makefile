@@ -1,23 +1,23 @@
 .PHONY: lint unittests pytest integration test clean all
 
 lint:
-	rm -rf tests/unittests/__pycache__
-	rm -rf tests/integrationtests/__pycache__
-	rm -rf reports
-	mkdir -p reports/pylint
+	@rm -rf tests/unittests/__pycache__
+	@rm -rf tests/integrationtests/__pycache__
+	@rm -rf reports
+	@mkdir -p reports/pylint
 	pylint --rcfile=.pylintrc_gstswitch gstswitch
 	pylint --rcfile=.pylintrc_unittests tests/unittests/*
 	pylint --rcfile=.pylintrc_integrationtests tests/integrationtests/*.py
-	mv -f *.html reports/pylint
+	@mv -f *.html reports/pylint
 	@echo "Lint report generated in reports/pylint"
 
 unittests:
-	rm -rf reports
-	mkdir -p reports/coverage/unittests
+	@rm -rf reports
+	@mkdir -p reports/coverage/unittests
 	py.test --cov-report html --cov gstswitch tests/unittests/ --pep8 -v -s
-	mv htmlcov/*.* reports/coverage/unittests
-	rmdir htmlcov
-	make clean
+	@mv htmlcov/*.* reports/coverage/unittests
+	@rmdir htmlcov
+	@make clean
 
 pep8:
 	pep8 gstswitch
@@ -28,14 +28,14 @@ pep8:
 	@echo "integration tests are pep8 clean!!"
 
 integration:
-	rm -f ../tools/*.c.gcov
-	rm -f ../tools/*.gcda
+	@rm -f ../tools/*.c.gcov
+	@rm -f ../tools/*.gcda
 	-wget http://imgur.com/tools/imgurbash.sh
 	-chmod +x imgurbash.sh
-	rm -rf reports
-	mkdir -p reports/coverage/integration
-	py.test --cov-report html --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v 'GStreamer' | tr -d '\n'
-	mv htmlcov/*.* reports/coverage/integration
+	@rm -rf reports
+	@mkdir -p reports/coverage/integration
+	py.test --cov-report html --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v 'GStreamer'
+	@mv htmlcov/*.* reports/coverage/integration
 	-rm imgurbash.sh*
 
 clean:
