@@ -21,6 +21,8 @@ unittests:
 
 pep8:
 	pep8 gstswitch
+	@echo "pep8 for gstswitch passed!!"
+	pep8 tests/unittests
 
 integration:
 	rm -f ../tools/*.c.gcov
