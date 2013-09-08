@@ -11,6 +11,7 @@ __all__ = ["Connection", ]
 
 
 class Connection(object):
+
     """Class which makes all remote object class.
     Deals with lower level connection and remote method invoking
 
@@ -25,7 +26,8 @@ class Connection(object):
             address="unix:abstract=gstswitch",
             bus_name='info.duzy.gst.switch.SwitchController',
             object_path="/info/duzy/gst/switch/SwitchController",
-            default_interface="info.duzy.gst.switch.SwitchControllerInterface"):
+            default_interface=("info.duzy.gst.switch."
+                               "SwitchControllerInterface")):
 
         super(Connection, self).__init__()
         self.connection = None
@@ -71,7 +73,8 @@ class Connection(object):
     @bus_name.setter
     def bus_name(self, bus_name):
         """Set the Bus Name
-        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-bus
+        http://dbus.freedesktop.org/doc/dbus-specification.html\
+        #message-protocol-names-bus
         """
         if bus_name is None:
             self._bus_name = None
@@ -87,7 +90,8 @@ class Connection(object):
     @object_path.setter
     def object_path(self, object_path):
         """Set the object_path
-        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-marshaling-object-path
+        http://dbus.freedesktop.org/doc/dbus-specification.html\
+        #message-protocol-marshaling-object-path
         """
         if not object_path:
             raise ValueError("object_path '{0} cannot be blank'")
@@ -110,7 +114,8 @@ class Connection(object):
     @default_interface.setter
     def default_interface(self, default_interface):
         """Set the default_interface
-        http://dbus.freedesktop.org/doc/dbus-specification.html#message-protocol-names-interface
+        http://dbus.freedesktop.org/doc/dbus-specification.html\
+        #message-protocol-names-interface
         """
         if not default_interface:
             raise ValueError("default_interface '{0} cannot be blank'")

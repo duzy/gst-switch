@@ -17,7 +17,9 @@ __all__ = ["Server", ]
 
 TOOLS_DIR = '/'.join(os.getcwd().split('/')[:-1]) + '/tools/'
 
+
 class Server(object):
+
     """Control all server related operations
 
     :param path: Path where all executables
@@ -142,7 +144,8 @@ class Server(object):
             try:
                 i = int(control_port)
                 if i < 1 or i > 65535:
-                    raise ValueError('Control Port must be in range 1 to 65535')
+                    raise ValueError(
+                        'Control Port must be in range 1 to 65535')
                 else:
                     self._control_port = control_port
             except TypeError:
@@ -243,12 +246,11 @@ class Server(object):
         print TOOLS_DIR
         with open(os.devnull, 'w'):
             proc = subprocess.Popen(
-                        cmd.split(),
-                        bufsize=-1,
-                        shell=False)
+                cmd.split(),
+                bufsize=-1,
+                shell=False)
             out, _ = proc.communicate()
             print out
-
 
     def terminate(self, cov=False):
         """Terminate the server.
@@ -298,7 +300,6 @@ class Server(object):
             except OSError:
                 raise ServerProcessError('Cannot kill process')
 
-
     def gcov_flush(self):
         """Generate gcov coverage by sending the signal SIGUSR1
         The generated gcda files are dumped in tools directory.
@@ -319,5 +320,3 @@ class Server(object):
                 return True
             except OSError:
                 raise ServerProcessError('Unable to send signal')
-
-

@@ -12,6 +12,7 @@ __all__ = ["TestSources", "PreviewSinks"]
 
 
 class TestSources(object):
+
     """A Controller of test sources feeding into the
     gst-switch-srv
     :param width: The width of the output video
@@ -53,7 +54,7 @@ class TestSources(object):
                 self._video_port = video_port
         except TypeError:
             raise TypeError("video_port must be a string or number,"
-                "not, '{0}'".format(type(video_port)))
+                            "not, '{0}'".format(type(video_port)))
         except ValueError:
             raise TypeError("Port must be a valid number")
 
@@ -77,7 +78,7 @@ class TestSources(object):
                 self._audio_port = audio_port
         except TypeError:
             raise TypeError("audio port must be a string or number,"
-                "not, '{0}'".format(type(audio_port)))
+                            "not, '{0}'".format(type(audio_port)))
         except ValueError:
             raise TypeError("Port must be a valid number")
 
@@ -146,7 +147,8 @@ class TestSources(object):
             testsrc = self._running_tests_video[int(index)]
         except IndexError:
             raise InvalidIndexError(
-        "No video source with index:{0},use get_test_video() to determine index"
+                ("No video source with index:{0},"
+                 "use get_test_video() to determine index")
                 .format(index))
         except ValueError:
             raise InvalidIndexError("Index should be a valid integer")
@@ -164,12 +166,11 @@ class TestSources(object):
         for _ in range(len(self._running_tests_video)):
             self.terminate_index_video(0)
 
-
     def new_test_audio(
-                       self,
-                       freq=110,
-                       wave=None
-                       ):
+        self,
+        freq=110,
+        wave=None
+    ):
         """Start a new test audio
         :param port: The port of where the TCP stream will be sent
         Should be same as audio port of gst-switch-src
@@ -207,7 +208,8 @@ class TestSources(object):
             testsrc = self._running_tests_audio[int(index)]
         except IndexError:
             raise InvalidIndexError(
-        "No audio source with index:{0},use get_test_audio() to determine index"
+                ("No audio source with index:{0},"
+                 "use get_test_audio() to determine index")
                 .format(index))
         except ValueError:
             raise InvalidIndexError("Index should be a valid integer")
@@ -227,10 +229,10 @@ class TestSources(object):
 
 
 class PreviewSinks(object):
+
     """A Controller for preview sinks to preview ports of gst-switch-srv
     :param preview_port: The preview port to get the preview
     """
-
 
     def __init__(self, preview_port=3001):
         super(PreviewSinks, self).__init__()
@@ -258,15 +260,15 @@ class PreviewSinks(object):
             try:
                 i = int(preview_port)
                 if i < 1 or i > 65535:
-                    raise RangeError('Preview port must be in range 1 to 65535')
+                    raise RangeError(
+                        'Preview port must be in range 1 to 65535')
                 else:
                     self._preview_port = preview_port
             except TypeError:
                 raise TypeError("Preview_port must be a string or number,"
-                    "not, '{0}'".format(type(preview_port)))
+                                "not, '{0}'".format(type(preview_port)))
             except ValueError:
                 raise TypeError("Port must be a valid number")
-
 
     def run(self):
         """Run the Preview Sink"""

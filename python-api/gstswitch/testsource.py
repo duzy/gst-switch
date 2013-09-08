@@ -15,12 +15,13 @@ from .exception import RangeError
 import random
 
 # from pipeline import *
-#IMPORTS
+# IMPORTS
 
 __all__ = ["Preview", "VideoSrc", "AudioSrc"]
 
 
 class BasePipeline(Gst.Pipeline):
+
     """A Basic pipeline
     """
 
@@ -55,6 +56,7 @@ class BasePipeline(Gst.Pipeline):
 
 
 class VideoPipeline(BasePipeline):
+
     """A Video Pipeline which can be used by a Video Test Source
     :param port: The port of where the TCP stream will be sent
     Should be same as video port of gst-switch-src
@@ -169,9 +171,10 @@ class VideoPipeline(BasePipeline):
         return element
 
 
-
 class AudioPipeline(BasePipeline):
+
     """docstring for AudioPipeline"""
+
     def __init__(
             self,
             port,
@@ -219,12 +222,12 @@ class AudioPipeline(BasePipeline):
         return element
 
 
-
-
 class PreviewPipeline(BasePipeline):
+
     """Pipeline for usage by a Preview
     :param port: The preview port
     """
+
     def __init__(self, port):
         super(PreviewPipeline, self).__init__()
         self.host = '127.0.0.1'
@@ -264,6 +267,7 @@ class PreviewPipeline(BasePipeline):
 
 
 class VideoSrc(object):
+
     """A Test Video Source
     :param width: The width of the output video
     :param height: The height of the output video
@@ -329,7 +333,7 @@ class VideoSrc(object):
                     self._port = port
             except TypeError:
                 raise TypeError("Port must be a string or number,"
-                    "not, '{0}'".format(type(port)))
+                                "not, '{0}'".format(type(port)))
             except ValueError:
                 raise TypeError("Port must be a valid number")
 
@@ -347,16 +351,16 @@ class VideoSrc(object):
         """
         if not width:
             raise ValueError("Width: '{0}' cannot be blank"
-                .format(width))
+                             .format(width))
         try:
             i = float(width)
-            if i <= 0 :
+            if i <= 0:
                 raise ValueError("Width: '{0}' must be a valid positive value")
             else:
                 self._width = width
         except TypeError:
             raise TypeError("Width must be a valid value not '{0}'"
-                .format(type(width)))
+                            .format(type(width)))
 
     @property
     def height(self):
@@ -372,16 +376,17 @@ class VideoSrc(object):
         """
         if not height:
             raise ValueError("Height: '{0}' cannot be blank"
-                .format(height))
+                             .format(height))
         try:
             i = float(height)
-            if i <= 0 :
-                raise ValueError("Height: '{0}' must be a valid positive value")
+            if i <= 0:
+                raise ValueError(
+                    "Height: '{0}' must be a valid positive value")
             else:
                 self._height = height
         except TypeError:
             raise TypeError("Height must be a valid value not '{0}'"
-                .format(type(height)))
+                            .format(type(height)))
 
     @property
     def pattern(self):
@@ -418,7 +423,7 @@ class VideoSrc(object):
             self._timeoverlay = timeoverlay
         else:
             raise ValueError("Timeoverlay: '{0}' must be True of False"
-                .format(timeoverlay))
+                             .format(timeoverlay))
 
     @property
     def clockoverlay(self):
@@ -435,7 +440,7 @@ class VideoSrc(object):
             self._clockoverlay = clockoverlay
         else:
             raise ValueError("Clockoverlay: '{0}' must be True of False"
-                .format(clockoverlay))
+                             .format(clockoverlay))
 
     def run(self):
         """Run the pipeline"""
@@ -460,6 +465,7 @@ class VideoSrc(object):
 
 
 class AudioSrc(object):
+
     """docstring for AudioSrc"""
 
     HOST = '127.0.0.1'
@@ -507,7 +513,7 @@ class AudioSrc(object):
                     self._port = port
             except TypeError:
                 raise TypeError("Port must be a string or number,"
-                    "not, '{0}'".format(type(port)))
+                                "not, '{0}'".format(type(port)))
             except ValueError:
                 raise TypeError("Port must be a valid number")
 
@@ -535,10 +541,9 @@ class AudioSrc(object):
                     self._freq = freq
             except TypeError:
                 raise TypeError("Frequency must be a string or number,"
-                    "not, '{0}'".format(type(freq)))
+                                "not, '{0}'".format(type(freq)))
             except ValueError:
                 raise TypeError("Frequency must be a valid number")
-
 
     @property
     def wave(self):
@@ -582,11 +587,12 @@ class AudioSrc(object):
         return wave
 
 
-
 class Preview(object):
+
     """A Preview Element
     :param port: The preview port
     """
+
     def __init__(self, port):
         super(Preview, self).__init__()
         self._preview_port = None
@@ -613,15 +619,15 @@ class Preview(object):
             try:
                 i = int(preview_port)
                 if i < 1 or i > 65535:
-                    raise RangeError('preview_port must be in range 1 to 65535')
+                    raise RangeError(
+                        'preview_port must be in range 1 to 65535')
                 else:
                     self._preview_port = preview_port
             except TypeError:
                 raise TypeError("preview_port must be a string or number,"
-                    "not, '{0}'".format(type(preview_port)))
+                                "not, '{0}'".format(type(preview_port)))
             except ValueError:
                 raise TypeError("Port must be a valid number")
-
 
     def run(self):
         """Run the pipeline"""

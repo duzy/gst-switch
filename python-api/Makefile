@@ -14,13 +14,13 @@ lint:
 unittests:
 	rm -rf reports
 	mkdir -p reports/coverage/unittests
-	py.test --cov-report html --cov gstswitch tests/unittests/ -v -s
+	py.test --cov-report html --cov gstswitch tests/unittests/  -v -s
 	mv htmlcov/*.* reports/coverage/unittests
 	rmdir htmlcov
 	make clean
 
-pytest:
-	py.test tests/unittests -v
+pep8:
+	pep8 gstswitch
 
 integration:
 	rm -f ../tools/*.c.gcov
