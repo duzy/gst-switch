@@ -1,6 +1,4 @@
 #!/bin/bash
 
-chmod +x scripts/hooks/c-pre-commit
-chmod +x scripts/hooks/py-pre-commit
 ./scripts/hooks/c-pre-commit
 ./scripts/hooks/py-pre-commit
