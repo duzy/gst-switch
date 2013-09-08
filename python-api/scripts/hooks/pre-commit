@@ -1,0 +1,83 @@
+#!/usr/local/bin/python                                                                                                                                  
+"""
+A pre-commit hook for git that uses Pylint for automated code review.
+ 
+If any python file's rating falls below the ``PYLINT_PASS_THRESHOLD``, this
+script will return nonzero and the commit will be rejected.
+ 
+This script must be located at ``$REPO/.git/hooks/pre-commit`` and be
+executable.
+
+Copyright 2009 Nick Fitzgerald - MIT Licensed.
+"""
+import os
+import re
+import sys
+ 
+from subprocess import Popen, PIPE
+ 
+# Threshold for code to pass the Pylint test. 10 is the highest score Pylint
+# will give to any peice of code.
+PYLINT_PASS_THRESHOLD = 7
+ 
+def main():
+    """Checks your git commit with Pylint!"""
+    # Run the git command that gets the filenames of every file that has been
+    # locally modified since the last commit.
+    sub = Popen("git diff --staged --name-only HEAD".split(),
+                stdout=PIPE)
+    sub.wait()
+ 
+    # Filter out non-python or deleted files.
+    py_files_changed = [file
+                        for file in [f.strip() for f in sub.stdout.readlines()]
+                        if (file.endswith(".py") and os.path.exists(file))
+                            or is_py_script(file)]
+ 
+    # Run Pylint on each file, collect the results, and display them for the
+    # user.
+    results = {}
+    for file in py_files_changed:
+        pylint = Popen(("pylint -f text %s" % file).split(),
+                       stdout=PIPE)
+        pylint.wait()
+ 
+        output = pylint.stdout.read()
+        print output
+            
+        results_re = re.compile(r"Your code has been rated at ([\d\.]+)/10")
+        results[file] = float(results_re.findall(output)[0])
+ 
+    # Display a summary of the results (if any files were checked).
+    if len(results.values()) > 0:
+        print "==============================================="
+        print "Final Results:"
+        for file in results:
+            result = results[file]
+            grade = "FAIL" if result < PYLINT_PASS_THRESHOLD else "pass"
+            print "[ %s ] %s: %.2f/10" % (grade, file, result)
+ 
+    # If any of the files failed the Pylint test, exit nonzero and stop the
+    # commit from continuing.
+    if any([(result < PYLINT_PASS_THRESHOLD)
+            for result in results.values()]):
+        print "git: fatal: commit failed, Pylint tests failing."
+        sys.exit(1)
+    else:
+        sys.exit(0)
+ 
+                                                                                                                                                             
+def is_py_script(filename):
+    """Returns True if a file is a python executable."""
+    if not os.access(filename, os.X_OK):
+        return False
+    else:
+        try:
+            first_line = open(filename, "r").next().strip()
+            return "#!" in first_line and "python" in first_line
+        except StopIteration:
+            return False
+ 
+ 
+if __name__ == "__main__":
+    main()   
