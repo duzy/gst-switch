@@ -205,17 +205,20 @@ def get_preview_ports(num):
     try:
         serv.run()
         sources = TestSources(video_port=video_port)
-        sources.new_test_video()
+        
         
         expected_res = [ i for i in range(3003, 3003 + num)]
 
         controller = Controller()
-        controller.establish_connection()
+        
         res = []
         for _ in range(num):
-            res.append(controller.get_encode_port())
+            sources.new_test_video()
+        controller.establish_connection()
+        res = controller.get_preview_ports()
+        print res
 
-        assert expected_res == res
+        # assert expected_res == res
     finally:
         if serv.proc:
                 poll = serv.proc.poll()
@@ -229,7 +232,27 @@ def get_preview_ports(num):
 
 class TestGetPreviewPorts(object):
 
-    def test_100():
+    def test_50(self):
+        """Test when 50 sources are added"""
+        number_souces = 50
+        get_preview_ports(number_souces)
+
+    def test_100(self):
         """Test when 100 sources are added"""
         number_souces = 100
         get_preview_ports(number_souces)
+
+    def test_200(self):
+        """Test when 200 sources are added"""
+        number_souces = 200
+        get_preview_ports(number_souces)
+
+    def test_500(self):
+        """Test when 500 sources are added"""
+        number_souces = 500
+        get_preview_ports(number_souces) 
+
+    def test_1000(self):
+        """Test when 1000 sources are added"""
+        number_souces = 1000
+        get_preview_ports(number_souces) 

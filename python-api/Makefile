@@ -34,12 +34,12 @@ integration:
 	-chmod +x imgurbash.sh
 	@rm -rf reports
 	@mkdir -p reports/coverage/integration
-	py.test --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v 'python' | tr -s '\n'
+	py.test --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v '**' | tr -s '\n'
 	@mv htmlcov/*.* reports/coverage/integration
 	-rm imgurbash.sh*
 
 performance:
-	py.test tests/performancetests/*.py -v
+	py.test tests/performancetests/*.py -v -s
 	make clean
 
 clean:
