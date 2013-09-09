@@ -4,12 +4,10 @@ lint:
 	@rm -rf tests/unittests/__pycache__
 	@rm -rf tests/integrationtests/__pycache__
 	@rm -rf reports
-	@mkdir -p reports/pylint
 	pylint --rcfile=.pylintrc_gstswitch gstswitch
 	pylint --rcfile=.pylintrc_unittests tests/unittests/*
 	pylint --rcfile=.pylintrc_integrationtests tests/integrationtests/*.py
-	@mv -f *.html reports/pylint
-	@echo "Lint report generated in reports/pylint"
+	@echo "Code style is okay!!"
 
 unittests:
 	@rm -rf reports
