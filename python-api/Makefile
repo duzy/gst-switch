@@ -13,8 +13,8 @@ unittests:
 	@rm -rf reports
 	@mkdir -p reports/coverage/unittests
 	py.test --cov gstswitch tests/unittests/ --pep8 -v -s
-	@mv htmlcov/*.* reports/coverage/unittests
-	@rmdir htmlcov
+	-@mv htmlcov/*.* reports/coverage/unittests
+	-@rmdir htmlcov
 	@make clean
 
 pep8:
@@ -32,8 +32,8 @@ integration:
 	-chmod +x imgurbash.sh
 	@rm -rf reports
 	@mkdir -p reports/coverage/integration
-	py.test --cov gstswitch tests/integrationtests/ --pep8 -s -v 2>&1 | grep -v '**' | tr -s '\n'
-	@mv htmlcov/*.* reports/coverage/integration
+	py.test --cov gstswitch tests/integrationtests/ --pep8 -s -v 
+	-@mv htmlcov/*.* reports/coverage/integration
 	-rm imgurbash.sh*
 
 performance:
