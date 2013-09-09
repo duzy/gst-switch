@@ -230,7 +230,7 @@ def get_preview_ports(num):
                 print log.read()
 
 
-class TestGetPreviewPorts(object):
+class _TestGetPreviewPorts(object):
 
     def test_50(self):
         """Test when 50 sources are added"""
@@ -255,4 +255,67 @@ class TestGetPreviewPorts(object):
     def test_1000(self):
         """Test when 1000 sources are added"""
         number_souces = 1000
-        get_preview_ports(number_souces) 
+        get_preview_ports(number_souces)
+
+
+def permutate_composite_mode(num, delay):
+    """Change composite mode num number of times"""
+    import random
+
+    video_port = 3000
+    serv = Server(path=PATH, video_port=video_port)
+    try:
+        serv.run()
+        sources = TestSources(video_port=video_port)
+        sources.new_test_video(pattern=6)
+        sources.new_test_video(pattern=5)
+        preview = PreviewSinks()
+        preview.run()
+        controller = Controller()
+        res = controller.set_composite_mode(0)
+        assert res is True
+
+        prev_mode = 0
+        for _ in range(num-1):
+
+            time.sleep(delay)
+            mode = random.randint(0,3)
+            expected_res = bool(prev_mode ^ mode)
+            prev_mode = mode
+            assert expected_res == controller.set_composite_mode(mode)
+        preview.terminate()
+        sources.terminate_video()
+
+    finally:
+        if serv.proc:
+                poll = serv.proc.poll()
+                if poll == -11:
+                    print "SEGMENTATION FAULT OCCURRED"
+                print "ERROR CODE - {0}".format(poll)
+                serv.terminate(1)
+                log = open('server.log')
+                print log.read()
+
+class TestSetCompositeMode(object):
+    """Performance Tests for set_composite_mode"""
+
+    def test_num_20_delay_1(self):
+        delay = 1
+        num = 20
+        permutate_composite_mode(num, delay)
+
+    def test_num_20_delay_point_6(self):
+        delay = 0.6
+        num = 20
+        permutate_composite_mode(num, delay)
+
+    def test_num_20_delay_point_5(self):
+        delay = 0.5
+        num = 20
+        permutate_composite_mode(num, delay)
+
+    def test_num_20_delay_point_2(self):
+        delay = 0.2
+        num = 20
+        permutate_composite_mode(num, delay)
+
