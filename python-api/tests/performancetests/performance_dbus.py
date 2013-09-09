@@ -218,7 +218,7 @@ def get_preview_ports(num):
         res = controller.get_preview_ports()
         print res
 
-        # assert expected_res == res
+        assert expected_res == res
     finally:
         if serv.proc:
                 poll = serv.proc.poll()
@@ -318,4 +318,64 @@ class TestSetCompositeMode(object):
         delay = 0.2
         num = 20
         permutate_composite_mode(num, delay)
+
+
+def permutate_adjust_pip(num, delay):
+    """Adjust_pip num number of times"""
+    import random
+
+    video_port = 3000
+    serv = Server(path=PATH, video_port=video_port)
+    try:
+        serv.run()
+        sources = TestSources(video_port=video_port)
+        sources.new_test_video(pattern=6)
+        sources.new_test_video(pattern=5)
+        preview = PreviewSinks()
+        preview.run()
+        controller = Controller()
+
+        for _ in range(num):
+
+            xpos = random.randrange(-20, 20)
+            ypos = random.randrange(-20, 20)
+            res = controller.adjust_pip(xpos, ypos, 0, 0)
+            time.sleep(delay)
+            assert res is not None 
+        preview.terminate()
+        sources.terminate_video()
+
+    finally:
+        if serv.proc:
+                poll = serv.proc.poll()
+                if poll == -11:
+                    print "SEGMENTATION FAULT OCCURRED"
+                print "ERROR CODE - {0}".format(poll)
+                serv.terminate(1)
+                log = open('server.log')
+                print log.read()
+
+class TestAdjustPip(object):
+    """Performance Tests for set_adjust_pip"""
+
+    def test_num_20_delay_1(self):
+        delay = 1
+        num = 20
+        permutate_adjust_pip(num, delay)
+
+    def test_num_20_delay_point_6(self):
+        delay = 0.6
+        num = 20
+        permutate_adjust_pip(num, delay)
+
+    def test_num_20_delay_point_5(self):
+        delay = 0.5
+        num = 20
+        permutate_adjust_pip(num, delay)
+
+    def test_num_20_delay_point_2(self):
+        delay = 0.2
+        num = 20
+        permutate_adjust_pip(num, delay)
+
 
