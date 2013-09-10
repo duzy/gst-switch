@@ -2,51 +2,33 @@
 
 cd python-api
 
+
 case $TEST in
 
 	python-api )
 		case $TYPE in
 			unittest )
-				make unittests || {
-					printf "Python-API unittests failed!"
-					exit -1
-				}
-				coveralls || {
-					printf "Coveralls Errored"
-					exit -1
-				}
+				make unittests
+				coveralls
 				;;
 			integration )
-				make integration || {
-					printf "Python-API integration tests failed!!"
-					exit -1
-				}
-				coveralls || {
-					printf "Coveralls failed"
-					exit -1
-				}
+				make integration
+				coveralls
 				;;
 		esac
 		;;
 	module )
 		case $TYPE in
 			python )
-				make test || {
-					printf "Tests for Python-API failed!"
-				}
-				coveralls || {
-					printf "Coveralls failed"
-					exit -1
-				}
+				make test
+				coveralls
 				;;
 			c )
-				make test || {
-					printf "Tests for gst-switch failed!"
-				}
+				make test
 				cd ../tools
-				coveralls -r . || {
-					printf "Coveralls failed"
-					exit -1
-				}
+				coveralls -r .
 		esac
-esac
+esac || {
+	printf "Failed!!\n"
+	exit -1
+}
