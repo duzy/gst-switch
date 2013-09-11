@@ -8,27 +8,48 @@ case $TEST in
 	python-api )
 		case $TYPE in
 			unittest )
-				make unittests
-				coveralls
+				make unittests || {
+					printf "Unittests failed!\n"
+					exit -1
+				}
+				coveralls || {
+					printf "Coveralls failed!\n"
+					exit -1
+				}
 				;;
 			integration )
-				make integration
-				coveralls
+				make integration || {
+					printf "Integration tests failed!\n"
+					exit -1
+				}
+				coveralls || {
+					printf "Coveralls failed!\n"
+					exit -1
+				}
 				;;
 		esac
 		;;
 	module )
 		case $TYPE in
 			python )
-				make test
-				coveralls
+				make test || {
+					printf "Tests failed!\n"
+					exit -1
+				}
+				coveralls || {
+					printf "Coveralls failed!\n"
+					exit -1
+				}
 				;;
 			c )
-				make test
+				make test || {
+					printf "Tests failed!\n"
+					exit -1
+				}
 				cd ../tools
 				coveralls -r .
 		esac
 esac || {
-	printf "Failed!!\n"
+	printf "Failed!\n!\n"
 	exit -1
 }
