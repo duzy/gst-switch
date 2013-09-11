@@ -2,7 +2,7 @@
 
 sudo apt-get -y install python-software-properties python-pip
 sudo pip install -r requirements.txt --use-mirrors
-echo 'yes'sudo apt-add-repository \
+sudo apt-add-repository \
     "deb http://archive.ubuntu.com/ubuntu precise multiverse"
 sudo apt-add-repository \
     "deb http://archive.ubuntu.com/ubuntu precise-updates multiverse"
