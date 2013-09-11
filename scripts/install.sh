@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -ex
 
 sudo apt-get -y install python-software-properties python-pip
 sudo pip install mock
