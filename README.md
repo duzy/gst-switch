@@ -1,5 +1,5 @@
 # Build Status
-[![Build Status](https://travis-ci.org/hyades/gst-switch.png?branch=python-api)](https://travis-ci.org/hyades/gst-switch)
+[![Build Status](https://travis-ci.org/hyades/gst-switch.png?branch=master)](https://travis-ci.org/hyades/gst-switch)
 #
 [![Coverage Status](https://coveralls.io/repos/hyades/gst-switch/badge.png?branch=master)](https://coveralls.io/r/hyades/gst-switch?branch=master)
 
