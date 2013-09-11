@@ -132,6 +132,8 @@ sudo make install || {
        exit -1
     }
 cd ..
+git clone https://github.com/hyades/gst-switch.git
+cd gst-switch
 ./autogen.sh --prefix=/usr/local || {
 printf "Failed to do autogen!!!\n"
 exit -1
@@ -145,10 +147,3 @@ sudo make install || {
        printf "make install of gstswitch failed!!!\n"
        exit -1
     }
-# sudo cp /usr/local/lib/girepository-1.0/*.* /usr/lib/girepository-1.0/
-
-if [ $TYPE == 'c' ]; then
-	sudo pip install cpp-coveralls
-else
-	sudo pip install python-coveralls
-fi
