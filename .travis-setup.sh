@@ -2,6 +2,7 @@
 
 sudo apt-get -y install python-software-properties python-pip
 sudo pip install -r requirements.txt --use-mirrors
+sudo apt-get install ubuntu-desktop
 echo 'yes' | sudo add-apt-repository ppa:gstreamer-developers/ppa
 sudo apt-get update
 sudo apt-get -y install libglib2.0-dev gir1.2-glib-2.0 libgirepository1.0-dev libglib2.0-0 
@@ -10,6 +11,7 @@ sudo apt-get -y install python-scipy ffmpeg
 sudo apt-get -y build-dep gstreamer1.0
 sudo apt-get -y install autoconf automake autopoint libbz2-dev libdv4-dev libfaac-dev libfaad-dev libgtk-3-dev libmjpegtools-dev libtag1-dev libasound2-dev libtool libvpx-dev libxv-dev libx11-dev libogg-dev libvorbis-dev libopencv-dev libcv-dev libhighgui-dev libv4l-dev pkg-config zlib1g-dev gtk-doc-tools yasm bison flex
 sudo apt-get install libqt4-dev libboost-dev libboost-thread-dev libgtkmm-2.4-dev libxv-dev libasound2-dev autotools-dev libltdl7-dev m4 kexec-tools tftp iotop iftop ffmpeg bpython ipython ack-grep libavcodec-dev kino imagemagick mplayer vlc dvsink dvsource dvswitch ffmpeg2theora git automake autoconf libtool intltool g++ bison yasm swig libmp3lame-dev libsamplerate-dev libxml2-dev libjack-dev libsox-dev libgtk2.0-dev libexif-dev libvdpau-dev python-dev sox gconf-editor liboil-dev sshfs oggfwd sshfs libdv-bin python-demjson libgavl-dev ladspa-sdk libsdl-dev libqt4-dev libtheora-dev libvorbis-dev python-dev libvpx-dev liboil0.3-dev libfaac0 libfaac-dev python-gtk2 python-gst0.10 gstreamer0.10-plugins-good gstreamer0.10-plugins-bad gocr imagemagick python-imaging python-reportlab python-pip mercurial subversion inkscape vim mencoder ffmpeg python-virtualenv screen sox dconf-tools gscanbus
+
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/
 export LD_LIBRARY_PATH=/usr/local/lib/
 git clone http://git.chromium.org/webm/libvpx.git
