@@ -64,8 +64,37 @@ git clone https://github.com/hyades/gst-switch.git
 cd gst-switch
 ./.travis-setup.sh
 ```
+or you can do
+```bash
+wget https://raw.github.com/hyades/gst-switch/master/scripts/install.sh
+chmod +x install.sh
+./install.sh
+```
+The dependencies are taken care by the installation method.
 ##Running Tests
 ```bash
 cd python-api
 make test
+```
+##Lint and pep8 Tests
+```bash
+make lint
+make pep8
+```
+##Writing Tests
+###Import the Modules
+Ensure that gst-switch/python-api/gstswitch is in PYTHONPATH:
+```python
+import sys
+sys.path.insert(0, install_dir + 'gst-switch/python-api/gstswitch')
+# install_dir is the path where the installation started
+```
+###Starting the GstSwitch Server
+```python
+from gstswitch.server import Server
+
+PATH = '/usr/local/bin'
+# The default location is '/usr/local/bin'. Change to wherever the gst-switch executables are located
+serv = Server(path=PATH)
+serv.run() 
 ```
