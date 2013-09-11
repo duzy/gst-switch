@@ -2,6 +2,16 @@
 
 sudo apt-get -y install python-software-properties python-pip
 sudo pip install -r requirements.txt --use-mirrors
+echo 'yes'sudo apt-add-repository \
+    "deb http://archive.ubuntu.com/ubuntu precise multiverse"
+sudo apt-add-repository \
+    "deb http://archive.ubuntu.com/ubuntu precise-updates multiverse"
+sudo apt-add-repository \
+    "deb http://archive.ubuntu.com/ubuntu precise-backports multiverse"
+sudo apt-add-repository \
+    "deb http://archive.ubuntu.com/ubuntu precise-security multiverse"
+sudo apt-add-repository \
+    "deb http://archive.ubuntu.com/ubuntu/ precise main restricted"
 echo 'yes' | sudo add-apt-repository ppa:gstreamer-developers/ppa
 sudo apt-get update
 sudo apt-get -y install libglib2.0-dev gir1.2-glib-2.0 libgirepository1.0-dev libglib2.0-0 
