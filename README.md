@@ -71,16 +71,32 @@ chmod +x install.sh
 ./install.sh
 ```
 The dependencies are taken care by the installation method.
+
 ##Running Tests
 ```bash
 cd python-api
-make test
 ```
-##Lint and pep8 Tests
+
+####Run Unittests
+```bash
+make unittests
+```
+
+####Run Integration Tests
+```bash
+make integration
+```
+
+####Lint and pep8 Tests
 ```bash
 make lint
 make pep8
 ```
+####Running everything together
+```bash
+make test
+```
+
 ##Writing Tests
 ###Import the Modules
 Ensure that gst-switch/python-api/gstswitch is in PYTHONPATH:
