@@ -146,8 +146,13 @@ controller.establish_connection()
 * Get Encode Port: `port = controller.get_encode_port()`
 * Get Audio Port: `port = controller.get_audio_port()`
 * Get All Preview Ports: `ports = controller.get_preview_ports()`
-* Change the PIP Mode: `result = controller.set_composite_mode(mode=1)
-* Move or Adjust the PIP: `result = controller.adjust_pip(xpos=50, ypos=50, 0, 0)
+* Change the PIP Mode: `result = controller.set_composite_mode(mode=1)`
+* Move or Adjust the PIP: `result = controller.adjust_pip(xpos=50, ypos=50, 0, 0)`
 * Switch the Channel. Channel is specified as `ord('A')`, `ord('a')` or `ord('b')`.  `result = controller.switch(channel=ord('A'), port=3004)`
 * Start a New Record: `result = controller.new_record()`
+
+###Python API Sphinx Docs
+Sphinx documentation can be found at [http://gst-switch.readthedocs.org/en/latest/](http://gst-switch.readthedocs.org/en/latest/).
+
+
 
