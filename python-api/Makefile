@@ -13,8 +13,6 @@ unittests:
 	@rm -rf reports
 	@mkdir -p reports/coverage/unittests
 	py.test --cov gstswitch tests/unittests/ --pep8 -v -s
-	-@mv htmlcov/*.* reports/coverage/unittests
-	-@rmdir htmlcov
 	@make clean
 
 pep8:
@@ -45,9 +43,7 @@ clean:
 	rm -f tests/integrationtests/*.data
 	rm -f *.log
 	rm -f *.html
+	rm -f *.sh.*
 
 
 test: lint unittests integration clean
-
-all: lint test
-
