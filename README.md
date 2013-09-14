@@ -151,7 +151,22 @@ controller.establish_connection()
 * Switch the Channel. Channel is specified as `ord('A')`, `ord('a')` or `ord('b')`.  `result = controller.switch(channel=ord('A'), port=3004)`
 * Start a New Record: `result = controller.new_record()`
 
-###Python API Sphinx Docs
+###Terminating the GstSwitch Server
+The `server.run()` should always be kept in a try/finally block, so that if any Exception is caught, all processes terminate safely.
+i.e.
+```python
+server = Server(path=PATH, video_port=3000, audio_port=4000)
+try:
+    server.run()
+    # rest of the code comes here
+    # ......
+    server.terminate()
+finally:
+    if server.proc:
+        server.terminate()
+```
+`server.terminate()` can be replaced by `server.kill()`. In the latter SIGKILL will be sent to the process.
+##Python API Sphinx Docs
 Sphinx documentation can be found at [http://gst-switch.readthedocs.org/en/latest/](http://gst-switch.readthedocs.org/en/latest/).
 
 
