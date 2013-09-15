@@ -16,9 +16,11 @@ env:
   - TEST=module TYPE=c
 
 install:
+ - chmod +x .travis-setup.sh
  - ./.travis-setup.sh
 
 script:
+ - chmod +x .travis-run.sh
  - ./.travis-run.sh
 
 notifications:
