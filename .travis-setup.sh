@@ -5,6 +5,7 @@ sudo pip install -r requirements.txt --use-mirrors
 echo 'yes' | sudo add-apt-repository ppa:gstreamer-developers/ppa
 echo 'yes' | sudo add-apt-repository ppa:theora/ppa
 sudo apt-get update
+sudo apt-get install ubuntu-desktop
 sudo apt-get -y install libglib2.0-dev gir1.2-glib-2.0 libgirepository1.0-dev libglib2.0-0 
 sudo apt-get -y install python-gi python3-gi gstreamer1.0-tools gir1.2-gstreamer-1.0 gir1.2-gst-plugins-base-1.0 gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-libav
 sudo apt-get -y install python-scipy ffmpeg
