@@ -1,6 +1,6 @@
 #! /bin/bash -ex
 
-sudo apt-get -y install python-software-properties python-pip
+sudo apt-get update
 sudo pip install -r requirements.txt --use-mirrors
 sudo apt-get install ubuntu-desktop
 sudo apt-get -y install libglib2.0-dev gir1.2-glib-2.0 libgirepository1.0-dev libglib2.0-0 
