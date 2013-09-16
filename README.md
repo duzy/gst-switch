@@ -109,8 +109,8 @@ sys.path.insert(0, install_dir + 'gst-switch/python-api/gstswitch')
 ```python
 from gstswitch.server import Server
 
-PATH = '/usr/local/bin'
-# The default location is '/usr/local/bin'. Change to wherever the gst-switch executables are located
+PATH = '/usr/bin'
+# The default location is '/usr/bin'. Change to wherever the gst-switch executables are located
 serv = Server(path=PATH, video_port=3000, audio_port=4000)
 serv.run() 
 ```

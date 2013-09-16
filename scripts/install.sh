@@ -13,8 +13,8 @@ sudo apt-get -y install python-scipy ffmpeg
 sudo apt-get -y build-dep gstreamer1.0
 sudo apt-get -y install autoconf automake autopoint libbz2-dev libdv4-dev libfaac-dev libfaad-dev libgtk-3-dev libmjpegtools-dev libtag1-dev libasound2-dev libtool libvpx-dev libxv-dev libx11-dev libogg-dev libvorbis-dev libopencv-dev libcv-dev libhighgui-dev libv4l-dev pkg-config zlib1g-dev gtk-doc-tools yasm bison flex
 
-export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/
-export LD_LIBRARY_PATH=/usr/local/lib/
+export PKG_CONFIG_PATH=/usr/lib/pkgconfig/
+export LD_LIBRARY_PATH=/usr/lib/
 git clone http://git.chromium.org/webm/libvpx.git
 cd libvpx
 git checkout v1.2.0
@@ -150,5 +150,5 @@ sudo make install || {
        printf "make install of gstswitch failed!!!\n"
        exit -1
     }
-# sudo cp /usr/local/lib/girepository-1.0/*.* /usr/lib/girepository-1.0/
+# sudo cp /usr/lib/girepository-1.0/*.* /usr/lib/girepository-1.0/
 

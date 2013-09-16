@@ -22,8 +22,8 @@ import gi
 gi.require_version('Gst', '1.0')
 
 # all executables (gst-launch-1.0, gst-switch-srv, gst-switch-ui, gst-switch-cap) at this path
-path = '/usr/local/bin/'
-# path = '/usr/local/bin/'
+path = '/usr/bin/'
+# path = '/usr/bin/'
 s = Server(path)
 try:
     s.run()  # launches the server default parameters

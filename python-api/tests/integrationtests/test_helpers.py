@@ -11,7 +11,7 @@ import time
 
 
 # PATH = os.getenv("HOME") + '/gst/stage/bin/'
-PATH = '/usr/local/bin/'
+PATH = '/usr/bin/'
 
 
 class TestTestSourcesPreviews(object):

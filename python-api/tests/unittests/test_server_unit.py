@@ -10,7 +10,7 @@ import subprocess
 from mock import Mock
 
 
-PATH = '/usr/local/bin/'
+PATH = '/usr/bin/'
 
 
 class TestPath(object):
