@@ -2,14 +2,27 @@
 [![Build Status](https://travis-ci.org/hyades/gst-switch.png?branch=master)](https://travis-ci.org/hyades/gst-switch)
 [![Coverage Status](https://coveralls.io/repos/hyades/gst-switch/badge.png?branch=master)](https://coveralls.io/r/hyades/gst-switch?branch=master)
 
-# GstSwitch
+# gst-switch
 ## Purpose
-This project is intended to be a replacement of DV-switch base on GStreamer.
+This project is intended tog be a replacement of DV-switch base on GStreamer.
+##Installing gst-switch
+```bash
+git clone https://github.com/hyades/gst-switch.git
+cd gst-switch
+./.travis-setup.sh
+```
+or you can do
+```bash
+wget https://raw.github.com/hyades/gst-switch/master/scripts/install.sh
+chmod +x install.sh
+./install.sh
+```
+The dependencies are taken care by the installation method.
 ## Components
-GstSwitch contains two parts, *gst-switch-srv* and *gst-switch-ui*
+gst-switch contains two parts, *gst-switch-srv* and *gst-switch-ui*
 ## Quick Manual
-### The GstSwitch Server
-The GstSwitch server will open at least three ports for video/audio input, and
+### The gst-switch Server
+The gst-switch server will open at least three ports for video/audio input, and
 command controls.
 #### Video Input
 The video input port is *3000*. Supported input video format: I420
@@ -58,16 +71,3 @@ The command control port is *5000*.
  e.g. *record 2013-01-23 131139.dat*
  </td></tr>
 </table>
-##Installing GstSwitch
-```bash
-git clone https://github.com/hyades/gst-switch.git
-cd gst-switch
-./.travis-setup.sh
-```
-or you can do
-```bash
-wget https://raw.github.com/hyades/gst-switch/master/scripts/install.sh
-chmod +x install.sh
-./install.sh
-```
-The dependencies are taken care by the installation method.
