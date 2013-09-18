@@ -107,10 +107,8 @@ sudo make install || {
        exit -1
     }
 cd ..
-git clone https://github.com/duzy/gst-plugins-bad.git
+git clone https://github.com/hyades/gst-plugins-bad.git
 cd gst-plugins-bad
-git checkout speakertrack_new
-git checkout
 ./autogen.sh --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
