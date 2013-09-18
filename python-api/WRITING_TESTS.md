@@ -1,4 +1,3 @@
-
 ##Writing Tests Using Python-API
 ###Import the Modules
 Ensure that gst-switch/python-api/gstswitch is in PYTHONPATH:
@@ -7,7 +6,7 @@ import sys
 sys.path.insert(0, install_dir + 'gst-switch/python-api/gstswitch')
 # install_dir is the path where the installation started
 ```
-###Start the GstSwitch Server
+###Start the gst-switch Server
 ```python
 from gstswitch.server import Server
 
@@ -53,7 +52,7 @@ controller.establish_connection()
 * Switch the Channel. Channel is specified as `ord('A')`, `ord('a')` or `ord('b')`.  `result = controller.switch(channel=ord('A'), port=3004)`
 * Start a New Record: `result = controller.new_record()`
 
-###Terminating the GstSwitch Server
+###Terminating the gst-switch Server
 The `server.run()` should always be kept in a try/finally block, so that if any Exception is caught, all processes terminate safely.
 i.e.
 ```python
