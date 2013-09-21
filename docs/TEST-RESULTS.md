@@ -67,3 +67,11 @@ The files left untested are:
 * gstswitchui.c
 * gstswitchclient.c
 * gstaudiovisual.c
+
+##Untested
+The gst-switch controller can have three roles:
+* UI
+* Capture
+* None
+
+The Python-API communicates with the gst-switch controller over DBus. Hence the role that is selected is None. The methods which use the roles UI and Capture are not tested by the API.
