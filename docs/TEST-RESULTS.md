@@ -21,34 +21,29 @@ TOTAL                    945    252    73%
 ##C Coverage
 The C Coverage is:
 ```bash
-File 'gstswitchserver.c'
-Lines executed:44.44% of 765
-gstswitchserver.c:creating 'gstswitchserver.c.gcov'
+File 'gstcase.c'
+Lines executed:76.65% of 227
+Creating 'gstcase.c.gcov'
+
+File 'gstcomposite.c'
+Lines executed:63.34% of 371
+Creating 'gstcomposite.c.gcov'
 
 File 'gstrecorder.c'
 Lines executed:70.18% of 114
-gstrecorder.c:creating 'gstrecorder.c.gcov'
-
-File 'gstcase.c'
-Lines executed:0.00% of 227
-gstcase.c:creating 'gstcase.c.gcov'
-
-File 'gio/gsocketinputstream.c'
-Lines executed:0.00% of 44
-gio/gsocketinputstream.c:creating 'gsocketinputstream.c.gcov'
-
-File 'gstcomposite.c'
-Lines executed:60.38% of 371
-gstcomposite.c:creating 'gstcomposite.c.gcov'
+Creating 'gstrecorder.c.gcov'
 
 File 'gstswitchcontroller.c'
-Lines executed:67.06% of 340
-gstswitchcontroller.c:creating 'gstswitchcontroller.c.gcov'
+Lines executed:70.12% of 338
+Creating 'gstswitchcontroller.c.gcov'
+
+File 'gstswitchserver.c'
+Lines executed:69.93% of 765
+Creating 'gstswitchserver.c.gcov'
 
 File 'gstworker.c'
-Lines executed:57.47% of 348
-gstworker.c:creating 'gstworker.c.gcov'
-
+Lines executed:66.67% of 348
+Creating 'gstworker.c.gcov'
 ```
 
 The files which are tested are:
@@ -57,11 +52,11 @@ The files which are tested are:
 * gstcomposite.c
 * gstswitchcontroller.c
 * gstworker.c
+* gstcase.c
 
 The files left untested are:
 * gstvideodisp.c
 * gstswitchclient.c
-* gstcase.c
 * gstswitchptz.c
 * gstswitchcapture.c
 * gstswitchui.c
@@ -75,3 +70,12 @@ The gst-switch controller can have three roles:
 * None
 
 The Python-API communicates with the gst-switch controller over DBus. Hence the role that is selected is None. The methods which use the roles UI and Capture are not tested by the API.
+
+The file gstswitchui.c handles the gst-switch-ui.
+The file gstswitchcapture.c handles the gst-switch-cap.
+The file gstswitchptz.c handles the gst-switch-ptz.
+Since the above executables are not executed by the API, they are left untested.
+
+The files gstvideodisp.c and gstaudiodisp.c handle the video/audio contain functions dealing with the gst-switch-ui.
+
+The gstswitchclient.c is also used by gst-switch-ui and hence remains untested.
