@@ -1,8 +1,10 @@
 #! /bin/bash -ex
 
 sudo apt-get update
-sudo pip install -r requirements.txt --use-mirrors
-sudo apt-get install ubuntu-desktop
+sudo pip install mock
+sudo pip install pytest-cov
+sudo pip install pytest-pep8
+sudo pip install pylint
 sudo apt-get -y install libglib2.0-dev gir1.2-glib-2.0 libgirepository1.0-dev libglib2.0-0 python-gi
 sudo apt-get -y install gstreamer0.10-plugins-good
 sudo apt-get -y install python-scipy ffmpeg
