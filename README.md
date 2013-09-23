@@ -7,8 +7,10 @@
 This project is intended tog be a replacement of DV-switch base on GStreamer.
 ##Installing gst-switch
 ```bash
+# preferred method
 git clone https://github.com/hyades/gst-switch.git
 cd gst-switch
+chmod +x .travis-setup.sh
 ./.travis-setup.sh
 ```
 or you can do
