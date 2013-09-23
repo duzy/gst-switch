@@ -135,7 +135,7 @@ printf "Failed to do autogen!!!\n"
 exit -1
 }
 make clean
-make || {
+make PREFIX=/usr|| {
    printf "make of gstswitch failed!!!\n"
    exit -1
 }
