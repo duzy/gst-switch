@@ -2,7 +2,7 @@
 
 cd python-api
 
-
+export DISPLAY=:0
 case $TEST in
 
 	python-api )
