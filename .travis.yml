@@ -14,7 +14,9 @@ env:
   - TEST=python-api TYPE=integration
   - TEST=module TYPE=python
   - TEST=module TYPE=c
-
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
 install:
  - chmod +x .travis-setup.sh
  - ./.travis-setup.sh
