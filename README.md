@@ -8,6 +8,7 @@ This project is intended tog be a replacement of DV-switch base on GStreamer.
 ##Installing gst-switch
 ```bash
 # preferred method
+sudo apt-get install git python-pip
 git clone https://github.com/hyades/gst-switch.git
 cd gst-switch
 chmod +x .travis-setup.sh
