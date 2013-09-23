@@ -26,14 +26,25 @@ gst-switch contains two parts, *gst-switch-srv* and *gst-switch-ui*
 ### The gst-switch Server
 The gst-switch server will open at least three ports for video/audio input, and
 command controls.
+Start gst-switch server as:
+```bash
+gst-switch-srv --video-input-port=3000 --audio-input-port=4000 --control-port=5000
+```
 #### Video Input
-The video input port is *3000*. Supported input video format: I420
+The default video input port is *3000*. Supported input video format: I420
 (video/x-raw), 1280x720 (for debug mode, the video size could be 300x200).
 #### Audio Input Port
-The audio input port is *4000*.
+The default audio input port is *4000*.
 #### Control Port
-The command control port is *5000*.
-### Controls
+The default command control port is *5000*.
+
+###The gst-switch UI
+The gst-switch UI is a graphical controller for controlling the input streams
+```bash
+gst-switch-ui
+```
+
+#### Controls
 <table>
  <tr><td>Key Bindings</td><td>Function</td></tr>
 
@@ -73,3 +84,15 @@ The command control port is *5000*.
  e.g. *record 2013-01-23 131139.dat*
  </td></tr>
 </table>
+
+###The gst-switch Capture
+Implements speaker tracking
+```bash
+gst-switch-cap --device='/dev/ttyUSB0' --protocol='visca'
+```
+
+###The gst-switch PTZ
+Implements Pan-Tilt-Zoom Camera
+```bash
+gst-switch-ptz --device='/dev/ttyUSB0' --protocol='visca' --video='/dev/video0'
+```
