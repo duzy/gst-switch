@@ -39,11 +39,15 @@ performance:
 	make clean
 
 clean:
+	rm -rf .cache
+	rm -rf reports
 	rm -f *.data
 	rm -f tests/integrationtests/*.data
 	rm -f *.log
 	rm -f *.html
 	rm -f *.sh.*
+	rm -f *.sh
+	rm -f .coverage
 
 
 test: lint unittests integration clean
