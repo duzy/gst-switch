@@ -143,7 +143,6 @@ sudo make install || {
        printf "make install of gstswitch failed!!!\n"
        exit -1
     }
-# sudo cp /usr/lib/girepository-1.0/*.* /usr/lib/girepository-1.0/
 
 if [ $TYPE == 'c' ]; then
 	sudo pip install cpp-coveralls
