@@ -178,7 +178,7 @@ class AudioPipeline(BasePipeline):
     def __init__(
             self,
             port,
-            host='127.0.0.1',
+            host='localhost',
             freq=110,
             wave=None):
         super(AudioPipeline, self).__init__()
@@ -230,7 +230,7 @@ class PreviewPipeline(BasePipeline):
 
     def __init__(self, port):
         super(PreviewPipeline, self).__init__()
-        self.host = '127.0.0.1'
+        self.host = 'localhost'
         self.preview_port = port
         src = self.make_tcpclientsrc()
         self.add(src)
@@ -276,7 +276,7 @@ class VideoSrc(object):
     :param timeoverlay: True to enable a running time over video
     :param clockoverlay: True to enable current clock time over video
     """
-    HOST = '127.0.0.1'
+    HOST = 'localhost'
 
     def __init__(
             self,
@@ -468,7 +468,7 @@ class AudioSrc(object):
 
     """docstring for AudioSrc"""
 
-    HOST = '127.0.0.1'
+    HOST = 'localhost'
 
     def __init__(
             self,
