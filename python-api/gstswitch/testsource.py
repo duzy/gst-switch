@@ -70,7 +70,7 @@ class VideoPipeline(BasePipeline):
     def __init__(
             self,
             port,
-            host='127.0.0.1',
+            host='localhost',
             width=300,
             height=200,
             pattern=None,
