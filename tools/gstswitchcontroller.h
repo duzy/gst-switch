@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,11 +37,14 @@
 #define GST_IS_SWITCH_CONTROLLER(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_SWITCH_CONTROLLER))
 #define GST_IS_SWITCH_CONTROLLER_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_SWITCH_CONTROLLER))
 
+// tcp:host=server.example.org,port=77777
 #define SWITCH_CONTROLLER_ADDRESS	"unix:abstract=gstswitch"
-#define SWITCH_CONTROLLER_OBJECT_NAME	 "info.duzy.gst_switch.SwitchControllerInterface"
-#define SWITCH_CONTROLLER_OBJECT_PATH	"/info/duzy/gst_switch/SwitchController"
-#define SWITCH_CLIENT_OBJECT_NAME	 "info.duzy.gst_switch.SwitchClientInterface"
-#define SWITCH_CLIENT_OBJECT_PATH	"/info/duzy/gst_switch/SwitchClient"
+#define SWITCH_CONTROLLER_OBJECT_NAME	 "info.duzy.gst.switch.SwitchControllerInterface"
+#define SWITCH_CONTROLLER_OBJECT_PATH	"/info/duzy/gst/switch/SwitchController"
+#define SWITCH_UI_OBJECT_NAME		 "info.duzy.gst.switch.SwitchUIInterface"
+#define SWITCH_UI_OBJECT_PATH		"/info/duzy/gst/switch/SwitchUI"
+#define SWITCH_CAPTURE_OBJECT_NAME	 "info.duzy.gst.switch.SwitchCaptureInterface"
+#define SWITCH_CAPTURE_OBJECT_PATH	"/info/duzy/gst/switch/SwitchCapture"
 
 typedef struct _GstSwitchController GstSwitchController;
 typedef struct _GstSwitchControllerClass GstSwitchControllerClass;
@@ -59,34 +62,31 @@ struct _MethodTableEntry
 };
 
 /**
- *  @brief GstSwitchController
- *  @param base the parent object
- *  @param server the GstSwitchServer instance
- *  @param bus_server the dbus server instance
- *  @param uis_lock the lock for %uis
- *  @param uis the client list
+ *  @class GstSwitchController
+ *  @struct _GstSwitchController
+ *  @brief GstSwitch controller.
  */
-struct _GstSwitchController
+typedef struct _GstSwitchController
 {
-  GObject base;
-
-  GstSwitchServer *server;
-  GDBusServer *bus_server;
-  GMutex uis_lock;
-  GList *uis;
-};
+  GObject base; /*!< the parent object */
+  GstSwitchServer *server; /*!< the GstSwitchServer instance */
+  GDBusServer *bus_server; /*!< the dbus server instance */
+  GMutex uis_lock; /*!< the lock for %uis */
+  GMutex captures_lock; /*!< the lock for %captures */
+  GList *uis; /*!< the client list */
+  GList *captures; /*!< the capture client list */
+} GstSwitchController;
 
 /**
- *  GstSwitchControllerClass:
- *  @param base_class the parent class
- *  @param methods the remote method table
+ *  @class GstSwitchControllerClass
+ *  @struct _GstSwitchControllerClass
+ *  @brief The class of GstSwitchController.
  */
-struct _GstSwitchControllerClass
+typedef struct _GstSwitchControllerClass
 {
-  GObjectClass base_class;
-
-  GHashTable *methods;
-};
+  GObjectClass base_class; /*!< the parent class */
+  GHashTable *methods; /*!< the remote method table */
+} GstSwitchControllerClass;
 
 GType gst_switch_controller_get_type (void);
 
@@ -98,5 +98,11 @@ void gst_switch_controller_tell_preview_port (GstSwitchController *,
     gint port, gint serve, gint type);
 void gst_switch_controller_tell_new_mode_onlne (GstSwitchController *,
     gint mode);
+gboolean gst_switch_controller_select_face (GstSwitchController *controller,
+    gint x, gint y);
+void gst_switch_controller_show_face_marker (GstSwitchController *controller,
+    GVariant *faces);
+void gst_switch_controller_show_track_marker (GstSwitchController *controller,
+    GVariant *faces);
 
 #endif //__GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__

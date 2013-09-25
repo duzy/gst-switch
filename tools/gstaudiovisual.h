@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,40 +39,36 @@ typedef struct _GstAudioVisual GstAudioVisual;
 typedef struct _GstAudioVisualClass GstAudioVisualClass;
 
 /**
- *  GstAudioVisual:
- *  @param base the parent object
- *  @param port the port number
- *  @param handle the X window handle for displaying the audio visualization
- *  @param active TRUE if the audio is active. A active audio will be sinked to
- *           the real hardware speaker, e.g. ALSA
- *  @param renewing (deprecated)
- *  @param endtime_lock the lock for %endtime
- *  @param endtime the endtime of the last audo sample
- *  @param value_lock the lock for %value
- *  @param value the value of the last audio sample
+ *  @class GstAudioVisual
+ *  @struct _GstAudioVisual
+ *  @brief Visualize audio stream.
  */
 struct _GstAudioVisual
 {
-  GstWorker base;
+  GstWorker base; /*!< the parent object */
 
-  gint port;
-  gulong handle;
-  gboolean active;
-  gboolean renewing;
+  gint port; /*!< the port number */
+  gulong handle; /*!< the X window handle for displaying the audio visualization */
+  gboolean active; /*!< TRUE if the audio is active. A active audio will be sinked to
+		    *   the real hardware speaker, e.g. ALSA
+		    **/
 
-  GMutex endtime_lock;
-  GstClockTime endtime;
-  GMutex value_lock;
-  gdouble value;
+  gboolean renewing; /*!< Used by GstSwitchUI. */
+
+  GMutex endtime_lock; /*!< the lock for %endtime */
+  GstClockTime endtime; /*!< the endtime of the last audo sample */
+  GMutex value_lock; /*!< the lock for %value */
+  gdouble value; /*!< the value of the last audio sample */
 };
 
 /**
- *  GstAudioVisualClass:
- *  @param base_class the parent class
+ *  @class GstAudioVisualClass
+ *  @struct _GstAudioVisualClass
+ *  @brief The class of GstAudioVisualClass.
  */
 struct _GstAudioVisualClass
 {
-  GstWorkerClass base_class;
+  GstWorkerClass base_class; /*!< the parent class */
 };
 
 GType gst_audio_visual_get_type (void);

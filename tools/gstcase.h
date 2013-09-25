@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,61 +40,58 @@ typedef struct _GstCase GstCase;
 typedef struct _GstCaseClass GstCaseClass;
 
 /**
- *  GstCaseType:
- *  @param GST_CASE_UNKNOWN unknown case
- *  @param GST_CASE_COMPOSITE_A special case for composite channel A
- *  @param GST_CASE_COMPOSITE_B special case for composite channel B
- *  @param GST_CASE_COMPOSITE_a special case for composite channel audio
- *  @param GST_CASE_PREVIEW special case for previews
- *  @param GST_CASE_INPUT_a special case for audio input
- *  @param GST_CASE_INPUT_v special case for video input
- *  @param GST_CASE_BRANCH_A special case for branching channel A to output
- *  @param GST_CASE_BRANCH_B special case for branching channel B to output
- *  @param GST_CASE_BRANCH_a special case for branching active audio to output
- *  @param GST_CASE_BRANCH_p special case for branching preview to output
- *  @param GST_CASE__LAST_TYPE
+ *  @brief The type of GstCase.
  */
 typedef enum
 {
-  GST_CASE_UNKNOWN,
-  GST_CASE_COMPOSITE_A,
-  GST_CASE_COMPOSITE_B,
-  GST_CASE_COMPOSITE_a,         /* composite audio */
-  GST_CASE_PREVIEW,
-  GST_CASE_INPUT_a,             /* audio input */
-  GST_CASE_INPUT_v,             /* video input */
-  GST_CASE_BRANCH_A,            /* video branch */
-  GST_CASE_BRANCH_B,            /* video branch */
-  GST_CASE_BRANCH_a,            /* audio branch */
-  GST_CASE_BRANCH_p,            /* preview branch */
+  GST_CASE_UNKNOWN, /*!< unknown case */
+  GST_CASE_COMPOSITE_A, /*!< special case for composite channel A */
+  GST_CASE_COMPOSITE_B, /*!< special case for composite channel B */
+  GST_CASE_COMPOSITE_a, /*!< special case for composite channel audio */
+  GST_CASE_PREVIEW, /*!< special case for previews */
+  GST_CASE_INPUT_a, /*!< special case for audio input */
+  GST_CASE_INPUT_v, /*!< special case for video input */
+  GST_CASE_BRANCH_A,/*!< special case for branching channel A to output */
+  GST_CASE_BRANCH_B,/*!< special case for branching channel B to output */
+  GST_CASE_BRANCH_a,/*!< special case for branching active audio to output */
+  GST_CASE_BRANCH_p,/*!< special case for branching preview to output */
   GST_CASE__LAST_TYPE = GST_CASE_BRANCH_p
 } GstCaseType;
 
 /**
- *  GstSwitchServeStreamType:
- *  @param GST_SERVE_NOTHING the case is serving nothing
- *  @param GST_SERVE_VIDEO_STREAM the case is serving video stream
- *  @param GST_SERVE_AUDIO_STREAM the case is serving audio stream
+ *  @brief Stream type in GstSwitch.
  */
 typedef enum
 {
+  /**
+   * @brief The case is serving nothing.
+   */
   GST_SERVE_NOTHING,
+
+  /**
+   * @brief The case is serving video stream.
+   */
   GST_SERVE_VIDEO_STREAM,
+
+  /**
+   * @brief The case is serving audio stream.
+   */
   GST_SERVE_AUDIO_STREAM,
 } GstSwitchServeStreamType;
 
 /**
- *  GstCase:
- *  @param base the parent object
+ *  @class GstCase
+ *  @struct _GstCase
+ *  @brief Special purpose of workers for switching streams.
  */
-struct _GstCase
+typedef struct _GstCase
 {
-  GstWorker base;
-  GstCaseType type;
+  GstWorker base; /*!< The parent object. */
+  GstCaseType type; /*!< Case type @see GstCaseType */
   GInputStream *stream;
   GstCase *input;
   GstCase *branch;
-  GstSwitchServeStreamType serve_type;
+  GstSwitchServeStreamType serve_type; /*!< Stream type. @see GstSwitchServeStreamType */
   gboolean switching;
   gint sink_port;
   guint width;
@@ -103,16 +100,19 @@ struct _GstCase
   guint a_height;
   guint b_width;
   guint b_height;
-};
+} GstCase;
 
 /**
- *  GstCaseClass:
+ *  @class GstCaseClass
+ *  @struct _GstCaseClass
+ *  @brief The class of GstCase.
  *  @param base_class the parent class
+ *  @see GstCase
  */
-struct _GstCaseClass
+typedef struct _GstCaseClass
 {
-  GstWorkerClass base_class;
-};
+  GstWorkerClass base_class; /*!< The base class. */
+} GstCaseClass;
 
 GType gst_case_get_type (void);
 

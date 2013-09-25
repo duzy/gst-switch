@@ -1,34 +1,51 @@
-# GstSwitch
+# Build Status
+[![Build Status](https://travis-ci.org/hyades/gst-switch.png?branch=master)](https://travis-ci.org/hyades/gst-switch)
+[![Coverage Status](https://coveralls.io/repos/hyades/gst-switch/badge.png?branch=master)](https://coveralls.io/r/hyades/gst-switch?branch=master)
 
+# gst-switch
 ## Purpose
-
-This project is intended to be a replacement of DV-switch base on GStreamer.
-
+This project is intended tog be a replacement of DV-switch base on GStreamer.
+##Installing gst-switch
+```bash
+# preferred method
+sudo apt-get install git python-pip
+git clone https://github.com/hyades/gst-switch.git
+cd gst-switch
+chmod +x .travis-setup.sh
+./.travis-setup.sh
+```
+or you can do
+```bash
+wget https://raw.github.com/hyades/gst-switch/master/scripts/install.sh
+chmod +x install.sh
+./install.sh
+```
+The dependencies are taken care by the installation method.
 ## Components
-
-GstSwitch contains two parts, *gst-switch-srv* and *gst-switch-ui*
-
+gst-switch contains two parts, *gst-switch-srv* and *gst-switch-ui*
 ## Quick Manual
-
-### The GstSwitch Server
-
-The GstSwitch server will open at least three ports for video/audio input, and
+### The gst-switch Server
+The gst-switch server will open at least three ports for video/audio input, and
 command controls.
-
+Start gst-switch server as:
+```bash
+gst-switch-srv --video-input-port=3000 --audio-input-port=4000 --control-port=5000
+```
 #### Video Input
-
-The video input port is *3000*. 
-
+The default video input port is *3000*. Supported input video format: I420
+(video/x-raw), 1280x720 (for debug mode, the video size could be 300x200).
 #### Audio Input Port
-
-The audio input port is *4000*.
-
+The default audio input port is *4000*.
 #### Control Port
+The default command control port is *5000*.
 
-The command control port is *5000*.
+###The gst-switch UI
+The gst-switch UI is a graphical controller for controlling the input streams
+```bash
+gst-switch-ui
+```
 
-### Controls
-
+#### Controls
 <table>
  <tr><td>Key Bindings</td><td>Function</td></tr>
 
@@ -41,7 +58,7 @@ The command control port is *5000*.
  </td></tr>
 
  <tr><td>Arrow Up/Down</td><td>
- Changge selection of video previews. Selecting a video is the first step for
+ Change selection of video previews. Selecting a video is the first step for
  switching video/audio input.
  </td></tr>
 
@@ -69,9 +86,14 @@ The command control port is *5000*.
  </td></tr>
 </table>
 
+###The gst-switch Capture
+Implements speaker tracking
+```bash
+gst-switch-cap --device='/dev/ttyUSB0' --protocol='visca'
+```
 
-
-# Current Build Status
-
-[![Build Status](https://travis-ci.org/timsvideo/gst-switch.png?branch=master)](https://travis-ci.org/timsvideo/gst-switch)
-
+###The gst-switch PTZ
+Implements Pan-Tilt-Zoom Camera
+```bash
+gst-switch-ptz --device='/dev/ttyUSB0' --protocol='visca' --video='/dev/video0'
+```

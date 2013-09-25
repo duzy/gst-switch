@@ -36,6 +36,12 @@
 #include "gstrecorder.h"
 #include "gstcase.h"
 #include "./gio/gsocketinputstream.h"
+#include "../logutils.h"
+
+#include <stdio.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #define GST_SWITCH_SERVER_DEFAULT_HOST "localhost"
 #define GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT	3000
@@ -948,13 +954,11 @@ gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
 }
 
 /**
- * gst_switch_server_get_preview_sink_ports:
- *  @param serves (output) the preview serve types.
- *  @param types (output) the preview types.
+ *  @brief Get the preview ports.
+ *  @param srv
+ *  @param s (output) the preview serve types.
+ *  @param t (output) the preview types.
  *  @return: The array of preview ports.
- *
- *  Get the preview ports.
- *
  */
 GArray *
 gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
@@ -1277,6 +1281,101 @@ error_start_work:
     GST_SWITCH_SERVER_UNLOCK_CASES (srv);
     return result;
   }
+}
+
+gboolean
+gst_switch_server_click_video (GstSwitchServer * srv,
+    gint avx, gint avy, gint avw, gint avh)
+{
+  const double w = (double) srv->composite->width;
+  const double h = (double) srv->composite->height;
+  const double ax = (double) srv->composite->a_x;
+  const double ay = (double) srv->composite->a_y;
+  const double aw = (double) srv->composite->a_width;
+  const double ah = (double) srv->composite->a_height;
+  const double bx = (double) srv->composite->b_x;
+  const double by = (double) srv->composite->b_y;
+  const double bw = (double) srv->composite->b_width;
+  const double bh = (double) srv->composite->b_height;
+  //const double sw = (double) GST_SWITCH_FACEDETECT_FRAME_WIDTH;
+  //const double sh = (double) GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+  const double r = w / h;
+  double vx = (double) avx;
+  double vy = (double) avy;
+  double vw = (double) avw;
+  double vh = (double) avh;
+  double vr = vw / vh;
+  double rx = 1.0, ry = 1.0, x1 = .0, y1 = .0;
+  char chan = '?';
+
+  // convert to video space
+  if (vr < r) {
+    rx = ry = w / vw;
+    vy -= (vh - (vw * h) / w) / 2;
+  } else {
+    rx = ry = h / vh;
+    vx -= (vw - (vh * w) / h) / 2;
+  }
+
+  x1 = rx * vx;
+  y1 = ry * vy;
+
+  if (bx <= x1 && x1 <= bx + bw && by <= y1 && y1 <= by + bh) {
+    chan = 'B', x1 -= bx, y1 -= by;
+  } else if (ax <= x1 && x1 <= ax + aw && ay <= y1 && y1 <= ay + ah) {
+    chan = 'A', x1 -= ax, y1 -= ay;
+  }
+
+  g_print ("select-face: %c, (%d, %d)\n", chan, (gint) x1, (gint) y1);
+
+  // conert to detect space
+  //rx = sw / w, ry = sh / h; FIXME: This final (x,y) is not accurate.
+  rx = 1.0, ry = 1.0;
+  avx = (gint) (rx * x1 + 0.5);
+  avy = (gint) (ry * y1 + 0.5);
+
+  if (chan == 'A') {
+    return gst_switch_controller_select_face (srv->controller, avx, avy);
+  } else if (chan == 'B') {
+    //return gst_switch_controller_select_face (srv->controller, avx, avy);
+  }
+  return 0;
+}
+
+void
+gst_switch_server_mark_face (GstSwitchServer * srv, GVariant * faces,
+    gboolean tracking)
+{
+  const int size = g_variant_n_children (faces);
+  const double cw = srv->composite->a_width;
+  const double ch = srv->composite->a_height;
+  double rx = 1.0, ry = 1.0, dx, dy,
+      sw = GST_SWITCH_FACEDETECT_FRAME_WIDTH,
+      sh = GST_SWITCH_FACEDETECT_FRAME_HEIGHT;
+  GVariantBuilder *vb = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
+  int x, y, w, h, n;
+
+  rx = sw / cw;
+  ry = sh / ch;
+  dx = rx * ((double) srv->composite->a_x);
+  dy = ry * ((double) srv->composite->a_y);
+  for (n = 0; n < size; ++n) {
+    g_variant_get_child (faces, n, "(iiii)", &x, &y, &w, &h);
+    x = rx * ((double) x) + 0.5 + dx;
+    y = ry * ((double) y) + 0.5 + dy;
+    w = rx * ((double) w) + 0.5;
+    h = ry * ((double) h) + 0.5;
+    g_variant_builder_add (vb, "(iiii)", x, y, w, h);
+  }
+
+  if (tracking) {
+    gst_switch_controller_show_track_marker (srv->controller,
+        g_variant_builder_end (vb));
+  } else {
+    gst_switch_controller_show_face_marker (srv->controller,
+        g_variant_builder_end (vb));
+  }
+  g_variant_builder_unref (vb);
 }
 
 /**
@@ -1646,9 +1745,31 @@ error_prepare_recorder:
   }
 }
 
+static unsigned long long i = 0;
+
+void
+my_handler (int signum)
+{
+  printf ("received signal\n");
+  printf ("%llu\n", i);
+  __gcov_flush ();              /* dump coverage data on receiving SIGUSR1 */
+}
+
+
 int
 main (int argc, char *argv[])
 {
+
+  struct sigaction new_action, old_action;
+  int n;
+  /* setup signal hander */
+  new_action.sa_handler = my_handler;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = 0;
+  sigaction (SIGUSR1, NULL, &old_action);
+  if (old_action.sa_handler != SIG_IGN)
+    sigaction (SIGUSR1, &new_action, NULL);
+
   gint exit_code = 0;
   GstSwitchServer *srv;
   gst_switch_server_parse_args (&argc, &argv);

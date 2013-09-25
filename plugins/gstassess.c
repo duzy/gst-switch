@@ -37,6 +37,8 @@ GST_DEBUG_CATEGORY_STATIC (gst_assess_debug);
 #define ASSESS_POINT_UNLOCK(ap) (g_mutex_unlock (&(ap)->lock))
 
 /**
+ * @class GstAssessPoint 
+ * @struct _GstAssessPoint 
  * @brief Helper class for assessment.
  */
 typedef struct _GstAssessPoint
@@ -55,7 +57,7 @@ typedef struct _GstAssessPoint
 } GstAssessPoint;
 
 /**
- * @deprecated
+ * @deprecated Not Used!
  */
 typedef struct _GstAssessDB
 {
@@ -65,7 +67,7 @@ typedef struct _GstAssessDB
 } GstAssessDB;
 
 /**
- * @deprecated
+ * @deprecated Not Used!
  */
 typedef struct _GstAssessMeta
 {
@@ -101,6 +103,9 @@ G_DEFINE_TYPE (GstAssess, gst_assess, GST_TYPE_BASE_TRANSFORM);
 
 #define GST_ASSESS_META_IMPL "GstSwitchAssessMetaImpl"
 
+/**
+ * @deprecated
+ */
 gboolean
 gst_assess_meta_init (GstMeta * meta, gpointer params, GstBuffer * buffer)
 {
@@ -110,6 +115,9 @@ gst_assess_meta_init (GstMeta * meta, gpointer params, GstBuffer * buffer)
   return TRUE;
 }
 
+/**
+ * @deprecated
+ */
 void
 gst_assess_meta_free (GstMeta * meta, GstBuffer * buffer)
 {
@@ -117,6 +125,9 @@ gst_assess_meta_free (GstMeta * meta, GstBuffer * buffer)
   INFO ("%s", __FUNCTION__);
 }
 
+/**
+ * @deprecated
+ */
 gboolean
 gst_assess_meta_transform (GstBuffer * transbuf,
     GstMeta * meta, GstBuffer * buffer, GQuark type, gpointer data)
@@ -126,6 +137,9 @@ gst_assess_meta_transform (GstBuffer * transbuf,
   return TRUE;
 }
 
+/**
+ * @deprecated
+ */
 static gint
 assess_compare_name (gconstpointer a, gconstpointer b, gpointer user_data)
 {
@@ -143,6 +157,9 @@ assess_compare_name (gconstpointer a, gconstpointer b, gpointer user_data)
   return 0;
 }
 
+/**
+ * @deprecated
+ */
 static gboolean
 assess_db_timeout (gpointer data)
 {
@@ -193,12 +210,18 @@ assess_db_timeout (gpointer data)
   return ret;
 }
 
+/**
+ * @deprecated
+ */
 static void
 gst_assess_init (GstAssess * assess)
 {
   g_mutex_init (&assess->lock);
 }
 
+/**
+ * @deprecated
+ */
 static void
 gst_assess_dispose (GstAssess * assess)
 {
@@ -228,6 +251,9 @@ end:
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (assess));
 }
 
+/**
+ * @deprecated
+ */
 static void
 gst_assess_finalize (GstAssess * assess)
 {
@@ -236,6 +262,9 @@ gst_assess_finalize (GstAssess * assess)
   G_OBJECT_CLASS (parent_class)->finalize (G_OBJECT (assess));
 }
 
+/**
+ * @deprecated
+ */
 static void
 gst_assess_set_property (GstAssess * assess, guint prop_id,
     const GValue * value, GParamSpec * pspec)
@@ -250,6 +279,9 @@ gst_assess_set_property (GstAssess * assess, guint prop_id,
   }
 }
 
+/**
+ * @deprecated
+ */
 static void
 gst_assess_get_property (GstAssess * assess, guint prop_id,
     GValue * value, GParamSpec * pspec)
@@ -264,6 +296,9 @@ gst_assess_get_property (GstAssess * assess, guint prop_id,
   }
 }
 
+/**
+ * @deprecated
+ */
 static gboolean
 gst_assess_start (GstBaseTransform * trans)
 {
@@ -272,6 +307,9 @@ gst_assess_start (GstBaseTransform * trans)
   return TRUE;
 }
 
+/**
+ * @deprecated
+ */
 static gboolean
 gst_assess_stop (GstBaseTransform * trans)
 {
@@ -280,6 +318,9 @@ gst_assess_stop (GstBaseTransform * trans)
   return TRUE;
 }
 
+/**
+ * @deprecated
+ */
 static GstFlowReturn
 gst_assess_transform (GstBaseTransform * trans, GstBuffer * buffer)
 {
@@ -348,6 +389,9 @@ end:
   return ret;
 }
 
+/**
+ * @deprecated
+ */
 static gboolean
 gst_assess_sink_event (GstBaseTransform * trans, GstEvent * event)
 {
@@ -358,6 +402,9 @@ gst_assess_sink_event (GstBaseTransform * trans, GstEvent * event)
   return ret;
 }
 
+/**
+ * @deprecated
+ */
 static GstStateChangeReturn
 gst_assess_change_state (GstElement * element, GstStateChange transition)
 {
@@ -386,6 +433,9 @@ gst_assess_change_state (GstElement * element, GstStateChange transition)
   return ret;
 }
 
+/**
+ * @deprecated
+ */
 static void
 gst_assess_class_init (GstAssessClass * klass)
 {

@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,9 @@
 #define GST_SWITCH_COMPOSITE_MIN_PIP_W		320
 #define GST_SWITCH_COMPOSITE_MIN_PIP_H		240
 #endif
+
+#define GST_SWITCH_FACEDETECT_FRAME_WIDTH	150
+#define GST_SWITCH_FACEDETECT_FRAME_HEIGHT	100
 
 #define DEFAULT_COMPOSE_MODE COMPOSE_MODE_3
 

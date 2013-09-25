@@ -65,11 +65,16 @@ guint assess_number = 0;
 /*!< @internal */
 G_DEFINE_TYPE (GstWorker, gst_worker, G_TYPE_OBJECT);
 
+/**
+ * @brief Initialize GstWorker instances.
+ * @param worker The GstWorker instance.
+ * @memberof GstWorker
+ */
 static void
 gst_worker_init (GstWorker * worker)
 {
   worker->name = NULL;
-  worker->server = NULL;
+  //worker->server = NULL;
   worker->bus = NULL;
   worker->pipeline = NULL;
   worker->pipeline_func = NULL;
@@ -83,6 +88,11 @@ gst_worker_init (GstWorker * worker)
   //INFO ("gst_worker init %p", worker);
 }
 
+/**
+ * @brief Free GstWorker instances.
+ * @param worker The GstWorker instance.
+ * @memberof GstWorker
+ */
 static void
 gst_worker_dispose (GstWorker * worker)
 {
@@ -97,6 +107,11 @@ gst_worker_dispose (GstWorker * worker)
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (worker));
 }
 
+/**
+ * @brief Destroy GstWorker instances.
+ * @param worker The GstWorker instance.
+ * @memberof GstWorker
+ */
 static void
 gst_worker_finalize (GstWorker * worker)
 {
@@ -115,10 +130,12 @@ gst_worker_finalize (GstWorker * worker)
     worker->bus = NULL;
   }
 
-  if (worker->server) {
-    g_object_unref (worker->server);
-    worker->server = NULL;
-  }
+  /*
+     if (worker->server) {
+     g_object_unref (worker->server);
+     worker->server = NULL;
+     }
+   */
 
   if (worker->pipeline_string) {
     g_string_free (worker->pipeline_string, TRUE);
@@ -136,6 +153,14 @@ gst_worker_finalize (GstWorker * worker)
     (*G_OBJECT_CLASS (parent_class)->finalize) (G_OBJECT (worker));
 }
 
+/**
+ * @brief Set GstWorker properties.
+ * @param worker The GstWorker instance.
+ * @param property_id
+ * @param value
+ * @param pspec
+ * @memberof GstWorker
+ */
 static void
 gst_worker_set_property (GstWorker * worker, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -154,6 +179,14 @@ gst_worker_set_property (GstWorker * worker, guint property_id,
   }
 }
 
+/**
+ * @brief Get GstWorker properties.
+ * @param worker The GstWorker instance.
+ * @param property_id
+ * @param value
+ * @param pspec
+ * @memberof GstWorker
+ */
 static void
 gst_worker_get_property (GstWorker * worker, guint property_id,
     GValue * value, GParamSpec * pspec)
@@ -161,7 +194,7 @@ gst_worker_get_property (GstWorker * worker, guint property_id,
   switch (property_id) {
     case PROP_NAME:
     {
-      worker->name = g_strdup (g_value_get_string (value));
+      g_value_set_string (value, worker->name);
       break;
     }
     default:
@@ -170,6 +203,11 @@ gst_worker_get_property (GstWorker * worker, guint property_id,
   }
 }
 
+/**
+ * @brief Get GstWorker pipeline string.
+ * @param worker The GstWorker instance.
+ * @memberof GstWorker
+ */
 static GString *
 gst_worker_get_pipeline_string (GstWorker * worker)
 {
@@ -183,6 +221,11 @@ gst_worker_get_pipeline_string (GstWorker * worker)
   return desc;
 }
 
+/**
+ * @brief Create GstWorker pipeline.
+ * @param worker The GstWorker instance.
+ * @memberof GstWorker
+ */
 static GstElement *
 gst_worker_create_pipeline (GstWorker * worker)
 {
@@ -252,6 +295,11 @@ end:
   return pipeline;
 }
 
+/**
+ * @brief Handler of the pipeline null message.
+ * @param worker The GstWorker instance.
+ * @memberof GstWorker
+ */
 static GstWorkerNullReturn
 gst_worker_null (GstWorker * worker)
 {
@@ -261,6 +309,11 @@ gst_worker_null (GstWorker * worker)
 
 static gboolean gst_worker_prepare (GstWorker *);
 
+/**
+ * @brief Start the worker pipeline.
+ * @param worker The GstWorker instance.
+ * @memberof GstWorker
+ */
 gboolean
 gst_worker_start (GstWorker * worker)
 {
@@ -277,6 +330,11 @@ gst_worker_start (GstWorker * worker)
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
 
+/**
+ * @brief Restart the worker pipeline.
+ * @param worker The GstWorker instance.
+ * @memberof GstWorker
+ */
 static gboolean
 gst_worker_replay (GstWorker * worker)
 {
@@ -310,6 +368,12 @@ gst_worker_state_ready_to_null_proxy (GstWorker * worker)
   return FALSE;
 }
 
+/**
+ * @brief Stop the worker pipeline.
+ * @param worker The GstWorker instance.
+ * @param force Force stop if TRUE.
+ * @memberof GstWorker
+ */
 gboolean
 gst_worker_stop_force (GstWorker * worker, gboolean force)
 {
@@ -344,6 +408,9 @@ gst_worker_stop_force (GstWorker * worker, gboolean force)
   return ret == GST_STATE_CHANGE_SUCCESS ? TRUE : FALSE;
 }
 
+/**
+ * @memberof GstWorker
+ */
 GstElement *
 gst_worker_get_element_unlocked (GstWorker * worker, const gchar * name)
 {
@@ -352,6 +419,8 @@ gst_worker_get_element_unlocked (GstWorker * worker, const gchar * name)
   return gst_bin_get_by_name (GST_BIN (worker->pipeline), name);
 }
 
+/**
+ */
 GstElement *
 gst_worker_get_element (GstWorker * worker, const gchar * name)
 {
@@ -798,6 +867,11 @@ gst_worker_reset (GstWorker * worker)
   return ok;
 }
 
+/**
+ * @brief Initialize GstWorkerClass.
+ * @param klass The instance of GstWorkerClass.
+ * @memberof GstWorkerClass
+ */
 static void
 gst_worker_class_init (GstWorkerClass * klass)
 {

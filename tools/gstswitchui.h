@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,13 +44,13 @@ typedef struct _GstSwitchUI GstSwitchUI;
 typedef struct _GstSwitchUIClass GstSwitchUIClass;
 
 /**
- *  @brief GstSwitchUI
+ *  @class GstSwitchUI
+ *  @struct _GstSwitchUI
+ *  @brief The gst-switch-ui program.
  */
 struct _GstSwitchUI
 {
   GstSwitchClient base;
-
-  GDBusConnection *controller;
 
   GtkCssProvider *css;
 
@@ -76,14 +76,20 @@ struct _GstSwitchUI
   guint32 tabtime;
   gint compose_mode;
   gint timer;
+
+  GMutex faces_lock, tracking_lock;
+  GVariant *faces;
+  GVariant *tracking;
 };
 
 /**
- *  @brief GstSwitchUIClass
+ *  @class GstSwitchUIClass
+ *  @struct _GstSwitchUIClass
+ *  @brief The class of GstSwitchUI.
  */
 struct _GstSwitchUIClass
 {
-  GstSwitchClientClass base_class;
+  GstSwitchClientClass base_class; /*!< The base class. */
 };
 
 GType gst_switch_ui_get_type (void);

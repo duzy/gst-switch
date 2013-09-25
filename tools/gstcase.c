@@ -63,7 +63,8 @@ extern gboolean verbose;
 G_DEFINE_TYPE (GstCase, gst_case, GST_TYPE_WORKER);
 
 /**
- * gst_case_init:
+ * @param cas The GstCase instance.
+ * @memberof GstCase
  *
  * Initialize the GstCase instance.
  *
@@ -89,7 +90,8 @@ gst_case_init (GstCase * cas)
 }
 
 /**
- * gst_case_dispose:
+ * @param cas The GstCase instance.
+ * @memberof GstCase
  *
  * Disposing from it's parent object.
  *
@@ -124,7 +126,8 @@ gst_case_dispose (GstCase * cas)
 }
 
 /**
- * gst_case_finalize:
+ * @param cas The GstCase instance.
+ * @memberof GstCase
  *
  * Destroying the GstCase instance.
  *
@@ -138,7 +141,11 @@ gst_case_finalize (GstCase * cas)
 }
 
 /**
- * gst_case_get_property:
+ * @param cas The GstCase instance.
+ * @param property_id
+ * @param value
+ * @param pspec
+ * @memberof GstCase
  *
  * Getting GstCase property.
  *
@@ -192,7 +199,11 @@ gst_case_get_property (GstCase * cas, guint property_id,
 }
 
 /**
- * gst_case_set_property:
+ * @param cas The GstCase instance.
+ * @param property_id
+ * @param value
+ * @param pspec
+ * @memberof GstCase
  *
  * Setting GstCase property.
  *
@@ -261,7 +272,8 @@ gst_case_set_property (GstCase * cas, guint property_id,
 }
 
 /**
- * gst_case_get_pipeline_string:
+ * @param cas The GstCase instance.
+ * @memberof GstCase
  * @return A GString instance representing the pipeline string.
  *
  * Retreiving the GstCase pipeline string, it's invoked by GstWorker.
@@ -434,7 +446,10 @@ gst_case_get_pipeline_string (GstCase * cas)
 }
 
 /**
- * gst_case_client_socket_added:
+ * @param element
+ * @param socket
+ * @param cas The GstCase instance.
+ * @memberof GstCase
  *
  * Invoked when a client socket is added.
  */
@@ -448,7 +463,10 @@ gst_case_client_socket_added (GstElement * element,
 }
 
 /**
- * gst_case_client_socket_removed:
+ * @param element
+ * @param socket
+ * @param cas The GstCase instance.
+ * @memberof GstCase
  *
  * Invoked when a client socket is removed.
  */
@@ -464,7 +482,8 @@ gst_case_client_socket_removed (GstElement * element,
 }
 
 /**
- * gst_case_prepare:
+ * @param cas The GstCase instance.
+ * @memberof GstCase
  *
  * Invoked by GstWorker when preparing the pipeline.
  */
@@ -514,9 +533,9 @@ gst_case_prepare (GstCase * cas)
 }
 
 /**
- * gst_case_class_init:
- *
- * Initialize GstCaseClass.
+ * @brief Initialize GstCaseClass.
+ * @param klass The GstCaseClass instance.
+ * @memberof GstCaseClass
  */
 static void
 gst_case_class_init (GstCaseClass * klass)

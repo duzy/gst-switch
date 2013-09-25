@@ -34,7 +34,7 @@ gboolean transition = TRUE;
 GMutex trans_lock;
 
 static GString *
-test_worker_pipeline (GstWorker *worker, gpointer data)
+test_worker_pipeline (GstWorker * worker, gpointer data)
 {
   GString *desc;
 
@@ -49,7 +49,7 @@ test_worker_pipeline (GstWorker *worker, gpointer data)
 }
 
 static gpointer
-test_worker_pulse (GstWorker *worker)
+test_worker_pulse (GstWorker * worker)
 {
   //sleep (1);
 
@@ -58,16 +58,16 @@ test_worker_pulse (GstWorker *worker)
     if (!transition) {
       g_mutex_lock (&trans_lock);
       if (!transition) {
-	GstState state;
-	GstStateChangeReturn ret;
-	INFO ("stop: %s %p", worker->name, worker);
-	transition = gst_worker_stop_force (worker, TRUE);
-	g_assert (transition);
-	ret = gst_element_get_state (worker->pipeline, &state, NULL,
-	    GST_CLOCK_TIME_NONE);
-	g_assert (ret == GST_STATE_CHANGE_SUCCESS);
-	g_assert (state == GST_STATE_NULL);
-	INFO ("stopped: %s %p", worker->name, worker);
+        GstState state;
+        GstStateChangeReturn ret;
+        INFO ("stop: %s %p", worker->name, worker);
+        transition = gst_worker_stop_force (worker, TRUE);
+        g_assert (transition);
+        ret = gst_element_get_state (worker->pipeline, &state, NULL,
+            GST_CLOCK_TIME_NONE);
+        g_assert (ret == GST_STATE_CHANGE_SUCCESS);
+        g_assert (state == GST_STATE_NULL);
+        INFO ("stopped: %s %p", worker->name, worker);
       }
       g_mutex_unlock (&trans_lock);
     }
@@ -83,7 +83,7 @@ test_worker_pulse (GstWorker *worker)
 }
 
 static gboolean
-test_worker_close_transition (GstWorker *worker)
+test_worker_close_transition (GstWorker * worker)
 {
   if (transition) {
     g_mutex_lock (&trans_lock);
@@ -96,37 +96,37 @@ test_worker_close_transition (GstWorker *worker)
 }
 
 static gboolean
-test_worker_reset (GstWorker *worker)
+test_worker_reset (GstWorker * worker)
 {
-  GstWorkerClass * worker_class;
+  GstWorkerClass *worker_class;
   worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
   return worker_class->reset (worker);
 }
 
 static void
-test_worker_prepare (GstWorker *worker, gpointer data)
+test_worker_prepare (GstWorker * worker, gpointer data)
 {
   g_return_if_fail (GST_IS_WORKER (worker));
 
   INFO ("%s: %s", worker->name, __FUNCTION__);
 
   /*
-  if (worker1 == NULL) {
-    worker1 = GST_WORKER (g_object_new (GST_TYPE_WORKER,
-	    "name", "test-worker-1", NULL));
-    worker1->pipeline_func = test_worker_pipeline;
-  }
+     if (worker1 == NULL) {
+     worker1 = GST_WORKER (g_object_new (GST_TYPE_WORKER,
+     "name", "test-worker-1", NULL));
+     worker1->pipeline_func = test_worker_pipeline;
+     }
 
-  if (worker2 == NULL) {
-    worker2 = GST_WORKER (g_object_new (GST_TYPE_WORKER,
-	    "name", "test-worker-2", NULL));
-    worker2->pipeline_func = test_worker_pipeline;
-  }
-  */
+     if (worker2 == NULL) {
+     worker2 = GST_WORKER (g_object_new (GST_TYPE_WORKER,
+     "name", "test-worker-2", NULL));
+     worker2->pipeline_func = test_worker_pipeline;
+     }
+   */
 }
 
 static void
-test_worker_start (GstWorker *worker, gpointer data)
+test_worker_start (GstWorker * worker, gpointer data)
 {
   g_return_if_fail (GST_IS_WORKER (worker));
 
@@ -136,19 +136,18 @@ test_worker_start (GstWorker *worker, gpointer data)
     g_mutex_lock (&trans_lock);
     if (transition) {
       /*
-      gst_worker_start (worker1);
-      gst_worker_start (worker2);
-      */
+         gst_worker_start (worker1);
+         gst_worker_start (worker2);
+       */
 
-      g_timeout_add (10, (GSourceFunc) test_worker_close_transition,
-	  worker);
+      g_timeout_add (10, (GSourceFunc) test_worker_close_transition, worker);
     }
     g_mutex_unlock (&trans_lock);
   }
 }
 
 static void
-test_worker_end (GstWorker *worker, gpointer data)
+test_worker_end (GstWorker * worker, gpointer data)
 {
   gboolean worker_reset_ok;
 
@@ -165,24 +164,25 @@ test_worker_end (GstWorker *worker, gpointer data)
       INFO ("%s: %s", worker->name, __FUNCTION__);
 
       /*
-      worker_reset_ok = test_worker_reset (worker1);
-      g_assert (worker_reset_ok);
-  
-      worker_reset_ok = test_worker_reset (worker2);
-      g_assert (worker_reset_ok);
-      */
+         worker_reset_ok = test_worker_reset (worker1);
+         g_assert (worker_reset_ok);
+
+         worker_reset_ok = test_worker_reset (worker2);
+         g_assert (worker_reset_ok);
+       */
 
       gst_element_set_state (worker->pipeline, GST_STATE_READY);
       /*
-      gst_element_set_state (worker1->pipeline, GST_STATE_READY);
-      gst_element_set_state (worker2->pipeline, GST_STATE_READY);
-      */
+         gst_element_set_state (worker1->pipeline, GST_STATE_READY);
+         gst_element_set_state (worker2->pipeline, GST_STATE_READY);
+       */
     }
     g_mutex_unlock (&trans_lock);
   }
 }
 
-int main (int argc, char** argv)
+int
+main (int argc, char **argv)
 {
   gst_init (&argc, &argv);
 
@@ -191,7 +191,7 @@ int main (int argc, char** argv)
   mainloop = g_main_loop_new (NULL, TRUE);
 
   worker0 = GST_WORKER (g_object_new (GST_TYPE_WORKER,
-	  "name", "test-worker-0", NULL));
+          "name", "test-worker-0", NULL));
 
   worker0->pipeline_func = test_worker_pipeline;
 
@@ -199,8 +199,7 @@ int main (int argc, char** argv)
       G_CALLBACK (test_worker_prepare), NULL);
   g_signal_connect (worker0, "start-worker",
       G_CALLBACK (test_worker_start), NULL);
-  g_signal_connect (worker0, "end-worker",
-      G_CALLBACK (test_worker_end), NULL);
+  g_signal_connect (worker0, "end-worker", G_CALLBACK (test_worker_end), NULL);
 
   g_thread_new ("test-pulse", (GThreadFunc) test_worker_pulse, worker0);
 

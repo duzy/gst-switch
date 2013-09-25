@@ -1,4 +1,4 @@
-/* GstSwitch
+/* GstSwitch							    -*- c -*-
  * Copyright (C) 2012,2013 Duzy Chan <code@duzy.info>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -170,6 +170,10 @@ gboolean gst_switch_server_set_composite_mode (GstSwitchServer * srv,
     gint mode);
 gboolean gst_switch_server_switch (GstSwitchServer * srv, gint channel,
     gint port);
+gboolean gst_switch_server_click_video (GstSwitchServer * srv,
+    gint x, gint y, gint fw, gint fh);
+void gst_switch_server_mark_face (GstSwitchServer * srv,
+    GVariant *faces, gboolean tracking);
 guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
     gint dw, gint dh);
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);

@@ -50,6 +50,10 @@
 #define GST_SWITCH_UI_UNLOCK_COMPOSE(ui) (g_mutex_unlock (&(ui)->compose_lock))
 #define GST_SWITCH_UI_LOCK_SELECT(ui) (g_mutex_lock (&(ui)->select_lock))
 #define GST_SWITCH_UI_UNLOCK_SELECT(ui) (g_mutex_unlock (&(ui)->select_lock))
+#define GST_SWITCH_UI_LOCK_FACES(ui) (g_mutex_lock (&(ui)->faces_lock))
+#define GST_SWITCH_UI_UNLOCK_FACES(ui) (g_mutex_unlock (&(ui)->faces_lock))
+#define GST_SWITCH_UI_LOCK_TRACKING(ui) (g_mutex_lock (&(ui)->tracking_lock))
+#define GST_SWITCH_UI_UNLOCK_TRACKING(ui) (g_mutex_unlock (&(ui)->tracking_lock))
 
 G_DEFINE_TYPE (GstSwitchUI, gst_switch_ui, GST_TYPE_SWITCH_CLIENT);
 
@@ -83,13 +87,16 @@ static const gchar *gst_switch_ui_css =
     "}\n"
     ".active_video_frame {\n" "  border-color: rgba(225,25,55,0.75);\n" "}\n";
 
+/**
+ * @brief Parse command line arguments.
+ */
 static void
 gst_switch_ui_parse_args (int *argc, char **argv[])
 {
   GOptionContext *context;
   GError *error = NULL;
   context = g_option_context_new ("");
-  g_option_context_add_main_entries (context, entries, "gst-switch");
+  g_option_context_add_main_entries (context, entries, "gst-switch-ui");
   g_option_context_add_group (context, gst_init_get_option_group ());
   if (!g_option_context_parse (context, argc, argv, &error)) {
     g_print ("option parsing failed: %s\n", error->message);
@@ -98,12 +105,24 @@ gst_switch_ui_parse_args (int *argc, char **argv[])
   g_option_context_free (context);
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_quit (GstSwitchUI * ui)
 {
   gtk_main_quit ();
 }
 
+/**
+ * @brief
+ * @param widget
+ * @param event
+ * @param data
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_window_closed (GtkWidget * widget, GdkEvent * event,
     gpointer data)
@@ -112,17 +131,40 @@ gst_switch_ui_window_closed (GtkWidget * widget, GdkEvent * event,
   gst_switch_ui_quit (ui);
 }
 
-/*
-static gboolean
-gst_switch_ui_compose_view_expose (GtkWidget * widget, GdkEventExpose * event,
-    gpointer data)
+static void
+gst_switch_ui_compose_draw (GstElement * overlay, cairo_t * cr,
+    guint64 timestamp, guint64 duration, gpointer data)
 {
-  GstSwitchUI * ui = GST_SWITCH_UI (data);
-  (void) ui;
-  return FALSE;
-}
-*/
+  GstSwitchUI *ui = GST_SWITCH_UI (data);
+  gint x, y, w, h, n;
 
+  cairo_set_line_width (cr, 0.6);
+  cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 0.8);
+  GST_SWITCH_UI_LOCK_FACES (ui);
+  for (n = 0; ui->faces && n < g_variant_n_children (ui->faces); ++n) {
+    g_variant_get_child (ui->faces, 0, "(iiii)", &x, &y, &w, &h);
+    cairo_rectangle (cr, x, y, w, h);
+  }
+  GST_SWITCH_UI_UNLOCK_FACES (ui);
+  cairo_stroke (cr);
+
+  cairo_set_source_rgba (cr, 0.9, 0.1, 0.1, 0.8);
+  GST_SWITCH_UI_LOCK_TRACKING (ui);
+  for (n = 0; ui->tracking && n < g_variant_n_children (ui->tracking); ++n) {
+    g_variant_get_child (ui->tracking, 0, "(iiii)", &x, &y, &w, &h);
+    cairo_rectangle (cr, x, y, w, h);
+  }
+  GST_SWITCH_UI_UNLOCK_TRACKING (ui);
+  cairo_stroke (cr);
+}
+
+/**
+ * @brief
+ * @param widget
+ * @param event
+ * @param data
+ * @memberof GstSwitchUI
+ */
 static gboolean
 gst_switch_ui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
     gpointer data)
@@ -132,12 +174,25 @@ gst_switch_ui_compose_view_motion (GtkWidget * widget, GdkEventMotion * event,
   return FALSE;
 }
 
+/**
+ * @brief
+ * @param widget
+ * @param event
+ * @param data
+ * @memberof GstSwitchUI
+ */
 static gboolean
 gst_switch_ui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
     gpointer data)
 {
   GstSwitchUI *ui = GST_SWITCH_UI (data);
-  (void) ui;
+  gint vw = gtk_widget_get_allocated_width (widget);
+  gint vh = gtk_widget_get_allocated_height (widget);
+  gboolean ok = gst_switch_client_click_video (GST_SWITCH_CLIENT (ui),
+      (gint) event->x, (gint) event->y, vw, vh);
+
+  INFO ("select: (%d, %d), (%d)", (gint) event->x, (gint) event->y, ok);
+
   return FALSE;
 }
 
@@ -203,6 +258,11 @@ static gboolean gst_switch_ui_key_event (GtkWidget *, GdkEvent *,
 static gboolean gst_switch_ui_compose_key_event (GtkWidget *, GdkEvent *,
     GstSwitchUI *);
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_init (GstSwitchUI * ui)
 {
@@ -217,6 +277,8 @@ gst_switch_ui_init (GstSwitchUI * ui)
   g_mutex_init (&ui->audio_lock);
   g_mutex_init (&ui->compose_lock);
   g_mutex_init (&ui->select_lock);
+  g_mutex_init (&ui->faces_lock);
+  g_mutex_init (&ui->tracking_lock);
 
   display = gdk_display_get_default ();
   screen = gdk_display_get_default_screen (display);
@@ -257,30 +319,24 @@ gst_switch_ui_init (GstSwitchUI * ui)
       | GDK_BUTTON_RELEASE_MASK
       | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
-  g_signal_connect (G_OBJECT (ui->compose_view), "key-press-event",
+  /*
+     g_signal_connect (ui->compose_view, "draw",
+     G_CALLBACK (gst_switch_ui_compose_draw), ui);
+   */
+  g_signal_connect (ui->compose_view, "key-press-event",
       G_CALLBACK (gst_switch_ui_compose_key_event), ui);
+  g_signal_connect (ui->compose_view, "motion-notify-event",
+      G_CALLBACK (gst_switch_ui_compose_view_motion), ui);
+  g_signal_connect (ui->compose_view, "button-press-event",
+      G_CALLBACK (gst_switch_ui_compose_view_press), ui);
 
   ui->compose_overlay = gtk_fixed_new ();
   style = gtk_widget_get_style_context (ui->compose_overlay);
   gtk_style_context_add_class (style, "compose");
   gtk_widget_set_halign (ui->compose_overlay, GTK_ALIGN_START);
   gtk_widget_set_valign (ui->compose_overlay, GTK_ALIGN_START);
-  /*
-     gtk_widget_set_events (ui->compose_overlay, GDK_EXPOSURE_MASK
-     | GDK_LEAVE_NOTIFY_MASK
-     | GDK_BUTTON_PRESS_MASK
-     | GDK_BUTTON_RELEASE_MASK
-     | GDK_POINTER_MOTION_MASK
-     | GDK_POINTER_MOTION_HINT_MASK
-     );
-   */
 
-  /*
-     GtkWidget *w = gtk_drawing_area_new ();
-     //GtkWidget *w = gtk_event_box_new ();
-     gtk_widget_set_size_request (w, 120, 80);
-     gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 10, 10);
-   */
+  //gtk_fixed_put (GTK_FIXED (ui->compose_overlay), w, 5, 5);
 
   ui->status = gtk_label_new (NULL);
   gtk_widget_set_hexpand (ui->status, TRUE);
@@ -307,19 +363,20 @@ gst_switch_ui_init (GstSwitchUI * ui)
   g_signal_connect (G_OBJECT (ui->window), "delete-event",
       G_CALLBACK (gst_switch_ui_window_closed), ui);
 
-  /*
-     g_signal_connect (G_OBJECT (ui->compose_view), "expose-event",
-     G_CALLBACK (gst_switch_ui_compose_view_expose), ui);
-   */
-  g_signal_connect (G_OBJECT (ui->compose_view), "motion-notify-event",
-      G_CALLBACK (gst_switch_ui_compose_view_motion), ui);
-  g_signal_connect (G_OBJECT (ui->compose_view), "button-press-event",
-      G_CALLBACK (gst_switch_ui_compose_view_press), ui);
-
   gtk_css_provider_load_from_data (ui->css, gst_switch_ui_css, -1, &error);
   g_assert_no_error (error);
+
+  /*
+     gtk_widget_show_all (ui->window);
+     gtk_widget_realize (ui->window);
+   */
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_finalize (GstSwitchUI * ui)
 {
@@ -328,14 +385,27 @@ gst_switch_ui_finalize (GstSwitchUI * ui)
 
   g_object_unref (ui->css);
 
+  if (ui->faces)
+    g_variant_unref (ui->faces);
+  if (ui->tracking)
+    g_variant_unref (ui->tracking);
+
   g_mutex_clear (&ui->audio_lock);
   g_mutex_clear (&ui->compose_lock);
   g_mutex_clear (&ui->select_lock);
+  g_mutex_clear (&ui->faces_lock);
+  g_mutex_clear (&ui->tracking_lock);
 
   if (G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize)
     (*G_OBJECT_CLASS (gst_switch_ui_parent_class)->finalize) (G_OBJECT (ui));
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param error
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_on_controller_closed (GstSwitchUI * ui, GError * error)
 {
@@ -354,6 +424,11 @@ static void gst_switch_ui_set_audio_port (GstSwitchUI *, gint);
 static void gst_switch_ui_set_compose_port (GstSwitchUI *, gint);
 static void gst_switch_ui_add_preview_port (GstSwitchUI *, gint, gint, gint);
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_prepare_videos (GstSwitchUI * ui)
 {
@@ -389,6 +464,11 @@ gst_switch_ui_prepare_videos (GstSwitchUI * ui)
   }
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static gboolean
 gst_switch_ui_tick (GstSwitchUI * ui)
 {
@@ -441,10 +521,18 @@ gst_switch_ui_tick (GstSwitchUI * ui)
   return TRUE;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_run (GstSwitchUI * ui)
 {
-  gst_switch_client_connect (GST_SWITCH_CLIENT (ui));
+  if (!gst_switch_client_connect (GST_SWITCH_CLIENT (ui), CLIENT_ROLE_UI)) {
+    ERROR ("failed to connect to controller");
+    return;
+  }
 
   ui->timer = g_timeout_add (200, (GSourceFunc) gst_switch_ui_tick, ui);
 
@@ -454,6 +542,13 @@ gst_switch_ui_run (GstSwitchUI * ui)
   gtk_main ();
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param view
+ * @param port
+ * @memberof GstSwitchUI
+ */
 static GstVideoDisp *
 gst_switch_ui_new_video_disp (GstSwitchUI * ui, GtkWidget * view, gint port)
 {
@@ -473,6 +568,14 @@ gst_switch_ui_new_video_disp (GstSwitchUI * ui, GtkWidget * view, gint port)
   return disp;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param view
+ * @param handle
+ * @param port
+ * @memberof GstSwitchUI
+ */
 static GstAudioVisual *
 gst_switch_ui_new_audio_visual_unsafe (GstSwitchUI * ui, GtkWidget * view,
     gulong handle, gint port)
@@ -495,6 +598,13 @@ gst_switch_ui_new_audio_visual_unsafe (GstSwitchUI * ui, GtkWidget * view,
   return visual;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param view
+ * @param port
+ * @memberof GstSwitchUI
+ */
 static GstAudioVisual *
 gst_switch_ui_new_audio_visual (GstSwitchUI * ui, GtkWidget * view, gint port)
 {
@@ -505,6 +615,13 @@ gst_switch_ui_new_audio_visual (GstSwitchUI * ui, GtkWidget * view, gint port)
   return visual;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param worker
+ * @param name
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_remove_preview (GstSwitchUI * ui, GstWorker * worker,
     const gchar * name)
@@ -529,6 +646,12 @@ gst_switch_ui_remove_preview (GstSwitchUI * ui, GstWorker * worker,
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param worker
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_end_video_disp (GstWorker * worker, GstSwitchUI * ui)
 {
@@ -537,6 +660,12 @@ gst_switch_ui_end_video_disp (GstWorker * worker, GstSwitchUI * ui)
   gst_switch_ui_remove_preview (ui, worker, "video-display");
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param worker
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_end_audio_visual (GstWorker * worker, GstSwitchUI * ui)
 {
@@ -549,9 +678,17 @@ gst_switch_ui_end_audio_visual (GstWorker * worker, GstSwitchUI * ui)
   }
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param port The compose port number.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_set_compose_port (GstSwitchUI * ui, gint port)
 {
+  GstElement *overlay = NULL;
+
   GST_SWITCH_UI_LOCK_COMPOSE (ui);
   if (ui->compose) {
     gst_worker_stop (GST_WORKER (ui->compose));
@@ -559,9 +696,21 @@ gst_switch_ui_set_compose_port (GstSwitchUI * ui, gint port)
   }
 
   ui->compose = gst_switch_ui_new_video_disp (ui, ui->compose_view, port);
+  overlay = gst_worker_get_element (GST_WORKER (ui->compose), "overlay");
+  if (overlay) {
+    g_signal_connect (overlay, "draw",
+        G_CALLBACK (gst_switch_ui_compose_draw), ui);
+  }
   GST_SWITCH_UI_UNLOCK_COMPOSE (ui);
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param frame
+ * @param visual
+ * @memberof GstSwitchUI
+ */
 static GstAudioVisual *
 gst_switch_ui_renew_audio_visual (GstSwitchUI * ui, GtkWidget * frame,
     GstAudioVisual * visual)
@@ -578,6 +727,12 @@ gst_switch_ui_renew_audio_visual (GstSwitchUI * ui, GtkWidget * frame,
   return visual;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param port The audio port number.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_set_audio_port (GstSwitchUI * ui, gint port)
 {
@@ -608,6 +763,13 @@ gst_switch_ui_set_audio_port (GstSwitchUI * ui, gint port)
   GST_SWITCH_UI_UNLOCK_AUDIO (ui);
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param port
+ * @param type
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_mark_active_video (GstSwitchUI * ui, gint port, gint type)
 {
@@ -631,6 +793,13 @@ gst_switch_ui_mark_active_video (GstSwitchUI * ui, gint port, gint type)
 static gboolean gst_switch_ui_switch_unsafe (GstSwitchUI *, gint);
 static gboolean gst_switch_ui_switch (GstSwitchUI *, gint);
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param event
+ * @param w
+ * @memberof GstSwitchUI
+ */
 static gboolean
 gst_switch_ui_preview_click (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
 {
@@ -739,6 +908,14 @@ gst_switch_ui_preview_click (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
   return TRUE;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param port
+ * @param serve
+ * @param type
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
     gint type)
@@ -813,6 +990,34 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
 }
 
 static void
+gst_switch_ui_show_face_marker (GstSwitchUI * ui, GVariant * faces)
+{
+  GVariant *v = NULL;
+  GST_SWITCH_UI_LOCK_FACES (ui);
+  v = ui->faces, ui->faces = faces;
+  if (v)
+    g_variant_unref (v);
+  GST_SWITCH_UI_UNLOCK_FACES (ui);
+}
+
+static void
+gst_switch_ui_show_track_marker (GstSwitchUI * ui, GVariant * tracking)
+{
+  GVariant *v = NULL;
+  GST_SWITCH_UI_LOCK_TRACKING (ui);
+  v = ui->tracking, ui->tracking = tracking;
+  if (v)
+    g_variant_unref (v);
+  GST_SWITCH_UI_UNLOCK_TRACKING (ui);
+}
+
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param key
+ * @memberof GstSwitchUI
+ */
+static void
 gst_switch_ui_select_preview (GstSwitchUI * ui, guint key)
 {
   GList *view = NULL, *selected = NULL;
@@ -863,6 +1068,12 @@ gst_switch_ui_select_preview (GstSwitchUI * ui, guint key)
   GST_SWITCH_UI_UNLOCK_SELECT (ui);
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param key
+ * @memberof GstSwitchUI
+ */
 static gboolean
 gst_switch_ui_switch_unsafe (GstSwitchUI * ui, gint key)
 {
@@ -917,6 +1128,12 @@ end:
   return ok;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param key
+ * @memberof GstSwitchUI
+ */
 static gboolean
 gst_switch_ui_switch (GstSwitchUI * ui, gint key)
 {
@@ -927,6 +1144,11 @@ gst_switch_ui_switch (GstSwitchUI * ui, gint key)
   return ok;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_next_compose_mode (GstSwitchUI * ui)
 {
@@ -939,6 +1161,11 @@ gst_switch_ui_next_compose_mode (GstSwitchUI * ui)
   ui->compose_mode += 1;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_next_compose_off (GstSwitchUI * ui)
 {
@@ -949,6 +1176,11 @@ gst_switch_ui_next_compose_off (GstSwitchUI * ui)
     ui->compose_mode = 1;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_new_record (GstSwitchUI * ui)
 {
@@ -956,6 +1188,13 @@ gst_switch_ui_new_record (GstSwitchUI * ui)
   INFO ("new record: %d", ok);
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param resize
+ * @param key
+ * @memberof GstSwitchUI
+ */
 static void
 gst_switch_ui_adjust_pip (GstSwitchUI * ui, gboolean resize, gint key)
 {
@@ -1000,6 +1239,13 @@ gst_switch_ui_adjust_pip (GstSwitchUI * ui, gboolean resize, gint key)
   INFO ("adjust-pip: (%d) %d", resize, result);
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param w
+ * @param event
+ * @memberof GstSwitchUI
+ */
 static gboolean
 gst_switch_ui_key_event (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
 {
@@ -1056,6 +1302,13 @@ gst_switch_ui_key_event (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
   return FALSE;
 }
 
+/**
+ * @brief
+ * @param ui The GstSwitchUI instance.
+ * @param w
+ * @param event
+ * @memberof GstSwitchUI
+ */
 static gboolean
 gst_switch_ui_compose_key_event (GtkWidget * w, GdkEvent * event,
     GstSwitchUI * ui)
@@ -1073,6 +1326,11 @@ gst_switch_ui_compose_key_event (GtkWidget * w, GdkEvent * event,
   return FALSE;
 }
 
+/**
+ * @brief
+ * @param klass
+ * @memberof GstSwitchUIClass
+ */
 static void
 gst_switch_ui_class_init (GstSwitchUIClass * klass)
 {
@@ -1089,12 +1347,35 @@ gst_switch_ui_class_init (GstSwitchUIClass * klass)
       gst_switch_ui_set_audio_port;
   client_class->add_preview_port = (GstSwitchClientAddPreviewPortFunc)
       gst_switch_ui_add_preview_port;
+  client_class->show_face_marker = (GstSwitchClientShowFaceMarkerFunc)
+      gst_switch_ui_show_face_marker;
+  client_class->show_track_marker = (GstSwitchClientShowFaceMarkerFunc)
+      gst_switch_ui_show_track_marker;
 }
 
+/**
+ * @brief The entry of gst-switch-ui.
+ */
 int
 main (int argc, char *argv[])
 {
   GstSwitchUI *ui;
+
+  /*
+     GVariantBuilder *vb = g_variant_builder_new(G_VARIANT_TYPE_ARRAY);
+     g_variant_builder_add (vb, "(iiii)", 1, 2, 3, 4);
+     g_variant_builder_add (vb, "(iiii)", 1, 2, 3, 4);
+     g_variant_builder_add (vb, "(iiii)", 1, 2, 3, 4);
+
+     GVariant *v = g_variant_builder_end (vb);
+     g_print ("%s: ", g_variant_get_type_string (v));
+     g_print (g_variant_print (v, FALSE));
+     g_print ("\n");
+
+     gint x, y, w, h;
+     g_variant_get_child (v, 0, "(iiii)", &x, &y, &w, &h);
+     g_print ("%d: %d, %d, %d, %d\n", g_variant_n_children (v), x, y, w, h);
+   */
 
   gst_switch_ui_parse_args (&argc, &argv);
   gtk_init (&argc, &argv);
