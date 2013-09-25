@@ -1,24 +1,15 @@
 # Build Status
-[![Build Status](https://travis-ci.org/hyades/gst-switch.png?branch=master)](https://travis-ci.org/hyades/gst-switch)
-[![Coverage Status](https://coveralls.io/repos/hyades/gst-switch/badge.png?branch=master)](https://coveralls.io/r/hyades/gst-switch?branch=master)
+[![Build Status](https://travis-ci.org/timvideos/gst-switch.png?branch=master)](https://travis-ci.org/timvideos/gst-switch)
+[![Coverage Status](https://coveralls.io/repos/timvideos/gst-switch/badge.png)](https://coveralls.io/r/timvideos/gst-switch)
 
 # gst-switch
 ## Purpose
 This project is intended tog be a replacement of DV-switch base on GStreamer.
 ##Installing gst-switch
 ```bash
-# preferred method
-sudo apt-get install git python-pip
-git clone https://github.com/hyades/gst-switch.git
-cd gst-switch
-chmod +x .travis-setup.sh
-./.travis-setup.sh
-```
-or you can do
-```bash
-wget https://raw.github.com/hyades/gst-switch/master/scripts/install.sh
-chmod +x install.sh
-./install.sh
+wget https://raw.github.com/timvideos/gst-switch/master/scripts/install2.sh
+chmod +x install2.sh
+./install2.sh
 ```
 The dependencies are taken care by the installation method.
 ## Components
