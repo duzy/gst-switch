@@ -1,5 +1,5 @@
 # Build Status
-[![Coverage Status](https://coveralls.io/repos/timvideos/gst-switch/badge.png)](https://coveralls.io/r/timvideos/gst-switch)
+[![Build Status](https://travis-ci.org/timvideos/gst-switch.png?branch=speaker-tracking)](https://travis-ci.org/timvideos/gst-switch)
 [![Coverage Status](https://coveralls.io/repos/timvideos/gst-switch/badge.png)](https://coveralls.io/r/timvideos/gst-switch)
 
 # gst-switch
