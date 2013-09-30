@@ -1,13 +1,12 @@
 # Build Status
-[![Build Status](https://travis-ci.org/hyades/gst-switch.png?branch=master)](https://travis-ci.org/hyades/gst-switch)
-[![Coverage Status](https://coveralls.io/repos/hyades/gst-switch/badge.png?branch=master)](https://coveralls.io/r/hyades/gst-switch?branch=master)
+[![Build Status](https://travis-ci.org/timvideos/gst-switch.png?branch=master)](https://travis-ci.org/timvideos/gst-switch)
+[![Coverage Status](https://coveralls.io/repos/timvideos/gst-switch/badge.png)](https://coveralls.io/r/timvideos/gst-switch)
 
 # gst-switch
 ## Purpose
 This project is intended tog be a replacement of DV-switch base on GStreamer.
 ##Installing gst-switch
 ```bash
-# preferred method
 wget https://raw.github.com/timvideos/gst-switch/master/scripts/install2.sh
 chmod +x install2.sh
 ./install2.sh
