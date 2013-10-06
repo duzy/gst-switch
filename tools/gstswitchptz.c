@@ -111,6 +111,9 @@ gst_switch_ptz_update_xy (GstSwitchPTZ * ptz)
   return TRUE;
 }
 
+static struct timeval timestamp_pan_changed = { 0, 0 };
+static struct timeval timestamp_tilt_changed = { 0, 0 };
+
 static gboolean
 gst_switch_ptz_update (GstSwitchPTZ * ptz)
 {
@@ -119,6 +122,7 @@ gst_switch_ptz_update (GstSwitchPTZ * ptz)
   static struct timeval timestamp_z = { 0, 0 };
   struct timeval now = { 0 };
   suseconds_t millis, millis_z;
+  suseconds_t millis_pan, millis_tilt;
   const double d = 0.0001;
   gettimeofday (&now, NULL);
 
@@ -140,6 +144,16 @@ gst_switch_ptz_update (GstSwitchPTZ * ptz)
       (now.tv_sec - timestamp_z.tv_sec) * 1000 + (now.tv_usec -
       timestamp_z.tv_usec) / 1000;
 
+  millis_pan = (now.tv_sec - timestamp_pan_changed.tv_sec) * 1000 +
+      (now.tv_usec - timestamp_pan_changed.tv_usec) / 1000;
+  millis_tilt = (now.tv_sec - timestamp_tilt_changed.tv_sec) * 1000 +
+      (now.tv_usec - timestamp_tilt_changed.tv_usec) / 1000;
+
+  //g_print ("%ld, %ld\n", millis_pan, millis_tilt);
+
+  if (millis_pan < 1000 && millis_tilt < 1000) {
+    return TRUE;
+  }
   //g_print ("%lld, %lld; %f, %f, %f; %f, %f, %f\n", millis, millis_z, pan, tilt, zoom, ptz->x, ptz->y, ptz->z);
 
   if (ptz->controller) {
@@ -409,13 +423,23 @@ gst_switch_ptz_tilt_speed_changed (GtkAdjustment * adjustment,
 static void
 gst_switch_ptz_pan_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
 {
-  //ptz->x = gtk_adjustment_get_value (adjustment);
+  suseconds_t millis;
+  gettimeofday (&timestamp_pan_changed, NULL);
+  millis = timestamp_pan_changed.tv_sec * 1000 +
+      timestamp_pan_changed.tv_usec / 1000;
+  (void) millis;
+  //g_print ("pan: %ld\n", millis);
 }
 
 static void
 gst_switch_ptz_tilt_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
 {
-  //ptz->y = gtk_adjustment_get_value (adjustment);
+  suseconds_t millis;
+  gettimeofday (&timestamp_tilt_changed, NULL);
+  millis = timestamp_tilt_changed.tv_sec * 1000 +
+      timestamp_tilt_changed.tv_usec / 1000;
+  (void) millis;
+  //g_print ("tilt: %ld\n", millis);
 }
 
 static void
