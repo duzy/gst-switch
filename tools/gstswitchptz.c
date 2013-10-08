@@ -559,7 +559,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   }
 
   box_buttons_tilt = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("pan/tilt:"),
+  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("Pan/Tilt:"),
       TRUE, TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_control), scale_pan, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_buttons_tilt), scale_tilt, FALSE, TRUE, 10);
@@ -580,14 +580,14 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   gtk_widget_set_size_request (zoom_minus, 70, 70);
   gtk_widget_set_size_request (zoom_reset, 70, 70);
   gtk_widget_set_size_request (zoom_plus, 70, 70);
-  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("zoom:"), TRUE,
+  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new ("Zoom:"), TRUE,
       TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_zoom), gtk_label_new (""), TRUE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_zoom), zoom_minus, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box_zoom), zoom_reset, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box_zoom), zoom_plus, FALSE, FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box_zoom), gtk_label_new (""), TRUE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_control), box_zoom, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_control), box_zoom, TRUE, TRUE, 10);
   g_signal_connect (zoom_minus, "pressed",
       G_CALLBACK (gst_switch_ptz_button_pressed_zoom_minus), ptz);
   g_signal_connect (zoom_reset, "pressed",
@@ -604,8 +604,9 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 1.0, 0.01);
   gtk_range_set_value (GTK_RANGE (scale_zoom), 0.5);
   ptz->adjust_zoom = gtk_range_get_adjustment (GTK_RANGE (scale_zoom));
-  gtk_box_pack_start (GTK_BOX (box_control), scale_zoom, FALSE, TRUE, 0);
-  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new (""), TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_control), scale_zoom, FALSE, TRUE, 50);
+  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new (""), TRUE, TRUE,
+      10);
 
   scale_pan_speed =
       gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL,
@@ -638,15 +639,15 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   gtk_box_pack_start (GTK_BOX (box_control_pan), label_pan_speed, FALSE, FALSE,
       0);
   gtk_box_pack_start (GTK_BOX (box_control_pan), scale_pan_speed, TRUE, TRUE,
-      0);
+      10);
   gtk_box_pack_start (GTK_BOX (box_control_tilt), label_tilt_speed, FALSE,
       FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box_control_tilt), scale_tilt_speed, TRUE, TRUE,
-      0);
+      10);
   gtk_box_pack_start (GTK_BOX (box_control_zoom), label_zoom_speed, FALSE,
       FALSE, 0);
   gtk_box_pack_start (GTK_BOX (box_control_zoom), scale_zoom_speed, TRUE, TRUE,
-      0);
+      10);
 
   gtk_box_pack_start (GTK_BOX (box_control), box_control_pan, FALSE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_control), box_control_tilt, FALSE, TRUE, 0);
