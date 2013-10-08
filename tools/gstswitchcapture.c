@@ -71,7 +71,8 @@ G_DEFINE_TYPE (GstSwitchCaptureWorker, gst_switch_capture_worker,
 gboolean verbose = FALSE;
 const char *device = "/dev/ttyUSB0";
 const char *protocol = "visca";
-const char *srcsegment = NULL;
+const char **srcsegments = NULL;
+int srcsegmentc = 0;
 
 static GOptionEntry options[] = {
   {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", NULL},
@@ -120,11 +121,15 @@ gst_switch_capture_pipeline (GstWorker * worker, GstSwitchCapture * capture)
         "filesrc location=\"/home/duzy/Downloads/locked-mode-7010.dv\" ");
     g_string_append_printf (desc, "! dvdemux ! dvdec ");
   } else {
-    const char *s = srcsegment;
-    if (!s) {
-      s = "v4l2src";
+    if (0 < srcsegmentc && srcsegments) {
+      int n = 0;
+      for (; n < srcsegmentc; ++n) {
+        g_string_append_printf (desc, "%s ", srcsegments[n]);
+      }
+    } else {
+      g_string_append_printf (desc, "v4l2src ");
     }
-    g_string_append_printf (desc, "%s ! tee name=video ", s);
+    g_string_append_printf (desc, "! tee name=video ");
   }
 
   g_string_append_printf (desc, "video. ! queue2 ");
@@ -465,7 +470,8 @@ main (int argc, char **argv)
   gst_init (&argc, &argv);
 
   if (1 < argc) {
-    srcsegment = argv[1];
+    srcsegments = (const char **) (argv + 1);
+    srcsegmentc = argc - 1;
   }
 
   capture = GST_SWITCH_CAPTURE (g_object_new (GST_TYPE_SWITCH_CAPTURE, NULL));
