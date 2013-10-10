@@ -562,13 +562,14 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
   label = gtk_label_new ("");
   gtk_label_set_markup (GTK_LABEL (label), "<b>Pan/Tilt:</b>");
   box_buttons_tilt = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start (GTK_BOX (box_control), label, TRUE, TRUE, 3);
+  gtk_box_pack_start (GTK_BOX (box_control), label, TRUE, TRUE, 1);
   gtk_box_pack_start (GTK_BOX (box_control), scale_pan, FALSE, TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_buttons_tilt), scale_tilt, FALSE, TRUE, 10);
   gtk_box_pack_start (GTK_BOX (box_buttons_tilt), control_grid, FALSE, TRUE,
       10);
   gtk_box_pack_start (GTK_BOX (box_control), box_buttons_tilt, FALSE, TRUE, 10);
-  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new (""), TRUE, TRUE, 5);
+  gtk_box_pack_start (GTK_BOX (box_control), gtk_label_new (""), TRUE, TRUE,
+      10);
 
   box_zoom = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   zoom_minus = gtk_button_new ();
@@ -586,12 +587,12 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
 
   label = gtk_label_new ("");
   gtk_label_set_markup (GTK_LABEL (label), "<b>Zoom:</b>");
-  gtk_box_pack_start (GTK_BOX (box_control), label, TRUE, TRUE, 3);
+  gtk_box_pack_start (GTK_BOX (box_control), label, TRUE, TRUE, 1);
   gtk_box_pack_start (GTK_BOX (box_zoom), gtk_label_new (""), TRUE, TRUE, 0);
   gtk_box_pack_start (GTK_BOX (box_zoom), zoom_minus, FALSE, FALSE, 5);
   gtk_box_pack_start (GTK_BOX (box_zoom), zoom_reset, FALSE, FALSE, 5);
   gtk_box_pack_start (GTK_BOX (box_zoom), zoom_plus, FALSE, FALSE, 5);
-  gtk_box_pack_start (GTK_BOX (box_zoom), gtk_label_new (""), TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (box_zoom), gtk_label_new (""), TRUE, TRUE, 10);
 
   scale_zoom =
       gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 0, 1.0, 0.01);
@@ -649,7 +650,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
 
   label = gtk_label_new ("");
   gtk_label_set_markup (GTK_LABEL (label), "<b>Speeds:</b>");
-  gtk_box_pack_start (GTK_BOX (box_control), label, FALSE, TRUE, 3);
+  gtk_box_pack_start (GTK_BOX (box_control), label, FALSE, TRUE, 1);
   gtk_box_pack_start (GTK_BOX (box_control_pan), label_pan_speed, FALSE, FALSE,
       0);
   gtk_box_pack_start (GTK_BOX (box_control_pan), scale_pan_speed, TRUE, TRUE,
@@ -693,7 +694,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
     gtk_scale_add_mark (GTK_SCALE (scale_tilt), ptz->controller->tilt_max,
         GTK_POS_RIGHT, s);
     for (v = -tick; ptz->controller->pan_min <= v; v -= tick) {
-      if (v - ptz->controller->pan_min < 0.1)
+      if (v - ptz->controller->pan_min < 1)
         continue;
       n = (int) v;
       s = NULL;
@@ -702,7 +703,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, s);
     }
     for (v = tick; v <= ptz->controller->pan_max; v += tick) {
-      if (ptz->controller->pan_max - v < 0.1)
+      if (ptz->controller->pan_max - v < 1)
         continue;
       n = (int) v;
       s = NULL;
@@ -711,7 +712,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       gtk_scale_add_mark (GTK_SCALE (scale_pan), v, GTK_POS_BOTTOM, s);
     }
     for (v = -tick; ptz->controller->tilt_min <= v; v -= tick) {
-      if (v - ptz->controller->tilt_min < 0.1)
+      if (v - ptz->controller->tilt_min < 1)
         continue;
       n = (int) v;
       s = NULL;
@@ -720,7 +721,7 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       gtk_scale_add_mark (GTK_SCALE (scale_tilt), v, GTK_POS_RIGHT, s);
     }
     for (v = tick; v <= ptz->controller->tilt_max; v += tick) {
-      if (ptz->controller->tilt_max - v < 0.1)
+      if (ptz->controller->tilt_max - v < 1)
         continue;
       n = (int) v;
       s = NULL;
