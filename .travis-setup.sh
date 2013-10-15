@@ -1,7 +1,6 @@
 #! /bin/bash -ex
 
 sudo apt-get update
-sudo apt-get -y upgrade
 sudo pip install mock
 sudo pip install pytest-cov
 sudo pip install pytest-pep8
