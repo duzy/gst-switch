@@ -1,0 +1,2 @@
+export PKG_CONFIG_PATH=/home/duzy/gst/stage/lib/pkgconfig
+./autogen.sh --prefix=/home/duzy/gst/stage

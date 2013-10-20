@@ -33,6 +33,17 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed!])
 ])
 
+#AG_GST_ARG_WITH_PKG_CONFIG_PATH
+
+#AG_GST_PKG_CONFIG_PATH
+
+#AC_ARG_WITH(pkg-config-path,
+#   AC_HELP_STRING([--with-pkg-config-path], [colon-separated list of pkg-config(1) dirs]),
+#   [
+#     export PKG_CONFIG_PATH=${withval}
+#     AC_MSG_NOTICE(Set PKG_CONFIG_PATH to $PKG_CONFIG_PATH)
+#   ])
+
 PKG_CHECK_MODULES(GIO, [
   gio-2.0 >= 2.25.0
 ], [
@@ -121,13 +132,45 @@ PKG_CHECK_MODULES(GST, [
   AC_SUBST(GST_CFLAGS)
   AC_SUBST(GST_LIBS)
 ], [
-  AC_MSG_ERROR([
-      You need to install or upgrade the GStreamer development
-      packages on your system. On debian-based systems these are
-      libgstreamer1.0-dev and libgstreamer-plugins-base1.0-dev.
-      on RPM-based systems gstreamer1.0-devel, libgstreamer1.0-devel
-      or similar. The minimum version required is $GST_REQUIRED.
-  ])
+   HAS_GSTREAMER=no
+   HAS_GSTREAMER_BASE=no
+   HAS_GSTREAMER_CONTROLLER=no
+   HAS_GSTREAMER_VIDEO=no
+   if $PKG_CONFIG --exists gstreamer-1.0 ; then
+      GST_CFLAGS="$GST_CFLAGS `$PKG_CONFIG --cflags gstreamer-1.0`"
+      GST_LIBS="$GST_LIBS `$PKG_CONFIG --libs gstreamer-1.0`"
+      HAS_GSTREAMER=yes
+   fi
+   if $PKG_CONFIG --exists gstreamer-base-1.0 ; then
+      GST_CFLAGS="$GST_CFLAGS `$PKG_CONFIG --cflags gstreamer-base-1.0`"
+      GST_LIBS="$GST_LIBS `$PKG_CONFIG --libs gstreamer-base-1.0`"
+      HAS_GSTREAMER_BASE=yes
+   fi
+   if $PKG_CONFIG --exists gstreamer-controller-1.0 ; then
+      GST_CFLAGS="$GST_CFLAGS `$PKG_CONFIG --cflags gstreamer-controller-1.0`"
+      GST_LIBS="$GST_LIBS `$PKG_CONFIG --libs gstreamer-controller-1.0`"
+      HAS_GSTREAMER_CONTROLLER=yes
+   fi
+   if $PKG_CONFIG --exists gstreamer-video-1.0 ; then
+      GST_CFLAGS="$GST_CFLAGS `$PKG_CONFIG --cflags gstreamer-video-1.0`"
+      GST_LIBS="$GST_LIBS `$PKG_CONFIG --libs gstreamer-video-1.0`"
+      HAS_GSTREAMER_VIDEO=yes
+   fi
+   echo "GST_CFLAGS: $GST_CFLAGS `$PKG_CONFIG --cflags gstreamer-1.0`"
+   echo "GST_LIBS: $GST_LIBS `$PKG_CONFIG --libs gstreamer-1.0`"
+   if test "x$HAS_GSTREAMER" = "xno" ||\
+      test "x$HAS_GSTREAMER_BASE" = "xno" ||\
+      test "x$HAS_GSTREAMER_CONTROLLER" = "xno" ||\
+      test "x$HAS_GSTREAMER_VIDEO" = "xno" \
+      ; then
+      AC_MSG_ERROR([
+        You need to install or upgrade the GStreamer development
+        packages on your system. On debian-based systems these are
+        libgstreamer1.0-dev and libgstreamer-plugins-base1.0-dev.
+        on RPM-based systems gstreamer1.0-devel, libgstreamer1.0-devel
+        or similar. The minimum version required is $GST_REQUIRED.
+      ])
+   fi
 ])
 
 dnl check if compiler understands -Wall (if yes, add -Wall to GST_CFLAGS)
