@@ -108,7 +108,7 @@ gst_switch_ptz_set_update_flag (void *arg)
 }
 
 static gboolean
-gst_switch_ptz_update_xy (GstSwitchPTZ * ptz)
+gst_switch_ptz_update_sliders (GstSwitchPTZ * ptz)
 {
   if (do_update) {
     double x, y;
@@ -166,10 +166,8 @@ gst_switch_ptz_update (GstSwitchPTZ * ptz)
   if (!(ptz->controller)) {
     return TRUE;
   }
-  //g_print ("%ld, %ld\n", millis_pan, millis_tilt);
-  //g_print ("%lld, %lld; %f, %f, %f; %f, %f, %f\n", millis, millis_z, pan, tilt, zoom, ptz->x, ptz->y, ptz->z);
 
-  const double limit = 1000;
+  const double limit = 50;
   const double g = button_pressed ? 600.0 : 700.0;
   double x = gtk_adjustment_get_value (ptz->adjust_pan);
   double y = gtk_adjustment_get_value (ptz->adjust_tilt);
@@ -461,6 +459,8 @@ gst_switch_ptz_pan_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
       timestamp_pan_changed.tv_usec / 1000;
   (void) millis;
   //g_print ("pan: %ld\n", millis);
+
+  gst_switch_ptz_update (ptz);  // immediate update
 }
 
 static void
@@ -472,6 +472,8 @@ gst_switch_ptz_tilt_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
       timestamp_tilt_changed.tv_usec / 1000;
   (void) millis;
   //g_print ("tilt: %ld\n", millis);
+
+  gst_switch_ptz_update (ptz);  // immediate update
 }
 
 static void
@@ -484,6 +486,8 @@ gst_switch_ptz_zoom_changed (GtkAdjustment * adjustment, GstSwitchPTZ * ptz)
   (void) millis;
   //g_print ("tilt: %ld\n", millis);
   //ptz->z = gtk_adjustment_get_value (adjustment);
+
+  gst_switch_ptz_update (ptz);  // immediate update
 }
 
 static void
@@ -862,11 +866,11 @@ gst_switch_ptz_init (GstSwitchPTZ * ptz)
       G_CALLBACK (gst_switch_ptz_button_released_right_bottom), ptz);
 
   do_update = TRUE;
-  gst_switch_ptz_update_xy (ptz);
+  gst_switch_ptz_update_sliders (ptz);
   do_update = FALSE;
 
-  g_timeout_add (300, (GSourceFunc) gst_switch_ptz_update, ptz);
-  g_timeout_add (100, (GSourceFunc) gst_switch_ptz_update_xy, ptz);
+  g_timeout_add (250, (GSourceFunc) gst_switch_ptz_update, ptz);
+  g_timeout_add (100, (GSourceFunc) gst_switch_ptz_update_sliders, ptz);
   //g_timeout_add (50, (GSourceFunc) gst_switch_ptz_update_d, ptz);
 }
 
