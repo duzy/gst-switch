@@ -4,7 +4,7 @@
 
 # gst-switch
 ## Purpose
-This project is intended tog be a replacement of DV-switch base on GStreamer.
+This project is intended to be a replacement of DV-switch based on GStreamer.
 ##Installing gst-switch
 ```bash
 wget https://raw.github.com/timvideos/gst-switch/master/scripts/install2.sh
