@@ -395,7 +395,7 @@ class TestAudioSrcFreq(object):
 
     def test_range(self):
         """Test when frequency is not in range (negative)"""
-        tests = [-100,  -1]
+        tests = [-100, -1]
         port = 4000
         for test in tests:
             with pytest.raises(RangeError):
@@ -423,7 +423,7 @@ class TestAudioSrcWave(object):
 
     def test_range(self):
         """Test when wave is not in range"""
-        tests = [-100,  -1, 13, 1e2, '1e10']
+        tests = [-100, -1, 13, 1e2, '1e10']
         port = 4000
         for test in tests:
             with pytest.raises(RangeError):
