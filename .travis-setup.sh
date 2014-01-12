@@ -29,7 +29,7 @@ sudo make install || {
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gstreamer
 cd gstreamer
-# git checkout 6c11da1
+git checkout 6c11da1
 ./autogen.sh --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
@@ -50,7 +50,7 @@ sudo make install || {
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-base
 cd gst-plugins-base
-# git checkout a8df760
+git checkout a8df760
 ./autogen.sh --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
@@ -71,7 +71,7 @@ sudo make install || {
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-good
 cd gst-plugins-good
-# git checkout d14d4c4
+git checkout d14d4c4
 ./autogen.sh --enable-experimental --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
@@ -92,7 +92,7 @@ sudo make install || {
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-ugly
 cd gst-plugins-ugly
-# git checkout 68985ba
+git checkout 68985ba
 ./autogen.sh --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
