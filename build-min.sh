@@ -6,6 +6,11 @@ sudo apt-get install \
     libgstreamer1.0-dev \
     libgstreamer-plugins-base1.0-dev
 
+# for run-demo.sh 
+sudo apt-get install \
+    gstreamer1.0-plugins-bad
+
+
 ./autogen.sh
 make
 
