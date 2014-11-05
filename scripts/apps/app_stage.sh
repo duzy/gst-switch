@@ -122,7 +122,7 @@ function clone-project()
 
 function clone-duzy-project()
 {
-    clone-project https://github.com/hyades $1 .git
+    clone-project https://github.com/timvideos $1 .git
 }
 
 function clone-gst-project()
