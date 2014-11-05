@@ -1,5 +1,7 @@
 #!/bin/bash -ex
 
+# FIXME: Rewrite using the Python API so this is reliable.
+
 cd tools
 
 ./gst-switch-srv &
