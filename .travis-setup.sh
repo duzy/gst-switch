@@ -1,7 +1,6 @@
 #! /bin/bash -ex
 
 sudo apt-get update
-sudo apt-get -y upgrade
 sudo pip install mock
 sudo pip install pytest-cov
 sudo pip install pytest-pep8
@@ -12,6 +11,8 @@ sudo apt-get -y install python-scipy ffmpeg
 sudo apt-get -y install autoconf automake autopoint libbz2-dev libdv4-dev libfaac-dev libfaad-dev libgtk-3-dev libmjpegtools-dev libtag1-dev libasound2-dev libtool libvpx-dev libxv-dev libx11-dev libogg-dev libvorbis-dev libopencv-dev libcv-dev libhighgui-dev libv4l-dev pkg-config zlib1g-dev gtk-doc-tools yasm bison flex
 export PKG_CONFIG_PATH=/usr/lib/pkgconfig/
 export LD_LIBRARY_PATH=/usr/lib/
+export GCOV_PREFIX=$HOME/gst-switch-coverage
+cd ..
 git clone http://git.chromium.org/webm/libvpx.git
 cd libvpx
 git checkout v1.2.0
@@ -28,7 +29,7 @@ sudo make install || {
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gstreamer
 cd gstreamer
-# git checkout 6c11da1
+git checkout 6c11da1
 ./autogen.sh --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
@@ -49,7 +50,7 @@ sudo make install || {
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-base
 cd gst-plugins-base
-# git checkout a8df760
+git checkout a8df760
 ./autogen.sh --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
@@ -70,7 +71,7 @@ sudo make install || {
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-good
 cd gst-plugins-good
-# git checkout d14d4c4
+git checkout d14d4c4
 ./autogen.sh --enable-experimental --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
@@ -91,7 +92,7 @@ sudo make install || {
 cd ..
 git clone git://anongit.freedesktop.org/gstreamer/gst-plugins-ugly
 cd gst-plugins-ugly
-# git checkout 68985ba
+git checkout 68985ba
 ./autogen.sh --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1
@@ -130,6 +131,7 @@ sudo make install || {
        exit -1
     }
 cd ..
+cd gst-switch
 ./autogen.sh --prefix=/usr || {
 printf "Failed to do autogen!!!\n"
 exit -1

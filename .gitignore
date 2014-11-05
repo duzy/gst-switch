@@ -24,6 +24,12 @@ imgurbash.sh.*
 /configure
 /depcomp
 /docs/_build
+/gstreamer
+/gst-plugins-base
+/gst-plugins-good
+/gst-plugins-bad
+/gst-plugins-base
+/libvpx
 /html
 /htmlcov
 /install-sh
