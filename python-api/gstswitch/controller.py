@@ -360,7 +360,7 @@ class Controller(object):
             liststr = ast.literal_eval(res)
         except (ValueError, SyntaxError):
             raise ConnectionReturnError(("Connection returned "
-                                        "invalid values:{0}")
+                                         "invalid values:{0}")
                                         .format(res))
         preview_ports = []
         for tupl in liststr:

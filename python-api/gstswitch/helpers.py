@@ -166,11 +166,7 @@ class TestSources(object):
         for _ in range(len(self._running_tests_video)):
             self.terminate_index_video(0)
 
-    def new_test_audio(
-        self,
-        freq=110,
-        wave=None
-    ):
+    def new_test_audio(self, freq=110, wave=None):
         """Start a new test audio
         :param port: The port of where the TCP stream will be sent
         Should be same as audio port of gst-switch-src
