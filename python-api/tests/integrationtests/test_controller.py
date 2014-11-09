@@ -386,7 +386,7 @@ class TestNewRecord(object):
                 sources.terminate_video()
                 serv.terminate(1)
                 assert ((os.path.exists(test_filename)) or
-                       (os.path.exists(alt_test_filename))) is True
+                        (os.path.exists(alt_test_filename))) is True
             finally:
                 if serv.proc:
                     poll = serv.proc.poll()
@@ -405,14 +405,13 @@ class TestAdjustPIP(object):
     NUM = 1
     FACTOR = 1
 
-    def adjust_pip(
-        self,
-        xpos,
-        ypos,
-        width,
-        heigth,
-        index,
-            generate_frames=False):
+    def adjust_pip(self,
+                   xpos,
+                   ypos,
+                   width,
+                   heigth,
+                   index,
+                   generate_frames=False):
         """Create Controller object and call adjust_pip"""
         for _ in range(self.NUM):
             serv = Server(path=PATH)
@@ -531,14 +530,13 @@ class TestClickVideo(object):
     NUM = 1
     FACTOR = 1
 
-    def click_video(
-        self,
-        xpos,
-        ypos,
-        width,
-        heigth,
-        index,
-            generate_frames=False):
+    def click_video(self,
+                    xpos,
+                    ypos,
+                    width,
+                    heigth,
+                    index,
+                    generate_frames=False):
         """Create Controller object and call click_video method"""
         for _ in range(self.NUM):
             serv = Server(path=PATH)
