@@ -68,14 +68,13 @@ class TestTestSources(object):
 
         """A mock video source"""
 
-        def __init__(
-            self,
-            port,
-            width=300,
-            height=200,
-            pattern=None,
-            timeoverlay=False,
-                clockoverlay=False):
+        def __init__(self,
+                     port,
+                     width=300,
+                     height=200,
+                     pattern=None,
+                     timeoverlay=False,
+                     clockoverlay=False):
             pass
 
         def run(self):
