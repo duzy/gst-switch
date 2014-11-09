@@ -153,11 +153,7 @@ class TestTestSources(object):
 
         """A Mock audio source"""
 
-        def __init__(
-            self,
-            port,
-            freq=110,
-                wave=None):
+        def __init__(self, port, freq=110, wave=None):
             pass
 
         def run(self):
