@@ -1,4 +1,8 @@
-bin_PROGRAMS = gst-switch-srv gst-switch-ui gst-switch-cap # gst-switch-ptz
+if SPEAKERTRACK_ENABLED
+  bin_PROGRAMS = gst-switch-srv gst-switch-ui gst-switch-cap gst-switch-ptz
+else
+  bin_PROGRAMS = gst-switch-srv gst-switch-ui gst-switch-cap
+endif
 
 if GCOV_ENABLED
 # --coverage
