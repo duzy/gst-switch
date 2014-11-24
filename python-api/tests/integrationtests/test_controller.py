@@ -12,7 +12,7 @@ from gstswitch.controller import Controller
 import time
 import datetime
 
-from compare import CompareVideo
+from integrationtests.compare import CompareVideo
 
 import subprocess
 

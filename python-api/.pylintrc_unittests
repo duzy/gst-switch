@@ -33,7 +33,9 @@ load-plugins=
 # can either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once).
-disable=E0611,E0202,R0801,E1101,E1002,R0201,W0613,W0212,R0923,R0904
+#  * E0712(raising-non-exception) - pylint is unable to see glib.GError
+#                                   inherits from Exception.
+disable=E0611,E0202,R0801,E1101,E1002,R0201,W0613,W0212,R0923,R0904,raising-non-exception
 
 
 [REPORTS]
