@@ -4,7 +4,8 @@ Usually should be run just once
 """
 
 from integrationtests.compare import GenerateReferenceFrames
-from integrationtests.test_controller import TestSetCompositeMode, TestAdjustPIP
+from integrationtests.test_controller import TestSetCompositeMode
+from integrationtests.test_controller import TestAdjustPIP
 
 
 def set_composite_mode_ref_frames(mode):

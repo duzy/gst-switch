@@ -26,6 +26,7 @@ elif os.system('which avconv > /dev/null') == 0:
 else:
     raise SystemError("Need ffmpeg or avcon tools.")
 
+
 class BaseCompareVideo(object):
 
     """Base class containing image operations"""
