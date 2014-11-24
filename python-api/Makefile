@@ -1,5 +1,7 @@
 .PHONY: lint unittests pytest integration test clean all
 
+lint: PYTHONWARNINGS := ignore
+lint: PYTHONPATH := ${PYTHONPATH}:${PWD}
 lint:
 	@rm -rf tests/unittests/__pycache__
 	@rm -rf tests/integrationtests/__pycache__
