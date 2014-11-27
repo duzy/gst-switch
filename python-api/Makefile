@@ -1,11 +1,13 @@
 .PHONY: lint unittests pytest integration test clean all
 
-lint: PYTHONWARNINGS := ignore
-lint: PYTHONPATH := ${PYTHONPATH}:${PWD}
+lint: export PYTHONWARNINGS := ignore
+lint: export PYTHONPATH := ${PYTHONPATH}:${PWD}
 lint:
 	@rm -rf tests/unittests/__pycache__
 	@rm -rf tests/integrationtests/__pycache__
 	@rm -rf reports
+	@echo PYTHONWARNINGS=$$PYTHONWARNINGS
+	@echo PYTHONPATH=$$PYTHONPATH
 	pylint --rcfile=.pylintrc_gstswitch gstswitch
 	pylint --rcfile=.pylintrc_unittests tests/unittests/*
 	pylint --rcfile=.pylintrc_integrationtests tests/integrationtests/*.py
