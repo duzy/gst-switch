@@ -14,7 +14,7 @@ AC_CONFIG_HEADERS([config.h])
 
 dnl required version of automake
 AM_INIT_AUTOMAKE([1.10])
-AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_MACRO_DIR([build])
 
 dnl enable mainainer mode by default
 AM_MAINTAINER_MODE([enable])
@@ -33,6 +33,7 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed!])
 ])
 
+dnl === Glib + GIO ============================================================
 PKG_CHECK_MODULES(GIO, [
   gio-2.0 >= 2.25.0
 ], [
@@ -53,7 +54,7 @@ PKG_CHECK_MODULES(GLIB, [
   ])
 ])
 
-dnl GTK 
+dnl === GTK ===================================================================
 HAVE_GTK=NO
 GTK2_REQ=2.14.0
 GTK3_REQ=2.91.3
@@ -78,37 +79,8 @@ CPPFLAGS="$GTK_CFLAGS"
 AC_CHECK_HEADER([gdk/gdkx.h], [],
   [AC_MSG_ERROR([GDK X11 header (gdk/gdkx.h) is required])])
 
-AC_ARG_ENABLE(gcov,
-  AS_HELP_STRING([--enable-gcov],[enable gcov building]),
-  [
-    case "${enableval}" in
-      yes) BUILD_GCOV=yes ;;
-      no)  BUILD_GCOV=no ;;
-    esac
-  ],
-  [BUILD_GCOV=yes])
-AC_ARG_ENABLE(gprof,
-  AS_HELP_STRING([--enable-gprof],[enable gprof building]),
-  [
-    case "${enableval}" in
-      yes) BUILD_GPROF=yes ;;
-      no)  BUILD_GPROF=no ;;
-    esac
-  ],
-  [BUILD_GPROF=yes])
-AM_CONDITIONAL(GCOV_ENABLED, test "x$BUILD_GCOV" = "xyes")
-AM_CONDITIONAL(GPROF_ENABLED, test "x$BUILD_GPROF" = "xyes")
 
-AC_ARG_ENABLE(speakertrack,
-  AS_HELP_STRING([--enable-speakertrack],[enable speakertrack]),
-  [
-    case "${enableval}" in
-      yes) BUILD_SPEAKERTRACK=yes ;;
-      no)  BUILD_SPEAKERTRACK=no ;;
-    esac
-  ],
-  [BUILD_SPEAKERTRACK=no])
-  AM_CONDITIONAL(SPEAKERTRACK_ENABLED, test "x$BUILD_SPEAKERTRACK" = "xyes")
+dnl === gstreamer related options =============================================
 
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl This will export GST_CFLAGS and GST_LIBS variables for use in Makefile.am
@@ -164,10 +136,56 @@ dnl set proper LDFLAGS for plugins
 GST_PLUGIN_LDFLAGS='-module -avoid-version -export-symbols-regex [_]*\(gst_\|Gst\|GST_\).*'
 AC_SUBST(GST_PLUGIN_LDFLAGS)
 
+dnl === Testing ===============================================================
+
+GLIB_TESTS
+
+dnl FIXME: Add checking for the testing requirements here.
+
+dnl === Coverage and profiling options ========================================
+AC_ARG_ENABLE(gcov,
+  AS_HELP_STRING([--enable-gcov],[enable gcov building]),
+  [
+    case "${enableval}" in
+      yes) BUILD_GCOV=yes ;;
+      no)  BUILD_GCOV=no ;;
+    esac
+  ],
+  [BUILD_GCOV=yes])
+AM_CONDITIONAL(GCOV_ENABLED, test "x$BUILD_GCOV" = "xyes")
+
+AC_ARG_ENABLE(gprof,
+  AS_HELP_STRING([--enable-gprof],[enable gprof building]),
+  [
+    case "${enableval}" in
+      yes) BUILD_GPROF=yes ;;
+      no)  BUILD_GPROF=no ;;
+    esac
+  ],
+  [BUILD_GPROF=yes])
+AM_CONDITIONAL(GPROF_ENABLED, test "x$BUILD_GPROF" = "xyes")
+
+dnl === Local options =========================================================
+AC_ARG_ENABLE(speakertrack,
+  AS_HELP_STRING([--enable-speakertrack],[enable speakertrack]),
+  [
+    case "${enableval}" in
+      yes) BUILD_SPEAKERTRACK=yes ;;
+      no)  BUILD_SPEAKERTRACK=no ;;
+    esac
+  ],
+  [BUILD_SPEAKERTRACK=no])
+  AM_CONDITIONAL(SPEAKERTRACK_ENABLED, test "x$BUILD_SPEAKERTRACK" = "xyes")
+
+dnl FIXME: Add the Python-API as an option here
+
+dnl === Output ================================================================
+
 AC_CONFIG_FILES(
 Makefile
 plugins/Makefile
 tests/Makefile
+tests/unit/Makefile
 tools/Makefile
 )
 

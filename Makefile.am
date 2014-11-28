@@ -1,8 +1,8 @@
-SUBDIRS = plugins tools tests
+SUBDIRS = plugins tools tests/unit tests
 
 EXTRA_DIST = autogen.sh
 
-ACLOCAL_AMFLAGS = -I m4
+ACLOCAL_AMFLAGS = -I build
 
 include tests/names.mk
 test: update-test-suite clean-test-data $(TESTS)
