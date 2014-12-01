@@ -899,7 +899,7 @@ gst_switch_ptz_get_pipeline (GstSwitchPTZ * ptz)
   g_string_append_printf (desc, "v4l2src device=%s ", ptz_video_name);
   //g_string_append_printf (desc, "! video/x-raw,width=320,height=240 ");
   g_string_append_printf (desc, "! videoconvert ! videoscale ");
-  g_string_append_printf (desc, "! ximagesink name=sink ");
+  g_string_append_printf (desc, "! ximagesink name=sink sync=false ");
   return desc;
 }
 
