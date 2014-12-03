@@ -357,7 +357,7 @@ The output format is an AVI file with VP8 (webm) video and faac audio.
 
 tools/gstrecorder - Recording to disk.
  * avimux
- * faac
+ * voaacenc
  * filesink
  * gdppay
  * interaudiosrc
