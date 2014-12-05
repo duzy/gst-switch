@@ -142,7 +142,7 @@ gst_switch_capture_pipeline (GstWorker * worker, GstSwitchCapture * capture)
   g_string_append_printf (desc, "! camcontrol name=camctl "
       "device=%s protocol=%s ", device, protocol);
   g_string_append_printf (desc, "! videoconvert ");
-  g_string_append_printf (desc, "! xvimagesink ");
+  g_string_append_printf (desc, "! xvimagesink sync=false ");
 
   g_string_append_printf (desc, "video. ! queue2 ");
   g_string_append_printf (desc, "! videoconvert ");

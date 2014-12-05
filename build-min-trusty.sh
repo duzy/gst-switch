@@ -1,4 +1,4 @@
-!#/bin/bash -ex
+#!/bin/bash -ex
 
 sudo apt-get install \
     libglib2.0-dev \

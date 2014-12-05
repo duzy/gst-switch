@@ -18,6 +18,15 @@ __all__ = [
 ]
 
 
+CONV = None
+if os.system('which ffmpeg > /dev/null') == 0:
+    CONV = 'ffmpeg'
+elif os.system('which avconv > /dev/null') == 0:
+    CONV = 'avconv'
+else:
+    raise SystemError("Need ffmpeg or avcon tools.")
+
+
 class BaseCompareVideo(object):
 
     """Base class containing image operations"""
@@ -70,9 +79,9 @@ class BaseCompareVideo(object):
         if not os.path.exists(directory):
             os.mkdir(directory)
 
-        cmd1 = "ffmpeg -i {0} -ss 00:00:02.000 -f image2 -vframes 1 \
+        cmd1 = CONV + " -i {0} -ss 00:00:02.000 -f image2 -vframes 1 \
         {1}/out{2}_1.png".format(self.video, directory, self.TESTS[self.test])
-        cmd2 = "ffmpeg -i {0} -ss 00:00:05.000 -f image2 -vframes 1 \
+        cmd2 = CONV + " -i {0} -ss 00:00:05.000 -f image2 -vframes 1 \
         {1}/out{2}_2.png".format(self.video, directory, self.TESTS[self.test])
         # print cmd
         proc = subprocess.Popen(

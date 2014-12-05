@@ -3,8 +3,9 @@ Used for generating reference frames
 Usually should be run just once
 """
 
-from compare import GenerateReferenceFrames
-from test_controller import TestSetCompositeMode, TestAdjustPIP
+from integrationtests.compare import GenerateReferenceFrames
+from integrationtests.test_controller import TestSetCompositeMode
+from integrationtests.test_controller import TestAdjustPIP
 
 
 def set_composite_mode_ref_frames(mode):

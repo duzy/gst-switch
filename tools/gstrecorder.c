@@ -257,7 +257,7 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
   /*
      ASSESS ("assess-record-audio-queued");
    */
-  g_string_append_printf (desc, "! faac ");
+  g_string_append_printf (desc, "! voaacenc ");
   /*
      ASSESS ("assess-record-audio-encoded");
    */
