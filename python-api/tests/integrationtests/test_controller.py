@@ -17,7 +17,7 @@ from integrationtests.compare import CompareVideo
 import subprocess
 
 # PATH = os.getenv("HOME") + '/gst/stage/bin/'
-PATH = '/usr/bin/'
+PATH = '../tools/'
 
 
 class TestEstablishConnection(object):
@@ -255,7 +255,7 @@ class VideoFileSink(object):
     """
 
     def __init__(self, path, port, filename):
-        cmd = "{0}/gst-launch-1.0 tcpclientsrc port={1} ! gdpdepay !  jpegenc \
+        cmd = "gst-launch-1.0 tcpclientsrc port={1} ! gdpdepay !  jpegenc \
         ! avimux ! filesink location={2}".format(path, port, filename)
         with open(os.devnull, 'w') as tempf:
             self.proc = subprocess.Popen(
