@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
 from gstswitch.server import Server
 
 # PATH = os.getenv("HOME") + '/gst/stage/bin/'
-PATH = '/usr/bin/'
+PATH = '../tools/'
 
 
 class TestServerStartStop(object):

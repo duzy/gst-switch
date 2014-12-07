@@ -67,3 +67,4 @@ imgurbash.sh.*
 *.data
 *.log
 /tools/gst-switch-ptz
+test-driver

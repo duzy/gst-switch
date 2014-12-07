@@ -17,7 +17,7 @@ from integrationtests.compare import CompareVideo
 import subprocess
 
 # PATH = os.getenv("HOME") + '/gst/stage/bin/'
-PATH = '/usr/bin/'
+PATH = '../tools/'
 
 
 class TestEstablishConnection(object):
@@ -254,9 +254,9 @@ class VideoFileSink(object):
     """Sink the video to a file
     """
 
-    def __init__(self, path, port, filename):
-        cmd = "{0}/gst-launch-1.0 tcpclientsrc port={1} ! gdpdepay !  jpegenc \
-        ! avimux ! filesink location={2}".format(path, port, filename)
+    def __init__(self, port, filename):
+        cmd = "gst-launch-1.0 tcpclientsrc port={0} ! gdpdepay !  jpegenc \
+        ! avimux ! filesink location={1}".format(port, filename)
         with open(os.devnull, 'w') as tempf:
             self.proc = subprocess.Popen(
                 cmd.split(),
@@ -288,7 +288,7 @@ class TestSetCompositeMode(object):
                 preview.run()
 
                 out_file = 'output-{0}.data'.format(mode)
-                video_sink = VideoFileSink(PATH, serv.video_port + 1, out_file)
+                video_sink = VideoFileSink(serv.video_port + 1, out_file)
 
                 sources = TestSources(video_port=3000)
                 sources.new_test_video(pattern=4)
@@ -421,7 +421,7 @@ class TestAdjustPIP(object):
                 preview = PreviewSinks()
                 preview.run()
                 out_file = "output-{0}.data".format(index)
-                video_sink = VideoFileSink(PATH, 3001, out_file)
+                video_sink = VideoFileSink(3001, out_file)
                 sources.new_test_video(pattern=4)
                 sources.new_test_video(pattern=5)
                 controller = Controller()
@@ -492,7 +492,7 @@ class TestSwitch(object):
                 preview = PreviewSinks(3001)
                 preview.run()
                 out_file = "output-{0}.data".format(index)
-                video_sink = VideoFileSink(PATH, 3001, out_file)
+                video_sink = VideoFileSink(3001, out_file)
                 time.sleep(3)
                 controller = Controller()
                 res = controller.switch(channel, port)
@@ -546,7 +546,7 @@ class TestClickVideo(object):
                 preview = PreviewSinks()
                 preview.run()
                 out_file = "output-{0}.data".format(index)
-                video_sink = VideoFileSink(PATH, 3001, out_file)
+                video_sink = VideoFileSink(3001, out_file)
                 sources.new_test_video(pattern=4)
                 sources.new_test_video(pattern=5)
                 controller = Controller()
@@ -615,7 +615,7 @@ class TestMarkFace(object):
                 preview = PreviewSinks()
                 preview.run()
                 out_file = "output-{0}.data".format(index)
-                video_sink = VideoFileSink(PATH, 3001, out_file)
+                video_sink = VideoFileSink(3001, out_file)
                 sources.new_test_video(pattern=4)
                 sources.new_test_video(pattern=5)
                 controller = Controller()
@@ -678,7 +678,7 @@ class TestMarkTracking(object):
                 preview = PreviewSinks()
                 preview.run()
                 out_file = "output-{0}.data".format(index)
-                video_sink = VideoFileSink(PATH, 3001, out_file)
+                video_sink = VideoFileSink(3001, out_file)
                 sources.new_test_video(pattern=4)
                 sources.new_test_video(pattern=5)
                 controller = Controller()
