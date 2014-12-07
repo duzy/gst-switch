@@ -12,7 +12,7 @@ from gstswitch.helpers import TestSources, PreviewSinks
 from gstswitch.controller import Controller
 import time
 
-PATH = '../../../tools/'
+PATH = '../tools/'
 
 
 
