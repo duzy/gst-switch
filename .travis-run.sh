@@ -45,7 +45,7 @@ case $TEST in
 					printf "Tests failed!\n"
 					exit -1
 				}
-				coveralls -n -r $HOME/gst-switch-coverage
+				coveralls -n -r ../tools
 		esac
 esac || {
 	printf "Failed!\n!\n"
