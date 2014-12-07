@@ -9,6 +9,7 @@ sudo apt-get -y install libglib2.0-dev gir1.2-glib-2.0 libgirepository1.0-dev li
 sudo apt-get -y install gstreamer0.10-plugins-good
 sudo apt-get -y install python-scipy
 sudo apt-get -y install ffmpeg || sudo apt-get -y install libav-tools
+sudo apt-get -y install libvo-aacenc-dev
 sudo apt-get -y install autoconf automake autopoint libbz2-dev libdv4-dev libfaac-dev libfaad-dev libgtk-3-dev libmjpegtools-dev libtag1-dev libasound2-dev libtool libvpx-dev libxv-dev libx11-dev libogg-dev libvorbis-dev libopencv-dev libcv-dev libhighgui-dev libv4l-dev pkg-config zlib1g-dev gtk-doc-tools yasm bison flex
 export PKG_CONFIG_PATH=/usr/lib/pkgconfig/
 export LD_LIBRARY_PATH=/usr/lib/
