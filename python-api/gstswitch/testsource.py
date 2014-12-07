@@ -234,12 +234,26 @@ class PreviewPipeline(BasePipeline):
         self.preview_port = port
         src = self.make_tcpclientsrc()
         self.add(src)
+
         gdpdepay = self.make_gdpdepay()
         self.add(gdpdepay)
         src.link(gdpdepay)
-        sink = self.make_autovideosink()
+
+        conv1 = self.make_videoconvert("conv1")
+        self.add(conv1)
+        gdpdepay.link(conv1)
+
+        cairo = self.make_cairooverlay()
+        self.add(cairo)
+        conv1.link(cairo)
+
+        conv2 = self.make_videoconvert("conv2")
+        self.add(conv2)
+        cairo.link(conv2)
+
+        sink = self.make_xvimagesink()
         self.add(sink)
-        gdpdepay.link(sink)
+        conv2.link(sink)
 
     def make_tcpclientsrc(self):
         """Return a TCP Client Source element
@@ -258,12 +272,28 @@ class PreviewPipeline(BasePipeline):
         element = self.make('gdpdepay', 'gdpdepay')
         return element
 
-    def make_autovideosink(self):
-        """Return a auto video sink element to show the video
-        :returns: A Auto Video Sink element
+    def make_videoconvert(self, desc):
+        """Return a videoconvert element
+        :returns: A videoconvert element
         """
-        element = self.make('autovideosink', 'autovideosink')
+        element = self.make('videoconvert', desc)
         return element
+
+    def make_cairooverlay(self):
+        """Return a cairooverlay element
+        :returns: A cairooverlay element
+        """
+        element = self.make('cairooverlay', 'cairooverlay')
+        return element
+
+    def make_xvimagesink(self):
+        """Return a xvimagesink element
+        :returns: A xvimagesink element
+        """
+        element = self.make('xvimagesink', 'xvimagesink')
+        element.set_property('sync', 'false')
+        return element
+
 
 
 class VideoSrc(object):
