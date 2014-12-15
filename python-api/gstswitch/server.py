@@ -6,6 +6,7 @@ These include all OS related tasks
 import os
 import signal
 import subprocess
+from distutils import spawn
 
 from errno import ENOENT
 from .exception import PathError, ServerProcessError
@@ -22,8 +23,9 @@ class Server(object):
 
     """Control all server related operations
 
-    :param path: Path where all executables
-    gst-switch-srv, gst-launch-1.0, etc are located
+    :param path: Path where the executable gst-switch-srv
+    is located. Provide the full path.
+    By default looks in the current $PATH.
     :param video_port: The video port number - default = 3000
     :param audio_port: The audio port number - default = 4000
     :param control_port: The control port number - default = 5000
@@ -34,7 +36,7 @@ class Server(object):
 
     def __init__(
             self,
-            path,
+            path=None,
             video_port=3000,
             audio_port=4000,
             control_port=5000,
@@ -197,7 +199,20 @@ class Server(object):
     def _run_process(self):
         """Non-public method: Runs the gst-switch-srv process
         """
-        cmd = self.path
+        cmd = ''
+        if self.path is None:
+            srv_location = spawn.find_executable('gst-switch-srv')
+            if srv_location:
+                cmd = '/'.join(srv_location.split('/')[:-1])
+            else:
+                raise PathError("Cannot find gst-switch-srv in $PATH.\
+                    Please specify the path.")
+        else:
+            if self.path[-1] == '/':
+                cmd = self.path[:-1]
+            else:
+                cmd = self.path
+        cmd += '/'
         cmd += """gst-switch-srv \
                     {0} \
                     --video-input-port={1} \
