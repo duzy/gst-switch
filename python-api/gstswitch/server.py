@@ -49,7 +49,7 @@ class Server(object):
         self._audio_port = None
         self._control_port = None
         self._record_file = None
-        self.gst_option_string = None
+        self.gst_option_string = ''
 
         self.path = path
         self.video_port = video_port
@@ -70,10 +70,7 @@ class Server(object):
         """Set path
         :raises ValueError: Path cannot be left blank
         """
-        if not path:
-            raise ValueError("Path '{0}' cannot be blank".format(path))
-        else:
-            self._path = path
+        self._path = path
 
     @property
     def video_port(self):
@@ -200,7 +197,7 @@ class Server(object):
         """Non-public method: Runs the gst-switch-srv process
         """
         cmd = ''
-        if self.path is None:
+        if not self.path:
             srv_location = spawn.find_executable('gst-switch-srv')
             if srv_location:
                 cmd = '/'.join(srv_location.split('/')[:-1])

@@ -295,7 +295,6 @@ class PreviewPipeline(BasePipeline):
         return element
 
 
-
 class VideoSrc(object):
 
     """A Test Video Source
