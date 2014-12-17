@@ -200,18 +200,13 @@ class Server(object):
         if not self.path:
             srv_location = spawn.find_executable('gst-switch-srv')
             if srv_location:
-                cmd = '/'.join(srv_location.split('/')[:-1])
+                cmd = srv_location
             else:
                 raise PathError("Cannot find gst-switch-srv in $PATH.\
                     Please specify the path.")
         else:
-            if self.path[-1] == '/':
-                cmd = self.path[:-1]
-            else:
-                cmd = self.path
-        cmd += '/'
-        cmd += """gst-switch-srv \
-                    {0} \
+            cmd += os.path.join(self.path, 'gst-switch-srv')
+        cmd += """  {0} \
                     --video-input-port={1} \
                     --audio-input-port={2} \
                     --control-port={3} \
