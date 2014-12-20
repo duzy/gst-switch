@@ -2,6 +2,12 @@
 *.o
 *.lo
 *.la
+*.pyc
+*.gcda
+*.gcov
+*.txt
+imgurbash.sh.*
+.coverage
 /INSTALL
 /Makefile
 /Makefile.in
@@ -17,7 +23,15 @@
 /config.sub
 /configure
 /depcomp
+/docs/_build
+/gstreamer
+/gst-plugins-base
+/gst-plugins-good
+/gst-plugins-bad
+/gst-plugins-base
+/libvpx
 /html
+/htmlcov
 /install-sh
 /libtool
 /ltmain.sh
@@ -27,6 +41,10 @@
 /plugins/.libs/
 /plugins/Makefile
 /plugins/Makefile.in
+/python-api/imgurbash.sh*
+/python-api/.cache/
+/python-api/reports/
+/python-api/htmlcov/
 /stamp-h1
 /tools/.deps/
 /tools/Makefile
@@ -49,3 +67,4 @@
 *.data
 *.log
 /tools/gst-switch-ptz
+test-driver

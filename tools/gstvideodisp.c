@@ -151,7 +151,7 @@ gst_video_disp_get_pipeline_string (GstVideoDisp * disp)
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! cairooverlay name=overlay ");
   g_string_append_printf (desc, "! videoconvert ");
-  g_string_append_printf (desc, "! xvimagesink name=sink ");
+  g_string_append_printf (desc, "! xvimagesink name=sink sync=false ");
 
   return desc;
 }

@@ -1,14 +1,22 @@
-language: c
+language: 
+ - c
 
 compiler:
-  - clang
   - gcc
 
-before_install:
- - echo 'yes' | sudo add-apt-repository ppa:gstreamer-developers/ppa
- - sudo apt-get update
- - sudo apt-get install .*gstreamer.*1\.0.* libgtk-3-dev
- - ./autogen.sh
+env:
+ matrix:
+  - TEST=python-api TYPE=unittest
+  - TEST=python-api TYPE=integration
+  - TEST=module TYPE=python
+  - TEST=module TYPE=c
+install:
+ - chmod +x .travis-setup.sh
+ - ./.travis-setup.sh
+
+script:
+ - chmod +x .travis-run.sh
+ - ./.travis-run.sh
 
 notifications:
   email:

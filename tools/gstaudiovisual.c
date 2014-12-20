@@ -253,7 +253,7 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual * visual)
         "font-desc=\"Sans 50\" " "shaded-background=true " "auto-resize=true ");
   }
   g_string_append_printf (desc, "! autovideoconvert ");
-  g_string_append_printf (desc, "! xvimagesink name=visual ");
+  g_string_append_printf (desc, "! xvimagesink name=visual sync=false ");
 
   return desc;
 }

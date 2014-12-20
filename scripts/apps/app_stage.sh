@@ -12,7 +12,7 @@ function install-prerequisite()
     #local pkginfo=$(get-pkg-info $pkg)
     #if [[ "x$pkginfo" == "x" ]]; then
     printf "install $pkginfo..\n"
-    sudo apt-get install $pkg
+    sudo apt-get -y install $pkg
     #else
     #printf "package $pkg is ok\n"
     #fi
@@ -32,7 +32,15 @@ function install-git-libvpx()
 	--enable-shared --enable-vp8
 
     make clean || true
-    make ${options[make-args]} && make ${options[make-args]} install
+    
+    make || {
+       printf "make of $project failed!!!\n"
+        exit -1
+    }
+    make install || {
+       printf "make of $project failed!!!\n"
+        exit -1
+    }
 
     cd $back
 
@@ -114,7 +122,7 @@ function clone-project()
 
 function clone-duzy-project()
 {
-    clone-project https://github.com/duzy $1 .git
+    clone-project https://github.com/timvideos $1 .git
 }
 
 function clone-gst-project()
@@ -151,7 +159,14 @@ function build-project()
 	exit -1
     }
     make clean || true
-    make ${options[make-args]} && make ${options[make-args]} install
+     make || {
+       printf "make of $project failed!!!\n"
+       exit -1
+    }
+    make install || {
+       printf "make of $project failed!!!\n"
+       exit -1
+    }
     cd $backdir
 }
 
@@ -209,7 +224,6 @@ function main()
 	    gstreamer \
 	    gst-plugins-base \
 	    gst-plugins-good \
-	    gst-plugins-bad \
 	    gst-plugins-ugly
     fi
 
@@ -219,6 +233,8 @@ function main()
 	[[ -s scripts/stage ]]; then
 	cd $back && build-project .
     else
+    clone-duzy-project gst-plugins-bad
+    build-gst-project gst-plugins-bad
 	clone-duzy-project gst-switch
 	build-project gst-switch
 	true

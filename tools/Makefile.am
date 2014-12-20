@@ -1,4 +1,8 @@
-bin_PROGRAMS = gst-switch-srv gst-switch-ui gst-switch-cap gst-switch-ptz
+if SPEAKERTRACK_ENABLED
+  bin_PROGRAMS = gst-switch-srv gst-switch-ui gst-switch-cap gst-switch-ptz
+else
+  bin_PROGRAMS = gst-switch-srv gst-switch-ui gst-switch-cap
+endif
 
 if GCOV_ENABLED
 # --coverage
@@ -45,7 +49,7 @@ gst_switch_ptz_LDFLAGS = $(GCOV_LFLAGS) $(GST_LIBS) $(GST_BASE_LIBS) \
   $(GST_PLUGINS_BASE_LIBS) $(GST_PLUGINS_BAD_LIBS) $(GSTPB_BASE_LIBS)
 gst_switch_ptz_LDADD = $(GST_LIBS) $(X_LIBS) $(LIBM) $(GTK_LIBS) \
   $(GLIB_LIBS) -lm \
-  $(HOME)/gst/stage/lib/libgstcamcontrol-1.0.so
+  $(prefix)/lib/libgstcamcontrol-1.0.so
 
 #  -lgstcamcontrol
 

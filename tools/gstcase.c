@@ -421,7 +421,7 @@ gst_case_get_pipeline_string (GstCase * cas)
         /*
            ASSESS ("assess-branch-source-%d", cas->sink_port);
          */
-        g_string_append_printf (desc, "! faac ");
+        g_string_append_printf (desc, "! voaacenc ");
         /*
            ASSESS ("assess-branch-audio-encoded-%d", cas->sink_port);
          */

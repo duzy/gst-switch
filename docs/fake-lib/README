@@ -1,0 +1,3 @@
+This directory exists so to build documentation without having things
+like gobject-introspection library installed, since they're
+difficult to get working in a virtualenv.
