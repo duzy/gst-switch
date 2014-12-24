@@ -844,11 +844,11 @@ gst_switch_ui_preview_click (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
 
     switch (ev->button) {
       case 1:                  // left button
-        newvideotype = GST_CASE_BRANCH_A;
+        newvideotype = GST_CASE_BRANCH_VIDEO_A;
         break;
       case 3:                  // right button
         if (disp)
-          newvideotype = GST_CASE_BRANCH_B;
+          newvideotype = GST_CASE_BRANCH_VIDEO_B;
         break;
     }
 
@@ -889,11 +889,11 @@ gst_switch_ui_preview_click (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
           if (prevframe && prevdisp) {
             GtkStyleContext *style = gtk_widget_get_style_context (prevframe);
             switch (t) {
-              case GST_CASE_BRANCH_A:
-              case GST_CASE_BRANCH_B:
+              case GST_CASE_BRANCH_VIDEO_A:
+              case GST_CASE_BRANCH_VIDEO_B:
                 gtk_style_context_add_class (style, "active_video_frame");
                 break;
-              case GST_CASE_BRANCH_p:
+              case GST_CASE_BRANCH_PREVIEW:
                 gtk_style_context_remove_class (style, "active_video_frame");
                 break;
             }
@@ -948,10 +948,10 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
       G_CALLBACK (gst_switch_ui_preview_click), ui);
 
   /*
-     GST_CASE_BRANCH_A,
-     GST_CASE_BRANCH_B,
-     GST_CASE_BRANCH_a,
-     GST_CASE_BRANCH_p,
+     GST_CASE_BRANCH_VIDEO_A,
+     GST_CASE_BRANCH_VIDEO_B,
+     GST_CASE_BRANCH_AUDIO,
+     GST_CASE_BRANCH_PREVIEW,
    */
 
   switch (serve) {
@@ -962,8 +962,8 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
       g_signal_connect (G_OBJECT (disp), "end-worker",
           G_CALLBACK (gst_switch_ui_end_video_disp), ui);
       switch (type) {
-        case GST_CASE_BRANCH_A:
-        case GST_CASE_BRANCH_B:
+        case GST_CASE_BRANCH_VIDEO_A:
+        case GST_CASE_BRANCH_VIDEO_B:
           style = gtk_widget_get_style_context (frame);
           gtk_style_context_add_class (style, "active_video_frame");
           gst_switch_ui_mark_active_video (ui, port, type);
@@ -1091,13 +1091,13 @@ gst_switch_ui_switch_unsafe (GstSwitchUI * ui, gint key)
     switch (key) {
       case GDK_KEY_A:
       case GDK_KEY_a:
-        type = GST_CASE_BRANCH_A;
+        type = GST_CASE_BRANCH_VIDEO_A;
         ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'A', port);
         INFO ("switch-a: %d, %d", port, ok);
         break;
       case GDK_KEY_B:
       case GDK_KEY_b:
-        type = GST_CASE_BRANCH_B;
+        type = GST_CASE_BRANCH_VIDEO_B;
         ok = gst_switch_client_switch (GST_SWITCH_CLIENT (ui), 'B', port);
         INFO ("switch-b: %d, %d", port, ok);
         break;
