@@ -398,9 +398,9 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
     GstSwitchServeStreamType serve_type)
 {
   GstCaseType type = GST_CASE_UNKNOWN;
-  gboolean has_composite_A = FALSE;
-  gboolean has_composite_B = FALSE;
-  gboolean has_composite_a = FALSE;
+  gboolean has_composite_video_A = FALSE;
+  gboolean has_composite_video_B = FALSE;
+  gboolean has_composite_audio = FALSE;
   GList *item = srv->cases;
 
   for (; item; item = g_list_next (item)) {
@@ -411,10 +411,10 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
       {
         switch (cas->type) {
           case GST_CASE_COMPOSITE_VIDEO_A:
-            has_composite_A = TRUE;
+            has_composite_video_A = TRUE;
             break;
           case GST_CASE_COMPOSITE_VIDEO_B:
-            has_composite_B = TRUE;
+            has_composite_video_B = TRUE;
             break;
           default:
             break;
@@ -424,7 +424,7 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
       case GST_SERVE_AUDIO_STREAM:
       {
         if (cas->type == GST_CASE_COMPOSITE_AUDIO)
-          has_composite_a = TRUE;
+          has_composite_audio = TRUE;
       }
         break;
       case GST_SERVE_NOTHING:
@@ -433,13 +433,13 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
 #else
     switch (cas->type) {
       case GST_CASE_COMPOSITE_VIDEO_A:
-        has_composite_A = TRUE;
+        has_composite_video_A = TRUE;
         break;
       case GST_CASE_COMPOSITE_VIDEO_B:
-        has_composite_B = TRUE;
+        has_composite_video_B = TRUE;
         break;
       case GST_CASE_COMPOSITE_AUDIO:
-        has_composite_a = TRUE;
+        has_composite_audio = TRUE;
         break;
       default:
         break;
@@ -450,15 +450,15 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
 
   switch (serve_type) {
     case GST_SERVE_VIDEO_STREAM:
-      if (!has_composite_A)
+      if (!has_composite_video_A)
         type = GST_CASE_COMPOSITE_VIDEO_A;
-      else if (!has_composite_B)
+      else if (!has_composite_video_B)
         type = GST_CASE_COMPOSITE_VIDEO_B;
       else
         type = GST_CASE_PREVIEW;
       break;
     case GST_SERVE_AUDIO_STREAM:
-      if (!has_composite_a)
+      if (!has_composite_audio)
         type = GST_CASE_COMPOSITE_AUDIO;
       else
         type = GST_CASE_PREVIEW;
