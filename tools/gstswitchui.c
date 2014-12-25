@@ -36,14 +36,6 @@
 #include "gstaudiovisual.h"
 #include "gstcase.h"
 
-#if 3 <= GTK_MAJOR_VERSION && GTK_MINOR_VERSION <= 4
-#define CUSTOM_FRAME_DRAWING 1
-#define gst_switch_ui_update(w) (gtk_widget_queue_draw (w))
-#else
-#define CUSTOM_FRAME_DRAWING 0
-#define gst_switch_ui_update(w) ((void) FALSE)
-#endif
-
 #define GST_SWITCH_UI_LOCK_AUDIO(ui) (g_mutex_lock (&(ui)->audio_lock))
 #define GST_SWITCH_UI_UNLOCK_AUDIO(ui) (g_mutex_unlock (&(ui)->audio_lock))
 #define GST_SWITCH_UI_LOCK_COMPOSE(ui) (g_mutex_lock (&(ui)->compose_lock))
@@ -195,63 +187,6 @@ gst_switch_ui_compose_view_press (GtkWidget * widget, GdkEventButton * event,
 
   return FALSE;
 }
-
-#if CUSTOM_FRAME_DRAWING
-static gboolean
-gst_switch_ui_draw_preview_frame (GtkWidget * widget, cairo_t * cr,
-    GstSwitchUI * ui)
-{
-  GtkStyleContext *style;
-  gpointer data = NULL;
-  double x = 0.5, y = 0.5, width, height, radius, degrees;
-  style = gtk_widget_get_style_context (widget);
-  width = (double) gtk_widget_get_allocated_width (widget) - 0.5;
-  height = (double) gtk_widget_get_allocated_height (widget) - 0.5;
-  degrees = 3.14159265359 / 180.0;
-  radius = 10.0;
-
-  data = g_object_get_data (G_OBJECT (widget), "audio-visual");
-  if (!data)
-    data = g_object_get_data (G_OBJECT (widget), "video-display");
-
-#if 0
-  gtk_style_context_save (style);
-  gtk_style_context_add_class (style, "red");
-  gtk_render_frame (style, cr, 0, 0, width, height);
-  gtk_style_context_remove_class (style, "red");
-  gtk_style_context_restore (style);
-#else
-  cairo_new_sub_path (cr);
-  cairo_arc (cr, x + width - radius, y + radius, radius, -90 * degrees,
-      0 * degrees);
-  cairo_arc (cr, x + width - radius, y + height - radius, radius, 0 * degrees,
-      90 * degrees);
-  cairo_arc (cr, x + radius, y + height - radius, radius, 90 * degrees,
-      180 * degrees);
-  cairo_arc (cr, x + radius, y + radius, radius, 180 * degrees, 270 * degrees);
-  cairo_close_path (cr);
-  if (gtk_widget_get_state_flags (widget) & GTK_STATE_FLAG_SELECTED) {
-    cairo_set_source_rgba (cr, 0.25, 0.25, 0.85, 0.85);
-  } else if (data && GST_IS_VIDEO_DISP (data)) {
-    if (gtk_style_context_has_class (style, "active_video_frame")) {
-      cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
-    } else
-      goto default_color;
-  } else if (data && GST_IS_AUDIO_VISUAL (data)) {
-    if (gtk_style_context_has_class (style, "active_audio_frame")) {
-      cairo_set_source_rgba (cr, 0.85, 0.25, 0.25, 0.85);
-    } else
-      goto default_color;
-  } else {
-  default_color:
-    cairo_set_source_rgba (cr, 0.25, 0.25, 0.25, 0.25);
-  }
-  cairo_set_line_width (cr, 10.0);
-  cairo_stroke (cr);
-#endif
-  return TRUE;
-}
-#endif
 
 static gboolean gst_switch_ui_key_event (GtkWidget *, GdkEvent *,
     GstSwitchUI *);
@@ -754,7 +689,6 @@ gst_switch_ui_set_audio_port (GstSwitchUI * ui, gint port)
         visual = gst_switch_ui_renew_audio_visual (ui, frame, visual);
         if (visual->active) {
           gtk_style_context_add_class (style, "active_audio_frame");
-          gst_switch_ui_update (frame);
           ui->audio = visual;
         }
       }
@@ -785,7 +719,6 @@ gst_switch_ui_mark_active_video (GstSwitchUI * ui, gint port, gint type)
       } else if (disp->type == type) {
         gtk_style_context_remove_class (style, "active_video_frame");
       }
-      gst_switch_ui_update (frame);
     }
   }
 }
@@ -897,7 +830,6 @@ gst_switch_ui_preview_click (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
                 gtk_style_context_remove_class (style, "active_video_frame");
                 break;
             }
-            gst_switch_ui_update (prevframe);
             prevdisp->type = t;
           }
         }
@@ -940,10 +872,6 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
 
   gtk_widget_show_all (frame);
 
-#if CUSTOM_FRAME_DRAWING
-  g_signal_connect (frame, "draw",
-      G_CALLBACK (gst_switch_ui_draw_preview_frame), ui);
-#endif
   g_signal_connect (preview, "button-press-event",
       G_CALLBACK (gst_switch_ui_preview_click), ui);
 
@@ -969,7 +897,6 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
           gst_switch_ui_mark_active_video (ui, port, type);
           break;
       }
-      gst_switch_ui_update (frame);
       break;
     case GST_SERVE_AUDIO_STREAM:
       visual = gst_switch_ui_new_audio_visual (ui, preview, port);
@@ -980,7 +907,6 @@ gst_switch_ui_add_preview_port (GstSwitchUI * ui, gint port, gint serve,
         style = gtk_widget_get_style_context (frame);
         gtk_style_context_add_class (style, "active_audio_frame");
       }
-      gst_switch_ui_update (frame);
       break;
     default:
       gtk_widget_destroy (preview);
