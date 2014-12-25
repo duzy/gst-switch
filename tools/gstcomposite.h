@@ -65,6 +65,21 @@ typedef enum
   COMPOSE_MODE__LAST = COMPOSE_MODE_DUAL_EQUAL
 } GstCompositeMode;
 
+inline static const char* gst_composite_mode_to_string(GstCompositeMode mode) {
+  switch(mode) {
+  case COMPOSE_MODE_NONE:
+    return "COMPOSE_MODE_NONE";
+  case COMPOSE_MODE_PIP:
+    return "COMPOSE_MODE_PIP";
+  case COMPOSE_MODE_DUAL_PREVIEW:
+    return "COMPOSE_MODE_DUAL_PREVIEW";
+  case COMPOSE_MODE_DUAL_EQUAL:
+    return "COMPOSE_MODE_DUAL_EQUAL";
+  }
+  //ASSERT(false);
+  return "COMPOSE_INVALID_VALUE";
+}
+
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
 

@@ -35,6 +35,9 @@
 #include "gstvideodisp.h"
 #include "gstaudiovisual.h"
 
+// Only allowed to use enum and to_string methods from this file.
+#include "gstcomposite.h"
+
 #define GST_TYPE_SWITCH_UI (gst_switch_ui_get_type ())
 #define GST_SWITCH_UI(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_UI, GstSwitchUI))
 #define GST_SWITCH_UI_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_UI, GstSwitchUIClass))
@@ -75,7 +78,7 @@ struct _GstSwitchUI
   GstVideoDisp *compose;
 
   guint32 tabtime;
-  gint compose_mode;
+  GstCompositeMode compose_mode;
   gint timer;
 
   GMutex faces_lock, tracking_lock;

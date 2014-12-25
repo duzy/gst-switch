@@ -1150,15 +1150,18 @@ gst_switch_ui_switch (GstSwitchUI * ui, gint key)
  * @memberof GstSwitchUI
  */
 static void
-gst_switch_ui_next_compose_mode (GstSwitchUI * ui)
+gst_switch_ui_next_compose (GstSwitchUI * ui, GstCompositeMode mode)
 {
-  gboolean ok = FALSE;
-  if (3 < ui->compose_mode)
-    ui->compose_mode = 0;
-  ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
-      ui->compose_mode);
-  INFO ("set composite mode: %d (%d)", ui->compose_mode, ok);
-  ui->compose_mode += 1;
+  gboolean ok = gst_switch_client_set_composite_mode(
+      GST_SWITCH_CLIENT(ui), mode);
+
+  INFO("set composite mode: new %s (%d), previous %s",
+      gst_composite_mode_to_string(mode),
+      ok,
+      gst_composite_mode_to_string(ui->compose_mode));
+
+  if (ok)
+    ui->compose_mode = mode;
 }
 
 /**
@@ -1167,13 +1170,13 @@ gst_switch_ui_next_compose_mode (GstSwitchUI * ui)
  * @memberof GstSwitchUI
  */
 static void
-gst_switch_ui_next_compose_off (GstSwitchUI * ui)
+gst_switch_ui_next_compose_mode (GstSwitchUI * ui)
 {
-  gboolean ok = gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui),
-      0);
-  INFO ("set composite off (%d)", ok);
-  if (ok && ui->compose_mode == 0)
-    ui->compose_mode = 1;
+  GstCompositeMode next_mode = ui->compose_mode + 1;
+  if (next_mode > COMPOSE_MODE__LAST)
+    next_mode = 0;
+
+  gst_switch_ui_next_compose(ui, next_mode);
 }
 
 /**
@@ -1278,20 +1281,48 @@ gst_switch_ui_key_event (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
         case GDK_KEY_b:
           gst_switch_ui_switch (ui, ke->keyval);
           break;
+        case GDK_KEY_R:
+        case GDK_KEY_r:
+          gst_switch_ui_new_record (ui);
+          break;
+
+        // Keys to change the compose mode
+        // ---------------------------------------------------------------
+        // None
+        case GDK_KEY_Escape:
+          gst_switch_ui_next_compose (ui, COMPOSE_MODE_NONE);
+          break;
+
+        // Picture-in-Picture
+        case GDK_KEY_F1:
+        case GDK_KEY_P:
+        case GDK_KEY_p:
+          gst_switch_ui_next_compose (ui, COMPOSE_MODE_PIP);
+          break;
+
+        // Side-by-side (preview)
+        case GDK_KEY_F2:
+        case GDK_KEY_D:
+        case GDK_KEY_d:
+          gst_switch_ui_next_compose (ui, COMPOSE_MODE_DUAL_PREVIEW);
+          break;
+
+        // Side-by-side (equal)
+        case GDK_KEY_F3:
+        case GDK_KEY_S:
+        case GDK_KEY_s:
+          gst_switch_ui_next_compose (ui, COMPOSE_MODE_DUAL_EQUAL);
+          break;
+
+        // Cycle through the modes
         case GDK_KEY_Tab:
         {
+          // Cycle through them slowly....
           if (200 <= ke->time - ui->tabtime) {
             ui->tabtime = ke->time;
             gst_switch_ui_next_compose_mode (ui);
           }
         }
-          break;
-        case GDK_KEY_Escape:
-          gst_switch_ui_next_compose_off (ui);
-          break;
-        case GDK_KEY_R:
-        case GDK_KEY_r:
-          gst_switch_ui_new_record (ui);
           break;
       }
     }

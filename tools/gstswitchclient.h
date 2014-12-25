@@ -31,6 +31,8 @@
 #include <gst/gst.h>
 #include <gio/gio.h>
 
+#include "gstcomposite.h"
+
 #define GST_TYPE_SWITCH_CLIENT (gst_switch_client_get_type ())
 #define GST_SWITCH_CLIENT(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_CLIENT, GstSwitchClient))
 #define GST_SWITCH_CLIENT_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_CLIENT, GstSwitchClientClass))
@@ -118,7 +120,7 @@ GVariant *gst_switch_client_get_preview_ports (GstSwitchClient * client);
 gboolean gst_switch_client_switch (GstSwitchClient * client, gint channel,
     gint port);
 gboolean gst_switch_client_set_composite_mode (GstSwitchClient * client,
-    gint mode);
+    GstCompositeMode mode);
 gboolean gst_switch_client_click_video (GstSwitchClient * client,
     gint x, gint y, gint fw, gint fh);
 void gst_switch_client_mark_face_remotely (GstSwitchClient * client,

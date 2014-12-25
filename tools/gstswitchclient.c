@@ -356,7 +356,8 @@ gst_switch_client_mark_tracking_remotely (GstSwitchClient * client,
  *  
  */
 gboolean
-gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
+gst_switch_client_set_composite_mode (GstSwitchClient * client,
+    GstCompositeMode mode)
 {
   gboolean result = FALSE;
   GVariant *value = NULL;
@@ -370,7 +371,7 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
     if (!client->changing_composite_mode) {
       value = gst_switch_client_call_controller (client,
           "set_composite_mode",
-          g_variant_new ("(i)", mode), G_VARIANT_TYPE ("(b)"));
+          g_variant_new ("(i)", (gint) mode), G_VARIANT_TYPE ("(b)"));
       if (value) {
         g_variant_get (value, "(b)", &result);
         client->changing_composite_mode = result;
