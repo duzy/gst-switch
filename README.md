@@ -112,45 +112,23 @@ gst-switch-ui
 ```
 
 ### Controls
-<table>
- <tr><td>Key Bindings</td><td>Function</td></tr>
 
- <tr><td>Ctrl+Arrow</td><td>
- Adjust PIP position.
- </td></tr>
+ * Left Click - Set video as primary video.
+ * Right Click - Set video as secondary video.
 
- <tr><td>Ctrl+Shift+Arrow</td><td>
- Adjust PIP size.
- </td></tr>
-
- <tr><td>Arrow Up/Down</td><td>
- Change selection of video previews. Selecting a video is the first step for
- switching video/audio input.
- </td></tr>
-
- <tr><td>A</td><td>
- Switch video input for channel A or activate audio input to the selected
- video/audio.
- </td></tr>
-
- <tr><td>B</td><td>
- Switch video input for channel B to the selected video.
- </td></tr>
-
- <tr><td>Tab</td><td>
- Change a mode of A/B compositing, stroking it repeatly will cycle within modes
- and off.
- </td></tr>
-
- <tr><td>Esc</td><td>
- Turn off A/B videos compositing.
- </td></tr>
-
- <tr><td>r</td><td>
- Start a new recording, the *--record _name_* will be used as a template,
- e.g. *record 2013-01-23 131139.dat*
- </td></tr>
-</table>
+| Key                   | Function                                     |
+| --------------------- | -------------------------------------------- |
+| R                     | Start recording to new file                  |
+| Tab                   | Cycle composite modes                        |
+| Esc                   | No composite mode                            |
+| F1 or P               | Compositing mode - Picture-in-Picture        |
+| F2 or D               | Compositing mode - Side-by-side (preview)    |
+| F3 or S               | Compositing mode - Side-by-side (equal)      |
+| A                     | When compositing, change the primary video   |
+| B                     | When compositing, change the secondary video |
+| Up/Down               | When compositing, select the video           |
+| Ctrl + Arrows         | When compositing PIP, Adjust PIP position    |
+| Ctrl + Shift + Arrows | When compositing PIP, Adjust PIP size        |
 
 
 ## The gst-switch Server
