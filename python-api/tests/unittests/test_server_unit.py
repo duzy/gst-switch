@@ -5,8 +5,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(__file__, "../../../")))
 
 from gstswitch.server import Server
 import pytest
-from gstswitch.exception import ServerProcessError, PathError
+from gstswitch.exception import ServerProcessError
 import subprocess
+from distutils import spawn
 from mock import Mock
 
 
@@ -18,23 +19,51 @@ class TestPath(object):
     """Test the path parameter"""
     # Path Tests
 
-    def test_invalid_path(self):
-        """Test if path specified does not have executables"""
+    def test_path_provided_slash(self):
+        """Test if a path is provided"""
+        def mock_method(arg):
+            """Mocking _start_process"""
+            return arg
         path = '/usr/'
         serv = Server(path=path)
-        with pytest.raises(PathError):
-            serv.run()
+        serv._start_process = mock_method
+        assert serv._run_process().split() == "/usr/gst-switch-srv \
+--video-input-port=3000 --audio-input-port=4000 \
+--control-port=5000 --record=record.data".split()
 
-    def test_invalid_path_none(self):
+    def test_path_provided_no_slash(self):
+        """Test if a path is provided"""
+        def mock_method(arg):
+            """Mocking _start_process"""
+            return arg
+        path = '/usr'
+        serv = Server(path=path)
+        serv._start_process = mock_method
+        assert serv._run_process().split() == "/usr/gst-switch-srv \
+--video-input-port=3000 --audio-input-port=4000 \
+--control-port=5000 --record=record.data".split()
+
+    def test_path_empty(self, monkeypatch):
         """Test if null path is given"""
-        paths = [None, '', [], {}]
+
+        def mock_method(arg):
+            "Mocking _start_process"
+            return arg
+
+        def mockreturn(path):
+            "Mocking distutils.spawn.find_executable"
+            return '/usr/gst-switch-srv'
+        monkeypatch.setattr(spawn, 'find_executable', mockreturn)
+        paths = [None, '']
         for path in paths:
-            with pytest.raises(ValueError):
-                Server(path=path)
+            serv = Server(path=path)
+            serv._start_process = mock_method
+            assert serv._run_process().split() == "/usr/gst-switch-srv \
+--video-input-port=3000 --audio-input-port=4000 \
+--control-port=5000 --record=record.data".split()
 
 
 class TestVideoPort(object):
-
     """Test for video_port parameter"""
     # Video Port Tests
 
