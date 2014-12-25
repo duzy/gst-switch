@@ -50,18 +50,18 @@
 #define GST_SWITCH_FACEDETECT_FRAME_WIDTH	150
 #define GST_SWITCH_FACEDETECT_FRAME_HEIGHT	100
 
-#define DEFAULT_COMPOSE_MODE COMPOSE_MODE_3
+#define DEFAULT_COMPOSE_MODE COMPOSE_MODE_DUAL_EQUAL
 
 /**
  *  @enum GstCompositeMode:
  */
 typedef enum
 {
-  COMPOSE_MODE_0,               /*!< none */
-  COMPOSE_MODE_1,               /*!< picture-in-picture */
-  COMPOSE_MODE_2,               /*!< side-by-side (preview) */
-  COMPOSE_MODE_3,               /*!< side-by-side (equal) */
-  COMPOSE_MODE__LAST = COMPOSE_MODE_3
+  COMPOSE_MODE_NONE,            /*!< none */
+  COMPOSE_MODE_PIP,             /*!< picture-in-picture */
+  COMPOSE_MODE_DUAL_PREVIEW,    /*!< side-by-side (preview) */
+  COMPOSE_MODE_DUAL_EQUAL,      /*!< side-by-side (equal) */
+  COMPOSE_MODE__LAST = COMPOSE_MODE_DUAL_EQUAL
 } GstCompositeMode;
 
 typedef struct _GstComposite GstComposite;

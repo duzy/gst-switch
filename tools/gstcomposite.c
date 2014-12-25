@@ -160,7 +160,7 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
   composite->height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
 
   switch ((composite->mode = mode)) {
-    case COMPOSE_MODE_0:
+    case COMPOSE_MODE_NONE:
       composite->a_x = 0;
       composite->a_y = 0;
       composite->a_width = composite->width;
@@ -172,7 +172,7 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
       composite->width = composite->a_width;
       composite->height = composite->a_height;
       break;
-    case COMPOSE_MODE_1:
+    case COMPOSE_MODE_PIP:
       composite->a_x = 0;
       composite->a_y = 0;
       composite->a_width = composite->width;
@@ -184,7 +184,7 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
       composite->width = composite->a_width;
       composite->height = composite->a_height;
       break;
-    case COMPOSE_MODE_2:
+    case COMPOSE_MODE_DUAL_PREVIEW:
       composite->a_x = 0;
       composite->a_y = 0;
       composite->a_width = (guint) ((double) composite->width * 0.7 + 0.5);
@@ -196,7 +196,7 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
       composite->b_height =
           composite->height - composite->a_y - composite->a_height;
       break;
-    case COMPOSE_MODE_3:
+    case COMPOSE_MODE_DUAL_EQUAL:
       composite->a_width = (guint) ((double) composite->width * 0.5 + 0.5);
       composite->a_height = (guint) ((double) composite->height * 0.5 + 0.5);
       composite->a_x = 0;
@@ -302,7 +302,7 @@ gst_composite_set_property (GstComposite * composite, guint property_id,
     case PROP_MODE:
     {
       guint mode = g_value_get_uint (value);
-      if (COMPOSE_MODE_0 <= mode && mode <= COMPOSE_MODE__LAST) {
+      if (COMPOSE_MODE_NONE <= mode && mode <= COMPOSE_MODE__LAST) {
         gst_composite_set_mode (composite, (GstCompositeMode) mode);
       } else {
         WARN ("invalid composite mode %d", mode);
@@ -425,7 +425,7 @@ gst_composite_get_pipeline_string (GstComposite * composite)
 
   g_string_append_printf (desc,
       "intervideosrc name=source_a channel=composite_a_scaled ");
-  if (composite->mode == COMPOSE_MODE_0) {
+  if (composite->mode == COMPOSE_MODE_NONE) {
     g_string_append_printf (desc,
         "source_a. ! video/x-raw,width=%d,height=%d ",
         composite->a_width, composite->a_height);
@@ -545,7 +545,7 @@ gst_composite_get_scaler_string (GstWorker * worker, GstComposite * composite)
       "! videoscale ! video/x-raw,width=%d,height=%d ! sink_a. ",
       composite->a_width, composite->a_height);
 
-  if (composite->mode == COMPOSE_MODE_0) {
+  if (composite->mode == COMPOSE_MODE_NONE) {
   } else {
     g_string_append_printf (desc,
         "intervideosrc name=source_b channel=composite_b ");
@@ -1026,7 +1026,7 @@ gst_composite_class_init (GstCompositeClass * klass)
   g_object_class_install_property (object_class, PROP_MODE,
       g_param_spec_uint ("mode", "Mode",
           "Composite Mode",
-          COMPOSE_MODE_0,
+          COMPOSE_MODE_NONE,
           COMPOSE_MODE__LAST,
           DEFAULT_COMPOSE_MODE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
