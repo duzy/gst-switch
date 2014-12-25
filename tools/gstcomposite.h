@@ -90,7 +90,7 @@ typedef struct _GstCompositeClass GstCompositeClass;
  *  @param adjusting the status of adjusting PIP
  *  @param transition the status of transiting modes
  *  @param deprecated (deprecated)
- *  @param scaler the scaller for A/B videos
+ *  @param scaler the scaler for A/B videos
  */
 struct _GstComposite
 {

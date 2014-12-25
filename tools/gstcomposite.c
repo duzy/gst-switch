@@ -236,7 +236,7 @@ gst_composite_ready_for_transition (GstComposite * composite)
 /**
  * gst_composite_start_transition:
  *
- * Start the new transtition request, this will set the %transition flag into
+ * Start the new transition request, this will set the %transition flag into
  * TRUE.
  */
 static void
@@ -597,7 +597,7 @@ gst_composite_prepare (GstComposite * composite)
 /**
  * gst_composite_start:
  *
- * This is invokved when the composite pipeline started.
+ * This is invoked when the composite pipeline started.
  */
 static void
 gst_composite_start (GstComposite * composite)
@@ -751,7 +751,7 @@ gst_composite_close_adjustment (GstComposite * composite)
 /**
  * gst_composite_alive:
  *
- * Invoked when the compisite pipeline is online.
+ * Invoked when the composite pipeline is online.
  */
 static void
 gst_composite_alive (GstComposite * composite)
@@ -801,7 +801,7 @@ gst_composite_null (GstComposite * composite)
  *  @param y the Y position of the PIP
  *  @param w the width of the PIP
  *  @param h the height of the PIP
- *  @return PIP has been changed succefully 
+ *  @return PIP has been changed successfully 
  *
  *  Change the PIP position and size.
  */

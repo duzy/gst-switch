@@ -74,7 +74,7 @@ struct _GstSwitchServerOpts
  *  @param cancellable 
  *  @param video_acceptor_lock the lock for the video acceptor
  *  @param video_acceptor the video acceptor thread
- *  @param video_acceptor_socket the vidoe acceptor socekt
+ *  @param video_acceptor_socket the video acceptor socket
  *  @param video_acceptor_port the video acceptor port number
  *  @param audio_acceptor_lock the lock for the audio acceptor
  *  @param audio_acceptor the audio acceptor thread
@@ -96,8 +96,8 @@ struct _GstSwitchServerOpts
  *  @param recorder_lock the lock for the %recorder
  *  @param recorder the recorder instance
  *  @param pip_lock the lock for PIP
- *  @param pip_x the PIP x position
- *  @param pip_y the PIP y position
+ *  @param pip_x the PIP X position
+ *  @param pip_y the PIP Y position
  *  @param pip_w the PIP width
  *  @param pip_h the PIP height
  *  @param clock_lock the lock for %clock
@@ -154,7 +154,7 @@ struct _GstSwitchServer
 
 /**
  *  GstSwitchServerClass:
- *  @param base_calss the parent class
+ *  @param base_class the parent class
  */
 struct _GstSwitchServerClass
 {

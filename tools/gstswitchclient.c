@@ -169,7 +169,7 @@ error_call_sync:
 }
 
 /**
- * @brief The the compose port number.
+ * @brief The compose port number.
  * @memberof GstSwitchClient
  */
 gint
@@ -213,7 +213,7 @@ gst_switch_client_get_encode_port (GstSwitchClient * client)
  *  @param client the GstSwitchClient instance
  *  @return the audio port number
  *
- *  The the audio port number.
+ *  The audio port number.
  *  
  */
 gint
@@ -413,8 +413,8 @@ gst_switch_client_new_record (GstSwitchClient * client)
  *  @param dy y position to be adjusted
  *  @param dw w position to be adjusted
  *  @param dh h position to be adjusted
- *  @return a unsign integer indicating which components are changed of per
- *           bit.
+ *  @return a unsigned integer indicating which components are changed of per
+ *          bit.
  *
  *  Adjust the PIP.
  *

@@ -175,7 +175,7 @@ gst_recorder_set_property (GstRecorder * rec, guint property_id,
  * @memberof GstRecorder
  * @return the file name string, need to be freed after used
  *
- * This is used to genearte a new recording file name for the recorder.
+ * This is used to generate a new recording file name for the recorder.
  */
 static const gchar *
 gst_recorder_new_filename (GstRecorder * rec)

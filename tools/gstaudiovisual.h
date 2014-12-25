@@ -57,7 +57,7 @@ struct _GstAudioVisual
   gboolean renewing; /*!< Used by GstSwitchUI. */
 
   GMutex endtime_lock; /*!< the lock for %endtime */
-  GstClockTime endtime; /*!< the endtime of the last audo sample */
+  GstClockTime endtime; /*!< the endtime of the last audio sample */
   GMutex value_lock; /*!< the lock for %value */
   gdouble value; /*!< the value of the last audio sample */
 };

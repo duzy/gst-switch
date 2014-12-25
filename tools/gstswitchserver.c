@@ -100,7 +100,7 @@ static GOptionEntry entries[] = {
 /**
  * gst_switch_server_parse_args:
  *
- * Parsing commiand line parameters.
+ * Parsing command line parameters.
  */
 static void
 gst_switch_server_parse_args (int *argc, char **argv[])
@@ -1072,7 +1072,7 @@ gst_switch_server_new_record (GstSwitchServer * srv)
 
 /**
  * gst_switch_server_adjust_pip:
- *  @return: a unsigned number of indicating which compononent (x,y,w,h) has
+ *  @return: a unsigned number of indicating which component (x,y,w,h) has
  *           been changed
  *
  *  Adjust the PIP position and size.
@@ -1400,7 +1400,7 @@ gst_switch_server_worker_start (GstWorker * worker, GstSwitchServer * srv)
 /**
  * gst_switch_server_worker_null:
  *
- * Invoked when a worker is trunning into NULL. 
+ * Invoked when a worker is running into NULL. 
  */
 static void
 gst_switch_server_worker_null (GstWorker * worker, GstSwitchServer * srv)
@@ -1473,7 +1473,7 @@ gst_switch_server_end_transition (GstWorker * worker, GstSwitchServer * srv)
 /**
  * gst_switch_server_output_client_socket_added:
  *
- * Invoekd when a client socket is added.
+ * Invoked when a client socket is added.
  */
 static void
 gst_switch_server_output_client_socket_added (GstElement * element,
