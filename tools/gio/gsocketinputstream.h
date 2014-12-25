@@ -62,4 +62,4 @@ GSocketInputStreamX *    _g_socket_input_stream_new                      (GSocke
 G_END_DECLS
 
 #undef __GIO_GIO_H_INSIDE__
-#endif /* __G_SOCKET_INPUT_STREAM_H___ */
+#endif //__G_SOCKET_INPUT_STREAM_H__

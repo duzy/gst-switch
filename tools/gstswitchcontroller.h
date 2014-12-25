@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__
-#define __GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__ 1
+#ifndef __GST_SWITCH_CONTROLLER_H__
+#define __GST_SWITCH_CONTROLLER_H__
+
 #include <gio/gio.h>
 #include "../logutils.h"
 #include "gstworker.h"
@@ -105,4 +106,4 @@ void gst_switch_controller_show_face_marker (GstSwitchController *controller,
 void gst_switch_controller_show_track_marker (GstSwitchController *controller,
     GVariant *faces);
 
-#endif //__GST_SWITCH_CONTROLLER_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_CONTROLLER_H__

@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_CASE_H__by_Duzy_Chan__
-#define __GST_CASE_H__by_Duzy_Chan__ 1
+#ifndef __GST_CASE_H__
+#define __GST_CASE_H__
+
 #include "gstworker.h"
 #include <gio/gio.h>
 
@@ -116,4 +117,4 @@ typedef struct _GstCaseClass
 
 GType gst_case_get_type (void);
 
-#endif //__GST_CASE_H__by_Duzy_Chan__
+#endif //__GST_CASE_H__

@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_SWITCH_CLIENT_H__by_Duzy_Chan__
-#define __GST_SWITCH_CLIENT_H__by_Duzy_Chan__ 1
+#ifndef __GST_SWITCH_CLIENT_H__
+#define __GST_SWITCH_CLIENT_H__
+
 #include <gst/gst.h>
 #include <gio/gio.h>
 
@@ -128,4 +129,4 @@ gboolean gst_switch_client_new_record (GstSwitchClient * client);
 guint gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx,
     gint dy, gint dw, gint dh);
 
-#endif //__GST_SWITCH_CLIENT_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_CLIENT_H__

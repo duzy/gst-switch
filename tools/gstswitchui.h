@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_SWITCH_UI_H__by_Duzy_Chan__
-#define __GST_SWITCH_UI_H__by_Duzy_Chan__ 1
+#ifndef __GST_SWITCH_UI_H__
+#define __GST_SWITCH_UI_H__
+
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include "gstswitchclient.h"
@@ -94,4 +95,4 @@ struct _GstSwitchUIClass
 
 GType gst_switch_ui_get_type (void);
 
-#endif //__GST_SWITCH_UI_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_UI_H__

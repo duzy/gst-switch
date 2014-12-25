@@ -82,4 +82,4 @@ GType gst_tcp_mix_src_get_type (void);
 
 G_END_DECLS
 
-#endif /* __GST_TCP_MIX_SRC_H__ */
+#endif //__GST_TCP_MIX_SRC_H__

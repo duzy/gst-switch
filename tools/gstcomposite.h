@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_COMPOSITE_H__by_Duzy_Chan__
-#define __GST_COMPOSITE_H__by_Duzy_Chan__ 1
+#ifndef __GST_COMPOSITE_H__
+#define __GST_COMPOSITE_H__
+
 #include "gstworker.h"
 
 #define GST_TYPE_COMPOSITE (gst_composite_get_type ())
@@ -139,4 +140,4 @@ GType gst_composite_get_type (void);
 gboolean gst_composite_adjust_pip (GstComposite * composite,
     gint x, gint y, gint w, gint h);
 
-#endif //__GST_COMPOSITE_H__by_Duzy_Chan__
+#endif //__GST_COMPOSITE_H__

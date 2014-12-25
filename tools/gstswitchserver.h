@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_SWITCH_SERVER_H__by_Duzy_Chan__
-#define __GST_SWITCH_SERVER_H__by_Duzy_Chan__ 1
+#ifndef __GST_SWITCH_SERVER_H__
+#define __GST_SWITCH_SERVER_H__
+
 #include <gio/gio.h>
 #include "gstcomposite.h"
 #include "gstswitchcontroller.h"
@@ -180,4 +181,4 @@ gboolean gst_switch_server_new_record (GstSwitchServer * srv);
 
 extern GstSwitchServerOpts opts;
 
-#endif //__GST_SWITCH_SERVER_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_SERVER_H__
