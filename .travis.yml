@@ -13,10 +13,11 @@ env:
 
 install:
  - wget -q -O- https://raw.githubusercontent.com/mithro/travis-trusty/master/setup.sh | bash
- - /trusty/run.sh bash $PWD/.travis-setup.sh
+ - chmod a+rx $PWD/.travis-*.sh
+ - /trusty/run.sh $PWD/.travis-setup.sh
 
 script:
- - /trusty/run.sh bash $PWD/.travis-run.sh
+ - /trusty/run.sh $PWD/.travis-run.sh
 
 notifications:
   email:
