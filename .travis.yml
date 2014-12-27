@@ -10,13 +10,13 @@ env:
   - TEST=python-api TYPE=integration
   - TEST=module TYPE=python
   - TEST=module TYPE=c
+
 install:
- - chmod +x .travis-setup.sh
- - ./.travis-setup.sh
+ - wget -q -O- https://raw.githubusercontent.com/mithro/travis-trusty/master/setup.sh | bash
+ - /trusty/run.sh bash $PWD/.travis-setup.sh
 
 script:
- - chmod +x .travis-run.sh
- - ./.travis-run.sh
+ - /trusty/run.sh bash $PWD/.travis-run.sh
 
 notifications:
   email:
