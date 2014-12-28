@@ -1,7 +1,7 @@
 #! /bin/bash -ex
 
 # Update / upgrade everything
-sudo apt-get -y update && apt-get -y upgrade
+sudo apt-get -y update && sudo apt-get -y upgrade
 
 # gst-switch compile stuff
 sudo apt-get -y install build-essential dh-autoreconf
