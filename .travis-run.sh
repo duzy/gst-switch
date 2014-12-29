@@ -1,5 +1,19 @@
 #! /bin/bash -ex
 
+./autogen.sh --prefix=/usr || {
+  printf "Failed to do autogen!!!\n"
+  exit -1
+}
+make clean
+make || {
+  printf "make of gst-switch failed!!!\n"
+  exit -1
+}
+sudo make install || {
+  printf "make install of gst-switch failed!!!\n"
+  exit -1
+}
+
 cd python-api
 
 case $TEST in
