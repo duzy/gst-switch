@@ -16,7 +16,7 @@ GCOV_LFLAGS =
 endif
 
 if DEBUG
-AM_CFLAGS = -g3 -O0
+AM_CFLAGS = -g3 -O0 -gdwarf-4 -fvar-tracking-assignments -fvar-tracking
 else
 AM_CFLAGS = -O2
 endif
