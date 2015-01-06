@@ -328,13 +328,14 @@ gst_switch_controller_on_connection_closed (GDBusConnection * connection,
     WARN ("close: %s", error->message);
   }
 
-  g_object_unref (connection);
   GST_SWITCH_CONTROLLER_LOCK_UIS (controller);
   controller->uis = g_list_remove (controller->uis, connection);
   GST_SWITCH_CONTROLLER_UNLOCK_UIS (controller);
 
   INFO ("closed: %p, %d (%d uis)", connection, vanished,
       g_list_length (controller->uis));
+
+  g_object_unref (connection);
 }
 
 static GVariant *gst_switch_controller_call_client (GstSwitchController *
