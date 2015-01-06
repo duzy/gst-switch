@@ -298,6 +298,7 @@ gst_switch_controller_emit_ui_signal (GstSwitchController * controller,
         signame, parameters, &error);
 
     if (!res) {
+      g_assert (error != NULL);
       ERROR ("emit: (%d) %s", num, error->message);
     } else {
       ++num;
@@ -325,7 +326,6 @@ gst_switch_controller_on_connection_closed (GDBusConnection * connection,
 
   if (error) {
     WARN ("close: %s", error->message);
-    g_error_free (error);
   }
 
   g_object_unref (connection);
@@ -413,16 +413,17 @@ gst_switch_controller_on_new_connection (GDBusServer * server,
       NULL,                     /* user_data_free_func */
       &error);
 
-  if (register_id <= 0 || error != NULL) {
+  if (error != NULL) {
     ERROR ("failed to register controller: %s", error->message);
-    return TRUE;
+    g_error_free (error);
+    return FALSE;
+  } else if (register_id <= 0) {
+    ERROR ("register_id invalid (<= 0): %d", register_id);
+    return FALSE;
+  } else {
+    INFO ("registered: %d, %s, %s", register_id,
+        SWITCH_CONTROLLER_OBJECT_PATH, introspection_data->interfaces[0]->name);
   }
-
-  /*
-     INFO ("registered: %d, %s, %s", register_id,
-     SWITCH_CONTROLLER_OBJECT_PATH,
-     introspection_data->interfaces[0]->name);
-   */
 
   g_signal_connect (connection, "closed",
       G_CALLBACK (gst_switch_controller_on_connection_closed), controller);
@@ -474,11 +475,12 @@ gst_switch_controller_init (GstSwitchController * controller)
   auth_observer = g_dbus_auth_observer_new ();
   controller->bus_server = g_dbus_server_new_sync (SWITCH_CONTROLLER_ADDRESS, flags, guid, auth_observer, NULL, /* GCancellable */
       &error);
+  if (error != NULL) {
+    g_error ("failed to register controller: %s", error->message);
+  }
+  g_assert (controller->bus_server != NULL);
 
   g_free (guid);
-
-  if (controller->bus_server == NULL)
-    goto error_new_server;
 
   INFO ("Controller is listening at: %s",
       g_dbus_server_get_client_address (controller->bus_server));
@@ -496,14 +498,6 @@ gst_switch_controller_init (GstSwitchController * controller)
 
   // TODO: singleton object
   return;
-
-  /* Errors Handling */
-error_new_server:
-  {
-    if (error)
-      ERROR ("%s", error->message);
-    return;
-  }
 }
 
 /**
@@ -580,20 +574,16 @@ gst_switch_controller_call_client (GstSwitchController * controller,
       NULL /* TODO: cancellable */ ,
       &error);
 
-  if (error != NULL)
-    goto error_call_sync;
-
-  return value;
-
-  /* ERRORS */
-error_call_sync:
-  {
+  if (error != NULL) {
     ERROR ("%s (%s)", error->message, method_name);
     g_error_free (error);
     if (value)
       g_variant_unref (value);
     return NULL;
   }
+  g_assert (value != NULL);
+
+  return value;
 }
 
 /**
