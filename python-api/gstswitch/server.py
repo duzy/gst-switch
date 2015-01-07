@@ -40,7 +40,7 @@ class Server(object):
             video_port=3000,
             audio_port=4000,
             control_port=5000,
-            record_file='record.data'):
+            record_file='record-%Y-%m-%d_%H%M%S.data'):
 
         super(Server, self).__init__()
 

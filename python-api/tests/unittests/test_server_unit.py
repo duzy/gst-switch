@@ -29,7 +29,7 @@ class TestPath(object):
         serv._start_process = mock_method
         assert serv._run_process().split() == "/usr/gst-switch-srv \
 --video-input-port=3000 --audio-input-port=4000 \
---control-port=5000 --record=record.data".split()
+--control-port=5000 --record=record-%Y-%m-%d_%H%M%S.data".split()
 
     def test_path_provided_no_slash(self):
         """Test if a path is provided"""
@@ -41,7 +41,7 @@ class TestPath(object):
         serv._start_process = mock_method
         assert serv._run_process().split() == "/usr/gst-switch-srv \
 --video-input-port=3000 --audio-input-port=4000 \
---control-port=5000 --record=record.data".split()
+--control-port=5000 --record=record-%Y-%m-%d_%H%M%S.data".split()
 
     def test_path_empty(self, monkeypatch):
         """Test if null path is given"""
@@ -60,7 +60,7 @@ class TestPath(object):
             serv._start_process = mock_method
             assert serv._run_process().split() == "/usr/gst-switch-srv \
 --video-input-port=3000 --audio-input-port=4000 \
---control-port=5000 --record=record.data".split()
+--control-port=5000 --record=record-%Y-%m-%d_%H%M%S.data".split()
 
 
 class TestVideoPort(object):
