@@ -100,7 +100,7 @@ static GOptionEntry entries[] = {
 /**
  * gst_switch_server_parse_args:
  *
- * Parsing commiand line parameters.
+ * Parsing command line parameters.
  */
 static void
 gst_switch_server_parse_args (int *argc, char **argv[])
@@ -326,8 +326,8 @@ gst_switch_server_end_case (GstCase * cas, GstSwitchServer * srv)
       caseport = cas->sink_port;
       g_object_unref (cas);
       break;
-    case GST_CASE_INPUT_a:
-    case GST_CASE_INPUT_v:
+    case GST_CASE_INPUT_AUDIO:
+    case GST_CASE_INPUT_VIDEO:
       srv->cases = g_list_remove (srv->cases, cas);
       INFO ("Removed %s %p (%d cases left)", GST_WORKER (cas)->name, cas,
           g_list_length (srv->cases));
@@ -365,10 +365,10 @@ gst_switch_server_start_case (GstCase * cas, GstSwitchServer * srv)
 {
   gboolean is_branch = FALSE;
   switch (cas->type) {
-    case GST_CASE_BRANCH_A:
-    case GST_CASE_BRANCH_B:
-    case GST_CASE_BRANCH_a:
-    case GST_CASE_BRANCH_p:
+    case GST_CASE_BRANCH_VIDEO_A:
+    case GST_CASE_BRANCH_VIDEO_B:
+    case GST_CASE_BRANCH_AUDIO:
+    case GST_CASE_BRANCH_PREVIEW:
       is_branch = TRUE;
     default:
       break;
@@ -380,7 +380,7 @@ gst_switch_server_start_case (GstCase * cas, GstSwitchServer * srv)
       gst_switch_controller_tell_preview_port (srv->controller,
           cas->sink_port, cas->serve_type, cas->type);
 
-      if (cas->type == GST_CASE_BRANCH_a) {
+      if (cas->type == GST_CASE_BRANCH_AUDIO) {
         gst_switch_controller_tell_audio_port (srv->controller, cas->sink_port);
       }
     }
@@ -398,9 +398,9 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
     GstSwitchServeStreamType serve_type)
 {
   GstCaseType type = GST_CASE_UNKNOWN;
-  gboolean has_composite_A = FALSE;
-  gboolean has_composite_B = FALSE;
-  gboolean has_composite_a = FALSE;
+  gboolean has_composite_video_A = FALSE;
+  gboolean has_composite_video_B = FALSE;
+  gboolean has_composite_audio = FALSE;
   GList *item = srv->cases;
 
   for (; item; item = g_list_next (item)) {
@@ -410,11 +410,11 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
       case GST_SERVE_VIDEO_STREAM:
       {
         switch (cas->type) {
-          case GST_CASE_COMPOSITE_A:
-            has_composite_A = TRUE;
+          case GST_CASE_COMPOSITE_VIDEO_A:
+            has_composite_video_A = TRUE;
             break;
-          case GST_CASE_COMPOSITE_B:
-            has_composite_B = TRUE;
+          case GST_CASE_COMPOSITE_VIDEO_B:
+            has_composite_video_B = TRUE;
             break;
           default:
             break;
@@ -423,8 +423,8 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
         break;
       case GST_SERVE_AUDIO_STREAM:
       {
-        if (cas->type == GST_CASE_COMPOSITE_a)
-          has_composite_a = TRUE;
+        if (cas->type == GST_CASE_COMPOSITE_AUDIO)
+          has_composite_audio = TRUE;
       }
         break;
       case GST_SERVE_NOTHING:
@@ -432,14 +432,14 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
     }
 #else
     switch (cas->type) {
-      case GST_CASE_COMPOSITE_A:
-        has_composite_A = TRUE;
+      case GST_CASE_COMPOSITE_VIDEO_A:
+        has_composite_video_A = TRUE;
         break;
-      case GST_CASE_COMPOSITE_B:
-        has_composite_B = TRUE;
+      case GST_CASE_COMPOSITE_VIDEO_B:
+        has_composite_video_B = TRUE;
         break;
-      case GST_CASE_COMPOSITE_a:
-        has_composite_a = TRUE;
+      case GST_CASE_COMPOSITE_AUDIO:
+        has_composite_audio = TRUE;
         break;
       default:
         break;
@@ -450,16 +450,16 @@ gst_switch_server_suggest_case_type (GstSwitchServer * srv,
 
   switch (serve_type) {
     case GST_SERVE_VIDEO_STREAM:
-      if (!has_composite_A)
-        type = GST_CASE_COMPOSITE_A;
-      else if (!has_composite_B)
-        type = GST_CASE_COMPOSITE_B;
+      if (!has_composite_video_A)
+        type = GST_CASE_COMPOSITE_VIDEO_A;
+      else if (!has_composite_video_B)
+        type = GST_CASE_COMPOSITE_VIDEO_B;
       else
         type = GST_CASE_PREVIEW;
       break;
     case GST_SERVE_AUDIO_STREAM:
-      if (!has_composite_a)
-        type = GST_CASE_COMPOSITE_a;
+      if (!has_composite_audio)
+        type = GST_CASE_COMPOSITE_AUDIO;
       else
         type = GST_CASE_PREVIEW;
       break;
@@ -499,10 +499,10 @@ gst_switch_server_serve (GstSwitchServer * srv, GSocket * client,
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   switch (serve_type) {
     case GST_SERVE_AUDIO_STREAM:
-      inputtype = GST_CASE_INPUT_a;
+      inputtype = GST_CASE_INPUT_AUDIO;
       break;
     case GST_SERVE_VIDEO_STREAM:
-      inputtype = GST_CASE_INPUT_v;
+      inputtype = GST_CASE_INPUT_VIDEO;
       break;
     default:
       goto error_unknown_serve_type;
@@ -510,17 +510,17 @@ gst_switch_server_serve (GstSwitchServer * srv, GSocket * client,
 
   type = gst_switch_server_suggest_case_type (srv, serve_type);
   switch (type) {
-    case GST_CASE_COMPOSITE_A:
-      branchtype = GST_CASE_BRANCH_A;
+    case GST_CASE_COMPOSITE_VIDEO_A:
+      branchtype = GST_CASE_BRANCH_VIDEO_A;
       break;
-    case GST_CASE_COMPOSITE_B:
-      branchtype = GST_CASE_BRANCH_B;
+    case GST_CASE_COMPOSITE_VIDEO_B:
+      branchtype = GST_CASE_BRANCH_VIDEO_B;
       break;
-    case GST_CASE_COMPOSITE_a:
-      branchtype = GST_CASE_BRANCH_a;
+    case GST_CASE_COMPOSITE_AUDIO:
+      branchtype = GST_CASE_BRANCH_AUDIO;
       break;
     case GST_CASE_PREVIEW:
-      branchtype = GST_CASE_BRANCH_p;
+      branchtype = GST_CASE_BRANCH_PREVIEW;
       break;
     default:
       goto error_unknown_case_type;
@@ -944,7 +944,7 @@ gst_switch_server_get_audio_sink_port (GstSwitchServer * srv)
   GList *item;
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   for (item = srv->cases; item; item = g_list_next (item)) {
-    if (GST_CASE (item->data)->type == GST_CASE_COMPOSITE_a) {
+    if (GST_CASE (item->data)->type == GST_CASE_COMPOSITE_AUDIO) {
       port = GST_CASE (item->data)->sink_port;
       break;
     }
@@ -975,9 +975,9 @@ gst_switch_server_get_preview_sink_ports (GstSwitchServer * srv,
   GST_SWITCH_SERVER_LOCK_CASES (srv);
   for (item = srv->cases; item; item = g_list_next (item)) {
     switch (GST_CASE (item->data)->type) {
-      case GST_CASE_BRANCH_A:
-      case GST_CASE_BRANCH_B:
-      case GST_CASE_BRANCH_a:
+      case GST_CASE_BRANCH_VIDEO_A:
+      case GST_CASE_BRANCH_VIDEO_B:
+      case GST_CASE_BRANCH_AUDIO:
       case GST_CASE_PREVIEW:
         a = g_array_append_val (a, GST_CASE (item->data)->sink_port);
         if (s)
@@ -1072,7 +1072,7 @@ gst_switch_server_new_record (GstSwitchServer * srv)
 
 /**
  * gst_switch_server_adjust_pip:
- *  @return: a unsigned number of indicating which compononent (x,y,w,h) has
+ *  @return: a unsigned number of indicating which component (x,y,w,h) has
  *           been changed
  *
  *  Adjust the PIP position and size.
@@ -1144,15 +1144,15 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
     GstCase *cas = GST_CASE (item->data);
     switch (channel) {
       case 'A':
-        if (cas->type == GST_CASE_COMPOSITE_A)
+        if (cas->type == GST_CASE_COMPOSITE_VIDEO_A)
           goto get_target_stream;
         break;
       case 'B':
-        if (cas->type == GST_CASE_COMPOSITE_B)
+        if (cas->type == GST_CASE_COMPOSITE_VIDEO_B)
           goto get_target_stream;
         break;
       case 'a':
-        if (cas->type == GST_CASE_COMPOSITE_a)
+        if (cas->type == GST_CASE_COMPOSITE_AUDIO)
           goto get_target_stream;
         break;
       default:
@@ -1164,9 +1164,9 @@ gst_switch_server_switch (GstSwitchServer * srv, gint channel, gint port)
         }
     }
     switch (cas->type) {
-      case GST_CASE_COMPOSITE_A:
-      case GST_CASE_COMPOSITE_B:
-      case GST_CASE_COMPOSITE_a:
+      case GST_CASE_COMPOSITE_VIDEO_A:
+      case GST_CASE_COMPOSITE_VIDEO_B:
+      case GST_CASE_COMPOSITE_AUDIO:
       case GST_CASE_PREVIEW:
         if (cas->sink_port == port) {
           candidate_case = cas;
@@ -1400,7 +1400,7 @@ gst_switch_server_worker_start (GstWorker * worker, GstSwitchServer * srv)
 /**
  * gst_switch_server_worker_null:
  *
- * Invoked when a worker is trunning into NULL. 
+ * Invoked when a worker is running into NULL. 
  */
 static void
 gst_switch_server_worker_null (GstWorker * worker, GstSwitchServer * srv)
@@ -1473,7 +1473,7 @@ gst_switch_server_end_transition (GstWorker * worker, GstSwitchServer * srv)
 /**
  * gst_switch_server_output_client_socket_added:
  *
- * Invoekd when a client socket is added.
+ * Invoked when a client socket is added.
  */
 static void
 gst_switch_server_output_client_socket_added (GstElement * element,

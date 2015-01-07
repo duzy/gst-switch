@@ -291,20 +291,20 @@ gst_case_get_pipeline_string (GstCase * cas)
   desc = g_string_new ("");
 
   switch (cas->type) {
-    case GST_CASE_INPUT_a:
-    case GST_CASE_INPUT_v:
+    case GST_CASE_INPUT_AUDIO:
+    case GST_CASE_INPUT_VIDEO:
       g_string_append_printf (desc, "giostreamsrc name=source ");
       break;
-    case GST_CASE_COMPOSITE_A:
-    case GST_CASE_COMPOSITE_B:
-    case GST_CASE_COMPOSITE_a:
+    case GST_CASE_COMPOSITE_VIDEO_A:
+    case GST_CASE_COMPOSITE_VIDEO_B:
+    case GST_CASE_COMPOSITE_AUDIO:
     case GST_CASE_PREVIEW:
       if (srctype == NULL)
         srctype = "input";
-    case GST_CASE_BRANCH_A:
-    case GST_CASE_BRANCH_B:
-    case GST_CASE_BRANCH_a:
-    case GST_CASE_BRANCH_p:
+    case GST_CASE_BRANCH_VIDEO_A:
+    case GST_CASE_BRANCH_VIDEO_B:
+    case GST_CASE_BRANCH_AUDIO:
+    case GST_CASE_BRANCH_PREVIEW:
       if (srctype == NULL)
         srctype = "branch";
       if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
@@ -323,14 +323,14 @@ gst_case_get_pipeline_string (GstCase * cas)
   srctype = NULL;
 
   switch (cas->type) {
-    case GST_CASE_COMPOSITE_A:
+    case GST_CASE_COMPOSITE_VIDEO_A:
       if (channel == NULL)
         channel = "a";
       if (scale == NULL)
         scale =
             g_strdup_printf ("videoscale ! video/x-raw,width=%d,height=%d",
             cas->a_width, cas->a_height);
-    case GST_CASE_COMPOSITE_B:
+    case GST_CASE_COMPOSITE_VIDEO_B:
       if (channel == NULL)
         channel = "b";
       if (scale == NULL)
@@ -341,7 +341,7 @@ gst_case_get_pipeline_string (GstCase * cas)
           g_strdup_printf ("video/x-raw,width=%d,height=%d", cas->width,
           cas->height);
       sink = "intervideosink";
-    case GST_CASE_COMPOSITE_a:
+    case GST_CASE_COMPOSITE_AUDIO:
       if (channel == NULL)
         channel = "audio";
       if (sink == NULL)
@@ -376,8 +376,8 @@ gst_case_get_pipeline_string (GstCase * cas)
     case GST_CASE_PREVIEW:
       if (srctype == NULL)
         srctype = "branch";
-    case GST_CASE_INPUT_a:
-    case GST_CASE_INPUT_v:
+    case GST_CASE_INPUT_AUDIO:
+    case GST_CASE_INPUT_VIDEO:
       if (srctype == NULL)
         srctype = "input";
       if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
@@ -410,10 +410,10 @@ gst_case_get_pipeline_string (GstCase * cas)
         g_string_append_printf (desc, "! gdpdepay ! sink. ");
       }
       break;
-    case GST_CASE_BRANCH_A:
-    case GST_CASE_BRANCH_B:
-    case GST_CASE_BRANCH_a:
-    case GST_CASE_BRANCH_p:
+    case GST_CASE_BRANCH_VIDEO_A:
+    case GST_CASE_BRANCH_VIDEO_B:
+    case GST_CASE_BRANCH_AUDIO:
+    case GST_CASE_BRANCH_PREVIEW:
       g_string_append_printf (desc, "tcpserversink name=sink port=%d ",
           cas->sink_port);
       g_string_append_printf (desc, "source. ");
@@ -493,8 +493,8 @@ gst_case_prepare (GstCase * cas)
   GstWorker *worker = GST_WORKER (cas);
   GstElement *source = NULL;
   switch (cas->type) {
-    case GST_CASE_INPUT_a:
-    case GST_CASE_INPUT_v:
+    case GST_CASE_INPUT_AUDIO:
+    case GST_CASE_INPUT_VIDEO:
       if (!cas->stream) {
         ERROR ("no stream for new case");
         return FALSE;
@@ -508,10 +508,10 @@ gst_case_prepare (GstCase * cas)
       gst_object_unref (source);
       break;
 
-    case GST_CASE_BRANCH_A:
-    case GST_CASE_BRANCH_B:
-    case GST_CASE_BRANCH_a:
-    case GST_CASE_BRANCH_p:
+    case GST_CASE_BRANCH_VIDEO_A:
+    case GST_CASE_BRANCH_VIDEO_B:
+    case GST_CASE_BRANCH_AUDIO:
+    case GST_CASE_BRANCH_PREVIEW:
     {
       GstElement *sink = gst_worker_get_element_unlocked (worker, "sink");
 

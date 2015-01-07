@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_SWITCH_CAPTURE_H__by_Duzy_Chan__
-#define __GST_SWITCH_CAPTURE_H__by_Duzy_Chan__ 1
+#ifndef __GST_SWITCH_CAPTURE_H__
+#define __GST_SWITCH_CAPTURE_H__
+
 #include "gstworker.h"
 #include "gstswitchclient.h"
 
@@ -65,4 +66,4 @@ typedef struct _GstSwitchCaptureClass
 
 GType gst_switch_capture_get_type (void);
 
-#endif//__GST_SWITCH_CAPTURE_H__by_Duzy_Chan__
+#endif //__GST_SWITCH_CAPTURE_H__

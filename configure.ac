@@ -8,6 +8,7 @@ dnl required versions of gstreamer and plugins-base
 GLIB_REQUIRED=2.32.0
 GST_REQUIRED=1.0.1
 GSTPB_REQUIRED=1.0.1
+GTK_REQUIRED=3.10.8
 
 AC_CONFIG_SRCDIR([plugins/gstswitch.c])
 AC_CONFIG_HEADERS([config.h])
@@ -50,35 +51,35 @@ PKG_CHECK_MODULES(GLIB, [
   AC_MSG_ERROR([
       You need to install or upgrade the glib development
       packages on your system. The minimum version required
-      is $GST_REQUIRED.
+      is $GLIB_REQUIRED.
   ])
 ])
 
-dnl === GTK ===================================================================
-HAVE_GTK=NO
-GTK2_REQ=2.14.0
-GTK3_REQ=2.91.3
-AC_MSG_CHECKING([which gtk+ version to compile examples against (optional)])
-AC_ARG_WITH([gtk],
-  AS_HELP_STRING([--with-gtk=3.0|2.0],[which gtk+ version to compile against (default: 3.0)]),
-  [case "$with_gtk" in
-      2.0) GTK_REQ=$GTK2_REQ ;;
-      3.0) GTK_REQ=$GTK3_REQ ;;
-      *) AC_MSG_ERROR([invalid gtk+ version specified]);;
-  esac],
-  [with_gtk=3.0
-   GTK_REQ=$GTK3_REQ])
-AC_MSG_RESULT([$with_gtk (>= $GTK_REQ)])
-PKG_CHECK_MODULES(GTK, gtk+-x11-$with_gtk >= $GTK_REQ, HAVE_GTK=yes, HAVE_GTK=no)
-AC_SUBST(GTK_LIBS)
-AC_SUBST(GTK_CFLAGS)
-AM_CONDITIONAL(HAVE_GTK, test "x$HAVE_GTK" = "xyes")
+PKG_CHECK_MODULES(GTK, [
+  gtk+-3.0 >= $GTK_REQUIRED
+], [
+  AC_SUBST(GTK_CFLAGS)
+  AC_SUBST(GTK_LIBS)
+], [
+  AC_MSG_ERROR([
+      You need to install or upgrade the gtk development
+      packages on your system. The minimum version required
+      is $GTK_REQUIRED.
+  ])
+])
 
-CFLAGS="$GTK_CFLAGS"
-CPPFLAGS="$GTK_CFLAGS"
-AC_CHECK_HEADER([gdk/gdkx.h], [],
-  [AC_MSG_ERROR([GDK X11 header (gdk/gdkx.h) is required])])
-
+PKG_CHECK_MODULES(GDK, [
+  gdk-3.0 >= $GTK_REQUIRED
+], [
+  AC_SUBST(GDK_CFLAGS)
+  AC_SUBST(GDK_LIBS)
+], [
+  AC_MSG_ERROR([
+      You need to install or upgrade the gdk development
+      packages on your system. The minimum version required
+      is $GTK_REQUIRED.
+  ])
+])
 
 dnl === gstreamer related options =============================================
 

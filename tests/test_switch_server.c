@@ -883,8 +883,8 @@ testclient_new_mode (testclient * client, gint mode)
 {
   //INFO ("set-encode-port: %d", port);
   client->new_mode_count += 1;
-  g_assert_cmpint (mode, >=, COMPOSE_MODE_0);
-  g_assert_cmpint (mode, <=, COMPOSE_MODE_3);
+  g_assert_cmpint (mode, >=, COMPOSE_MODE_NONE);
+  g_assert_cmpint (mode, <=, COMPOSE_MODE_DUAL_EQUAL);
 }
 
 static void
