@@ -1,16 +1,6 @@
 
 #include "tools/gstswitchopts.c"
 
-static char const *test_bad_strings[] = {
-  "video/x-raw,height=[400,800],width=500,framerate=25/1",
-  "720p@75", "sadfasf",
-  "video/x-raw,height=10,width=500,framerate=25/1",
-  "video/x-raw,height=400,width=10,framerate=25/1",
-  "video/x-raw,height=400,width=10,framerate=1001/1",
-  "pal@75",
-  NULL
-};
-
 static void
 test_strings_good (void)
 {

@@ -8,6 +8,7 @@
 *.txt
 imgurbash.sh.*
 .coverage
+.gdb_history
 .idea
 /INSTALL
 /Makefile

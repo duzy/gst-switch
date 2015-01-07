@@ -42,12 +42,18 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #define GST_SWITCH_SERVER_DEFAULT_HOST "localhost"
 #define GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT	3000
 #define GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT	4000
 #define GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT	5000
 #define GST_SWITCH_SERVER_LISTEN_BACKLOG 8      /* client connection queue */
+
+#define GST_SWITCH_SERVER_HOST_SPEC "%q"
+#define GST_SWITCH_SERVER_DEFAULT_RECORD_FILE GST_SWITCH_SERVER_HOST_SPEC "_record_%Y%m%d%T"
+#define GST_SWITCH_SERVER_DEFAULT_RECORD_EXT ".avi"
 
 #define GST_SWITCH_SERVER_LOCK_MAIN_LOOP(srv) (g_mutex_lock (&(srv)->main_loop_lock))
 #define GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP(srv) (g_mutex_unlock (&(srv)->main_loop_lock))
@@ -80,14 +86,59 @@ GstSwitchServerOpts opts = {
 
 gboolean verbose = FALSE;
 
+static gboolean gparse_record_filename(gchar *name, gchar *value, gpointer data, GError **error)
+{
+  size_t maxpathlen = 256;
+  gchar fnbuf[maxpathlen+1];
+  size_t fnlen = 0;
+
+  if (value == NULL || (fnlen = strlen(value)) == 0) {
+    // file not specified, use the default filename.ext
+    strncpy(fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_FILE, sizeof(fnbuf) - 5);
+    strcat(fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_EXT);
+  } else if (fnlen < maxpathlen) {
+    strncpy(fnbuf, value, sizeof(fnbuf));
+    if ((fnlen < 5 || strchr(value + fnlen - 5, '.') == NULL) && fnlen + 4 < maxpathlen)
+      strcat(fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_EXT);
+  } else {
+    GError *err = g_error_new(G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE, "%s path/filename too long: %s\n", name, value);
+    g_propagate_error(error, err);
+    return FALSE;
+  }
+
+  // Do manual substitution of %q => hostname up front since this is static
+  // Time and date tokens are substituted within the recorder as the recording
+  // is started or cut to accurately reflect the date/time of recording
+  char *h = strstr(fnbuf, GST_SWITCH_SERVER_HOST_SPEC);
+  if (h != NULL) {
+    int mnlen = maxpathlen - fnlen; // limit size to what is available
+    char hostname[mnlen + 1];
+    if (gethostname(hostname, mnlen) != 0)
+      strcpy(hostname, GST_SWITCH_SERVER_DEFAULT_HOST);
+    else hostname[mnlen] = '\0';
+    int hnlen = strlen(hostname);
+    hostname[hnlen] = '\0'; // guarantee nul termination
+    fnlen = strlen(fnbuf);
+    do {
+      size_t over = fnlen - (h - fnbuf) + 1;
+      memmove(h + hnlen, h + 2, over);
+      memcpy(h, hostname, hnlen);
+      fnlen += (hnlen - 2); // adjust the result length
+    } while ((h = strstr(fnbuf, GST_SWITCH_SERVER_HOST_SPEC)) != NULL);
+  }
+
+  opts.record_filename = g_strdup(fnbuf);
+  return TRUE;
+}
+
 static GOptionEntry entries[] = {
   {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
       "Prompt more messages", NULL},
   {"test-switch", 't', 0, G_OPTION_ARG_STRING, &opts.test_switch,
       "Perform switch test", "OUTPUT"},
-  {"record", 'r', 0, G_OPTION_ARG_STRING, &opts.record_filename,
-        "Enable recorder and record into the specified FILENAME",
-      "FILENAME"},
+  {"record", 'r', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK,
+      (gpointer)gparse_record_filename,
+      "Enable recorder and record into the specified FILENAME"},
   {"video-input-port", 'p', 0, G_OPTION_ARG_INT, &opts.video_input_port,
       "Specify the video input listen port.", "NUM"},
   {"audio-input-port", 'a', 0, G_OPTION_ARG_INT, &opts.audio_input_port,
@@ -1750,6 +1801,7 @@ static unsigned long long i = 0;
 void
 my_handler (int signum)
 {
+  extern void __gcov_flush();
   printf ("received signal\n");
   printf ("%llu\n", i);
   __gcov_flush ();              /* dump coverage data on receiving SIGUSR1 */
@@ -1761,7 +1813,7 @@ main (int argc, char *argv[])
 {
 
   struct sigaction new_action, old_action;
-  int n;
+
   /* setup signal hander */
   new_action.sa_handler = my_handler;
   sigemptyset (&new_action.sa_mask);

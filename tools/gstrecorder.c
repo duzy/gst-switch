@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <sys/stat.h>
 #include "gstswitchserver.h"
 #include "gstcomposite.h"
 #include "gstrecorder.h"
@@ -170,45 +171,102 @@ gst_recorder_set_property (GstRecorder * rec, guint property_id,
   }
 }
 
+/*
+ * @param dir - directory to create
+ * @return nothing
+ * Create a directory and all intermediary directories
+ * if necessary. Note that errors are ignored here, if
+ * the resulting path is in fact unusable having early
+ * warning here is not necessary
+ */
+static void
+gst_recorder_mkdirs (const char *dir)
+{
+  char tmp[256];
+  strncpy (tmp, dir, sizeof (tmp));
+  size_t len = strlen (tmp);
+  if (len > 0) {
+    if (tmp[len - 1] == '/')
+      tmp[len--] = 0;
+    if (len > 0) {
+      size_t at = 1; // skip leading slash
+      while (at < len) {
+        char *p = strchr (tmp + at, '/');
+        if (p != NULL && *p == '/') {
+          *p = '\0';
+          mkdir (tmp, S_IRWXU);
+          *p = '/';
+          at = p - tmp + 1;
+        } else
+          at = len;
+      }
+      mkdir (tmp, S_IRWXU);
+    }
+  }
+}
+
 /**
- * @param rec The GstRecorder instance.
- * @memberof GstRecorder
+ * @param filepath - file file/path of a unix file
+ * @return length of the path potion of the file, excluding the separator
+ */
+static size_t
+gst_recorder_pathlen (const char *filepath)
+{
+  if (filepath != NULL && strlen(filepath) > 0) {
+    char const *sep = strrchr (filepath + 1, '/');
+    if (sep != NULL)
+      return sep - filepath;
+  }
+  return 0;
+}
+
+
+/**
+ * @param filename Template name of the file to save
  * @return the file name string, need to be freed after used
  *
  * This is used to genearte a new recording file name for the recorder.
  */
 static const gchar *
-gst_recorder_new_filename (GstRecorder * rec)
+gst_recorder_new_filename (const gchar *filename)
 {
-  time_t t;
-  struct tm *tm;
-  gchar stamp[128];
-  const gchar *dot = NULL;
-  const gchar *filename = opts.record_filename;
-  if (!filename) {
+  if (!filename)
     return NULL;
+
+  gchar fnbuf[256];
+  time_t t = time (NULL);
+  struct tm *tm = localtime (&t);
+  // Note: reserve some space for collision suffix
+  strftime (fnbuf, sizeof (fnbuf) - 5, filename, tm);
+  // We now have a fully built name in our buffer
+  // If there is at least one directory present, make sure they exist
+  size_t pathlen = gst_recorder_pathlen (fnbuf);
+  if (pathlen > 0) {
+    fnbuf[pathlen] = '\0';
+    gst_recorder_mkdirs (fnbuf);
+    fnbuf[pathlen] = '/';
+  }
+  pathlen = strlen (fnbuf);     // reuse for length of file/path
+
+  // handle name collisions by adding a suffix/extension
+  size_t suffix = 0;
+  while (1) {
+    struct stat s;
+    if (-1 == stat (fnbuf, &s)) {
+      if (ENOENT == errno)
+        break;
+      else {
+        perror (fnbuf);
+        return NULL;            // can't record
+      }
+    }
+    snprintf (fnbuf + pathlen, 256 - pathlen, ".%03d", (int) suffix++);
+    // can't record if we've used up our additions
+    if (suffix > 999)
+      return NULL;
   }
 
-  t = time (NULL);
-  tm = localtime (&t);
-
-  if (tm == NULL) {
-    static gint num = 0;
-    num += 1;
-    snprintf (stamp, sizeof (stamp), "%d", num);
-  } else {
-    strftime (stamp, sizeof (stamp), "%F %H%M%S", tm);
-  }
-
-  if ((dot = g_strrstr (filename, "."))) {
-    const gchar *s = g_strndup (filename, dot - filename);
-    filename = g_strdup_printf ("%s %s%s", s, stamp, dot);
-    g_free ((gpointer) s);
-  } else {
-    filename = g_strdup_printf ("%s %s.dat", filename, stamp);
-  }
-
-  return filename;
+  return g_strdup (fnbuf);
 }
 
 /**
@@ -221,7 +279,7 @@ gst_recorder_new_filename (GstRecorder * rec)
 static GString *
 gst_recorder_get_pipeline_string (GstRecorder * rec)
 {
-  const gchar *filename = gst_recorder_new_filename (rec);
+  const gchar *filename = gst_recorder_new_filename (opts.record_filename);
   GString *desc;
 
   //INFO ("Recording to %s and port %d", filename, rec->sink_port);
