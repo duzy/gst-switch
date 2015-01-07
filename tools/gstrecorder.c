@@ -189,7 +189,7 @@ gst_recorder_mkdirs (const char *dir)
     if (tmp[len - 1] == '/')
       tmp[len--] = 0;
     if (len > 0) {
-      size_t at = 1; // skip leading slash
+      size_t at = 1;            // skip leading slash
       while (at < len) {
         char *p = strchr (tmp + at, '/');
         if (p != NULL && *p == '/') {
@@ -212,7 +212,7 @@ gst_recorder_mkdirs (const char *dir)
 static size_t
 gst_recorder_pathlen (const char *filepath)
 {
-  if (filepath != NULL && strlen(filepath) > 0) {
+  if (filepath != NULL && strlen (filepath) > 0) {
     char const *sep = strrchr (filepath + 1, '/');
     if (sep != NULL)
       return sep - filepath;
@@ -228,7 +228,7 @@ gst_recorder_pathlen (const char *filepath)
  * This is used to generate a new recording file name for the recorder.
  */
 static const gchar *
-gst_recorder_new_filename (const gchar *filename)
+gst_recorder_new_filename (const gchar * filename)
 {
   if (!filename)
     return NULL;
