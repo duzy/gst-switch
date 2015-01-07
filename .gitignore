@@ -8,6 +8,7 @@
 *.txt
 imgurbash.sh.*
 .coverage
+.idea
 /INSTALL
 /Makefile
 /Makefile.in
