@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_AUDIO_VISUAL_H__by_Duzy_Chan__
-#define __GST_AUDIO_VISUAL_H__by_Duzy_Chan__ 1
+#ifndef __GST_AUDIO_VISUAL_H__
+#define __GST_AUDIO_VISUAL_H__
+
 #include "gstworker.h"
 
 #define GST_TYPE_AUDIO_VISUAL (gst_audio_visual_get_type ())
@@ -56,7 +57,7 @@ struct _GstAudioVisual
   gboolean renewing; /*!< Used by GstSwitchUI. */
 
   GMutex endtime_lock; /*!< the lock for %endtime */
-  GstClockTime endtime; /*!< the endtime of the last audo sample */
+  GstClockTime endtime; /*!< the endtime of the last audio sample */
   GMutex value_lock; /*!< the lock for %value */
   gdouble value; /*!< the value of the last audio sample */
 };
@@ -76,4 +77,4 @@ GType gst_audio_visual_get_type (void);
 GstClockTime gst_audio_visual_get_endtime (GstAudioVisual * visual);
 gdouble gst_audio_visual_get_value (GstAudioVisual * visual);
 
-#endif //__GST_AUDIO_VISUAL_H__by_Duzy_Chan__
+#endif //__GST_AUDIO_VISUAL_H__

@@ -66,4 +66,4 @@ GType gst_conv_bin_get_type (void);
 
 G_END_DECLS
 
-#endif//__GST_CONV_BIN_H__
+#endif //__GST_CONV_BIN_H__

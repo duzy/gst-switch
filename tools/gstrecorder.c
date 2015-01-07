@@ -225,7 +225,7 @@ gst_recorder_pathlen (const char *filepath)
  * @param filename Template name of the file to save
  * @return the file name string, need to be freed after used
  *
- * This is used to genearte a new recording file name for the recorder.
+ * This is used to generate a new recording file name for the recorder.
  */
 static const gchar *
 gst_recorder_new_filename (const gchar *filename)
@@ -442,9 +442,9 @@ gst_recorder_class_init (GstRecorderClass * klass)
   g_object_class_install_property (object_class, PROP_MODE,
       g_param_spec_uint ("mode", "Mode",
           "Composite Mode",
-          COMPOSE_MODE_0,
+          COMPOSE_MODE_NONE,
           COMPOSE_MODE__LAST,
-          COMPOSE_MODE_0, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          COMPOSE_MODE_NONE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_PORT,
       g_param_spec_uint ("port", "Port",

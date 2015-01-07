@@ -16,6 +16,12 @@ dist_test_data = \
 test_programs = \
   test_gstswitchopts \
   test_gstrecorder_filename \
+  test_gstcomposite \
   $(NULL)
+
+if GCOV_ENABLED
+coverage:
+	gcov *.o
+endif
 
 include $(top_srcdir)/build/Makefile.am.gitignore

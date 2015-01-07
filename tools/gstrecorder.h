@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_RECORDER_H__by_Duzy_Chan__
-#define __GST_RECORDER_H__by_Duzy_Chan__ 1
+#ifndef __GST_RECORDER_H__
+#define __GST_RECORDER_H__
+
 #include "gstworker.h"
 #include "gstcomposite.h"
 #include <gio/gio.h>
@@ -71,4 +72,4 @@ struct _GstRecorderClass
  */
 GType gst_recorder_get_type (void);
 
-#endif //__GST_RECORDER_H__by_Duzy_Chan__
+#endif //__GST_RECORDER_H__

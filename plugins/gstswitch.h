@@ -63,4 +63,4 @@ GType gst_switch_get_type (void);
 
 G_END_DECLS
 
-#endif//__GST_SWITCH_H__
+#endif //__GST_SWITCH_H__

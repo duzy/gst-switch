@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_CASE_H__by_Duzy_Chan__
-#define __GST_CASE_H__by_Duzy_Chan__ 1
+#ifndef __GST_CASE_H__
+#define __GST_CASE_H__
+
 #include "gstworker.h"
 #include <gio/gio.h>
 
@@ -44,18 +45,18 @@ typedef struct _GstCaseClass GstCaseClass;
  */
 typedef enum
 {
-  GST_CASE_UNKNOWN, /*!< unknown case */
-  GST_CASE_COMPOSITE_A, /*!< special case for composite channel A */
-  GST_CASE_COMPOSITE_B, /*!< special case for composite channel B */
-  GST_CASE_COMPOSITE_a, /*!< special case for composite channel audio */
-  GST_CASE_PREVIEW, /*!< special case for previews */
-  GST_CASE_INPUT_a, /*!< special case for audio input */
-  GST_CASE_INPUT_v, /*!< special case for video input */
-  GST_CASE_BRANCH_A,/*!< special case for branching channel A to output */
-  GST_CASE_BRANCH_B,/*!< special case for branching channel B to output */
-  GST_CASE_BRANCH_a,/*!< special case for branching active audio to output */
-  GST_CASE_BRANCH_p,/*!< special case for branching preview to output */
-  GST_CASE__LAST_TYPE = GST_CASE_BRANCH_p
+  GST_CASE_UNKNOWN,           /*!< unknown case */
+  GST_CASE_COMPOSITE_VIDEO_A, /*!< special case for composite channel A */
+  GST_CASE_COMPOSITE_VIDEO_B, /*!< special case for composite channel B */
+  GST_CASE_COMPOSITE_AUDIO,   /*!< special case for composite channel audio */
+  GST_CASE_PREVIEW,           /*!< special case for previews */
+  GST_CASE_INPUT_AUDIO,       /*!< Audio input from TCP socket */
+  GST_CASE_INPUT_VIDEO,       /*!< Video input from TCP socket */
+  GST_CASE_BRANCH_VIDEO_A,    /*!< special case for branching channel A to output */
+  GST_CASE_BRANCH_VIDEO_B,    /*!< special case for branching channel B to output */
+  GST_CASE_BRANCH_AUDIO,      /*!< special case for branching active audio to output */
+  GST_CASE_BRANCH_PREVIEW,    /*!< special case for branching preview to output */
+  GST_CASE__LAST_TYPE = GST_CASE_BRANCH_PREVIEW
 } GstCaseType;
 
 /**
@@ -116,4 +117,4 @@ typedef struct _GstCaseClass
 
 GType gst_case_get_type (void);
 
-#endif //__GST_CASE_H__by_Duzy_Chan__
+#endif //__GST_CASE_H__

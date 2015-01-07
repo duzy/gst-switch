@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_WORKER_H__by_Duzy_Chan__
-#define __GST_WORKER_H__by_Duzy_Chan__ 1
+#ifndef __GST_WORKER_H__
+#define __GST_WORKER_H__
+
 #include <gst/gst.h>
 #include "../logutils.h"
 
@@ -269,4 +270,4 @@ GstElement *gst_worker_get_element_unlocked (GstWorker *worker, const gchar *nam
  */
 GstElement *gst_worker_get_element (GstWorker *worker, const gchar * name);
 
-#endif //__GST_WORKER_H__by_Duzy_Chan__
+#endif //__GST_WORKER_H__

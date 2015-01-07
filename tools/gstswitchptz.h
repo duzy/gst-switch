@@ -23,8 +23,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GST_SWITCH_PTZ_H____by_Duzy_Chan__
-#define __GST_SWITCH_PTZ_H____by_Duzy_Chan__ 1
+#ifndef __GST_SWITCH_PTZ_H__
+#define __GST_SWITCH_PTZ_H__
+
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include "gstworker.h"
@@ -58,4 +59,4 @@ typedef struct _GstSwitchPTZClass
 
 GType gst_switch_ptz_get_type (void);
 
-#endif//__GST_SWITCH_PTZ_H____by_Duzy_Chan__
+#endif //__GST_SWITCH_PTZ_H__

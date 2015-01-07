@@ -169,7 +169,7 @@ error_call_sync:
 }
 
 /**
- * @brief The the compose port number.
+ * @brief The compose port number.
  * @memberof GstSwitchClient
  */
 gint
@@ -213,7 +213,7 @@ gst_switch_client_get_encode_port (GstSwitchClient * client)
  *  @param client the GstSwitchClient instance
  *  @return the audio port number
  *
- *  The the audio port number.
+ *  The audio port number.
  *  
  */
 gint
@@ -356,7 +356,8 @@ gst_switch_client_mark_tracking_remotely (GstSwitchClient * client,
  *  
  */
 gboolean
-gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
+gst_switch_client_set_composite_mode (GstSwitchClient * client,
+    GstCompositeMode mode)
 {
   gboolean result = FALSE;
   GVariant *value = NULL;
@@ -370,7 +371,7 @@ gst_switch_client_set_composite_mode (GstSwitchClient * client, gint mode)
     if (!client->changing_composite_mode) {
       value = gst_switch_client_call_controller (client,
           "set_composite_mode",
-          g_variant_new ("(i)", mode), G_VARIANT_TYPE ("(b)"));
+          g_variant_new ("(i)", (gint) mode), G_VARIANT_TYPE ("(b)"));
       if (value) {
         g_variant_get (value, "(b)", &result);
         client->changing_composite_mode = result;
@@ -413,8 +414,8 @@ gst_switch_client_new_record (GstSwitchClient * client)
  *  @param dy y position to be adjusted
  *  @param dw w position to be adjusted
  *  @param dh h position to be adjusted
- *  @return a unsign integer indicating which components are changed of per
- *           bit.
+ *  @return a unsigned integer indicating which components are changed of per
+ *          bit.
  *
  *  Adjust the PIP.
  *

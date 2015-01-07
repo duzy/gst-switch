@@ -63,4 +63,4 @@ GType gst_assess_get_type (void);
 
 G_END_DECLS
 
-#endif//__GST_ASSESS_H__
+#endif //__GST_ASSESS_H__

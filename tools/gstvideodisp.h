@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_VIDEO_DISP_H__by_Duzy_Chan__
-#define __GST_VIDEO_DISP_H__by_Duzy_Chan__ 1
+#ifndef __GST_VIDEO_DISP_H__
+#define __GST_VIDEO_DISP_H__
+
 #include "gstworker.h"
 
 #define GST_TYPE_VIDEO_DISP (gst_video_disp_get_type ())
@@ -63,4 +64,4 @@ struct _GstVideoDispClass
 
 GType gst_video_disp_get_type (void);
 
-#endif //__GST_VIDEO_DISP_H__by_Duzy_Chan__
+#endif //__GST_VIDEO_DISP_H__

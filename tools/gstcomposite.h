@@ -25,8 +25,9 @@
 
 /*! @file */
 
-#ifndef __GST_COMPOSITE_H__by_Duzy_Chan__
-#define __GST_COMPOSITE_H__by_Duzy_Chan__ 1
+#ifndef __GST_COMPOSITE_H__
+#define __GST_COMPOSITE_H__
+
 #include "gstworker.h"
 
 #define GST_TYPE_COMPOSITE (gst_composite_get_type ())
@@ -50,19 +51,34 @@
 #define GST_SWITCH_FACEDETECT_FRAME_WIDTH	150
 #define GST_SWITCH_FACEDETECT_FRAME_HEIGHT	100
 
-#define DEFAULT_COMPOSE_MODE COMPOSE_MODE_3
+#define DEFAULT_COMPOSE_MODE COMPOSE_MODE_DUAL_EQUAL
 
 /**
  *  @enum GstCompositeMode:
  */
 typedef enum
 {
-  COMPOSE_MODE_0,               /*!< none */
-  COMPOSE_MODE_1,               /*!< picture-in-picture */
-  COMPOSE_MODE_2,               /*!< side-by-side (preview) */
-  COMPOSE_MODE_3,               /*!< side-by-side (equal) */
-  COMPOSE_MODE__LAST = COMPOSE_MODE_3
+  COMPOSE_MODE_NONE,            /*!< none */
+  COMPOSE_MODE_PIP,             /*!< picture-in-picture */
+  COMPOSE_MODE_DUAL_PREVIEW,    /*!< side-by-side (preview) */
+  COMPOSE_MODE_DUAL_EQUAL,      /*!< side-by-side (equal) */
+  COMPOSE_MODE__LAST = COMPOSE_MODE_DUAL_EQUAL
 } GstCompositeMode;
+
+inline static const char* gst_composite_mode_to_string(GstCompositeMode mode) {
+  switch(mode) {
+  case COMPOSE_MODE_NONE:
+    return "COMPOSE_MODE_NONE";
+  case COMPOSE_MODE_PIP:
+    return "COMPOSE_MODE_PIP";
+  case COMPOSE_MODE_DUAL_PREVIEW:
+    return "COMPOSE_MODE_DUAL_PREVIEW";
+  case COMPOSE_MODE_DUAL_EQUAL:
+    return "COMPOSE_MODE_DUAL_EQUAL";
+  }
+  //ASSERT(false);
+  return "COMPOSE_INVALID_VALUE";
+}
 
 typedef struct _GstComposite GstComposite;
 typedef struct _GstCompositeClass GstCompositeClass;
@@ -89,7 +105,7 @@ typedef struct _GstCompositeClass GstCompositeClass;
  *  @param adjusting the status of adjusting PIP
  *  @param transition the status of transiting modes
  *  @param deprecated (deprecated)
- *  @param scaler the scaller for A/B videos
+ *  @param scaler the scaler for A/B videos
  */
 struct _GstComposite
 {
@@ -139,4 +155,4 @@ GType gst_composite_get_type (void);
 gboolean gst_composite_adjust_pip (GstComposite * composite,
     gint x, gint y, gint w, gint h);
 
-#endif //__GST_COMPOSITE_H__by_Duzy_Chan__
+#endif //__GST_COMPOSITE_H__
