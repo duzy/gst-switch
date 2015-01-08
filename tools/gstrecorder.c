@@ -286,73 +286,52 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
 
   desc = g_string_new ("");
 
-  g_string_append_printf (desc, "intervideosrc name=source_video "
-      "channel=composite_video ");
-  g_string_append_printf (desc, "interaudiosrc name=source_audio "
-      "channel=composite_audio ");
-
-  g_string_append_printf (desc,
-      "source_video. ! video/x-raw,width=%d,height=%d ",
-      rec->width, rec->height);
-  /*
-     ASSESS ("assess-record-video-source");
-   */
-  g_string_append_printf (desc, "! queue2 ");
-  /*
-     ASSESS ("assess-record-video-encode-queued");
-   */
-  g_string_append_printf (desc, "! vp8enc ");
-  /*
-     ASSESS ("assess-record-video-encoded");
-   */
+  // Encode the video with lossless jpeg
+  g_string_append_printf (
+      desc,
+      "intervideosrc name=source_video channel=composite_video ");
+  g_string_append_printf (
+      desc,
+      "! video/x-raw,width=%d,height=%d ", rec->width, rec->height);
+  g_string_append_printf (desc, "! jpegenc quality=100 ");
   g_string_append_printf (desc, "! mux. ");
+  g_string_append_printf (desc, "\n");
 
+  // Don't encode the audio
+  g_string_append_printf (
+      desc,
+      "interaudiosrc name=source_audio channel=composite_audio ");
   g_string_append_printf (desc, "source_audio. ");
-  /*
-     ASSESS ("assess-record-audio-source");
-   */
-  g_string_append_printf (desc, "! queue2 ");
-  /*
-     ASSESS ("assess-record-audio-queued");
-   */
-  g_string_append_printf (desc, "! voaacenc ");
-  /*
-     ASSESS ("assess-record-audio-encoded");
-   */
   g_string_append_printf (desc, "! mux. ");
+  g_string_append_printf (desc, "\n");
 
-  g_string_append_printf (desc, "avimux name=mux ");
-  /*
-     ASSESS ("assess-record-mux-result");
-   */
+  // Output in streamable mkv format
+  g_string_append_printf (
+      desc,
+      "matroskamux name=mux streamable=true writing-app='gst-switch' ");
   g_string_append_printf (desc, "! tee name=result ");
+  g_string_append_printf (desc, "\n");
 
   if (filename) {
-    g_string_append_printf (desc, "filesink name=disk_sink sync=false "
-        "location=\"%s\" ", filename);
-    g_free ((gpointer) filename);
     g_string_append_printf (desc, "result. ");
-    /*
-       ASSESS ("assess-record-file-to-queue");
-     */
     g_string_append_printf (desc, "! queue2 ");
-    /*
-       ASSESS ("assess-record-file-to-sink");
-     */
-    g_string_append_printf (desc, "! disk_sink. ");
+    g_string_append_printf (
+        desc,
+        "! filesink name=disk_sink sync=false location=\"%s\" ", filename);
+    g_free ((gpointer) filename);
+    g_string_append_printf (desc, "\n");
   }
 
-  g_string_append_printf (desc, "tcpserversink name=tcp_sink sync=false "
-      "port=%d ", rec->sink_port);
   g_string_append_printf (desc, "result. ");
-  /*
-     ASSESS ("assess-record-tcp-to-queue");
-   */
   g_string_append_printf (desc, "! queue2 ");
-  /*
-     ASSESS ("assess-record-tcp-to-sink");
-   */
-  g_string_append_printf (desc, "! gdppay ! tcp_sink. ");
+  g_string_append_printf (desc, "! gdppay ");
+  g_string_append_printf (
+      desc,
+      "! tcpserversink name=tcp_sink sync=false port=%d ",
+      rec->sink_port);
+
+  INFO("Recording pipeline\n----\n%s\n---", desc->str);
+
   return desc;
 }
 

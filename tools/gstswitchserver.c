@@ -53,7 +53,7 @@
 
 #define GST_SWITCH_SERVER_HOST_SPEC "%q"
 #define GST_SWITCH_SERVER_DEFAULT_RECORD_FILE "recording-%q-%Y%m%d-%H%M%S"
-#define GST_SWITCH_SERVER_DEFAULT_RECORD_EXT ".avi"
+#define GST_SWITCH_SERVER_DEFAULT_RECORD_EXT ".mkv"
 
 #define GST_SWITCH_SERVER_LOCK_MAIN_LOOP(srv) (g_mutex_lock (&(srv)->main_loop_lock))
 #define GST_SWITCH_SERVER_UNLOCK_MAIN_LOOP(srv) (g_mutex_unlock (&(srv)->main_loop_lock))
