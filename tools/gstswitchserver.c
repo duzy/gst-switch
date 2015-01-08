@@ -52,7 +52,7 @@
 #define GST_SWITCH_SERVER_LISTEN_BACKLOG 8      /* client connection queue */
 
 #define GST_SWITCH_SERVER_HOST_SPEC "%q"
-#define GST_SWITCH_SERVER_DEFAULT_RECORD_FILE GST_SWITCH_SERVER_HOST_SPEC "_record_%Y%m%d%T"
+#define GST_SWITCH_SERVER_DEFAULT_RECORD_FILE "recording-%q-%Y%m%d-%H%M%S"
 #define GST_SWITCH_SERVER_DEFAULT_RECORD_EXT ".avi"
 
 #define GST_SWITCH_SERVER_LOCK_MAIN_LOOP(srv) (g_mutex_lock (&(srv)->main_loop_lock))
