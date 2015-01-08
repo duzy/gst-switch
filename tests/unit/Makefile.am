@@ -9,6 +9,9 @@ test_gstrecorder_filename_SOURCES = test_gstrecorder_filename.c ../../tools/gstw
 test_gstrecorder_filename_CFLAGS = -fprofile-arcs $(GST_CFLAGS) $(GST_BASE_CFLAGS) \
   $(GCOV_CFLAGS) $(GST_PLUGINS_BASE_CFLAGS) -DLOG_PREFIX="\"./tests\""
 test_gstrecorder_filename_LDFLAGS = $(GCOV_LFLAGS)
+test_gstcomposite_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) \
+  $(GCOV_CFLAGS) $(GST_PLUGINS_BASE_CFLAGS) -DLOG_PREFIX="\"./tests\""
+test_gstcomposite_LDFLAGS = $(GCOV_LFLAGS)
 
 dist_test_data = \
   $(NULL)
