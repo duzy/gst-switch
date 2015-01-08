@@ -86,48 +86,53 @@ GstSwitchServerOpts opts = {
 
 gboolean verbose = FALSE;
 
-static gboolean gparse_record_filename(gchar *name, gchar *value, gpointer data, GError **error)
+static gboolean
+gparse_record_filename (gchar * name, gchar * value, gpointer data,
+    GError ** error)
 {
   size_t maxpathlen = 256;
-  gchar fnbuf[maxpathlen+1];
+  gchar fnbuf[maxpathlen + 1];
   size_t fnlen = 0;
 
-  if (value == NULL || (fnlen = strlen(value)) == 0) {
+  if (value == NULL || (fnlen = strlen (value)) == 0) {
     // file not specified, use the default filename.ext
-    strncpy(fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_FILE, sizeof(fnbuf) - 5);
-    strcat(fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_EXT);
+    strncpy (fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_FILE, sizeof (fnbuf) - 5);
+    strcat (fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_EXT);
   } else if (fnlen < maxpathlen) {
-    strncpy(fnbuf, value, sizeof(fnbuf));
-    if ((fnlen < 5 || strchr(value + fnlen - 5, '.') == NULL) && fnlen + 4 < maxpathlen)
-      strcat(fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_EXT);
+    strncpy (fnbuf, value, sizeof (fnbuf));
+    if ((fnlen < 5 || strchr (value + fnlen - 5, '.') == NULL)
+        && fnlen + 4 < maxpathlen)
+      strcat (fnbuf, GST_SWITCH_SERVER_DEFAULT_RECORD_EXT);
   } else {
-    GError *err = g_error_new(G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE, "%s path/filename too long: %s\n", name, value);
-    g_propagate_error(error, err);
+    GError *err = g_error_new (G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
+        "%s path/filename too long: %s\n", name, value);
+    g_propagate_error (error, err);
     return FALSE;
   }
 
   // Do manual substitution of %q => hostname up front since this is static
   // Time and date tokens are substituted within the recorder as the recording
   // is started or cut to accurately reflect the date/time of recording
-  char *h = strstr(fnbuf, GST_SWITCH_SERVER_HOST_SPEC);
+  char *h = strstr (fnbuf, GST_SWITCH_SERVER_HOST_SPEC);
   if (h != NULL) {
-    int mnlen = maxpathlen - fnlen; // limit size to what is available
+    int mnlen = maxpathlen - fnlen;     // limit size to what is available
     char hostname[mnlen + 1];
-    if (gethostname(hostname, mnlen) != 0)
-      strcpy(hostname, GST_SWITCH_SERVER_DEFAULT_HOST);
-    else hostname[mnlen] = '\0';
-    int hnlen = strlen(hostname);
-    hostname[hnlen] = '\0'; // guarantee nul termination
-    fnlen = strlen(fnbuf);
+    if (gethostname (hostname, mnlen) != 0)
+      strcpy (hostname, GST_SWITCH_SERVER_DEFAULT_HOST);
+    else
+      hostname[mnlen] = '\0';
+    int hnlen = strlen (hostname);
+    hostname[hnlen] = '\0';     // guarantee nul termination
+    fnlen = strlen (fnbuf);
     do {
       size_t over = fnlen - (h - fnbuf) + 1;
-      memmove(h + hnlen, h + 2, over);
-      memcpy(h, hostname, hnlen);
-      fnlen += (hnlen - 2); // adjust the result length
-    } while ((h = strstr(fnbuf, GST_SWITCH_SERVER_HOST_SPEC)) != NULL);
+      memmove (h + hnlen, h + 2, over);
+      memcpy (h, hostname, hnlen);
+      fnlen += (hnlen - 2);     // adjust the result length
+    } while ((h = strstr (fnbuf, GST_SWITCH_SERVER_HOST_SPEC)) != NULL);
   }
 
-  opts.record_filename = g_strdup(fnbuf);
+  opts.record_filename = g_strdup (fnbuf);
   return TRUE;
 }
 
@@ -137,7 +142,7 @@ static GOptionEntry entries[] = {
   {"test-switch", 't', 0, G_OPTION_ARG_STRING, &opts.test_switch,
       "Perform switch test", "OUTPUT"},
   {"record", 'r', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK,
-      (gpointer)gparse_record_filename,
+        (gpointer) gparse_record_filename,
       "Enable recorder and record into the specified FILENAME"},
   {"video-input-port", 'p', 0, G_OPTION_ARG_INT, &opts.video_input_port,
       "Specify the video input listen port.", "NUM"},
@@ -164,6 +169,9 @@ gst_switch_server_parse_args (int *argc, char **argv[])
   g_option_context_add_group (context, gst_init_get_option_group ());
   if (!g_option_context_parse (context, argc, argv, &error)) {
     ERROR ("option parsing failed: %s", error->message);
+    exit (1);
+  } else if (argc > 1) {
+    ERROR ("unknown option: %s", argv[1]);
     exit (1);
   }
 
@@ -1801,7 +1809,7 @@ static unsigned long long i = 0;
 void
 my_handler (int signum)
 {
-  extern void __gcov_flush();
+  extern void __gcov_flush ();
   printf ("received signal\n");
   printf ("%llu\n", i);
   __gcov_flush ();              /* dump coverage data on receiving SIGUSR1 */
