@@ -301,14 +301,17 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
   g_string_append_printf (
       desc,
       "interaudiosrc name=source_audio channel=composite_audio ");
-  g_string_append_printf (desc, "source_audio. ");
   g_string_append_printf (desc, "! mux. ");
   g_string_append_printf (desc, "\n");
 
   // Output in streamable mkv format
   g_string_append_printf (
       desc,
-      "matroskamux name=mux streamable=true writing-app='gst-switch' ");
+      "matroskamux name=mux"
+      " streamable=true "
+      " writing-app='gst-switch' "
+      " min-index-interval=1000000 "
+      );
   g_string_append_printf (desc, "! tee name=result ");
   g_string_append_printf (desc, "\n");
 

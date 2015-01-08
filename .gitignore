@@ -65,8 +65,8 @@ imgurbash.sh.*
 /timestamped*
 /frames
 /transition-strips
-/record*.dat
-*.data
-*.log
 /tools/gst-switch-ptz
 test-driver
+*.dat*
+*.avi
+*.mkv
