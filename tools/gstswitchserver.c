@@ -170,7 +170,7 @@ gst_switch_server_parse_args (int *argc, char **argv[])
   if (!g_option_context_parse (context, argc, argv, &error)) {
     ERROR ("option parsing failed: %s", error->message);
     exit (1);
-  } else if (argc > 1) {
+  } else if (*argc > 1) {
     ERROR ("unknown option: %s", argv[1]);
     exit (1);
   }
