@@ -396,7 +396,7 @@ gst_case_get_pipeline_string (GstCase * cas)
            else 
            ASSESS ("assess-audio-input-%d", cas->sink_port);
          */
-        //g_string_append_printf (desc, "! gdpdepay ");
+        g_string_append_printf (desc, "! gdpdepay ");
         g_string_append_printf (desc, "! sink. ");
       } else if (cas->type == GST_CASE_PREVIEW) {
         g_string_append_printf (desc, "source. " "! video/x-raw,width=%d,height=%d ", cas->width, cas->height); //cas->a_width, cas->a_height);
