@@ -293,6 +293,7 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
   g_string_append_printf (
       desc,
       "! video/x-raw,width=%d,height=%d ", rec->width, rec->height);
+  g_string_append_printf (desc, "! queue2 ");
   g_string_append_printf (desc, "! jpegenc quality=100 ");
   g_string_append_printf (desc, "! mux. ");
   g_string_append_printf (desc, "\n");
@@ -301,6 +302,7 @@ gst_recorder_get_pipeline_string (GstRecorder * rec)
   g_string_append_printf (
       desc,
       "interaudiosrc name=source_audio channel=composite_audio ");
+  g_string_append_printf (desc, "! queue2 ");
   g_string_append_printf (desc, "! mux. ");
   g_string_append_printf (desc, "\n");
 
