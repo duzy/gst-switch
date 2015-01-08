@@ -256,7 +256,28 @@ gst-switch is tested with the following video frame rates;
 
 The default audio input port is *4000*.
 
-*FIXME: What is the required audio format?*
+Audio input must be in;
+```
+      audio/x-raw
+                 format: S16LE
+                   rate: 48000
+               channels: 2
+                 layout: interleaved
+```
+
+##### Example test audio feed
+
+```
+gst-launch-1.0 audiotestsrc is-live=true \
+        ! audioconvert \
+        ! audio/x-raw,rate=48000,channels=2,format=S16LE,layout=interleaved \
+        ! gdppay \
+        ! tcpclientsink port=4000
+```
+
+##### Example real audio feed
+
+
 
 #### Control Port
 
