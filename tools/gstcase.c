@@ -281,167 +281,83 @@ gst_case_set_property (GstCase * cas, guint property_id,
 static GString *
 gst_case_get_pipeline_string (GstCase * cas)
 {
-  GString *desc;
-  gchar *channel = NULL;
-  gchar *caps = NULL;
-  gchar *scale = NULL;
-  gchar *srctype = NULL;
-  gchar *sink = NULL;
+  gboolean is_audiostream = cas->serve_type == GST_SERVE_AUDIO_STREAM;
+  GString *desc = g_string_new ("");
+  GString *caps = g_string_new ("");
 
-  desc = g_string_new ("");
+  if (!is_audiostream)
+    g_string_append_printf (caps, "video/x-raw,width=%d,height=%d", cas->width,
+        cas->height);
 
   switch (cas->type) {
     case GST_CASE_INPUT_AUDIO:
-    case GST_CASE_INPUT_VIDEO:
-      g_string_append_printf (desc, "giostreamsrc name=source ");
+      g_string_append_printf (desc,
+          "giostreamsrc name=source ! interaudiosink name=sink channel=input_%d",
+          cas->sink_port);
       break;
+
+    case GST_CASE_INPUT_VIDEO:
+      g_string_append_printf (desc,
+          "giostreamsrc name=source ! gdpdepay ! intervideosink name=sink channel=input_%d",
+          cas->sink_port);
+      break;
+
+    case GST_CASE_PREVIEW:
+      if (is_audiostream) {
+        g_string_append_printf (desc,
+            "interaudiosrc name=source channel=input_%d ! interaudiosink name=sink channel=branch_%d",
+            cas->sink_port, cas->sink_port);
+      } else {
+        g_string_append_printf (desc,
+            "intervideosrc name=source channel=input_%d ! %s ! intervideosink name=sink channel=branch_%d",
+            cas->sink_port, caps->str, cas->sink_port);
+      }
+      break;
+
+    case GST_CASE_COMPOSITE_AUDIO:
+      g_string_append_printf (desc,
+          "interaudiosrc name=source channel=branch_%d ! tee name=s "
+          "s. ! queue2 ! interaudiosink name=sink1 channel=branch_%d "
+          "s. ! queue2 ! interaudiosink name=sink2 channel=composite_audio",
+          cas->sink_port, cas->sink_port);
+      break;
+
     case GST_CASE_COMPOSITE_VIDEO_A:
     case GST_CASE_COMPOSITE_VIDEO_B:
-    case GST_CASE_COMPOSITE_AUDIO:
-    case GST_CASE_PREVIEW:
-      if (srctype == NULL)
-        srctype = "input";
+    {
+      gchar *channel = cas->type == GST_CASE_COMPOSITE_VIDEO_A ? "a" : "b";
+      g_string_append_printf (desc,
+          "intervideosrc name=source channel=branch_%d ! %s ! tee name=s "
+          "s. ! queue2 ! intervideosink name=sink1 channel=branch_%d "
+          "s. ! queue2 ! intervideosink name=sink2 channel=composite_%s",
+          cas->sink_port, caps->str, cas->sink_port, channel);
+      break;
+    }
+
+    case GST_CASE_BRANCH_AUDIO:
+      g_string_append_printf (desc,
+          "interaudiosrc name=source channel=branch_%d ! voaacenc ! gdppay ! tcpserversink name=sink port=%d",
+          cas->sink_port, cas->sink_port);
+      break;
+
     case GST_CASE_BRANCH_VIDEO_A:
     case GST_CASE_BRANCH_VIDEO_B:
-    case GST_CASE_BRANCH_AUDIO:
+      g_string_append_printf (desc,
+          "intervideosrc name=source channel=branch_%d ! %s ! gdppay ! tcpserversink name=sink port=%d\n",
+          cas->sink_port, caps->str, cas->sink_port);
+      break;
+
     case GST_CASE_BRANCH_PREVIEW:
-      if (srctype == NULL)
-        srctype = "branch";
-      if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-        g_string_append_printf (desc, "interaudiosrc");
-      } else {
-        g_string_append_printf (desc, "intervideosrc");
-      }
-      g_string_append_printf (desc, " name=source channel=%s_%d ",
-          srctype, cas->sink_port);
+      g_string_append_printf (desc,
+          "intervideosrc name=source channel=input_%d ! %s ! intervideosink name=sink channel=branch_%d",
+          cas->sink_port, caps->str, cas->sink_port);
       break;
     default:
-      ERROR ("unknown case %d", cas->type);
-      break;
-  }
-
-  srctype = NULL;
-
-  switch (cas->type) {
-    case GST_CASE_COMPOSITE_VIDEO_A:
-      if (channel == NULL)
-        channel = "a";
-      if (scale == NULL)
-        scale =
-            g_strdup_printf ("videoscale ! video/x-raw,width=%d,height=%d",
-            cas->a_width, cas->a_height);
-    case GST_CASE_COMPOSITE_VIDEO_B:
-      if (channel == NULL)
-        channel = "b";
-      if (scale == NULL)
-        scale =
-            g_strdup_printf ("videoscale ! video/x-raw,width=%d,height=%d",
-            cas->b_width, cas->b_height);
-      caps =
-          g_strdup_printf ("video/x-raw,width=%d,height=%d", cas->width,
-          cas->height);
-      sink = "intervideosink";
-    case GST_CASE_COMPOSITE_AUDIO:
-      if (channel == NULL)
-        channel = "audio";
-      if (sink == NULL)
-        sink = "interaudiosink";
-      g_string_append_printf (desc, "source. ");
-      /*
-         ASSESS ("assess-composite-%s-source-%d", channel, cas->sink_port);
-       */
-      if (caps)
-        g_string_append_printf (desc, "! %s ", caps);
-      g_string_append_printf (desc, "! tee name=s ");
-      g_string_append_printf (desc, "s. ! queue2 ");
-      /*
-         ASSESS ("assess-composite-%s-branch-%d", channel, cas->sink_port);
-       */
-      g_string_append_printf (desc, "! %s name=sink1 channel=branch_%d ",
-          sink, cas->sink_port);
-      g_string_append_printf (desc, "s. ! queue2 ");
-      if (scale) {
-        /*
-           g_string_append_printf (desc, "! %s", scale);
-         */
-      }
-      ASSESS ("assess-composite-%s-compose-%d", channel, cas->sink_port);
-      g_string_append_printf (desc, "! %s name=sink2 channel=composite_%s ",
-          sink, channel);
-      if (scale)
-        g_free (scale), scale = NULL;
-      if (caps)
-        g_free (caps), caps = NULL;
-      break;
-    case GST_CASE_PREVIEW:
-      if (srctype == NULL)
-        srctype = "branch";
-    case GST_CASE_INPUT_AUDIO:
-    case GST_CASE_INPUT_VIDEO:
-      if (srctype == NULL)
-        srctype = "input";
-      if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-        g_string_append_printf (desc, "interaudiosink");
-      } else {
-        g_string_append_printf (desc, "intervideosink");
-      }
-      g_string_append_printf (desc, " name=sink channel=%s_%d ",
-          srctype, cas->sink_port);
-
-      if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-        g_string_append_printf (desc, "source. ");
-        /*
-           if (cas->type == GST_CASE_PREVIEW)
-           ASSESS ("assess-audio-preview-%d", cas->sink_port);
-           else 
-           ASSESS ("assess-audio-input-%d", cas->sink_port);
-         */
-        //g_string_append_printf (desc, "! gdpdepay ");
-        g_string_append_printf (desc, "! sink. ");
-      } else if (cas->type == GST_CASE_PREVIEW) {
-        g_string_append_printf (desc, "source. " "! video/x-raw,width=%d,height=%d ", cas->width, cas->height); //cas->a_width, cas->a_height);
-        /*
-           ASSESS ("assess-video-preview-%d", cas->sink_port);
-         */
-        g_string_append_printf (desc, "! sink. ");
-      } else {
-        g_string_append_printf (desc, "source. ");
-        ASSESS ("assess-video-input-%d", cas->sink_port);
-        g_string_append_printf (desc, "! gdpdepay ! sink. ");
-      }
-      break;
-    case GST_CASE_BRANCH_VIDEO_A:
-    case GST_CASE_BRANCH_VIDEO_B:
-    case GST_CASE_BRANCH_AUDIO:
-    case GST_CASE_BRANCH_PREVIEW:
-      g_string_append_printf (desc, "tcpserversink name=sink port=%d ",
-          cas->sink_port);
-      g_string_append_printf (desc, "source. ");
-      if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-        /*
-           ASSESS ("assess-branch-source-%d", cas->sink_port);
-         */
-        g_string_append_printf (desc, "! voaacenc ");
-        /*
-           ASSESS ("assess-branch-audio-encoded-%d", cas->sink_port);
-         */
-      } else {
-        g_string_append_printf (desc, "! video/x-raw,width=%d,height=%d ", cas->width, cas->height);    //cas->a_width, cas->a_height);
-        /*
-           ASSESS ("assess-branch-source-%d", cas->sink_port);
-         */
-      }
-      g_string_append_printf (desc, "! gdppay ");
-      /*
-         ASSESS ("assess-branch-payed-%d", cas->sink_port);
-       */
-      g_string_append_printf (desc, "! sink. ");
-      break;
-    case GST_CASE_UNKNOWN:
       ERROR ("unknown case (%d)", cas->type);
       break;
   }
 
+  g_string_free (caps, TRUE);
   return desc;
 }
 
