@@ -292,7 +292,7 @@ gst_case_get_pipeline_string (GstCase * cas)
   switch (cas->type) {
     case GST_CASE_INPUT_AUDIO:
       g_string_append_printf (desc,
-          "giostreamsrc name=source ! interaudiosink name=sink channel=input_%d",
+          "giostreamsrc name=source ! gdpdepay ! interaudiosink name=sink channel=input_%d",
           cas->sink_port);
       break;
 
@@ -305,7 +305,7 @@ gst_case_get_pipeline_string (GstCase * cas)
     case GST_CASE_PREVIEW:
       if (is_audiostream) {
         g_string_append_printf (desc,
-            "interaudiosrc name=source channel=input_%d ! interaudiosink name=sink channel=branch_%d",
+            "interaudiosrc name=source channel=input_%d ! audioparse raw-format=s16le rate=48000 ! interaudiosink name=sink channel=branch_%d",
             cas->sink_port, cas->sink_port);
       } else {
         g_string_append_printf (desc,
@@ -316,7 +316,7 @@ gst_case_get_pipeline_string (GstCase * cas)
 
     case GST_CASE_COMPOSITE_AUDIO:
       g_string_append_printf (desc,
-          "interaudiosrc name=source channel=input_%d ! tee name=s "
+          "interaudiosrc name=source channel=input_%d ! audioparse raw-format=s16le rate=48000 ! tee name=s "
           "s. ! queue2 ! interaudiosink name=sink1 channel=branch_%d "
           "s. ! queue2 ! interaudiosink name=sink2 channel=composite_audio",
           cas->sink_port, cas->sink_port);
