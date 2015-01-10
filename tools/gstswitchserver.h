@@ -62,6 +62,9 @@ struct _GstSwitchServerOpts
   gint video_input_port;
   gint audio_input_port;
   gint control_port;
+//should really be in here
+//gboolean verbose;
+  GstCaps *video_caps;
 };
 
 /**

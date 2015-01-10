@@ -82,6 +82,8 @@ GstSwitchServerOpts opts = {
   GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT,
   GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT,
   GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
+//FALSE,
+  NULL
 };
 
 gboolean verbose = FALSE;
@@ -136,6 +138,20 @@ gparse_record_filename (gchar * name, gchar * value, gpointer data,
   return TRUE;
 }
 
+
+extern int
+parse_format (const gchar * format, GstCaps **final_caps, GError **err);
+
+static gboolean
+gparse_video_format (gchar * name, gchar * value, gpointer data,
+    GError ** error)
+{
+  if (parse_format(value, &opts.video_caps, error) == -1)
+    return FALSE;
+  return TRUE;
+}
+
+
 static GOptionEntry entries[] = {
   {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
       "Prompt more messages", NULL},
@@ -144,6 +160,9 @@ static GOptionEntry entries[] = {
   {"record", 'r', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK,
         (gpointer) gparse_record_filename,
       "Enable recorder and record into the specified FILENAME"},
+  {"video-format", 'f', 0, G_OPTION_ARG_CALLBACK,
+        (gpointer) gparse_video_format,
+      "Specify the video format to use (shortcuts supported)"},
   {"video-input-port", 'p', 0, G_OPTION_ARG_INT, &opts.video_input_port,
       "Specify the video input listen port.", "NUM"},
   {"audio-input-port", 'a', 0, G_OPTION_ARG_INT, &opts.audio_input_port,
@@ -171,7 +190,7 @@ gst_switch_server_parse_args (int *argc, char **argv[])
     ERROR ("option parsing failed: %s", error->message);
     exit (1);
   } else if (*argc > 1) {
-    ERROR ("unknown option: %s", argv[1]);
+    ERROR ("unknown option: %s", (*argv)[1]);
     exit (1);
   }
 

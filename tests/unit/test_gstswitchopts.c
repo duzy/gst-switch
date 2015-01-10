@@ -4,31 +4,32 @@
 static void
 test_strings_good (void)
 {
-  g_assert_cmpint (parse_format ("debug"), ==, 0);
-  g_assert_cmpint (parse_format ("pal"), ==, 0);
-  g_assert_cmpint (parse_format ("720p60"), ==, 0);
-  g_assert_cmpint (parse_format ("1024x768@60"), ==, 0);
-  g_assert_cmpint (parse_format ("VGA@60"), ==, 0);
-  g_assert_cmpint (parse_format ("4k@60"), ==, 0);
+  g_assert_cmpint (parse_format ("debug", NULL, NULL), ==, 0);
+  g_assert_cmpint (parse_format ("pal", NULL, NULL), ==, 0);
+  g_assert_cmpint (parse_format ("720p60", NULL, NULL), ==, 0);
+  g_assert_cmpint (parse_format ("1024x768@60", NULL, NULL), ==, 0);
+  g_assert_cmpint (parse_format ("VGA@60", NULL, NULL), ==, 0);
+  g_assert_cmpint (parse_format ("4k@60", NULL, NULL), ==, 0);
   g_assert_cmpint (parse_format
-      ("video/x-raw,height=400,width=500,framerate=25/1"), ==, 0);
+      ("video/x-raw,height=400,width=500,framerate=25/1", NULL, NULL), ==, 0);
 }
 
 static void
 test_strings_bad (void)
 {
   g_assert_cmpint (parse_format
-      ("video/x-raw,height=[400,800],width=500,framerate=25/1"), ==, -1);
-  g_assert_cmpint (parse_format ("720p@75"), ==, -1);
-  g_assert_cmpint (parse_format ("bad-format-string"), ==, -1);
+      ("video/x-raw,height=[400,800],width=500,framerate=25/1", NULL, NULL), ==,
+      -1);
+  g_assert_cmpint (parse_format ("720p@75", NULL, NULL), ==, -1);
+  g_assert_cmpint (parse_format ("bad-format-string", NULL, NULL), ==, -1);
   g_assert_cmpint (parse_format
-      ("video/x-raw,height=10,width=500,framerate=25/1"), ==, -1);
+      ("video/x-raw,height=10,width=500,framerate=25/1", NULL, NULL), ==, -1);
   g_assert_cmpint (parse_format
-      ("video/x-raw,height=400,width=10,framerate=25/1"), ==, -1);
+      ("video/x-raw,height=400,width=10,framerate=25/1", NULL, NULL), ==, -1);
   g_assert_cmpint (parse_format
-      ("video/x-raw,height=400,width=10,framerate=1001/1"), ==, -1);
-// the following actually works but it shouldn't
-//  g_assert_cmpint (parse_format("pal@75"), ==, -1);
+      ("video/x-raw,height=400,width=10,framerate=1001/1", NULL, NULL), ==, -1);
+// @FIXME the following actually works but it shouldn't
+//  g_assert_cmpint (parse_format("pal@75", NULL, NULL), ==, -1);
 }
 
 int
