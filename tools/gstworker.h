@@ -105,6 +105,7 @@ struct _GstWorker
     //GstSwitchServer *server; /*!<  */
 
   GMutex pipeline_lock; /*!< Mutex for %pipeline */
+  GCond shutdown_cond; /*!< Cond for shutting down pipelines cleanly */
   GstElement *pipeline; /*!< The pipeline. */
   GstBus *bus; /*!< The pipeline bus. */
 
@@ -115,6 +116,11 @@ struct _GstWorker
   gboolean auto_replay; /*!< The worker should replay if it's TRUE */
   gboolean paused_for_buffering; /*!< Mark for buffering pause. */
   guint watch; /*!< The watch number of the pipeline bus. */
+
+  /*!< TRUE if the recording pipeline needs clean shut-down
+   * via an EOS event to finish up before stopping
+   */
+  gboolean send_eos_on_stop;
 };
 
 /**
