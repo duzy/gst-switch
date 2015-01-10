@@ -349,7 +349,7 @@ gst_case_get_pipeline_string (GstCase * cas)
 
     case GST_CASE_BRANCH_PREVIEW:
       g_string_append_printf (desc,
-          "intervideosrc name=source channel=branch_%d ! %s ! gdppay ! intervideosink name=sink",
+          "intervideosrc name=source channel=branch_%d ! %s ! gdppay ! tcpserversink name=sink port=%d\n",
           cas->sink_port, caps->str, cas->sink_port);
       break;
     default:
