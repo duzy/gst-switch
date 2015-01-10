@@ -84,6 +84,7 @@ gst_worker_init (GstWorker * worker)
   worker->watch = 0;
 
   g_mutex_init (&worker->pipeline_lock);
+  g_cond_init (&worker->shutdown_cond);
 
   //INFO ("gst_worker init %p", worker);
 }
@@ -145,6 +146,7 @@ gst_worker_finalize (GstWorker * worker)
 
   INFO ("gst_worker finalize %p", worker);
   g_mutex_clear (&worker->pipeline_lock);
+  g_cond_clear (&worker->shutdown_cond);
 
   g_free (worker->name);
   worker->name = NULL;
@@ -378,19 +380,20 @@ gboolean
 gst_worker_stop_force (GstWorker * worker, gboolean force)
 {
   GstStateChangeReturn ret = GST_STATE_CHANGE_FAILURE;
+  gboolean no_eos;
 
   g_return_val_if_fail (GST_IS_WORKER (worker), FALSE);
 
   GST_WORKER_LOCK_PIPELINE (worker);
 
   if (worker->pipeline) {
-#if 1
     GstState state;
 
     ret = gst_element_get_state (worker->pipeline, &state, NULL,
         GST_CLOCK_TIME_NONE);
+    no_eos = (state == GST_STATE_PLAYING) && !worker->send_eos_on_stop;
 
-    if (state == GST_STATE_PLAYING || force) {
+    if (force || no_eos) {
       ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
 
       gst_bus_set_flushing (worker->bus, TRUE);
@@ -398,9 +401,13 @@ gst_worker_stop_force (GstWorker * worker, gboolean force)
       g_timeout_add (5,
           (GSourceFunc) gst_worker_state_ready_to_null_proxy, worker);
     }
-#else
-    ret = gst_element_set_state (worker->pipeline, GST_STATE_NULL);
-#endif
+    else if (state == GST_STATE_PLAYING) {
+      /* Send an EOS to cleanly shutdown */
+      gst_element_send_event (worker->pipeline, gst_event_new_eos());
+
+      /* Go to sleep until the EOS handler calls stop_force (worker, TRUE); */
+      g_cond_wait (&worker->shutdown_cond, &worker->pipeline_lock);
+    }
   }
 
   GST_WORKER_UNLOCK_PIPELINE (worker);
@@ -449,7 +456,7 @@ gst_worker_missing_plugin (GstWorker *worker, GstStructure *structure)
 static void
 gst_worker_handle_eos (GstWorker * worker)
 {
-  gst_worker_stop (worker);
+  gst_worker_stop_force (worker, TRUE);
 }
 
 static void
@@ -601,6 +608,21 @@ gst_worker_pipeline_state_changed (GstWorker * worker,
       return FALSE;
   }
   return TRUE;
+}
+
+static GstBusSyncReply
+gst_worker_message_sync (GstBus * bus, GstMessage * message, GstWorker *worker)
+{
+  switch (GST_MESSAGE_TYPE (message)) {
+    case GST_MESSAGE_EOS:
+      /* When we see EOS, wake up and gst_worker_stop that might be waiting */
+      g_cond_signal (&worker->shutdown_cond);
+      break;
+    default:
+      break;
+  }
+
+  return GST_BUS_PASS;
 }
 
 static gboolean
@@ -761,6 +783,8 @@ gst_worker_prepare_unsafe (GstWorker * worker)
 
   if (!worker->watch)
     goto error_add_watch;
+
+  gst_bus_set_sync_handler (worker->bus, (GstBusSyncHandler) (gst_worker_message_sync), worker, NULL);
 
   if (workerclass->prepare && !workerclass->prepare (worker))
     goto error_prepare;

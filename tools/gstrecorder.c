@@ -72,6 +72,9 @@ gst_recorder_init (GstRecorder * rec)
   rec->width = 0;
   rec->height = 0;
 
+  // Recording pipeline needs clean shut-down
+  // via EOS to close out each recording
+  GST_WORKER (rec)->send_eos_on_stop = TRUE;
   //INFO ("init %p", rec);
 }
 
