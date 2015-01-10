@@ -355,20 +355,18 @@ gst_switch_controller_add_new_client (GstSwitchAddNewClientParams * params)
   GDBusConnection *connection = params->connection;
   GstSwitchController *controller = params->controller;
   gint role = CLIENT_ROLE_NONE;
-  {
-    gint tests[] = { CLIENT_ROLE_UI, CLIENT_ROLE_CAPTURE, };
-    GVariant *parameters = NULL, *res = NULL;
-    int n = 0;
-    for (; n < sizeof (tests); ++n) {
-      role = CLIENT_ROLE_NONE;
-      parameters = g_variant_new ("()");
-      res = gst_switch_controller_call_client (controller,
-          connection, tests[n], "role", parameters, G_VARIANT_TYPE ("(i)"));
-      if (res) {
-        g_variant_get (res, "(i)", &role);
-        g_variant_unref (res);
-        break;
-      }
+  gint tests[] = { CLIENT_ROLE_UI, CLIENT_ROLE_CAPTURE, };
+  GVariant *parameters = NULL, *res = NULL;
+  int n = 0;
+  for (; n < sizeof (tests) / sizeof (gint); ++n) {
+    role = CLIENT_ROLE_NONE;
+    parameters = g_variant_new ("()");
+    res = gst_switch_controller_call_client (controller,
+        connection, tests[n], "role", parameters, G_VARIANT_TYPE ("(i)"));
+    if (res) {
+      g_variant_get (res, "(i)", &role);
+      g_variant_unref (res);
+      break;
     }
   }
 
