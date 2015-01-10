@@ -336,7 +336,7 @@ gst_case_get_pipeline_string (GstCase * cas)
 
     case GST_CASE_BRANCH_AUDIO:
       g_string_append_printf (desc,
-          "interaudiosrc name=source channel=branch_%d ! voaacenc ! gdppay ! tcpserversink name=sink port=%d",
+          "interaudiosrc name=source channel=branch_%d ! audioparse raw-format=s16le rate=48000 ! gdppay ! tcpserversink name=sink port=%d",
           cas->sink_port, cas->sink_port);
       break;
 
