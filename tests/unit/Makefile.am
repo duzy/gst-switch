@@ -13,6 +13,12 @@ test_gstcomposite_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) \
   $(GCOV_CFLAGS) $(GST_PLUGINS_BASE_CFLAGS) -DLOG_PREFIX="\"./tests\""
 test_gstcomposite_LDFLAGS = $(GCOV_LFLAGS)
 
+test_gst_pipeline_string_SOURCES = test_gst_pipeline_string.c ../../tools/gstworker.c
+test_gst_pipeline_string_CFLAGS = $(GST_CFLAGS) $(GST_BASE_CFLAGS) \
+  $(GCOV_CFLAGS) $(GST_PLUGINS_BASE_CFLAGS) -DLOG_PREFIX="\"./tests\""
+test_gst_pipeline_string_LDFLAGS = $(GCOV_LFLAGS)
+
+
 dist_test_data = \
   $(NULL)
 
@@ -20,6 +26,7 @@ test_programs = \
   test_gstswitchopts \
   test_gstrecorder_filename \
   test_gstcomposite \
+  test_gst_pipeline_string \
   $(NULL)
 
 if GCOV_ENABLED
