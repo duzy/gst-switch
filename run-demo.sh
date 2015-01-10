@@ -11,7 +11,7 @@ sleep 2
 
 gst-launch-1.0 audiotestsrc is-live=true \
         ! audioconvert \
-        ! audio/x-raw,rate=48000,channels=2,layout=interleaved \
+        ! audio/x-raw,rate=48000,channels=2,format=S16LE,layout=interleaved \
         ! gdppay \
         ! tcpclientsink port=4000 \
 &
