@@ -316,7 +316,7 @@ gst_case_get_pipeline_string (GstCase * cas)
 
     case GST_CASE_COMPOSITE_AUDIO:
       g_string_append_printf (desc,
-          "interaudiosrc name=source channel=branch_%d ! tee name=s "
+          "interaudiosrc name=source channel=input_%d ! tee name=s "
           "s. ! queue2 ! interaudiosink name=sink1 channel=branch_%d "
           "s. ! queue2 ! interaudiosink name=sink2 channel=composite_audio",
           cas->sink_port, cas->sink_port);
@@ -327,7 +327,7 @@ gst_case_get_pipeline_string (GstCase * cas)
     {
       gchar *channel = cas->type == GST_CASE_COMPOSITE_VIDEO_A ? "a" : "b";
       g_string_append_printf (desc,
-          "intervideosrc name=source channel=branch_%d ! %s ! tee name=s "
+          "intervideosrc name=source channel=input_%d ! %s ! tee name=s "
           "s. ! queue2 ! intervideosink name=sink1 channel=branch_%d "
           "s. ! queue2 ! intervideosink name=sink2 channel=composite_%s",
           cas->sink_port, caps->str, cas->sink_port, channel);
@@ -349,7 +349,7 @@ gst_case_get_pipeline_string (GstCase * cas)
 
     case GST_CASE_BRANCH_PREVIEW:
       g_string_append_printf (desc,
-          "intervideosrc name=source channel=input_%d ! %s ! intervideosink name=sink channel=branch_%d",
+          "intervideosrc name=source channel=branch_%d ! %s ! gdppay ! intervideosink name=sink",
           cas->sink_port, caps->str, cas->sink_port);
       break;
     default:
