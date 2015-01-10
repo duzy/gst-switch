@@ -308,12 +308,18 @@ gst_case_get_pipeline_string (GstCase * cas)
       if (srctype == NULL)
         srctype = "branch";
       if (cas->serve_type == GST_SERVE_AUDIO_STREAM) {
-        g_string_append_printf (desc, "interaudiosrc");
+        g_string_append_printf (desc, "interaudiosrc channel=%s_%d ",
+            srctype, cas->sink_port);
+        // Work around dumb fixed-bogus-caps interaudiosrc in older GStreamer
+        // that can only do 48khz stereo, but outputs wrong caps (no layout
+        // property)
+        g_string_append_printf (desc,
+            "! audioparse raw-format=s16le rate=48000 name=source ");
       } else {
-        g_string_append_printf (desc, "intervideosrc");
+        g_string_append_printf (desc,
+            "intervideosrc name=source channel=%s_%d ", srctype,
+            cas->sink_port);
       }
-      g_string_append_printf (desc, " name=source channel=%s_%d ",
-          srctype, cas->sink_port);
       break;
     default:
       ERROR ("unknown case %d", cas->type);
@@ -396,7 +402,7 @@ gst_case_get_pipeline_string (GstCase * cas)
            else 
            ASSESS ("assess-audio-input-%d", cas->sink_port);
          */
-        //g_string_append_printf (desc, "! gdpdepay ");
+        g_string_append_printf (desc, "! gdpdepay ");
         g_string_append_printf (desc, "! sink. ");
       } else if (cas->type == GST_CASE_PREVIEW) {
         g_string_append_printf (desc, "source. " "! video/x-raw,width=%d,height=%d ", cas->width, cas->height); //cas->a_width, cas->a_height);
@@ -421,7 +427,6 @@ gst_case_get_pipeline_string (GstCase * cas)
         /*
            ASSESS ("assess-branch-source-%d", cas->sink_port);
          */
-        g_string_append_printf (desc, "! voaacenc ");
         /*
            ASSESS ("assess-branch-audio-encoded-%d", cas->sink_port);
          */

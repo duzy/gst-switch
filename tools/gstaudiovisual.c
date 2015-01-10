@@ -238,13 +238,15 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual * visual)
 
   desc = g_string_new ("");
 
-  g_string_append_printf (desc, "tcpclientsrc name=source "
-      "port=%d ", visual->port);
-  g_string_append_printf (desc, "! gdpdepay ! faad ! tee name=a ");
+  g_string_append_printf (
+      desc, "tcpclientsrc name=source port=%d ", visual->port);
+  g_string_append_printf (desc, "! gdpdepay ! tee name=a\n");
 
   if (visual->active) {
-    g_string_append_printf (desc, "a. ! queue2 ! audioconvert "
-        "! level name=level message=true " "! alsasink name=play ");
+    g_string_append_printf (
+        desc,
+        "a. ! queue2 ! audioconvert ! level name=level message=true !"
+        " autoaudiosink name=play sync=false\n");
   }
 
   g_string_append_printf (desc, "a. ! queue2 ! audioconvert ! monoscope ");
@@ -254,6 +256,8 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual * visual)
   }
   g_string_append_printf (desc, "! autovideoconvert ");
   g_string_append_printf (desc, "! xvimagesink name=visual sync=false ");
+
+  INFO("Audio preview: %s", desc->str);
 
   return desc;
 }
