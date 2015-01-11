@@ -345,12 +345,12 @@ gst_audio_visual_message (GstAudioVisual * visual, GstMessage * message)
           INFO (" channel: %d, RMS=%f dB, peak=%f dB, decay=%f dB, "
               "normalized-RMS=%f", i, rms_dB, peak_dB, decay_dB, rms);
         }
-      } else if (G_VALUE_HOLDS (list_rms, G_TYPE_VALUE_ARRAY)) {
-        GValueArray *va = (GValueArray *) g_value_get_boxed (list_rms);
+      } else if (G_VALUE_HOLDS (list_rms, G_TYPE_ARRAY)) {
+        GArray *va = (GArray *) g_value_get_boxed (list_rms);
         gdouble v = 0.0;
-        channels = va->n_values;
+        channels = va->len;
         for (i = 0; i < channels; ++i) {
-          value = g_value_array_get_nth (va, i);
+          value = g_array_index (va, GValue*, i);
           rms_dB = g_value_get_double (value);
 
           /* converting from dB to normal gives us a value between 0.0 and 1.0

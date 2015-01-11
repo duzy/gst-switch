@@ -210,7 +210,7 @@ static GOptionEntry entries[] = {
  * Parsing command line parameters.
  */
 static void
-gst_switch_server_parse_args (int *argc, char **argv[])
+gst_switch_server_parse_args (int argc, char *argv[])
 {
   GError *error = NULL;
   GOptionContext *context;
@@ -219,11 +219,11 @@ gst_switch_server_parse_args (int *argc, char **argv[])
   context = g_option_context_new ("");
   g_option_context_add_main_entries (context, entries, "gst-switch");
   g_option_context_add_group (context, gst_init_get_option_group ());
-  if (!g_option_context_parse (context, argc, argv, &error)) {
+  if (!g_option_context_parse (context, &argc, &argv, &error)) {
     ERROR ("option parsing failed: %s", error->message);
     exit (1);
-  } else if (*argc > 1) {
-    ERROR ("unknown option: %s", (*argv)[1]);
+  } else if (argc > 1) {
+    ERROR ("unknown option: %s", argv[1]);
     exit (1);
   }
 
@@ -1882,7 +1882,7 @@ main (int argc, char *argv[])
 
   gint exit_code = 0;
   GstSwitchServer *srv;
-  gst_switch_server_parse_args (&argc, &argv);
+  gst_switch_server_parse_args (argc, argv);
 
   srv = GST_SWITCH_SERVER (g_object_new (GST_TYPE_SWITCH_SERVER, NULL));
 
