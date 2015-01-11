@@ -152,6 +152,8 @@ gparse_video_format (gchar * name, gchar * value, gpointer data,
   return TRUE;
 }
 
+static gboolean caps_dumped = FALSE;
+
 /* gst_switch_server_getcaps:
  * @return current video caps
  */
@@ -161,6 +163,12 @@ gst_switch_server_getcaps (void)
   if (opts.video_caps == NULL) {
     // use a sane default we know will parse correctly
     parse_format (opts.low_res ? "VGA" : "720p60", &opts.video_caps, NULL);
+  }
+  if (!caps_dumped) {
+    gchar *caps_str = gst_caps_to_string (opts.video_caps);
+    g_print ("caps: %s\n", caps_str);
+    g_free (caps_str);
+    caps_dumped = TRUE;
   }
   return opts.video_caps;
 }
@@ -207,6 +215,7 @@ gst_switch_server_parse_args (int *argc, char **argv[])
   GError *error = NULL;
   GOptionContext *context;
 
+  gst_init (NULL, NULL);
   context = g_option_context_new ("");
   g_option_context_add_main_entries (context, entries, "gst-switch");
   g_option_context_add_group (context, gst_init_get_option_group ());

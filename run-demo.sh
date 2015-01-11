@@ -4,7 +4,7 @@
 
 killall gst-switch-srv || true
 sleep 2
-./tools/gst-switch-srv -r &
+./tools/gst-switch-srv -f debug -r &
 sleep 2
 ./tools/gst-switch-ui &
 sleep 2
