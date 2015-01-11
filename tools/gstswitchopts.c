@@ -101,6 +101,7 @@ parse_short_format (const gchar * format, GstCaps * caps)
   gdouble format_rate = 0;
   gint format_rate_num = 0;
   gint format_rate_den = 1;
+  int r;
 
   gsize format_len = strlen (format);
   gchar format_buf[TMP_BUF_SIZE];
@@ -137,9 +138,10 @@ parse_short_format (const gchar * format, GstCaps * caps)
 
 parse_short_format_found_alias:
 //printf("Current format string: '%s'\n", format_buf);
+  r = sscanf (format_buf, "%dx%d@%lf/%d", &format_width, &format_height,
+      &format_rate, &format_rate_den);
 
-  switch (sscanf (format_buf, "%dx%d@%lf/%d", &format_width, &format_height,
-          &format_rate, &format_rate_den)) {
+  switch (r) {
     case 4:                    // all 4 args consumed
       format_rate_num = gst_gdouble_to_guint64 (format_rate);
       // Check the double was really an int
@@ -152,7 +154,7 @@ parse_short_format_found_alias:
       // @TODO: this will ignore additional @rate specifiers which
       // may occur e.g. pal@75, should raise an error
       break;
-    default:                  // Wasn't able to parse the format format.
+    default:                   // Wasn't able to parse the format format.
       return FALSE;
   }
 
@@ -167,7 +169,7 @@ parse_short_format_found_alias:
 // Smallest resolution is 300x200 (required for PIP to work) and largest is
 // 8k (arbitrarily chosen).
 int
-parse_format (const gchar * format, GstCaps **caps, GError **error)
+parse_format (const gchar * format, GstCaps ** caps, GError ** error)
 {
   const gchar *error_msg = "Invalid video format specified";
   GstCaps *require_caps = gst_caps_from_string (requirements);
@@ -222,7 +224,7 @@ parse_format (const gchar * format, GstCaps **caps, GError **error)
   final_caps = gst_caps_intersect (require_caps, incoming_caps);
 //printf("   final-caps: %s\n", gst_caps_to_string(final_caps));
   int r = 0;
-  if (gst_caps_is_empty (final_caps) || gst_caps_is_fixed (final_caps)) {
+  if (gst_caps_is_empty (final_caps) || !gst_caps_is_fixed (final_caps)) {
 
   parse_format_error:
     r = -1;

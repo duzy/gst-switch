@@ -83,6 +83,7 @@ GstSwitchServerOpts opts = {
   GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT,
   GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
 //FALSE,
+  FALSE,
   NULL
 };
 
@@ -140,17 +141,38 @@ gparse_record_filename (gchar * name, gchar * value, gpointer data,
 
 
 extern int
-parse_format (const gchar * format, GstCaps **final_caps, GError **err);
+parse_format (const gchar * format, GstCaps ** final_caps, GError ** err);
 
 static gboolean
 gparse_video_format (gchar * name, gchar * value, gpointer data,
     GError ** error)
 {
-  if (parse_format(value, &opts.video_caps, error) == -1)
+  if (parse_format (value, &opts.video_caps, error) == -1)
     return FALSE;
   return TRUE;
 }
 
+/* gst_switch_server_getcaps:
+ * @return current video caps
+ */
+GstCaps *
+gst_switch_server_getcaps (void)
+{
+  if (opts.video_caps == NULL) {
+    // use a sane default we know will parse correctly
+    parse_format (opts.low_res ? "VGA" : "720p60", &opts.video_caps, NULL);
+  }
+  return opts.video_caps;
+}
+
+/* gst_switch_server_get_record_filename:
+ * @return record file template name, if one was set
+ */
+const gchar *
+gst_switch_server_get_record_filename (void)
+{
+  return opts.record_filename;
+}
 
 static GOptionEntry entries[] = {
   {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
@@ -160,6 +182,8 @@ static GOptionEntry entries[] = {
   {"record", 'r', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK,
         (gpointer) gparse_record_filename,
       "Enable recorder and record into the specified FILENAME"},
+  {"low-resolution", 'l', 0, G_OPTION_ARG_NONE, &opts.low_res,
+      "Enable low resolution mode (-f overrides)"},
   {"video-format", 'f', 0, G_OPTION_ARG_CALLBACK,
         (gpointer) gparse_video_format,
       "Specify the video format to use (shortcuts supported)"},
@@ -1172,10 +1196,8 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
     srv->pip_x = 0;
   if (srv->pip_y < 0)
     srv->pip_y = 0;
-  if (srv->pip_w < GST_SWITCH_COMPOSITE_MIN_PIP_W)
-    srv->pip_w = GST_SWITCH_COMPOSITE_MIN_PIP_W;
-  if (srv->pip_h < GST_SWITCH_COMPOSITE_MIN_PIP_H)
-    srv->pip_h = GST_SWITCH_COMPOSITE_MIN_PIP_H;
+  srv->pip_w = gst_check_composite_min_pip_width (srv->pip_w);
+  srv->pip_h = gst_check_composite_min_pip_height (srv->pip_h);
 
   result = gst_composite_adjust_pip (srv->composite,
       srv->pip_x, srv->pip_y, srv->pip_w, srv->pip_h);
