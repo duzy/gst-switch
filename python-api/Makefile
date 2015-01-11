@@ -45,7 +45,7 @@ performance:
 clean:
 	rm -rf .cache
 	rm -rf reports
-	rm -f *.data
+	rm -f *.data*
 	rm -f tests/integrationtests/*.data
 	rm -f *.log
 	rm -f *.html
