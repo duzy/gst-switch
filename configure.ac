@@ -129,6 +129,17 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   AC_MSG_RESULT([no])
 ])
 
+dnl check if compiler understands -Werror (if yes, add -Werror to GST_CFLAGS)
+AC_MSG_CHECKING([to see if compiler understands -Werror])
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Werror"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  GST_CFLAGS="$GST_CFLAGS -Werror"
+  AC_MSG_RESULT([yes])
+], [
+  AC_MSG_RESULT([no])
+])
+
 dnl set the plugindir where plugins should be installed (for plugins/Makefile.am)
 if test "x${prefix}" = "x$HOME"; then
   plugindir="$HOME/.gstreamer-1.0/plugins"
