@@ -328,7 +328,7 @@ child_quit (GPid pid, gint status, gpointer data)
   INFO ("quit %d", pid);
   {
     g_mutex_lock (&children_lock);
-    children = g_list_remove (children, (gconstpointer) pid);
+    children = g_list_remove (children, (gconstpointer) GINT_TO_POINTER(pid));
     g_mutex_unlock (&children_lock);
   }
 
@@ -447,7 +447,7 @@ launch (const gchar * name, ...)
 
   if (ok) {
     g_mutex_lock (&children_lock);
-    children = g_list_append (children, (gpointer) pid);
+    children = g_list_append (children, (gpointer) GINT_TO_POINTER(pid));
     g_mutex_unlock (&children_lock);
   }
 
@@ -2369,7 +2369,7 @@ kill_children (void)
   GList *child = NULL;
   g_mutex_lock (&children_lock);
   for (child = children; child; child = g_list_next (child)) {
-    GPid pid = (GPid) child->data;
+    GPid pid = (GPid) GPOINTER_TO_INT(child->data);
     //INFO ("kill %d", pid);
     kill (pid, SIGKILL);
     children = g_list_remove_link (children, child);
