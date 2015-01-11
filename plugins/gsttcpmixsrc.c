@@ -53,7 +53,7 @@ GST_DEBUG_CATEGORY_STATIC (tcpmixsrc_debug);
 #define TCP_BACKLOG             1       /* client connection queue */
 #define TCP_HIGHEST_PORT        65535
 #define TCP_DEFAULT_PORT        4953
-#define TCP_DEFAULT_HOST        "localhost"
+#define TCP_DEFAULT_HOST        "0.0.0.0"
 #define TCP_DEFAULT_LISTEN_HOST NULL    /* listen on all interfaces */
 
 #define MAX_READ_SIZE           4 * 1024
