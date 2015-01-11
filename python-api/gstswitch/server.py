@@ -40,7 +40,7 @@ class Server(object):
             video_port=3000,
             audio_port=4000,
             control_port=5000,
-            record_file='record-%Y-%m-%d_%H%M%S.data'):
+            record_file=False):
 
         super(Server, self).__init__()
 
@@ -159,19 +159,24 @@ class Server(object):
     @record_file.setter
     def record_file(self, record_file):
         """Set Record File
-        :raises ValueError: Record File cannot be left blank
+        :raises ValueError: Non-string file format
         :raises ValueError: Record File cannot have forward slashes
         """
-        if not record_file:
-            raise ValueError("Record File '{0}' cannot be blank"
-                             .format(record_file))
+        if record_file is False:
+            self._record_file = False
+        elif record_file is True:
+            self._record_file = True
         else:
-            rec = str(record_file)
-            if rec.find('/') < 0:
-                self._record_file = rec
-            else:
+            if not record_file:
                 raise ValueError("Record File: '{0}' "
-                                 "cannot have forward slashes".format(rec))
+                                 "Non-string file format".format(record_file))
+            else:
+                rec = str(record_file)
+                if rec.find('/') < 0:
+                    self._record_file = rec
+                else:
+                    raise ValueError("Record File: '{0}' "
+                                     "cannot have forward slashes".format(rec))
 
     def run(self, gst_option=''):
         """Launch the server process
@@ -196,26 +201,29 @@ class Server(object):
     def _run_process(self):
         """Non-public method: Runs the gst-switch-srv process
         """
-        cmd = ''
+        cmd = ['']
         if not self.path:
             srv_location = spawn.find_executable('gst-switch-srv')
             if srv_location:
-                cmd = srv_location
+                cmd[0] = srv_location
             else:
                 raise PathError("Cannot find gst-switch-srv in $PATH.\
                     Please specify the path.")
         else:
-            cmd += os.path.join(self.path, 'gst-switch-srv')
-        cmd += """  {0} \
-                    --video-input-port={1} \
-                    --audio-input-port={2} \
-                    --control-port={3} \
-                    --record={4} """ .format(self.gst_option_string,
-                                             self.video_port,
-                                             self.audio_port,
-                                             self.control_port,
-                                             self.record_file)
-        cmd = " ".join(cmd.split())
+            cmd[0] += os.path.join(self.path, 'gst-switch-srv')
+        if self.gst_option_string:
+            cmd += [self.gst_option_string]
+        cmd.append("--video-input-port={0}".format(self.video_port))
+        cmd.append("--audio-input-port={0}".format(self.audio_port))
+        cmd.append("--control-port={0}".format(self.control_port))
+        if self.record_file is False:
+            pass
+        elif self.record_file is True:
+            cmd.append("-r")
+        else:
+            if self.record_file is not False:
+                cmd.append("--record={0}".format(self.record_file))
+
         proc = self._start_process(cmd)
         return proc
 
@@ -229,7 +237,7 @@ class Server(object):
         try:
             with open('server.log', 'w') as tempf:
                 process = subprocess.Popen(
-                    cmd.split(),
+                    cmd,
                     stdout=tempf,
                     stderr=tempf,
                     bufsize=-1,
