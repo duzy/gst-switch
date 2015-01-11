@@ -31,6 +31,7 @@ imgurbash.sh.*
 /gst-plugins-good
 /gst-plugins-bad
 /gst-plugins-base
+/gst-switch.sublime-*
 /libvpx
 /html
 /htmlcov

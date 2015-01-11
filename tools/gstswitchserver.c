@@ -82,6 +82,9 @@ GstSwitchServerOpts opts = {
   GST_SWITCH_SERVER_DEFAULT_VIDEO_ACCEPTOR_PORT,
   GST_SWITCH_SERVER_DEFAULT_AUDIO_ACCEPTOR_PORT,
   GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
+//FALSE,
+  FALSE,
+  NULL
 };
 
 gboolean verbose = FALSE;
@@ -136,6 +139,49 @@ gparse_record_filename (gchar * name, gchar * value, gpointer data,
   return TRUE;
 }
 
+
+extern int
+parse_format (const gchar * format, GstCaps ** final_caps, GError ** err);
+
+static gboolean
+gparse_video_format (gchar * name, gchar * value, gpointer data,
+    GError ** error)
+{
+  if (parse_format (value, &opts.video_caps, error) == -1)
+    return FALSE;
+  return TRUE;
+}
+
+static gboolean caps_dumped = FALSE;
+
+/* gst_switch_server_getcaps:
+ * @return current video caps
+ */
+GstCaps *
+gst_switch_server_getcaps (void)
+{
+  if (opts.video_caps == NULL) {
+    // use a sane default we know will parse correctly
+    parse_format (opts.low_res ? "VGA" : "720p60", &opts.video_caps, NULL);
+  }
+  if (!caps_dumped) {
+    gchar *caps_str = gst_caps_to_string (opts.video_caps);
+    g_print ("caps: %s\n", caps_str);
+    g_free (caps_str);
+    caps_dumped = TRUE;
+  }
+  return opts.video_caps;
+}
+
+/* gst_switch_server_get_record_filename:
+ * @return record file template name, if one was set
+ */
+const gchar *
+gst_switch_server_get_record_filename (void)
+{
+  return opts.record_filename;
+}
+
 static GOptionEntry entries[] = {
   {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose,
       "Prompt more messages", NULL},
@@ -144,6 +190,11 @@ static GOptionEntry entries[] = {
   {"record", 'r', G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK,
         (gpointer) gparse_record_filename,
       "Enable recorder and record into the specified FILENAME"},
+  {"low-resolution", 'l', 0, G_OPTION_ARG_NONE, &opts.low_res,
+      "Enable low resolution mode (-f overrides)"},
+  {"video-format", 'f', 0, G_OPTION_ARG_CALLBACK,
+        (gpointer) gparse_video_format,
+      "Specify the video format to use (shortcuts supported)"},
   {"video-input-port", 'p', 0, G_OPTION_ARG_INT, &opts.video_input_port,
       "Specify the video input listen port.", "NUM"},
   {"audio-input-port", 'a', 0, G_OPTION_ARG_INT, &opts.audio_input_port,
@@ -164,6 +215,7 @@ gst_switch_server_parse_args (int *argc, char **argv[])
   GError *error = NULL;
   GOptionContext *context;
 
+  gst_init (NULL, NULL);
   context = g_option_context_new ("");
   g_option_context_add_main_entries (context, entries, "gst-switch");
   g_option_context_add_group (context, gst_init_get_option_group ());
@@ -171,7 +223,7 @@ gst_switch_server_parse_args (int *argc, char **argv[])
     ERROR ("option parsing failed: %s", error->message);
     exit (1);
   } else if (*argc > 1) {
-    ERROR ("unknown option: %s", argv[1]);
+    ERROR ("unknown option: %s", (*argv)[1]);
     exit (1);
   }
 
@@ -1153,10 +1205,8 @@ gst_switch_server_adjust_pip (GstSwitchServer * srv,
     srv->pip_x = 0;
   if (srv->pip_y < 0)
     srv->pip_y = 0;
-  if (srv->pip_w < GST_SWITCH_COMPOSITE_MIN_PIP_W)
-    srv->pip_w = GST_SWITCH_COMPOSITE_MIN_PIP_W;
-  if (srv->pip_h < GST_SWITCH_COMPOSITE_MIN_PIP_H)
-    srv->pip_h = GST_SWITCH_COMPOSITE_MIN_PIP_H;
+  srv->pip_w = gst_check_composite_min_pip_width (srv->pip_w);
+  srv->pip_h = gst_check_composite_min_pip_height (srv->pip_h);
 
   result = gst_composite_adjust_pip (srv->composite,
       srv->pip_x, srv->pip_y, srv->pip_w, srv->pip_h);

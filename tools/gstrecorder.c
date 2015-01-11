@@ -282,7 +282,8 @@ gst_recorder_new_filename (const gchar * filename)
 static GString *
 gst_recorder_get_pipeline_string (GstRecorder * rec)
 {
-  const gchar *filename = gst_recorder_new_filename (opts.record_filename);
+  const gchar *filename =
+      gst_recorder_new_filename (gst_switch_server_get_record_filename ());
   GString *desc;
 
   //INFO ("Recording to %s and port %d", filename, rec->sink_port);
@@ -423,7 +424,7 @@ gst_recorder_class_init (GstRecorderClass * klass)
       g_param_spec_uint ("width", "Input Width",
           "Input video frame width",
           1, G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+          gst_composite_default_width (),
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_HEIGHT,
@@ -431,7 +432,7 @@ gst_recorder_class_init (GstRecorderClass * klass)
           "Input Height",
           "Input video frame height",
           1, G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+          gst_composite_default_height (),
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->prepare = (GstWorkerPrepareFunc) gst_recorder_prepare;

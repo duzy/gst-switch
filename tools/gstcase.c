@@ -505,42 +505,42 @@ gst_case_class_init (GstCaseClass * klass)
       g_param_spec_uint ("width", "Width",
           "Output width", 1,
           G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+          gst_composite_default_width (),
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_HEIGHT,
       g_param_spec_uint ("height", "Height",
           "Output height", 1,
           G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+          gst_composite_default_height (),
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_WIDTH,
       g_param_spec_uint ("awidth", "A Width",
           "Channel A width", 1,
           G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+          gst_composite_default_width (),
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_HEIGHT,
       g_param_spec_uint ("aheight", "A Height",
           "Channel A height", 1,
           G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+          gst_composite_default_height (),
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_WIDTH,
       g_param_spec_uint ("bwidth", "B Width",
           "Channel B width", 1,
           G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
+          gst_composite_default_width (),
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_HEIGHT,
       g_param_spec_uint ("bheight", "B Height",
           "Channel B height", 1,
           G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
+          gst_composite_default_height (),
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;

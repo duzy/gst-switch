@@ -62,6 +62,10 @@ struct _GstSwitchServerOpts
   gint video_input_port;
   gint audio_input_port;
   gint control_port;
+//should really be in here
+//gboolean verbose;
+  gboolean low_res;
+  GstCaps *video_caps;
 };
 
 /**
@@ -178,6 +182,9 @@ void gst_switch_server_mark_face (GstSwitchServer * srv,
 guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
     gint dw, gint dh);
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);
+
+GstCaps *gst_switch_server_getcaps (void);
+const gchar *gst_switch_server_get_record_filename (void);
 
 extern GstSwitchServerOpts opts;
 

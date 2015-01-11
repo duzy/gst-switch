@@ -36,17 +36,17 @@
 #define GST_IS_COMPOSITE(object) (G_TYPE_CHECK_INSTANCE_TYPE ((object), GST_TYPE_COMPOSITE))
 #define GST_IS_COMPOSITE_CLASS(class) (G_TYPE_CHECK_CLASS_TYPE ((class), GST_TYPE_COMPOSITE))
 
-#if ENABLE_LOW_RESOLUTION
-#define GST_SWITCH_COMPOSITE_DEFAULT_WIDTH	LOW_RES_W       /* 640 */
-#define GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT	LOW_RES_H       /* 480 */
-#define GST_SWITCH_COMPOSITE_MIN_PIP_W		13
-#define GST_SWITCH_COMPOSITE_MIN_PIP_H		7
-#else
-#define GST_SWITCH_COMPOSITE_DEFAULT_WIDTH	1280
-#define GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT	720
-#define GST_SWITCH_COMPOSITE_MIN_PIP_W		320
-#define GST_SWITCH_COMPOSITE_MIN_PIP_H		240
-#endif
+//#if ENABLE_LOW_RESOLUTION
+//#define GST_SWITCH_COMPOSITE_DEFAULT_WIDTH	LOW_RES_W       /* 640 */
+//#define GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT	LOW_RES_H       /* 480 */
+//#define GST_SWITCH_COMPOSITE_MIN_PIP_W		13
+//#define GST_SWITCH_COMPOSITE_MIN_PIP_H		7
+//#else
+//#define GST_SWITCH_COMPOSITE_DEFAULT_WIDTH	1280
+//#define GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT	720
+//#define GST_SWITCH_COMPOSITE_MIN_PIP_W		320
+//#define GST_SWITCH_COMPOSITE_MIN_PIP_H		240
+//#endif
 
 #define GST_SWITCH_FACEDETECT_FRAME_WIDTH	150
 #define GST_SWITCH_FACEDETECT_FRAME_HEIGHT	100
@@ -154,5 +154,10 @@ struct _GstCompositeClass
 GType gst_composite_get_type (void);
 gboolean gst_composite_adjust_pip (GstComposite * composite,
     gint x, gint y, gint w, gint h);
+gint gst_composite_default_width ();
+gint gst_composite_default_height ();
+gint gst_check_composite_min_pip_width (gint pip_w);
+gint gst_check_composite_min_pip_height (gint pip_h);
+
 
 #endif //__GST_COMPOSITE_H__

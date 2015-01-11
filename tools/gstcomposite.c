@@ -156,8 +156,8 @@ gst_composite_set_mode (GstComposite * composite, GstCompositeMode mode)
     return;
   }
 
-  composite->width = GST_SWITCH_COMPOSITE_DEFAULT_WIDTH;
-  composite->height = GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT;
+  composite->width = gst_composite_default_width ();
+  composite->height = gst_composite_default_height ();
 
   switch ((composite->mode = mode)) {
     case COMPOSE_MODE_NONE:
@@ -794,6 +794,89 @@ gst_composite_null (GstComposite * composite)
   return composite->deprecated ? GST_WORKER_NR_END : GST_WORKER_NR_REPLAY;
 }
 
+
+/* gst_caps_get_value:
+ * - the missing API
+ * iterate the gst_structure in the given caps to return a specified field vaue
+ */
+static gboolean
+gst_caps_get_value (GstCaps * caps, const gchar * field, GValue * value)
+{
+  guint i;
+  GstStructure *structure;
+  for (i = 0; (structure = gst_caps_get_structure (caps, i)) != NULL; i++) {
+    const GValue *svalue = gst_structure_get_value (structure, field);
+    if (svalue != NULL) {
+      g_value_copy (svalue, value);
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static gint
+gst_composite_get_caps_int_value (const gchar * fieldname)
+{
+  GstCaps *caps = gst_switch_server_getcaps ();
+  g_assert (caps != NULL && !gst_caps_is_empty (caps));
+  GValue value = G_VALUE_INIT;
+  g_value_init (&value, G_TYPE_INT);
+  gst_caps_get_value (caps, fieldname, &value);
+  return g_value_get_int (&value);
+}
+
+/* cache these so we don't need to do the above every time */
+static gint cached_default_width = -1;
+static gint cached_default_height = -1;
+
+/* gst_composite_defaut_width:
+ *
+ *  @return default width based on current video caps 
+ */
+gint
+gst_composite_default_width ()
+{
+  if (cached_default_width == -1)
+    cached_default_width = gst_composite_get_caps_int_value ("width");
+  return cached_default_width;
+}
+
+/* gst_composite_defaut_height:
+ *
+ *  @return default height based on current video caps 
+ */
+gint
+gst_composite_default_height ()
+{
+  if (cached_default_height == -1)
+    cached_default_height = gst_composite_get_caps_int_value ("height");
+  return cached_default_height;
+}
+
+/* gst_composite_min_pip_width:
+ *
+ *  @param pip_w desired width of PIP
+ *  @return enforce minimum width of PIP 
+ */
+gint
+gst_check_composite_min_pip_width (gint pip_w)
+{
+  gint min_width = gst_composite_default_width () / 4;
+  return pip_w < min_width ? min_width : pip_w;
+}
+
+/* gst_composite_min_pip_height:
+ *
+ *  @param pip_w desired height of PIP
+ *  @return enforce minimum height of PIP 
+ */
+gint
+gst_check_composite_min_pip_height (gint pip_h)
+{
+  gint min_height = gst_composite_default_height () / 3;
+  return pip_h < min_height ? min_height : pip_h;
+}
+
 /**
  * gst_composite_adjust_pip:
  *  @param composite The GstComposite instance
@@ -1060,15 +1143,15 @@ gst_composite_class_init (GstCompositeClass * klass)
       g_param_spec_uint ("awidth", "A Width",
           "Channel A frame width",
           1, G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          gst_composite_default_width
+          (), G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_A_HEIGHT,
       g_param_spec_uint ("aheight", "A Height",
           "Channel A frame height",
           1, G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          gst_composite_default_height
+          (), G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_X,
       g_param_spec_uint ("bx", "B xpos",
@@ -1084,31 +1167,31 @@ gst_composite_class_init (GstCompositeClass * klass)
       g_param_spec_uint ("bwidth", "B Width",
           "Channel B frame width",
           1, G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          gst_composite_default_width
+          (), G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_B_HEIGHT,
       g_param_spec_uint ("bheight", "B Height",
           "Channel B frame height",
           1, G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          gst_composite_default_height
+          (), G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_WIDTH,
       g_param_spec_uint ("width",
           "Composite Width",
           "Output frame width", 1,
           G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_WIDTH,
-          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+          gst_composite_default_width
+          (), G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (object_class, PROP_HEIGHT,
       g_param_spec_uint ("height",
           "Composite Height",
           "Output frame height",
           1, G_MAXINT,
-          GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT,
-          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+          gst_composite_default_height
+          (), G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   worker_class->alive = (GstWorkerAliveFunc) gst_composite_alive;
   worker_class->null = (GstWorkerNullFunc) gst_composite_null;

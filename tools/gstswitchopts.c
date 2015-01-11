@@ -101,6 +101,7 @@ parse_short_format (const gchar * format, GstCaps * caps)
   gdouble format_rate = 0;
   gint format_rate_num = 0;
   gint format_rate_den = 1;
+  int r;
 
   gsize format_len = strlen (format);
   gchar format_buf[TMP_BUF_SIZE];
@@ -137,9 +138,10 @@ parse_short_format (const gchar * format, GstCaps * caps)
 
 parse_short_format_found_alias:
 //printf("Current format string: '%s'\n", format_buf);
+  r = sscanf (format_buf, "%dx%d@%lf/%d", &format_width, &format_height,
+      &format_rate, &format_rate_den);
 
-  switch (sscanf (format_buf, "%dx%d@%lf/%d", &format_width, &format_height,
-          &format_rate, &format_rate_den)) {
+  switch (r) {
     case 4:                    // all 4 args consumed
       format_rate_num = gst_gdouble_to_guint64 (format_rate);
       // Check the double was really an int
@@ -149,8 +151,10 @@ parse_short_format_found_alias:
     case 3:                    // denominator only
       gst_util_double_to_fraction (format_rate, &format_rate_num,
           &format_rate_den);
+      // @TODO: this will ignore additional @rate specifiers which
+      // may occur e.g. pal@75, should raise an error
       break;
-    default:                  // Wasn't able to parse the format format.
+    default:                   // Wasn't able to parse the format format.
       return FALSE;
   }
 
@@ -165,16 +169,17 @@ parse_short_format_found_alias:
 // Smallest resolution is 300x200 (required for PIP to work) and largest is
 // 8k (arbitrarily chosen).
 int
-parse_format (const gchar * format)
+parse_format (const gchar * format, GstCaps ** caps, GError ** error)
 {
-  int r = -1;
+  const gchar *error_msg = "Invalid video format specified";
   GstCaps *require_caps = gst_caps_from_string (requirements);
   GstCaps *incoming_caps = NULL;
+  GstCaps *final_caps = NULL;
 
   gsize format_end = strlen (format);
   if (format_end >= TMP_BUF_SIZE) {
     // Invalid
-    return -1;
+    goto parse_format_error;
   }
 
   incoming_caps = gst_caps_new_simple ("video/x-raw",
@@ -185,8 +190,9 @@ parse_format (const gchar * format)
   // Is the format already in gstreamer caps format, or in the simple
   // abbreviation format.
   if (strstr (format, "video/x-raw") == NULL) {
-    if (!parse_short_format (format, incoming_caps))
+    if (!parse_short_format (format, incoming_caps)) {
       goto parse_format_error;
+    }
   } else {
     GstCaps *parsed_caps = gst_caps_from_string (format);
     if (parsed_caps == NULL) {
@@ -207,24 +213,35 @@ parse_format (const gchar * format)
 //  printf("  merged-caps: %s\n", gst_caps_to_string(merged_caps));
     incoming_caps = merged_caps;
 //    GstCaps *merged_caps = gst_caps_intersect(incoming_caps, parsed_caps); 
+    gst_caps_unref (parsed_caps);
   }
 
 //GST_LOG ("caps are %" GST_PTR_FORMAT, caps);
 //printf(" caps-to-test: %s\n", gst_caps_to_string(incoming_caps));
 //printf("required-caps: %s\n", gst_caps_to_string(require_caps));
 
-  GstCaps *final_caps = gst_caps_intersect (require_caps, incoming_caps);
+//parse_format_ok:
+  final_caps = gst_caps_intersect (require_caps, incoming_caps);
 //printf("   final-caps: %s\n", gst_caps_to_string(final_caps));
-  if (!gst_caps_is_empty (final_caps) && gst_caps_is_fixed (final_caps)) {
-    r = 0;
+  int r = 0;
+  if (gst_caps_is_empty (final_caps) || !gst_caps_is_fixed (final_caps)) {
+
+  parse_format_error:
+    r = -1;
+    if (error != NULL) {
+      GError *err = g_error_new (G_OPTION_ERROR, G_OPTION_ERROR_BAD_VALUE,
+          "%s\n", error_msg);
+      g_propagate_error (error, err);
+    }
   }
 
-parse_format_error:
   if (require_caps != NULL)
     gst_caps_unref (require_caps);
   if (incoming_caps != NULL)
     gst_caps_unref (incoming_caps);
 
-//printf("\n\n\n");
+  if (caps != NULL)
+    *caps = final_caps;
+
   return r;
 }

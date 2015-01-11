@@ -35,6 +35,15 @@
 #include <stdlib.h>
 #include "../logutils.h"
 
+/* @FIXME: moved from gstcomposite which now determines these dynamically */
+#if ENABLE_LOW_RESOLUTION
+#define GST_SWITCH_COMPOSITE_DEFAULT_WIDTH  LOW_RES_W   /* 640 */
+#define GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT LOW_RES_H   /* 480 */
+#else
+#define GST_SWITCH_COMPOSITE_DEFAULT_WIDTH  1280
+#define GST_SWITCH_COMPOSITE_DEFAULT_HEIGHT 720
+#endif
+
 #define GST_TYPE_SWITCH_CAPTURE_WORKER (gst_switch_capture_worker_get_type ())
 #define GST_SWITCH_CAPTURE_WORKER(object) (G_TYPE_CHECK_INSTANCE_CAST ((object), GST_TYPE_SWITCH_CAPTURE_WORKER, GstSwitchCaptureWorker))
 #define GST_SWITCH_CAPTURE_WORKER_CLASS(class) (G_TYPE_CHECK_CLASS_CAST ((class), GST_TYPE_SWITCH_CAPTURE_WORKER, GstSwitchCaptureWorkerClass))
