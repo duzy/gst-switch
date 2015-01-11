@@ -282,7 +282,7 @@ gst_switch_ui_init (GstSwitchUI * ui)
       GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_widget_set_size_request (scrollwin, 130, -1);
   gtk_widget_set_vexpand (scrollwin, TRUE);
-  gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scrollwin),
+  gtk_container_add (GTK_CONTAINER (scrollwin),
       ui->preview_box);
 
   gtk_container_add (GTK_CONTAINER (overlay), ui->compose_view);
