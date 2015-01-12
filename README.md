@@ -303,7 +303,7 @@ ack --type=cc "g_string_new|g_string_append" * | grep '"' | grep ".c" | sed -e's
 tools/gstaudiovisual - Renders a video of the audio.
  * *FIXME: Is this GUI or server side?*
  * audioconvert
- * autovideoconvert
+ * videoconvert
  * faad
  * gdpdepay
  * monoscope
