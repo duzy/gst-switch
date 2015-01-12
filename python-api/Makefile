@@ -30,7 +30,7 @@ pep8:
 integration:
 	@rm -f ../tools/*.c.gcov
 	@rm -f ../tools/*.gcda
-	-wget http://imgur.com/tools/imgurbash.sh
+	-wget http://imgur.com/tools/imgurbash.sh -O imgurbash.sh
 	-chmod +x imgurbash.sh
 	@rm -rf reports
 	@mkdir -p reports/coverage/integration
@@ -45,7 +45,7 @@ performance:
 clean:
 	rm -rf .cache
 	rm -rf reports
-	rm -f *.data
+	rm -f *.data*
 	rm -f tests/integrationtests/*.data
 	rm -f *.log
 	rm -f *.html
