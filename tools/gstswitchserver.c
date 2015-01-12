@@ -162,15 +162,24 @@ gst_switch_server_getcaps (void)
 {
   if (opts.video_caps == NULL) {
     // use a sane default we know will parse correctly
-    parse_format (opts.low_res ? "VGA" : "720p60", &opts.video_caps, NULL);
+    parse_format (opts.low_res ? "VGA@60" : "720p60", &opts.video_caps, NULL);
   }
   if (!caps_dumped) {
-    gchar *caps_str = gst_caps_to_string (opts.video_caps);
-    g_print ("caps: %s\n", caps_str);
-    g_free (caps_str);
+    opts.video_caps_str = gst_caps_to_string (opts.video_caps);
+    g_print ("caps: %s\n", opts.video_caps_str);
     caps_dumped = TRUE;
   }
   return opts.video_caps;
+}
+
+/* gst_switch_server_get_video_aps_str
+ * return video caps as a string
+ */
+const gchar *
+gst_switch_server_get_video_caps_str (void)
+{
+  (void) gst_switch_server_getcaps ();
+  return opts.video_caps_str;
 }
 
 /* gst_switch_server_get_record_filename:

@@ -283,11 +283,8 @@ gst_case_get_pipeline_string (GstCase * cas)
 {
   gboolean is_audiostream = cas->serve_type == GST_SERVE_AUDIO_STREAM;
   GString *desc = g_string_new ("");
-  GString *caps = g_string_new ("");
-
-  if (!is_audiostream)
-    g_string_append_printf (caps, "video/x-raw,width=%d,height=%d", cas->width,
-        cas->height);
+  const gchar *caps =
+      is_audiostream ? "" : gst_switch_server_get_video_caps_str ();
 
   switch (cas->type) {
     case GST_CASE_INPUT_AUDIO:
@@ -310,7 +307,7 @@ gst_case_get_pipeline_string (GstCase * cas)
       } else {
         g_string_append_printf (desc,
             "intervideosrc name=source channel=input_%d ! %s ! intervideosink name=sink channel=branch_%d",
-            cas->sink_port, caps->str, cas->sink_port);
+            cas->sink_port, caps, cas->sink_port);
       }
       break;
 
@@ -330,7 +327,7 @@ gst_case_get_pipeline_string (GstCase * cas)
           "intervideosrc name=source channel=input_%d ! %s ! tee name=s "
           "s. ! queue2 ! intervideosink name=sink1 channel=branch_%d "
           "s. ! queue2 ! intervideosink name=sink2 channel=composite_%s",
-          cas->sink_port, caps->str, cas->sink_port, channel);
+          cas->sink_port, caps, cas->sink_port, channel);
       break;
     }
 
@@ -343,21 +340,22 @@ gst_case_get_pipeline_string (GstCase * cas)
     case GST_CASE_BRANCH_VIDEO_A:
     case GST_CASE_BRANCH_VIDEO_B:
       g_string_append_printf (desc,
-          "intervideosrc name=source channel=branch_%d ! %s ! gdppay ! tcpserversink name=sink port=%d\n",
-          cas->sink_port, caps->str, cas->sink_port);
+          "intervideosrc name=source channel=branch_%d ! %s ! gdppay ! tcpserversink name=sink port=%d",
+          cas->sink_port, caps, cas->sink_port);
       break;
 
     case GST_CASE_BRANCH_PREVIEW:
       g_string_append_printf (desc,
-          "intervideosrc name=source channel=branch_%d ! %s ! gdppay ! tcpserversink name=sink port=%d\n",
-          cas->sink_port, caps->str, cas->sink_port);
+          "intervideosrc name=source channel=branch_%d ! %s ! gdppay ! tcpserversink name=sink port=%d",
+          cas->sink_port, caps, cas->sink_port);
       break;
+
     default:
       ERROR ("unknown case (%d)", cas->type);
       break;
   }
 
-  g_string_free (caps, TRUE);
+  INFO ("pipeline(%p): %s\n", cas, desc->str);
   return desc;
 }
 
