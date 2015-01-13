@@ -85,6 +85,21 @@ g_socket_input_stream_set_property (GObject * object,
   }
 }
 
+static gboolean
+g_socket_input_stream_close (GInputStream * s,
+    GCancellable * cancellable, GError ** error)
+{
+  GSocketInputStreamX *stream = G_SOCKET_INPUT_STREAM (s);
+  gboolean ret = TRUE;
+
+  if (stream->priv->socket) {
+    ret = g_socket_close (stream->priv->socket, error);
+    g_object_unref (stream->priv->socket);
+    stream->priv->socket = NULL;
+  }
+  return ret;
+}
+
 static void
 g_socket_input_stream_finalize (GObject * object)
 {
@@ -92,15 +107,10 @@ g_socket_input_stream_finalize (GObject * object)
 
   if (stream->priv->socket) {
     GError *error = NULL;
-    /*
-       g_print ("%s:%d: %s, %d\n", __FILE__, __LINE__, __FUNCTION__,
-       g_socket_get_fd (stream->priv->socket));
-     */
-    g_socket_close (stream->priv->socket, &error);
+    g_socket_input_stream_close (&stream->parent_instance, NULL, &error);
     if (error) {
       //ERROR ("%s", error->message);
     }
-    g_object_unref (stream->priv->socket);
   }
 
   if (G_OBJECT_CLASS (g_socket_input_stream_parent_class)->finalize)
@@ -117,6 +127,7 @@ g_socket_input_stream_read (GInputStream * stream,
       buffer, count, TRUE, cancellable, error);
 }
 
+
 static void
 g_socket_input_stream_class_init (GSocketInputStreamXClass * klass)
 {
@@ -130,6 +141,7 @@ g_socket_input_stream_class_init (GSocketInputStreamXClass * klass)
   gobject_class->set_property = g_socket_input_stream_set_property;
 
   ginputstream_class->read_fn = g_socket_input_stream_read;
+  ginputstream_class->close_fn = g_socket_input_stream_close;
 
   g_object_class_install_property (gobject_class, PROP_SOCKET,
       g_param_spec_object ("socket",

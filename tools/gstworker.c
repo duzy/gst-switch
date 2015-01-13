@@ -32,6 +32,8 @@
 #include "gstworker.h"
 #include "gstswitchserver.h"
 
+#include <string.h>
+
 #define GST_WORKER_LOCK_PIPELINE(srv) (g_mutex_lock (&(srv)->pipeline_lock))
 #define GST_WORKER_UNLOCK_PIPELINE(srv) (g_mutex_unlock (&(srv)->pipeline_lock))
 
@@ -400,10 +402,9 @@ gst_worker_stop_force (GstWorker * worker, gboolean force)
 
       g_timeout_add (5,
           (GSourceFunc) gst_worker_state_ready_to_null_proxy, worker);
-    }
-    else if (state == GST_STATE_PLAYING) {
+    } else if (state == GST_STATE_PLAYING) {
       /* Send an EOS to cleanly shutdown */
-      gst_element_send_event (worker->pipeline, gst_event_new_eos());
+      gst_element_send_event (worker->pipeline, gst_event_new_eos ());
 
       /* Go to sleep until the EOS handler calls stop_force (worker, TRUE); */
       g_cond_wait (&worker->shutdown_cond, &worker->pipeline_lock);
@@ -457,6 +458,7 @@ static void
 gst_worker_handle_eos (GstWorker * worker)
 {
   gst_worker_stop_force (worker, TRUE);
+  GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker))->close (worker);
 }
 
 static void
@@ -489,16 +491,20 @@ gst_worker_handle_error (GstWorker * worker, GError * error, const char *debug)
   }
   ERROR ("DEBUG INFO:\n%s\n", debug);
 
-#if 0
   gst_worker_stop (worker);
-#endif
+  GstWorkerClass *worker_class = GST_WORKER_CLASS (G_OBJECT_GET_CLASS (worker));
+  worker_class->close (worker);
 }
 
 static void
 gst_worker_handle_warning (GstWorker * worker, GError * error,
     const char *debug)
 {
-  WARN ("%s: %s (%s)", worker->name, error->message, debug);
+  // kludge: some gstreamer "warnings" are apparently non-recoverable errors
+  if (strstr (error->message, "error:") != NULL)
+    gst_worker_handle_error (worker, error, debug);
+  else
+    WARN ("%s: %s (%s)", worker->name, error->message, debug);
 }
 
 static void
@@ -609,7 +615,7 @@ gst_worker_pipeline_state_changed (GstWorker * worker,
 }
 
 static GstBusSyncReply
-gst_worker_message_sync (GstBus * bus, GstMessage * message, GstWorker *worker)
+gst_worker_message_sync (GstBus * bus, GstMessage * message, GstWorker * worker)
 {
   switch (GST_MESSAGE_TYPE (message)) {
     case GST_MESSAGE_EOS:
@@ -782,7 +788,8 @@ gst_worker_prepare_unsafe (GstWorker * worker)
   if (!worker->watch)
     goto error_add_watch;
 
-  gst_bus_set_sync_handler (worker->bus, (GstBusSyncHandler) (gst_worker_message_sync), worker, NULL);
+  gst_bus_set_sync_handler (worker->bus,
+      (GstBusSyncHandler) (gst_worker_message_sync), worker, NULL);
 
   if (workerclass->prepare && !workerclass->prepare (worker))
     goto error_prepare;
@@ -889,6 +896,12 @@ gst_worker_reset (GstWorker * worker)
   return ok;
 }
 
+static void
+gst_worker_close (GstWorker * worker)
+{
+
+}
+
 /**
  * @brief Initialize GstWorkerClass.
  * @param klass The instance of GstWorkerClass.
@@ -934,4 +947,5 @@ gst_worker_class_init (GstWorkerClass * klass)
   klass->create_pipeline = gst_worker_create_pipeline;
   klass->null = gst_worker_null;
   klass->reset = gst_worker_reset;
+  klass->close = gst_worker_close;
 }

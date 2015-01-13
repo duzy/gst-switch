@@ -90,24 +90,20 @@ gst_case_init (GstCase * cas)
 }
 
 /**
- * @param cas The GstCase instance.
+ * @param cas the GstCase instance.
  * @memberof GstCase
  *
- * Disposing from it's parent object.
- *
- * @see GObject
+ * Closes/releases resources used by the GstCase
  */
 static void
-gst_case_dispose (GstCase * cas)
+gst_case_close (GstCase * cas)
 {
   if (cas->stream) {
-#if 0
     GError *error = NULL;
     g_input_stream_close (cas->stream, NULL, &error);
     if (error) {
       ERROR ("%s", error->message);
     }
-#endif
     g_object_unref (cas->stream);
     cas->stream = NULL;
   }
@@ -121,6 +117,20 @@ gst_case_dispose (GstCase * cas)
     g_object_unref (cas->branch);
     cas->branch = NULL;
   }
+}
+
+/**
+ * @param cas The GstR (Case instance.
+ * @memberof GstCase
+ *
+ * Disposing from it's parent object.
+ *
+ * @see GObject
+ */
+static void
+gst_case_dispose (GstCase * cas)
+{
+  gst_case_close (cas);
   //INFO ("dispose %p", cas);
   G_OBJECT_CLASS (parent_class)->dispose (G_OBJECT (cas));
 }
@@ -546,4 +556,5 @@ gst_case_class_init (GstCaseClass * klass)
   worker_class->prepare = (GstWorkerPrepareFunc) gst_case_prepare;
   worker_class->get_pipeline_string = (GstWorkerGetPipelineStringFunc)
       gst_case_get_pipeline_string;
+  worker_class->close = (GstWorkerCloseFunc) gst_case_close;
 }

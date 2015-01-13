@@ -92,6 +92,13 @@ typedef GstWorkerNullReturn (*GstWorkerNullFunc) (GstWorker * worker);
 typedef void (*GstWorkerAliveFunc) (GstWorker * worker);
 
 /**
+ *  @brief worker virtual close function
+ *  @param worker The GstWorker instance.
+ */
+
+typedef void (*GstWorkerCloseFunc) (GstWorker * worker);
+
+/**
  *  @class GstWorker
  *  @struct _GstWorker
  *  @brief A worker of pipelines.
@@ -207,6 +214,13 @@ struct _GstWorkerClass
    *  @param worker The GstWorker instance.
    */
   gboolean (*reset) (GstWorker * worker);
+
+  /*
+   * @brief Close the worker, deallocating and closing resources
+   * @param worker The GstWorker instance.
+   */
+
+  void (*close) (GstWorker * worker);
 };
 
 /**
