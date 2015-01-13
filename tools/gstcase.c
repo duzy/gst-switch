@@ -284,19 +284,21 @@ gst_case_get_pipeline_string (GstCase * cas)
   gboolean is_audiostream = cas->serve_type == GST_SERVE_AUDIO_STREAM;
   GString *desc = g_string_new ("");
   const gchar *caps =
-      is_audiostream ? "" : gst_switch_server_get_video_caps_str ();
+      is_audiostream ?
+      gst_switch_server_get_audio_caps_str () :
+      gst_switch_server_get_video_caps_str ();
 
   switch (cas->type) {
     case GST_CASE_INPUT_AUDIO:
       g_string_append_printf (desc,
-          "giostreamsrc name=source ! gdpdepay ! interaudiosink name=sink channel=input_%d",
-          cas->sink_port);
+          "giostreamsrc name=source ! gdpdepay ! %s ! interaudiosink name=sink channel=input_%d",
+          caps, cas->sink_port);
       break;
 
     case GST_CASE_INPUT_VIDEO:
       g_string_append_printf (desc,
-          "giostreamsrc name=source ! gdpdepay ! intervideosink name=sink channel=input_%d",
-          cas->sink_port);
+          "giostreamsrc name=source ! gdpdepay ! %s ! intervideosink name=sink channel=input_%d",
+          caps, cas->sink_port);
       break;
 
     case GST_CASE_PREVIEW:

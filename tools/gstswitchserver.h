@@ -67,6 +67,7 @@ struct _GstSwitchServerOpts
   gboolean low_res;
   GstCaps *video_caps;
   gchar *video_caps_str;
+  gchar *audio_caps_str;
 };
 
 /**
@@ -185,6 +186,7 @@ guint gst_switch_server_adjust_pip (GstSwitchServer * srv, gint dx, gint dy,
 gboolean gst_switch_server_new_record (GstSwitchServer * srv);
 
 GstCaps *gst_switch_server_getcaps (void);
+const gchar *gst_switch_server_get_audio_caps_str (void);
 const gchar *gst_switch_server_get_video_caps_str (void);
 const gchar *gst_switch_server_get_record_filename (void);
 
