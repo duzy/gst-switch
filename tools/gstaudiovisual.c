@@ -245,11 +245,11 @@ gst_audio_visual_get_pipeline_string (GstAudioVisual * visual)
   if (visual->active) {
     g_string_append_printf (
         desc,
-        "a. ! queue2 ! audioconvert ! level name=level message=true !"
+        "a. ! queue ! audioconvert ! level name=level message=true !"
         " autoaudiosink name=play sync=false\n");
   }
 
-  g_string_append_printf (desc, "a. ! queue2 ! audioconvert ! monoscope ");
+  g_string_append_printf (desc, "a. ! queue ! audioconvert ! monoscope ");
   if (visual->active) {
     g_string_append_printf (desc, "! textoverlay text=\"active\" "
         "font-desc=\"Sans 50\" " "shaded-background=true " "auto-resize=true ");
