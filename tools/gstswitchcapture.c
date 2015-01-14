@@ -141,7 +141,7 @@ gst_switch_capture_pipeline (GstWorker * worker, GstSwitchCapture * capture)
     g_string_append_printf (desc, "! tee name=video ");
   }
 
-  g_string_append_printf (desc, "video. ! queue2 ");
+  g_string_append_printf (desc, "video. ! queue ");
   g_string_append_printf (desc,
       "! videoscale ! video/x-raw,width=%d,height=%d ",
       GST_SWITCH_FACEDETECT_FRAME_WIDTH, GST_SWITCH_FACEDETECT_FRAME_HEIGHT);
@@ -153,7 +153,7 @@ gst_switch_capture_pipeline (GstWorker * worker, GstSwitchCapture * capture)
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! xvimagesink sync=false ");
 
-  g_string_append_printf (desc, "video. ! queue2 ");
+  g_string_append_printf (desc, "video. ! queue ");
   g_string_append_printf (desc, "! videoconvert ");
   g_string_append_printf (desc, "! videoscale "
       "! video/x-raw,format=I420,width=%d,height=%d ", w, h);
