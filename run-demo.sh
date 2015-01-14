@@ -32,3 +32,4 @@ gst-launch-1.0 videotestsrc pattern=18 is-live=1 \
 
 wait
 killall gst-switch-srv || true
+killall gst-switch-ui || true
