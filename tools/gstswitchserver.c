@@ -84,7 +84,7 @@ GstSwitchServerOpts opts = {
   GST_SWITCH_SERVER_DEFAULT_CONTROLLER_PORT,
 //FALSE,
   FALSE,
-  NULL
+  NULL, NULL
 };
 
 gboolean verbose = FALSE;
@@ -160,19 +160,26 @@ static gboolean caps_dumped = FALSE;
 GstCaps *
 gst_switch_server_getcaps (void)
 {
+  static const gchar *audio_caps_str =
+      "audio/x-raw, rate=48000, channels=2, format=S16LE, layout=interleaved";
+
   if (opts.video_caps == NULL) {
     // use a sane default we know will parse correctly
     parse_format (opts.low_res ? "VGA@60" : "720p60", &opts.video_caps, NULL);
   }
   if (!caps_dumped) {
     opts.video_caps_str = gst_caps_to_string (opts.video_caps);
-    g_print ("caps: %s\n", opts.video_caps_str);
+    g_print ("video-caps: %s\n", opts.video_caps_str);
+
+    opts.audio_caps_str = g_strdup (audio_caps_str);
+    g_print ("audio-caps: %s\n", opts.audio_caps_str);
+
     caps_dumped = TRUE;
   }
   return opts.video_caps;
 }
 
-/* gst_switch_server_get_video_aps_str
+/* gst_switch_server_get_video_caps_str
  * return video caps as a string
  */
 const gchar *
@@ -180,6 +187,16 @@ gst_switch_server_get_video_caps_str (void)
 {
   (void) gst_switch_server_getcaps ();
   return opts.video_caps_str;
+}
+
+/* gst_switch_server_get_audio_caps_str
+ * return audio caps as a string
+ */
+const gchar *
+gst_switch_server_get_audio_caps_str (void)
+{
+  (void) gst_switch_server_getcaps ();
+  return opts.audio_caps_str;
 }
 
 /* gst_switch_server_get_record_filename:
