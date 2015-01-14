@@ -366,7 +366,7 @@ class TestNewRecord(object):
     def test_new_record(self):
         """Test new_record"""
         for _ in range(self.NUM):
-            serv = Server(path=PATH, record_file="test.data")
+            serv = Server(path=PATH, record_file="test-%Y.data")
             try:
                 serv.run()
 
@@ -375,18 +375,14 @@ class TestNewRecord(object):
                 sources.new_test_video()
 
                 curr_time = datetime.datetime.now()
-                alt_curr_time = curr_time + datetime.timedelta(0, 1)
-                time_str = curr_time.strftime('%Y-%m-%d %H%M%S')
-                alt_time_str = alt_curr_time.strftime('%Y-%m-%d %H%M%S')
-                test_filename = "test {0}.data".format(time_str)
-                alt_test_filename = "test {0}.data".format(alt_time_str)
+                time_str = curr_time.strftime('%Y')
+                test_filename = "test-{0}.data".format(time_str)
 
                 res = self.new_record()
                 print res
                 sources.terminate_video()
                 serv.terminate(1)
-                assert ((os.path.exists(test_filename)) or
-                        (os.path.exists(alt_test_filename))) is True
+                assert os.path.exists(test_filename) is True
             finally:
                 if serv.proc:
                     poll = serv.proc.poll()

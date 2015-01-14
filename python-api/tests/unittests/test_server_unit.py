@@ -27,9 +27,9 @@ class TestPath(object):
         path = '/usr/'
         serv = Server(path=path)
         serv._start_process = mock_method
-        assert serv._run_process().split() == "/usr/gst-switch-srv \
+        assert serv._run_process() == "/usr/gst-switch-srv \
 --video-input-port=3000 --audio-input-port=4000 \
---control-port=5000 --record=record.data".split()
+--control-port=5000".split()
 
     def test_path_provided_no_slash(self):
         """Test if a path is provided"""
@@ -39,9 +39,9 @@ class TestPath(object):
         path = '/usr'
         serv = Server(path=path)
         serv._start_process = mock_method
-        assert serv._run_process().split() == "/usr/gst-switch-srv \
+        assert serv._run_process() == "/usr/gst-switch-srv \
 --video-input-port=3000 --audio-input-port=4000 \
---control-port=5000 --record=record.data".split()
+--control-port=5000".split()
 
     def test_path_empty(self, monkeypatch):
         """Test if null path is given"""
@@ -58,12 +58,13 @@ class TestPath(object):
         for path in paths:
             serv = Server(path=path)
             serv._start_process = mock_method
-            assert serv._run_process().split() == "/usr/gst-switch-srv \
+            assert serv._run_process() == "/usr/gst-switch-srv \
 --video-input-port=3000 --audio-input-port=4000 \
---control-port=5000 --record=record.data".split()
+--control-port=5000".split()
 
 
 class TestVideoPort(object):
+
     """Test for video_port parameter"""
     # Video Port Tests
 
@@ -151,8 +152,69 @@ class TestRecordFile(object):
     """Test the record_file parameter"""
     # Record File
 
-    def test_record_file_blank(self):
-        """Test when the record_file is null"""
+    def test_record_file_false(self):
+        """Test if record file is False"""
+        def mock_method(arg):
+            """Mocking _start_process"""
+            return arg
+        path = '/usr'
+        serv = Server(path=path, record_file=False)
+        serv._start_process = mock_method
+        assert serv._run_process() == "/usr/gst-switch-srv \
+--video-input-port=3000 --audio-input-port=4000 \
+--control-port=5000".split()
+
+    def test_record_file_true(self):
+        """Test if record file is True"""
+        def mock_method(arg):
+            """Mocking _start_process"""
+            return arg
+        path = '/usr'
+        serv = Server(path=path, record_file=True)
+        serv._start_process = mock_method
+        assert serv._run_process() == "/usr/gst-switch-srv \
+--video-input-port=3000 --audio-input-port=4000 \
+--control-port=5000 -r".split()
+
+    def test_record_file_valid(self):
+        """Test if record file is valid"""
+        def mock_method(arg):
+            """Mocking _start_process"""
+            return arg
+        path = '/usr'
+        serv = Server(path=path, record_file="record.data")
+        serv._start_process = mock_method
+        assert serv._run_process() == "/usr/gst-switch-srv \
+--video-input-port=3000 --audio-input-port=4000 \
+--control-port=5000 --record=record.data".split()
+
+    def test_record_file_valid_date(self):
+        """Test if record file is valid"""
+        def mock_method(arg):
+            """Mocking _start_process"""
+            return arg
+        path = '/usr'
+        serv = Server(path=path, record_file="record_%Y.data")
+        serv._start_process = mock_method
+        assert serv._run_process() == "/usr/gst-switch-srv \
+--video-input-port=3000 --audio-input-port=4000 \
+--control-port=5000 \
+--record=record_%Y.data".split()
+
+    def test_record_file_valid_space(self):
+        """Test if record file is valid and has a space"""
+        def mock_method(arg):
+            """Mocking _start_process"""
+            return arg
+        path = '/usr'
+        serv = Server(path=path, record_file='record 1.data')
+        serv._start_process = mock_method
+        assert serv._run_process() == "/usr/gst-switch-srv \
+--video-input-port=3000 --audio-input-port=4000 \
+--control-port=5000".split() + ["--record=record 1.data"]
+
+    def test_record_file_invalid(self):
+        """Test when the record_file is invalid"""
         files = ['', None, [], {}]
         for record_file in files:
             with pytest.raises(ValueError):
