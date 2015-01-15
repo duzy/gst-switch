@@ -53,6 +53,8 @@ gboolean verbose;
 
 static GOptionEntry entries[] = {
   {"verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "Be verbose", NULL},
+  {"dbus-timeout", 'd', 0, G_OPTION_ARG_INT, &gst_switch_client_dbus_timeout,
+      "DBus timeout in ms (default 5000)", NULL},
   {NULL}
 };
 
@@ -282,8 +284,7 @@ gst_switch_ui_init (GstSwitchUI * ui)
       GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
   gtk_widget_set_size_request (scrollwin, 130, -1);
   gtk_widget_set_vexpand (scrollwin, TRUE);
-  gtk_container_add (GTK_CONTAINER (scrollwin),
-      ui->preview_box);
+  gtk_container_add (GTK_CONTAINER (scrollwin), ui->preview_box);
 
   gtk_container_add (GTK_CONTAINER (overlay), ui->compose_view);
   gtk_overlay_add_overlay (GTK_OVERLAY (overlay), ui->compose_overlay);
@@ -1078,13 +1079,12 @@ gst_switch_ui_switch (GstSwitchUI * ui, gint key)
 static void
 gst_switch_ui_next_compose (GstSwitchUI * ui, GstCompositeMode mode)
 {
-  gboolean ok = gst_switch_client_set_composite_mode(
-      GST_SWITCH_CLIENT(ui), mode);
+  gboolean ok =
+      gst_switch_client_set_composite_mode (GST_SWITCH_CLIENT (ui), mode);
 
-  INFO("set composite mode: new %s (%d), previous %s",
-      gst_composite_mode_to_string(mode),
-      ok,
-      gst_composite_mode_to_string(ui->compose_mode));
+  INFO ("set composite mode: new %s (%d), previous %s",
+      gst_composite_mode_to_string (mode),
+      ok, gst_composite_mode_to_string (ui->compose_mode));
 
   if (ok)
     ui->compose_mode = mode;
@@ -1102,7 +1102,7 @@ gst_switch_ui_next_compose_mode (GstSwitchUI * ui)
   if (next_mode > COMPOSE_MODE__LAST)
     next_mode = 0;
 
-  gst_switch_ui_next_compose(ui, next_mode);
+  gst_switch_ui_next_compose (ui, next_mode);
 }
 
 /**
@@ -1212,35 +1212,35 @@ gst_switch_ui_key_event (GtkWidget * w, GdkEvent * event, GstSwitchUI * ui)
           gst_switch_ui_new_record (ui);
           break;
 
-        // Keys to change the compose mode
-        // ---------------------------------------------------------------
-        // None
+          // Keys to change the compose mode
+          // ---------------------------------------------------------------
+          // None
         case GDK_KEY_Escape:
           gst_switch_ui_next_compose (ui, COMPOSE_MODE_NONE);
           break;
 
-        // Picture-in-Picture
+          // Picture-in-Picture
         case GDK_KEY_F1:
         case GDK_KEY_P:
         case GDK_KEY_p:
           gst_switch_ui_next_compose (ui, COMPOSE_MODE_PIP);
           break;
 
-        // Side-by-side (preview)
+          // Side-by-side (preview)
         case GDK_KEY_F2:
         case GDK_KEY_D:
         case GDK_KEY_d:
           gst_switch_ui_next_compose (ui, COMPOSE_MODE_DUAL_PREVIEW);
           break;
 
-        // Side-by-side (equal)
+          // Side-by-side (equal)
         case GDK_KEY_F3:
         case GDK_KEY_S:
         case GDK_KEY_s:
           gst_switch_ui_next_compose (ui, COMPOSE_MODE_DUAL_EQUAL);
           break;
 
-        // Cycle through the modes
+          // Cycle through the modes
         case GDK_KEY_Tab:
         {
           // Cycle through them slowly....

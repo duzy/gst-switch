@@ -115,6 +115,8 @@ static const gchar introspection_xml[] =
   "    <property type='i' name='Num' access='read'/>"
 */
 
+gint gst_switch_controller_dbus_timeout = 5000;
+
 /**
  * @brief Helper function for matching remoting method names.
  * @memberof GstSwitchController
@@ -569,7 +571,7 @@ gst_switch_controller_call_client (GstSwitchController * controller,
   }
 
   value = g_dbus_connection_call_sync (connection, NULL,        /* bus_name */
-      path, name, method_name, parameters, reply_type, G_DBUS_CALL_FLAGS_NONE, 5000,    /* timeout_msec */
+      path, name, method_name, parameters, reply_type, G_DBUS_CALL_FLAGS_NONE, gst_switch_controller_dbus_timeout,      /* timeout_msec */
       NULL /* TODO: cancellable */ ,
       &error);
 

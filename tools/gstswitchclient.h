@@ -131,4 +131,6 @@ gboolean gst_switch_client_new_record (GstSwitchClient * client);
 guint gst_switch_client_adjust_pip (GstSwitchClient * client, gint dx,
     gint dy, gint dw, gint dh);
 
+extern gint gst_switch_client_dbus_timeout;
+
 #endif //__GST_SWITCH_CLIENT_H__
