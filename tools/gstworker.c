@@ -487,9 +487,7 @@ gst_worker_handle_error (GstWorker * worker, GError * error, const char *debug)
   if (error->domain == GST_STREAM_ERROR) {
     ERROR ("%s: (STREAM: %d) %s", worker->name, error->code, error->message);
   }
-#if 0
   ERROR ("DEBUG INFO:\n%s\n", debug);
-#endif
 
 #if 0
   gst_worker_stop (worker);
@@ -500,13 +498,13 @@ static void
 gst_worker_handle_warning (GstWorker * worker, GError * error,
     const char *debug)
 {
-  WARN ("%s: %s", worker->name, error->message);
+  WARN ("%s: %s (%s)", worker->name, error->message, debug);
 }
 
 static void
 gst_worker_handle_info (GstWorker * worker, GError * error, const char *debug)
 {
-  INFO ("%s: %s", worker->name, error->message);
+  INFO ("%s: %s (%s)", worker->name, error->message, debug);
 }
 
 static void
