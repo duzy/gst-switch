@@ -106,4 +106,6 @@ void gst_switch_controller_show_face_marker (GstSwitchController *controller,
 void gst_switch_controller_show_track_marker (GstSwitchController *controller,
     GVariant *faces);
 
+extern gint gst_switch_controller_dbus_timeout;
+
 #endif //__GST_SWITCH_CONTROLLER_H__

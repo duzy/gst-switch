@@ -95,6 +95,7 @@ static const gchar introspection_xml[] =
     "  </interface>" "</node>";
 
 extern gboolean verbose;
+gint gst_switch_client_dbus_timeout = 5000;
 
 /**
  * @brief Initialize instances of GstSwitchClient.
@@ -141,7 +142,7 @@ gst_switch_client_call_controller (GstSwitchClient * client,
   //INFO ("calling: %s/%s", SWITCH_CONTROLLER_OBJECT_NAME, method_name);
 
   value = g_dbus_connection_call_sync (client->controller, NULL,        /* bus_name */
-      SWITCH_CONTROLLER_OBJECT_PATH, SWITCH_CONTROLLER_OBJECT_NAME, method_name, parameters, reply_type, G_DBUS_CALL_FLAGS_NONE, 5000,  /* timeout_msec */
+      SWITCH_CONTROLLER_OBJECT_PATH, SWITCH_CONTROLLER_OBJECT_NAME, method_name, parameters, reply_type, G_DBUS_CALL_FLAGS_NONE, gst_switch_client_dbus_timeout,        /* timeout_msec */
       NULL /* TODO: cancellable */ ,
       &error);
 
