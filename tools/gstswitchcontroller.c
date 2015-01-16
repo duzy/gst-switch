@@ -570,6 +570,10 @@ gst_switch_controller_call_client (GstSwitchController * controller,
       break;
   }
 
+  if (G_IS_DBUS_CONNECTION (connection) == 0) {
+    return NULL;
+  }
+
   value = g_dbus_connection_call_sync (connection, NULL,        /* bus_name */
       path, name, method_name, parameters, reply_type, G_DBUS_CALL_FLAGS_NONE, gst_switch_controller_dbus_timeout,      /* timeout_msec */
       NULL /* TODO: cancellable */ ,
