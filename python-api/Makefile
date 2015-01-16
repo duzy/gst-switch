@@ -17,7 +17,6 @@ unittests:
 	@rm -rf reports
 	@mkdir -p reports/coverage/unittests
 	py.test --cov gstswitch tests/unittests/ --pep8 -v -s
-	@make clean
 
 pep8:
 	pep8 gstswitch
